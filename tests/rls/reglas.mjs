@@ -1,7 +1,7 @@
 // Pruebas de las reglas de seguridad (RLS) en un Postgres en memoria (PGlite).
 // Ejecutar: npm run test:rls (también corre dentro de npm test).
 import { PGlite } from "@electric-sql/pglite";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 
 const db = new PGlite();
 
@@ -25,7 +25,11 @@ await db.exec(`
   alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
 `);
 
-await db.exec(readFileSync(new URL("../../supabase/migrations/0001_esquema_inicial.sql", import.meta.url), "utf8"));
+// Todas las migraciones, en orden
+const carpeta = new URL("../../supabase/migrations/", import.meta.url);
+for (const archivo of readdirSync(carpeta).filter((f) => f.endsWith(".sql")).sort()) {
+  await db.exec(readFileSync(new URL(archivo, carpeta), "utf8"));
+}
 await db.exec(`grant all on all tables in schema public to service_role;`);
 
 // --- Datos de prueba (como superusuario) ---
@@ -36,7 +40,8 @@ await db.exec(`
   insert into auth.users (id, email, raw_user_meta_data) values
     ('${A}', 'ana@test.com', '{"full_name":"Ana"}'),
     ('${B}', 'beto@test.com', '{}'),
-    ('${ADM}', 'admin@test.com', '{}');
+    ('${ADM}', 'admin@test.com', '{}'),
+    ('00000000-0000-0000-0000-0000000000c1', 'juan@test.com', '{"full_name":"Juan  Pérez García"}');
   update public.profiles set role = 'admin' where id = '${ADM}';
 `);
 const gye = (await db.query(`select id from public.cities where slug='guayaquil'`)).rows[0].id;
@@ -66,9 +71,10 @@ function check(name, cond, detail) {
 
 console.log("\nPerfiles");
 const prof = (await db.query(`select id, display_name, role from public.profiles order by display_name`)).rows;
-check("perfil creado al registrarse (3)", prof.length === 3, prof);
+check("perfil creado al registrarse (4)", prof.length === 4, prof);
 check("nombre tomado de full_name", prof.some((p) => p.display_name === "Ana"), prof);
-check("nombre tomado del correo", prof.some((p) => p.display_name === "beto"), prof);
+check("con nombre de Google queda nombre e inicial", prof.some((p) => p.display_name === "Juan P."), prof);
+check("el nombre nunca sale del correo", !prof.some((p) => p.display_name === "beto") && prof.some((p) => p.display_name === "Visitante"), prof);
 
 console.log("\nVisitante sin sesión (anon)");
 let r = await as("anon", "", `select slug from public.places`);
