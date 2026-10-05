@@ -45,6 +45,7 @@ milindoecuador/
 │   │   ├── fonts.ts              # carga de fuentes con next/font/local
 │   │   ├── globals.css           # Tailwind + clases de colores y fuentes del sistema
 │   │   ├── tokens.css            # GENERADO desde docs/diseno-tokens.json (npm run tokens)
+│   │   ├── dev/componentes/      # muestrario de componentes; responde 404 en producción
 │   │   ├── layout.tsx            # HTML base, fuentes, metadatos globales
 │   │   ├── page.tsx              # inicio
 │   │   ├── [ciudad]/
@@ -80,7 +81,9 @@ milindoecuador/
 │   │   ├── solicitudes.ts
 │   │   └── admin.ts
 │   ├── components/
-│   │   ├── ui/                   # componentes de shadcn/ui
+│   │   ├── ui/                   # Boton, Insignia, iconos (y shadcn/ui cuando se instale)
+│   │   ├── arte/                 # Afiche, afiches.tsx (generado con `npm run arte`), Panorama
+│   │   ├── categorias/           # BarraCategorias
 │   │   ├── lugares/              # tarjeta, ficha, galería, estrellas
 │   │   ├── busqueda/
 │   │   └── layout/               # cabecera, pie, menú
@@ -98,7 +101,8 @@ milindoecuador/
 │   │   └── database.ts           # tipos generados con `supabase gen types`
 │   └── proxy.ts                  # refresca la sesión de Supabase en cada visita
 ├── scripts/
-│   └── tokens.mjs                # genera src/app/tokens.css desde los tokens aprobados
+│   ├── tokens.mjs                # genera src/app/tokens.css desde los tokens aprobados
+│   └── arte.mjs                  # convierte los afiches SVG de docs/arte/ en src/components/arte/afiches.tsx
 ├── tests/
 │   ├── unit/                     # Vitest
 │   ├── rls/reglas.mjs            # 36 pruebas de reglas de seguridad (PGlite, npm run test:rls)

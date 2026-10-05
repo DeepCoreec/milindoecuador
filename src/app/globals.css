@@ -49,6 +49,33 @@ body {
   box-shadow: var(--anillo-foco);
 }
 
+/* ---------- Afiches de categoría (estilo serigrafía) ----------
+   "cal" es el blanco de cal: papel-alto de día, rio de noche. */
+.mle-afiche { --cal: var(--papel-alto); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mle-afiche { --cal: var(--rio); } }
+[data-theme="dark"] .mle-afiche { --cal: var(--rio); }
+.mle-afiche svg { display: block; width: 100%; height: 100%; }
+.mle-afiche .tinta { fill: var(--on-color); }
+.mle-afiche .trazo { stroke: var(--on-color); fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.mle-afiche .cal { fill: var(--cal); }
+.mle-afiche .cal-trazo { stroke: var(--cal); fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.mle-afiche .mango, .mle-afiche .ventana { fill: var(--mango); }
+.mle-afiche .faro { fill: var(--faro); }
+.mle-afiche .celeste { fill: var(--celeste); }
+.mle-afiche .celeste-tinta { fill: var(--celeste-tinta); }
+.mle-afiche .manglar { fill: var(--manglar); }
+.mle-afiche .buganvilla { fill: var(--buganvilla); }
+.mle-afiche .grano { opacity: 0.18; mix-blend-mode: multiply; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mle-afiche .grano { mix-blend-mode: screen; opacity: 0.08; } }
+[data-theme="dark"] .mle-afiche .grano { mix-blend-mode: screen; opacity: 0.08; }
+
+/* Panorama en pixel art: se amplía sin suavizar */
+.mle-panorama { display: block; width: 100%; height: auto; aspect-ratio: 240 / 100; image-rendering: pixelated; }
+
+/* Filas que se deslizan de lado sin barra visible */
+.sin-barra { scrollbar-width: none; }
+.sin-barra::-webkit-scrollbar { display: none; }
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

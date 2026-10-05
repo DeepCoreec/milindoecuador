@@ -5,9 +5,9 @@
 
 ## Estado actual
 
-- **Fase actual:** 1 · Base técnica (la fase 0 queda abierta solo por las maquetas, que el usuario pidió hacer después)
-- **Último paso terminado:** 0.5 Maquetas en el lienzo de diseño
-- **Siguiente paso:** el usuario revisa y aprueba las maquetas (puerta de la fase 0); luego 1.3 en cuanto pase los datos de Supabase
+- **Fase actual:** 1 · Base técnica (abierta solo por 1.3, 1.6 y 1.7, que esperan las cuentas del usuario) y, en paralelo con permiso del usuario, la fase 2 en lo que no necesita la base de datos
+- **Último paso terminado:** 0.5 Maquetas aprobadas (fase 0 cerrada)
+- **Siguiente paso:** 2.2 Página de inicio (`src/app/page.tsx`) según la maqueta "Inicio" de `docs/maquetas/`: Cabecera, portada con Panorama y Buscador, BarraCategorias, secciones de lugares con TarjetaLugar y Pie. Mientras no haya Supabase (1.3), los datos salen de una lista de muestra en `src/lib/datos/` marcada como ejemplo, con la misma forma que tendrá la consulta real. Antes: decidir el menú del celular (shadcn/Radix, ver nota en 2.1)
 - **Bloqueos / esperando al usuario:** ajustes de seguridad en GitHub (1.2); crear el proyecto en Supabase y pasar URL y clave pública (1.3); cuenta de Vercel (1.7)
 
 ## Fase 0 · Plan y diseño
@@ -19,7 +19,7 @@
 - [x] 0.4d 11 categorías — 2026-10-05: a pedido del usuario; 6 nuevas con su afiche (cafés, vida nocturna, museos, compras, niños, naturaleza), barra con 5 principales y panel "Todas las categorías"; columna `is_main` en `categories`
 - [x] 0.4c Panorama en pixel art animado — 2026-10-05: a pedido del usuario; faro que gira, balandra que cruza el río, siempre de noche (decisión del usuario), pausa fuera de pantalla y con reducir movimiento
 - [x] 0.4b Arte propio — 2026-10-05: a pedido del usuario, las casitas planas se reemplazaron por la ilustración Panorama y 5 afiches de Categoría (día y noche) → `docs/arte/`
-- [x] 0.5 Maquetas — 2026-10-05: 5 pantallas en computadora y celular, con modo claro y oscuro, en un lienzo de diseño (enlace en `docs/maquetas/README.md`). Revisadas a 390 y 1440 px. **Esperando la aprobación del usuario (puerta de la fase 0)**
+- [x] 0.5 Maquetas — 2026-10-05: 5 pantallas en computadora y celular, con modo claro y oscuro, en un lienzo de diseño (enlace en `docs/maquetas/README.md`). Revisadas a 390 y 1440 px. **Aprobadas por el usuario el 2026-10-05: fase 0 cerrada**
 - [x] 0.6 Decisiones del plan — 2026-10-05: nombre, inicio de sesión con correo y Google, un solo admin, WhatsApp 593986225038
 - **Puerta:** el usuario aprueba las maquetas (antes de empezar la fase 2, que es la primera que dibuja pantallas).
 
@@ -36,7 +36,7 @@
 
 ## Fase 2 · Catálogo público
 
-- [ ] 2.1 Componentes base del sistema de diseño (botón, tarjeta, buscador, estrellas, insignias)
+- [x] 2.1 Componentes base del sistema de diseño — 2026-10-05: Botón, Insignia, Estrellas, Buscador, TarjetaLugar, afiches de categoría (generados desde `docs/arte/` con `npm run arte`), barra de categorías desplegable, Panorama en canvas, Cabecera y Pie. Muestrario en `/dev/componentes` (404 en producción). Revisado a 390 y 1440 px, claro y oscuro, sin desborde horizontal. shadcn/ui queda para cuando un componente necesite Radix (menú del celular en 2.2): su registro está bloqueado desde la nube de Claude, así que se instalará desde la compu del usuario o se pedirá permiso para usar Radix directo
 - [ ] 2.2 Página de inicio
 - [ ] 2.3 Página de ciudad y de categoría con filtros (sector y precio)
 - [ ] 2.4 Ficha de lugar con fotos, WhatsApp y "Cómo llegar"
