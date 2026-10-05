@@ -1,6 +1,6 @@
 """Arma el contenido (HTML) de las 5 maquetas a partir de piezas comunes."""
 import re, os, json
-A = os.path.dirname(os.path.abspath(__file__)) + "/assets/"
+A = os.path.dirname(os.path.abspath(__file__)) + "/../arte/"  # afiches de categoría
 
 def afiche(nombre):
     s = open(A + f"categoria-{nombre}.svg").read()
