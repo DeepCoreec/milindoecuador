@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 import { fuenteHistoria, fuenteRotulo, fuenteSans } from "./fonts";
 import "./globals.css";
+import { NOMBRE_SITIO, paraCompartir, urlSitio } from "@/lib/sitio";
+
+const descripcion = "La guía de Guayaquil hecha por su gente: dónde comer, dormir, pasear y qué visitar.";
 
 export const metadata: Metadata = {
-  title: "Mi Lindo Ecuador",
-  description: "La guía de Guayaquil hecha por su gente: dónde comer, dormir, pasear y qué visitar.",
+  metadataBase: urlSitio(),
+  title: NOMBRE_SITIO,
+  description: descripcion,
+  ...paraCompartir(NOMBRE_SITIO, descripcion, "/"),
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

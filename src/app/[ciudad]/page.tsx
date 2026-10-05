@@ -5,6 +5,7 @@ import { Afiche } from "@/components/arte/Afiche";
 import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
 import { getCategorias, getCiudad } from "@/lib/datos/lugares";
+import { paraCompartir } from "@/lib/sitio";
 
 async function cargarCiudad(params: PageProps<"/[ciudad]">["params"]) {
   const ciudad = await getCiudad((await params).ciudad);
@@ -14,10 +15,8 @@ async function cargarCiudad(params: PageProps<"/[ciudad]">["params"]) {
 
 export async function generateMetadata({ params }: PageProps<"/[ciudad]">): Promise<Metadata> {
   const ciudad = await cargarCiudad(params);
-  return {
-    title: `Explora ${ciudad.nombre} · Mi Lindo Ecuador`,
-    description: `Restaurantes, hoteles, lugares turísticos y planes en ${ciudad.nombre}, recomendados por la gente de aquí.`,
-  };
+  const descripcion = `Restaurantes, hoteles, lugares turísticos y planes en ${ciudad.nombre}, recomendados por la gente de aquí.`;
+  return { title: `Explora ${ciudad.nombre} · Mi Lindo Ecuador`, description: descripcion, ...paraCompartir(`Explora ${ciudad.nombre}`, descripcion, `/${ciudad.slug}`) };
 }
 
 /** Página de la ciudad: todas las categorías, con su afiche, para empezar a explorar. */

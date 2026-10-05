@@ -8,6 +8,7 @@ import { Pie } from "@/components/layout/Pie";
 import { TarjetaResumen } from "@/components/lugares/TarjetaResumen";
 import { Boton } from "@/components/ui/Boton";
 import { getCategoria, getCategoriasBarra, getCiudad, getLugaresDeCategoria, tonoDeCategoria } from "@/lib/datos/lugares";
+import { paraCompartir } from "@/lib/sitio";
 import { leerFiltros } from "@/lib/validacion/filtros";
 
 async function cargar(params: PageProps<"/[ciudad]/[categoria]">["params"]) {
@@ -19,7 +20,8 @@ async function cargar(params: PageProps<"/[ciudad]/[categoria]">["params"]) {
 
 export async function generateMetadata({ params }: PageProps<"/[ciudad]/[categoria]">): Promise<Metadata> {
   const { ciudad, categoria } = await cargar(params);
-  return { title: `${categoria.nombre} en ${ciudad.nombre} · Mi Lindo Ecuador`, description: categoria.bajada };
+  const titulo = `${categoria.nombre} en ${ciudad.nombre}`;
+  return { title: `${titulo} · Mi Lindo Ecuador`, description: categoria.bajada, ...paraCompartir(titulo, categoria.bajada, `/${ciudad.slug}/${categoria.slug}`) };
 }
 
 export default async function PaginaCategoria({ params, searchParams }: PageProps<"/[ciudad]/[categoria]">) {

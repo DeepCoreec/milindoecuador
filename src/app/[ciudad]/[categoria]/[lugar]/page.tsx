@@ -6,6 +6,7 @@ import { Cabecera } from "@/components/layout/Cabecera";
 import { Migas } from "@/components/layout/Migas";
 import { Pie } from "@/components/layout/Pie";
 import { Estrellas } from "@/components/lugares/Estrellas";
+import { BotonCompartir } from "@/components/lugares/BotonCompartir";
 import { Galeria } from "@/components/lugares/Galeria";
 import { Resenas } from "@/components/lugares/Resenas";
 import { clasesBoton } from "@/components/ui/Boton";
@@ -13,6 +14,7 @@ import { Insignia } from "@/components/ui/Insignia";
 import { IconoConversacion, IconoUbicacion } from "@/components/ui/iconos";
 import { getCategoria, getCiudad, getLugar, tonoDeCategoria } from "@/lib/datos/lugares";
 import { enlaceComoLlegar, enlaceWhatsApp, mostrarWhatsApp } from "@/lib/enlaces";
+import { paraCompartir } from "@/lib/sitio";
 
 const PRECIOS = { 1: ["$", "económico"], 2: ["$$", "medio"], 3: ["$$$", "alto"] } as const;
 
@@ -33,9 +35,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const p = await params;
   const { ciudad, categoria, lugar } = await cargar(p.ciudad, p.categoria, p.lugar);
   const resumen = lugar.descripcion.replace(/^\[Ejemplo\]\s*/, "");
+  const descripcion = resumen.length > 155 ? `${resumen.slice(0, 154).trimEnd()}…` : resumen;
   return {
     title: `${lugar.nombre} · ${categoria.nombre} en ${ciudad.nombre}`,
-    description: resumen.length > 155 ? `${resumen.slice(0, 154).trimEnd()}…` : resumen,
+    description: descripcion,
+    ...paraCompartir(`${lugar.nombre} · ${ciudad.nombre}`, descripcion, `/${ciudad.slug}/${categoria.slug}/${lugar.slug}`),
     // Los negocios de ejemplo no deben aparecer en Google
     robots: lugar.ejemplo ? { index: false, follow: false } : undefined,
   };
@@ -88,6 +92,7 @@ export default async function FichaLugar({ params }: Props) {
                 <IconoUbicacion />
                 Cómo llegar
               </a>
+              <BotonCompartir titulo={`${lugar.nombre} · Mi Lindo Ecuador`} texto={`Mira ${lugar.nombre} en Mi Lindo Ecuador`} />
             </div>
           </div>
 
