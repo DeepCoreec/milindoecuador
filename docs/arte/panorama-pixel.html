@@ -1,4 +1,4 @@
-<canvas class="mle-panorama-pixel" width="240" height="100" role="img"
+<canvas class="mle-panorama-pixel" data-theme="dark" width="240" height="100" role="img"
   aria-label="Pixel art animado del Cerro Santa Ana: casas de colores, la escalinata, el faro girando y una balandra que cruza el río Guayas"></canvas>
 <script>
 (function () {
@@ -22,7 +22,7 @@
   function css(c, a) { return "rgba(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + "," + (a == null ? 1 : a) + ")"; }
   var noche = false;
   function leerColores() {
-    var s = getComputedStyle(document.documentElement);
+    var s = getComputedStyle(cv);
     ["papel", "papel-alto", "rio", "celeste", "celeste-suave", "mango", "mango-suave", "faro", "manglar", "buganvilla", "on-color", "linea"]
       .forEach(function (k) { C[k] = hex(s.getPropertyValue("--" + k)); });
     // ¿es de noche? (el papel es oscuro)
