@@ -9,7 +9,7 @@
 | Framework | Next.js 16 (App Router) + React 19 | Páginas generadas en el servidor: las tarjetas al compartir en WhatsApp funcionan y Google indexa bien |
 | Lenguaje | TypeScript en modo estricto | Detecta errores antes de publicar |
 | Estilos | Tailwind CSS 4 | Rápido y consistente con el sistema de diseño |
-| Componentes | shadcn/ui (sobre Radix) | Accesibles con teclado y lector de pantalla; el código queda en el proyecto |
+| Componentes | Radix (`@radix-ui/react-dialog`, aprobado 2026-10-05) y shadcn/ui cuando se pueda instalar | Accesibles con teclado y lector de pantalla; el código queda en el proyecto |
 | Base de datos, usuarios y fotos | Supabase (PostgreSQL, Auth, Storage) | Reglas de seguridad dentro de la base (RLS) |
 | Conexión con Supabase | `@supabase/ssr`, `@supabase/supabase-js` | Sesión guardada en cookies seguras |
 | Validación | Zod | Mismo esquema en la página y en el servidor |
@@ -86,7 +86,7 @@ milindoecuador/
 │   │   ├── categorias/           # BarraCategorias
 │   │   ├── lugares/              # tarjeta, ficha, galería, estrellas
 │   │   ├── busqueda/
-│   │   └── layout/               # cabecera, pie, menú
+│   │   └── layout/               # Cabecera, Pie, MenuMovil (panel de Radix)
 │   ├── lib/
 │   │   ├── supabase/
 │   │   │   ├── config.ts         # lee URL y clave pública; sin ellas la página funciona sin sesión
@@ -94,6 +94,7 @@ milindoecuador/
 │   │   │   ├── client.ts         # cliente para el navegador (solo clave pública)
 │   │   │   └── admin.ts          # cliente con service_role; importa 'server-only'
 │   │   ├── datos/                # funciones de lectura: getLugar, getLugaresPorCategoria…
+│   │   │                         # (hoy inicio.ts devuelve datos de muestra con la forma final)
 │   │   ├── validacion/           # esquemas Zod compartidos
 │   │   ├── captcha.ts            # verificación de Turnstile en el servidor
 │   │   └── auth.ts               # requireUsuario(), requireAdmin()

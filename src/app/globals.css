@@ -76,6 +76,16 @@ body {
 .sin-barra { scrollbar-width: none; }
 .sin-barra::-webkit-scrollbar { display: none; }
 
+/* Menú del celular: el panel entra por la derecha y el velo aparece suave */
+@keyframes mle-entra-derecha { from { transform: translateX(100%); } }
+@keyframes mle-sale-derecha { to { transform: translateX(100%); } }
+@keyframes mle-aparece { from { opacity: 0; } }
+@keyframes mle-desaparece { to { opacity: 0; } }
+.mle-panel-menu[data-state="open"] { animation: mle-entra-derecha 220ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+.mle-panel-menu[data-state="closed"] { animation: mle-sale-derecha 160ms ease-in; }
+.mle-velo[data-state="open"] { animation: mle-aparece 220ms ease-out; }
+.mle-velo[data-state="closed"] { animation: mle-desaparece 160ms ease-in; }
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

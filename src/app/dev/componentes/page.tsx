@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { Panorama } from "@/components/arte/Panorama";
 import { Buscador } from "@/components/busqueda/Buscador";
-import { BarraCategorias, type CategoriaBarra } from "@/components/categorias/BarraCategorias";
+import { BarraCategorias } from "@/components/categorias/BarraCategorias";
 import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
 import { Estrellas } from "@/components/lugares/Estrellas";
@@ -11,6 +11,7 @@ import { TarjetaLugar } from "@/components/lugares/TarjetaLugar";
 import { Boton } from "@/components/ui/Boton";
 import { Insignia } from "@/components/ui/Insignia";
 import { IconoCompartir, IconoConversacion } from "@/components/ui/iconos";
+import { getCategoriasBarra } from "@/lib/datos/inicio";
 
 /*
  * Muestrario de componentes. Solo existe en desarrollo (npm run dev):
@@ -19,20 +20,6 @@ import { IconoCompartir, IconoConversacion } from "@/components/ui/iconos";
  */
 
 export const metadata: Metadata = { title: "Componentes · Mi Lindo Ecuador", robots: { index: false, follow: false } };
-
-const CATEGORIAS: CategoriaBarra[] = [
-  { slug: "restaurantes", nombre: "Restaurantes", principal: true },
-  { slug: "hoteles", nombre: "Hoteles", principal: true },
-  { slug: "turismo", nombre: "Lugares turísticos", nombreCorto: "Turismo", principal: true },
-  { slug: "ejercicio", nombre: "Dónde hacer ejercicio", nombreCorto: "Ejercicio", principal: true },
-  { slug: "paseos", nombre: "Dónde pasear", nombreCorto: "Pasear", principal: true },
-  { slug: "cafes", nombre: "Cafés y heladerías", principal: false },
-  { slug: "vida-nocturna", nombre: "Vida nocturna", principal: false },
-  { slug: "museos", nombre: "Museos y cultura", principal: false },
-  { slug: "compras", nombre: "Compras y mercados", principal: false },
-  { slug: "ninos", nombre: "Para niños", principal: false },
-  { slug: "naturaleza", nombre: "Naturaleza y aventura", principal: false },
-].map((c) => ({ ...c, href: `/guayaquil/${c.slug}` }));
 
 function Seccion({ titulo, children }: { titulo: string; children: ReactNode }) {
   return (
@@ -43,8 +30,9 @@ function Seccion({ titulo, children }: { titulo: string; children: ReactNode }) 
   );
 }
 
-export default function PaginaComponentes() {
+export default async function PaginaComponentes() {
   if (process.env.NODE_ENV === "production") notFound();
+  const categorias = await getCategoriasBarra();
 
   return (
     <>
@@ -98,7 +86,7 @@ export default function PaginaComponentes() {
         </Seccion>
 
         <Seccion titulo="Barra de categorías">
-          <BarraCategorias categorias={CATEGORIAS} activa="restaurantes" />
+          <BarraCategorias categorias={categorias} activa="restaurantes" />
         </Seccion>
 
         <Seccion titulo="Tarjetas de lugar">

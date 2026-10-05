@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { clasesBoton } from "@/components/ui/Boton";
-import { IconoBuscar, IconoMenu, IconoUbicacion } from "@/components/ui/iconos";
+import { IconoBuscar, IconoUbicacion } from "@/components/ui/iconos";
+import { MenuMovil } from "./MenuMovil";
 
 /** Cabecera del sitio. En celular muestra solo la marca, buscar y el menú. */
 export function Cabecera() {
@@ -30,9 +31,7 @@ export function Cabecera() {
           <Link href="/buscar" aria-label="Buscar" className="inline-grid size-11 place-items-center rounded-md text-rio lg:hidden [&_svg]:size-[22px]">
             <IconoBuscar />
           </Link>
-          <button type="button" aria-label="Abrir menú" className="inline-grid size-11 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-rio lg:hidden [&_svg]:size-[22px]">
-            <IconoMenu />
-          </button>
+          <MenuMovil />
         </nav>
       </div>
     </header>

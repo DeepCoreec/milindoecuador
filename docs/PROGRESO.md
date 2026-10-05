@@ -7,7 +7,7 @@
 
 - **Fase actual:** 1 · Base técnica (abierta solo por 1.3, 1.6 y 1.7, que esperan las cuentas del usuario) y, en paralelo con permiso del usuario, la fase 2 en lo que no necesita la base de datos
 - **Último paso terminado:** 0.5 Maquetas aprobadas (fase 0 cerrada)
-- **Siguiente paso:** 2.2 Página de inicio (`src/app/page.tsx`) según la maqueta "Inicio" de `docs/maquetas/`: Cabecera, portada con Panorama y Buscador, BarraCategorias, secciones de lugares con TarjetaLugar y Pie. Mientras no haya Supabase (1.3), los datos salen de una lista de muestra en `src/lib/datos/` marcada como ejemplo, con la misma forma que tendrá la consulta real. Antes: decidir el menú del celular (shadcn/Radix, ver nota en 2.1)
+- **Siguiente paso:** 2.3 Página de ciudad (`/guayaquil`) y de categoría (`/guayaquil/[categoria]`) según la maqueta "Categoría" de `docs/maquetas/`: barra de categorías con la activa marcada, filtros por sector y precio como enlaces GET (funcionan sin JavaScript), cuadrícula de TarjetaLugar y estado vacío. Datos de muestra en `src/lib/datos/` con la misma forma que la consulta real; categoría inexistente → `notFound()`. Recordar que en Next 16 `params` es una Promise
 - **Bloqueos / esperando al usuario:** ajustes de seguridad en GitHub (1.2); crear el proyecto en Supabase y pasar URL y clave pública (1.3); cuenta de Vercel (1.7)
 
 ## Fase 0 · Plan y diseño
@@ -37,7 +37,7 @@
 ## Fase 2 · Catálogo público
 
 - [x] 2.1 Componentes base del sistema de diseño — 2026-10-05: Botón, Insignia, Estrellas, Buscador, TarjetaLugar, afiches de categoría (generados desde `docs/arte/` con `npm run arte`), barra de categorías desplegable, Panorama en canvas, Cabecera y Pie. Muestrario en `/dev/componentes` (404 en producción). Revisado a 390 y 1440 px, claro y oscuro, sin desborde horizontal. shadcn/ui queda para cuando un componente necesite Radix (menú del celular en 2.2): su registro está bloqueado desde la nube de Claude, así que se instalará desde la compu del usuario o se pedirá permiso para usar Radix directo
-- [ ] 2.2 Página de inicio
+- [x] 2.2 Página de inicio — 2026-10-05: portada con Panorama y Buscador, barra de categorías, "Dónde comer encebollado", "Imperdibles de Guayaquil" y llamado para negocios, igual a la maqueta. Menú del celular con `@radix-ui/react-dialog` (permiso del usuario el 2026-10-05): atrapa el foco, cierra con Escape y devuelve el foco. Datos de muestra en `src/lib/datos/inicio.ts` (negocios con insignia "Ejemplo"); se cambian por Supabase sin tocar la página. Revisada a 390 y 1440 px, claro y oscuro. `npm audit` en producción: 0 problemas (los 5 avisos son del revisor de estilo, solo en desarrollo)
 - [ ] 2.3 Página de ciudad y de categoría con filtros (sector y precio)
 - [ ] 2.4 Ficha de lugar con fotos, WhatsApp y "Cómo llegar"
 - [ ] 2.5 Buscador `/buscar`
