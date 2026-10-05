@@ -56,7 +56,7 @@ Las tres tienen licencia OFL; en la fase 1 sus archivos `.woff2` se sirven desde
 
 ## Componentes definidos
 
-Botón (principal, secundario, WhatsApp, texto) · Categoría (afiches ilustrados) · Panorama (ilustración) · Buscador · Estrellas · Insignia (Destacado, Verificado, neutra) · Tarjeta de lugar · Reseña · Historia.
+Botón (principal, secundario, WhatsApp, texto) · Categoría (11 afiches ilustrados, barra con 5 principales y panel "Todas las categorías") · Panorama (ilustración) · Buscador · Estrellas · Insignia (Destacado, Verificado, neutra) · Tarjeta de lugar · Reseña · Historia.
 Las reglas de uso de cada uno están en el artefacto.
 
 ## Ilustración

@@ -12,6 +12,13 @@ Ilustraciones propias en estilo serigrafía. Sus colores son variables del siste
 | `categoria-turismo.svg` | Faro y capilla del cerro sobre `faro` | Selector de categoría |
 | `categoria-ejercicio.svg` | Samán y bicicleta sobre `manglar` | Selector de categoría |
 | `categoria-paseos.svg` | Noria y malecón sobre `buganvilla` | Selector de categoría |
+| `categoria-cafes.svg` | Café humeante y helado sobre `celeste-tinta` | Panel "Todas las categorías" |
+| `categoria-nocturna.svg` | Luces, cóctel y nota musical sobre `on-color` | Panel "Todas las categorías" |
+| `categoria-museos.svg` | Máscaras de teatro y un cuadro sobre `faro` | Panel "Todas las categorías" |
+| `categoria-compras.svg` | Puesto con toldo, guineos y naranjas sobre `manglar` | Panel "Todas las categorías" |
+| `categoria-ninos.svg` | Cometa sobre el parque, sobre `buganvilla` | Panel "Todas las categorías" |
+| `categoria-naturaleza.svg` | Iguana sobre una rama del manglar, sobre `mango` | Panel "Todas las categorías" |
+| `categoria-todas.svg` | Mosaico de colores | Botón "Todas las categorías" |
 
 ## Cómo se editan
 

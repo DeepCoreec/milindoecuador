@@ -14,7 +14,7 @@ ni marketplace de compra y venta.
 ## Versión 1: 8 funciones (solo Guayaquil)
 
 1. Fichas de lugares (fotos, descripción, horario, sector, precio, WhatsApp, "Cómo llegar")
-2. 5 categorías, buscador y filtros por sector y precio
+2. 11 categorías (5 principales en una barra y el resto en "Todas las categorías"), buscador y filtros por sector y precio
 3. Enlaces para compartir con tarjeta (WhatsApp, Instagram, Facebook)
 4. Cuentas de usuario (correo o Google), solo para reseñas
 5. Reseñas: estrellas, comentario, respuesta del negocio, reportes
@@ -22,12 +22,17 @@ ni marketplace de compra y venta.
 7. Panel de administración
 8. App instalable (PWA)
 
-**Fuera de la versión 1:** mapa, chatbot, guías y GPS, pagos automáticos, panel para dueños,
+**Fuera de la versión 1:** grupos para salir juntos y "Armar un plan", mapa, chatbot, guías y GPS, pagos automáticos, panel para dueños,
 apps en tiendas, otras ciudades, inglés.
 
 ## Categorías
 
-`restaurantes`, `hoteles`, `turismo`, `ejercicio`, `paseos`
+| Tipo | Categorías (slug) |
+| --- | --- |
+| Principales (barra) | `restaurantes`, `hoteles`, `turismo`, `ejercicio`, `paseos` |
+| En "Todas las categorías" | `cafes`, `vida-nocturna`, `museos`, `compras`, `ninos`, `naturaleza` |
+
+Cada categoría tiene su afiche ilustrado (`docs/arte/`). Una categoría nueva necesita su afiche antes de publicarse.
 
 ## Planes para negocios
 

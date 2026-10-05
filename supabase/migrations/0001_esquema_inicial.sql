@@ -46,6 +46,7 @@ create table public.categories (
   slug        text not null unique check (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
   name        text not null check (char_length(name) between 2 and 60),
   sort_order  smallint not null default 0,
+  is_main     boolean not null default false,  -- principal: visible en la barra; el resto, en "Todas las categorías"
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
@@ -394,12 +395,18 @@ insert into public.cities (slug, name, active) values
   ('cuenca', 'Cuenca', false),
   ('manta', 'Manta', false);
 
-insert into public.categories (slug, name, sort_order) values
-  ('restaurantes', 'Restaurantes', 1),
-  ('hoteles', 'Hoteles', 2),
-  ('turismo', 'Lugares turísticos', 3),
-  ('ejercicio', 'Dónde hacer ejercicio', 4),
-  ('paseos', 'Dónde pasear', 5);
+insert into public.categories (slug, name, sort_order, is_main) values
+  ('restaurantes', 'Restaurantes', 1, true),
+  ('hoteles', 'Hoteles', 2, true),
+  ('turismo', 'Lugares turísticos', 3, true),
+  ('ejercicio', 'Dónde hacer ejercicio', 4, true),
+  ('paseos', 'Dónde pasear', 5, true),
+  ('cafes', 'Cafés y heladerías', 6, false),
+  ('vida-nocturna', 'Vida nocturna', 7, false),
+  ('museos', 'Museos y cultura', 8, false),
+  ('compras', 'Compras y mercados', 9, false),
+  ('ninos', 'Para niños', 10, false),
+  ('naturaleza', 'Naturaleza y aventura', 11, false);
 
 -- ---------------------------------------------------------------------
 -- Primer administrador (se ejecuta A MANO en el editor SQL de Supabase,

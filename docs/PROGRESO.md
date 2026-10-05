@@ -6,7 +6,7 @@
 ## Estado actual
 
 - **Fase actual:** 0 · Plan y diseño
-- **Último paso terminado:** 0.4c Panorama en pixel art animado (`docs/arte/panorama-pixel.html`)
+- **Último paso terminado:** 0.4d 11 categorías con afiche y barra desplegable
 - **Siguiente paso:** 0.5 Maquetas en un artefacto de tipo Design, usando SOLO el sistema de diseño:
   inicio, categoría, ficha de lugar, registro de negocio y panel admin, en celular (390px) y escritorio.
   Lugares turísticos reales; negocios marcados como ejemplo.
@@ -18,6 +18,7 @@
 - [x] 0.2 Esquema técnico: CLAUDE.md, ARQUITECTURA.md, PROGRESO.md y migración SQL probada — 2026-10-05
 - [x] 0.3 Referencias de diseño — 2026-10-05: Airbnb, Time Out, TripAdvisor y Atlas Obscura; el usuario delegó la elección
 - [x] 0.4 Sistema de diseño — 2026-10-05: 21 colores (claro y oscuro, contraste verificado), 3 tipografías OFL, espacios, esquinas, 8 componentes y portada → `docs/DISENO.md`. Logo pendiente
+- [x] 0.4d 11 categorías — 2026-10-05: a pedido del usuario; 6 nuevas con su afiche (cafés, vida nocturna, museos, compras, niños, naturaleza), barra con 5 principales y panel "Todas las categorías"; columna `is_main` en `categories`
 - [x] 0.4c Panorama en pixel art animado — 2026-10-05: a pedido del usuario; faro que gira, balandra que cruza el río, siempre de noche (decisión del usuario), pausa fuera de pantalla y con reducir movimiento
 - [x] 0.4b Arte propio — 2026-10-05: a pedido del usuario, las casitas planas se reemplazaron por la ilustración Panorama y 5 afiches de Categoría (día y noche) → `docs/arte/`
 - [ ] 0.5 Maquetas en celular y computadora: inicio, categoría, ficha, registro de negocio, panel admin
@@ -77,6 +78,10 @@
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
+- **Grupos para salir juntos** (pedido del usuario, 2026-10-05): crear un grupo para ir a hacer algo en Guayaquil. Requiere reglas de seguridad: solo mayores de 18, puntos de encuentro públicos, reportar y bloquear
+- **Armar un plan**: elegir lugar, fecha y hora y compartir un enlace con tarjeta por WhatsApp con amigos (primer paso hacia los grupos)
+- Más categorías: playas cerca de Guayaquil, servicios útiles
+
 - Mapa interactivo
 - Chatbot que recomienda lugares con los datos de la página
 - Guías turísticos locales y rutas con GPS
@@ -93,4 +98,5 @@
 | 2026-10-05 | Repositorio subido a GitHub; referencias de diseño y decisiones cerradas | 0.4 Sistema de diseño |
 | 2026-10-05 | Sistema de diseño publicado y revisado en claro y oscuro | 0.5 Maquetas |
 | 2026-10-05 | Arte propio: Panorama del Cerro Santa Ana y afiches de Categoría | Aprobación del usuario y 0.5 Maquetas |
-| 2026-10-05 | Panorama en pixel art animado | Aprobación del usuario y 0.5 Maquetas |
+| 2026-10-05 | Panorama en pixel art animado, siempre de noche | Aprobación del usuario y 0.5 Maquetas |
+| 2026-10-05 | 11 categorías con afiche y barra desplegable; grupos anotados para la versión 2 | 0.5 Maquetas |
