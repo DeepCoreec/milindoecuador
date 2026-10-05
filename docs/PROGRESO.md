@@ -6,8 +6,8 @@
 ## Estado actual
 
 - **Fase actual:** 1 · Base técnica (la fase 0 queda abierta solo por las maquetas, que el usuario pidió hacer después)
-- **Último paso terminado:** 1.5 Cabeceras de seguridad
-- **Siguiente paso:** 1.3 (crear el proyecto en Supabase y aplicar la migración) cuando el usuario pase URL y clave pública; luego 1.6 contra Supabase real y 1.7 Vercel
+- **Último paso terminado:** 0.5 Maquetas en el lienzo de diseño
+- **Siguiente paso:** el usuario revisa y aprueba las maquetas (puerta de la fase 0); luego 1.3 en cuanto pase los datos de Supabase
 - **Bloqueos / esperando al usuario:** ajustes de seguridad en GitHub (1.2); crear el proyecto en Supabase y pasar URL y clave pública (1.3); cuenta de Vercel (1.7)
 
 ## Fase 0 · Plan y diseño
@@ -19,7 +19,7 @@
 - [x] 0.4d 11 categorías — 2026-10-05: a pedido del usuario; 6 nuevas con su afiche (cafés, vida nocturna, museos, compras, niños, naturaleza), barra con 5 principales y panel "Todas las categorías"; columna `is_main` en `categories`
 - [x] 0.4c Panorama en pixel art animado — 2026-10-05: a pedido del usuario; faro que gira, balandra que cruza el río, siempre de noche (decisión del usuario), pausa fuera de pantalla y con reducir movimiento
 - [x] 0.4b Arte propio — 2026-10-05: a pedido del usuario, las casitas planas se reemplazaron por la ilustración Panorama y 5 afiches de Categoría (día y noche) → `docs/arte/`
-- [ ] 0.5 Maquetas en celular y computadora: inicio, categoría, ficha, registro de negocio, panel admin — **pospuesto por el usuario (2026-10-05): se hará antes de la fase 2**
+- [x] 0.5 Maquetas — 2026-10-05: 5 pantallas en computadora y celular, con modo claro y oscuro, en un lienzo de diseño (enlace en `docs/maquetas/README.md`). Revisadas a 390 y 1440 px. **Esperando la aprobación del usuario (puerta de la fase 0)**
 - [x] 0.6 Decisiones del plan — 2026-10-05: nombre, inicio de sesión con correo y Google, un solo admin, WhatsApp 593986225038
 - **Puerta:** el usuario aprueba las maquetas (antes de empezar la fase 2, que es la primera que dibuja pantallas).
 
@@ -99,3 +99,4 @@
 | 2026-10-05 | Panorama en pixel art animado, siempre de noche | Aprobación del usuario y 0.5 Maquetas |
 | 2026-10-05 | 11 categorías con afiche y barra desplegable; grupos anotados para la versión 2 | 0.5 Maquetas |
 | 2026-10-05 | Maquetas pospuestas por el usuario; 1.1 proyecto Next.js | 1.2 |
+| 2026-10-05 | 1.2, 1.4, 1.5 y maquetas de las 5 pantallas | Aprobación de maquetas; datos de Supabase y Vercel |
