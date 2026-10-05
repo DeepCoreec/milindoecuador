@@ -62,7 +62,7 @@ export function FormRegistro({ categorias, avisoWhatsApp }: { categorias: { slug
   }
 
   return (
-    <form action={accion} noValidate aria-labelledby="t-form" className="grid gap-5 rounded-xl border border-linea bg-papel-alto p-6">
+    <form key={estado.intento ?? 0} action={accion} noValidate aria-labelledby="t-form" className="grid gap-5 rounded-xl border border-linea bg-papel-alto p-6">
       <h2 id="t-form" className="m-0 text-xl leading-[26px] font-semibold">
         Datos del negocio
       </h2>

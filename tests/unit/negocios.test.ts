@@ -1,3 +1,4 @@
+import { esquemaLugar } from "@/lib/validacion/admin";
 import { describe, expect, it } from "vitest";
 import { esquemaSolicitud, normalizarCelular } from "@/lib/validacion/negocios";
 
@@ -27,5 +28,26 @@ describe("esquemaSolicitud", () => {
   });
   it("rechaza caracteres invisibles", () => {
     expect(esquemaSolicitud.safeParse({ ...ok, negocio: "Mi‮negocio" }).success).toBe(false);
+  });
+});
+
+describe("esquemaLugar", () => {
+  const ok = {
+    id: "nuevo", nombre: "Parque Histórico", categoria: "turismo", sector: "Samborondón",
+    descripcion: "Un parque con casas antiguas y animales de la costa.", dato: "", horario: "", direccion: "", precio: "", whatsapp: "", estado: "borrador",
+  };
+  it("deja vacíos los opcionales como null", () => {
+    const r = esquemaLugar.parse(ok);
+    expect([r.dato, r.horario, r.direccion, r.precio, r.whatsapp]).toEqual([null, null, null, null, null]);
+  });
+  it("convierte precio y WhatsApp", () => {
+    const r = esquemaLugar.parse({ ...ok, precio: "2", whatsapp: "099 123 4567" });
+    expect([r.precio, r.whatsapp]).toEqual([2, "593991234567"]);
+  });
+  it("rechaza estados, precios e ids inventados", () => {
+    expect(esquemaLugar.safeParse({ ...ok, estado: "borrado" }).success).toBe(false);
+    expect(esquemaLugar.safeParse({ ...ok, precio: "4" }).success).toBe(false);
+    expect(esquemaLugar.safeParse({ ...ok, id: "1 or 1=1" }).success).toBe(false);
+    expect(esquemaLugar.safeParse({ ...ok, descripcion: "corta" }).success).toBe(false);
   });
 });

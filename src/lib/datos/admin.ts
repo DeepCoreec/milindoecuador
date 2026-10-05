@@ -71,3 +71,83 @@ export async function getSolicitudes(): Promise<Solicitud[]> {
     }))
     .sort((a, b) => orden[a.estado] - orden[b.estado]);
 }
+
+export type LugarAdmin = {
+  id: string;
+  slug: string;
+  nombre: string;
+  categoria: string;
+  categoriaNombre: string;
+  sector: string;
+  estado: "borrador" | "publicado" | "oculto";
+  destacadoHasta: string | null;
+  destacado: boolean;
+  verificado: boolean;
+  fotos: number;
+};
+
+/** Todos los lugares (también borradores y ocultos), los más recientes primero. */
+export async function getLugaresAdmin(): Promise<LugarAdmin[]> {
+  const db = await crearClienteServidor();
+  const { data, error } = await db
+    .from("places")
+    .select("id, slug, name, sector, status, is_featured, featured_until, is_verified, categories(slug, name), place_photos(count)")
+    .order("updated_at", { ascending: false })
+    .limit(500)
+    .returns<
+      {
+        id: string;
+        slug: string;
+        name: string;
+        sector: string;
+        status: LugarAdmin["estado"];
+        is_featured: boolean;
+        featured_until: string | null;
+        is_verified: boolean;
+        categories: { slug: string; name: string } | null;
+        place_photos: { count: number }[];
+      }[]
+    >();
+  if (error) throw new Error("No se pudieron leer los lugares");
+  const ahora = Date.now();
+  return (data ?? []).map((f) => ({
+    id: f.id,
+    slug: f.slug,
+    nombre: f.name,
+    categoria: f.categories?.slug ?? "",
+    categoriaNombre: f.categories?.name ?? "",
+    sector: f.sector,
+    estado: f.status,
+    destacadoHasta: f.featured_until,
+    destacado: f.is_featured && (!f.featured_until || new Date(f.featured_until).getTime() > ahora),
+    verificado: f.is_verified,
+    fotos: f.place_photos[0]?.count ?? 0,
+  }));
+}
+
+/** Una ficha completa para editarla. */
+export async function getLugarAdmin(id: string) {
+  const db = await crearClienteServidor();
+  const { data } = await db
+    .from("places")
+    .select("id, slug, name, sector, description, short_fact, hours, address, price_level, whatsapp, status, categories(slug)")
+    .eq("id", id)
+    .returns<
+      {
+        id: string;
+        slug: string;
+        name: string;
+        sector: string;
+        description: string;
+        short_fact: string | null;
+        hours: string | null;
+        address: string | null;
+        price_level: number | null;
+        whatsapp: string | null;
+        status: LugarAdmin["estado"];
+        categories: { slug: string } | null;
+      }[]
+    >()
+    .maybeSingle();
+  return data;
+}

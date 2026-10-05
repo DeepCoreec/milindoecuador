@@ -13,6 +13,8 @@ export type EstadoSolicitud = {
   /** Lo escrito, para no borrar el formulario cuando hay un error. */
   valores?: Record<string, string>;
   negocio?: string;
+  /** Cambia en cada error para volver a dibujar el formulario con lo escrito. */
+  intento?: number;
 };
 
 const CAMPOS = ["negocio", "categoria", "sector", "contacto", "whatsapp", "descripcion", "terminos"] as const;
@@ -31,22 +33,22 @@ export async function solicitarRegistro(_previo: EstadoSolicitud, datos: FormDat
       const campo = i.path[0] as CampoSolicitud;
       errores[campo] ??= i.message;
     }
-    return { estado: "error", mensaje: "Revisa los campos marcados", errores, valores };
+    return { estado: "error", mensaje: "Revisa los campos marcados", errores, valores, intento: Date.now() };
   }
   const h = await headers();
   const ip = h.get("x-forwarded-for")?.split(",")[0]?.trim() || h.get("x-real-ip");
   if (!(await verificarCaptcha(datos.get("cf-turnstile-response"), ip))) {
-    return { estado: "error", mensaje: "Confirma que no eres un robot y vuelve a enviar.", valores };
+    return { estado: "error", mensaje: "Confirma que no eres un robot y vuelve a enviar.", valores, intento: Date.now() };
   }
-  if (!configSupabase()) return { estado: "error", mensaje: "El registro todavía no está activo. Vuelve pronto.", valores };
+  if (!configSupabase()) return { estado: "error", mensaje: "El registro todavía no está activo. Vuelve pronto.", valores, intento: Date.now() };
 
   const db = crearClienteAdmin();
   const [ciudad, categoria] = await Promise.all([
     db.from("cities").select("id").eq("slug", "guayaquil").eq("active", true).maybeSingle(),
     db.from("categories").select("id").eq("slug", r.data.categoria).maybeSingle(),
   ]);
-  if (!categoria.data) return { estado: "error", mensaje: "Revisa los campos marcados", errores: { categoria: "Elige una categoría de la lista" }, valores };
-  if (!ciudad.data) return { estado: "error", mensaje: "No se pudo enviar. Inténtalo de nuevo.", valores };
+  if (!categoria.data) return { estado: "error", mensaje: "Revisa los campos marcados", errores: { categoria: "Elige una categoría de la lista" }, valores, intento: Date.now() };
+  if (!ciudad.data) return { estado: "error", mensaje: "No se pudo enviar. Inténtalo de nuevo.", valores, intento: Date.now() };
 
   const { error } = await db.from("business_requests").insert({
     business_name: r.data.negocio,
@@ -57,6 +59,6 @@ export async function solicitarRegistro(_previo: EstadoSolicitud, datos: FormDat
     whatsapp: r.data.whatsapp,
     description: r.data.descripcion || null,
   });
-  if (error) return { estado: "error", mensaje: "No se pudo enviar la solicitud. Inténtalo de nuevo.", valores };
+  if (error) return { estado: "error", mensaje: "No se pudo enviar la solicitud. Inténtalo de nuevo.", valores, intento: Date.now() };
   return { estado: "ok", negocio: r.data.negocio };
 }

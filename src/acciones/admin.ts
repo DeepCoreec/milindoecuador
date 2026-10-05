@@ -1,10 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { aSlug, slugLibre } from "@/lib/slug";
 import { crearClienteServidor } from "@/lib/supabase/server";
-import { esquemaDecision } from "@/lib/validacion/admin";
+import { esquemaDecision, esquemaLugar } from "@/lib/validacion/admin";
 
 /*
  * Acciones del panel. Cada una vuelve a verificar el rol en el servidor (requireAdmin),
@@ -70,4 +71,53 @@ export async function rechazarSolicitud(_previo: EstadoAdmin, datos: FormData): 
   if (!data?.length) return { estado: "error", mensaje: "Esta solicitud ya fue revisada" };
   revalidatePath("/admin", "layout");
   return { estado: "ok", mensaje: "Solicitud rechazada" };
+}
+
+/** `intento` cambia en cada error: el formulario se vuelve a dibujar con lo escrito (las listas desplegables no se recuperan solas). */
+export type EstadoLugar = EstadoAdmin & { errores?: string[]; valores?: Record<string, string>; intento?: number };
+
+const CAMPOS_LUGAR = ["id", "nombre", "categoria", "sector", "descripcion", "dato", "horario", "direccion", "precio", "whatsapp", "estado"] as const;
+
+/** Crea o edita una ficha. Al crear, el slug sale del nombre; al editar, el slug no cambia (no se rompen enlaces). */
+export async function guardarLugar(_previo: EstadoLugar, datos: FormData): Promise<EstadoLugar> {
+  const valores = Object.fromEntries(CAMPOS_LUGAR.map((c) => [c, String(datos.get(c) ?? "").slice(0, 2100)]));
+  const r = esquemaLugar.safeParse(valores);
+  if (!r.success) return { estado: "error", mensaje: "Revisa los datos", errores: [...new Set(r.error.issues.map((i) => i.message))], valores, intento: Date.now() };
+  await requireAdmin();
+  const db = await crearClienteServidor();
+
+  const [{ data: categoria }, { data: ciudad }] = await Promise.all([
+    db.from("categories").select("id").eq("slug", r.data.categoria).maybeSingle(),
+    db.from("cities").select("id").eq("slug", "guayaquil").maybeSingle(),
+  ]);
+  if (!categoria || !ciudad) return { estado: "error", mensaje: "Revisa los datos", errores: ["Elige una categoría"], valores, intento: Date.now() };
+
+  const fila = {
+    category_id: categoria.id,
+    name: r.data.nombre,
+    sector: r.data.sector,
+    description: r.data.descripcion,
+    short_fact: r.data.dato,
+    hours: r.data.horario,
+    address: r.data.direccion,
+    price_level: r.data.precio,
+    whatsapp: r.data.whatsapp,
+    status: r.data.estado,
+  };
+
+  if (r.data.id === "nuevo") {
+    const base = aSlug(r.data.nombre) || "lugar";
+    const { data: parecidos } = await db.from("places").select("slug").eq("city_id", ciudad.id).like("slug", `${base}%`);
+    const slug = slugLibre(base, new Set((parecidos ?? []).map((p) => p.slug)));
+    const { data, error } = await db.from("places").insert({ ...fila, city_id: ciudad.id, slug }).select("id").single();
+    if (error || !data) return { estado: "error", mensaje: "No se pudo crear la ficha. Inténtalo de nuevo.", valores, intento: Date.now() };
+    revalidatePath("/", "layout");
+    redirect(`/admin/lugares/${data.id}?guardado=1`);
+  }
+
+  const { data, error } = await db.from("places").update(fila).eq("id", r.data.id).select("id");
+  if (error) return { estado: "error", mensaje: "No se pudo guardar. Inténtalo de nuevo.", valores, intento: Date.now() };
+  if (!data?.length) return { estado: "error", mensaje: "La ficha no existe", valores };
+  revalidatePath("/", "layout");
+  return { estado: "ok", mensaje: "Cambios guardados" };
 }
