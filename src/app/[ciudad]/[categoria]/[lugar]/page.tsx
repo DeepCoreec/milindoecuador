@@ -172,6 +172,7 @@ export default async function FichaLugar({ params }: Props) {
                   </Link>
                 )
               }
+              reportar={lugar.id ? { ruta, usuarioId: usuario?.id ?? null } : undefined}
               formulario={usuario && lugar.id && <FormResena key={miResena ? "editar" : "nueva"} lugar={lugar.id} ruta={ruta} actual={miResena} />}
             />
           </div>

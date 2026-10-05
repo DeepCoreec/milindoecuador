@@ -7,12 +7,12 @@ import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { esquemaBorrar, esquemaNombre } from "@/lib/validacion/cuenta";
 
-export type EstadoFormulario = { estado: "inicio" | "ok" | "error"; mensaje?: string };
+export type EstadoFormulario = { estado: "inicio" | "ok" | "error"; mensaje?: string; valor?: string };
 
 /** Cambia el nombre visible. Se escribe con la sesión de la persona: la base solo deja tocar su propio nombre. */
 export async function cambiarNombre(_previo: EstadoFormulario, datos: FormData): Promise<EstadoFormulario> {
   const r = esquemaNombre.safeParse({ nombre: datos.get("nombre") });
-  if (!r.success) return { estado: "error", mensaje: r.error.issues[0]?.message };
+  if (!r.success) return { estado: "error", mensaje: r.error.issues[0]?.message, valor: String(datos.get("nombre") ?? "").slice(0, 60) };
   const usuario = await requireUsuario("/cuenta");
 
   const supabase = await crearClienteServidor();

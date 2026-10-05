@@ -12,3 +12,21 @@ export const esquemaResena = z.object({
 });
 
 export const esquemaBorrarResena = z.object({ lugar: z.uuid(), ruta: rutaFicha });
+
+export const MOTIVOS_REPORTE = {
+  falsa: "Es falsa o publicidad",
+  ofensiva: "Tiene insultos u ofensas",
+  "otro-lugar": "No habla de este lugar",
+  privada: "Muestra datos personales",
+  otro: "Otro motivo",
+} as const;
+
+/** Reporte de una reseña: un motivo de la lista y, si se quiere, un detalle corto. */
+export const esquemaReporte = z
+  .object({
+    resena: z.uuid(),
+    ruta: rutaFicha,
+    motivo: z.enum(Object.keys(MOTIVOS_REPORTE) as [keyof typeof MOTIVOS_REPORTE, ...(keyof typeof MOTIVOS_REPORTE)[]], { error: "Elige un motivo" }),
+    detalle: z.string().trim().max(400, "Máximo 400 caracteres").optional().default(""),
+  })
+  .refine((r) => r.motivo !== "otro" || r.detalle.length >= 3, { message: "Cuéntanos el motivo en pocas palabras", path: ["detalle"] });

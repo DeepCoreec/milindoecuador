@@ -35,6 +35,8 @@ export type Foto = { src: string; alt: string };
 
 export type Resena = {
   id: string;
+  /** Quién la escribió (para no ofrecerle reportar su propia reseña). */
+  autorId?: string;
   autor: string;
   /** Fecha en formato ISO (UTC). Se muestra en hora de Ecuador. */
   fecha: string;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { esquemaResena } from "@/lib/validacion/resenas";
+import { esquemaReporte, esquemaResena } from "@/lib/validacion/resenas";
 
 const base = { lugar: "6f1c2a8e-3b9d-4c1e-9a7f-2d5b8c0e1f3a", ruta: "/guayaquil/restaurantes/cangrejal", estrellas: "4", texto: "Muy rico todo, volveré." };
 
@@ -20,5 +20,20 @@ describe("esquemaResena", () => {
     for (const ruta of ["https://malo.com/a/b", "/guayaquil/restaurantes", "/../../etc/passwd", "/a/b/c?x=1", "/A/B/C"]) {
       expect(esquemaResena.safeParse({ ...base, ruta }).success).toBe(false);
     }
+  });
+});
+
+describe("esquemaReporte", () => {
+  const r = { resena: "6f1c2a8e-3b9d-4c1e-9a7f-2d5b8c0e1f3a", ruta: "/guayaquil/turismo/malecon-2000" };
+  it("acepta un motivo de la lista sin detalle", () => {
+    expect(esquemaReporte.parse({ ...r, motivo: "falsa" }).detalle).toBe("");
+  });
+  it("con 'otro' pide un detalle", () => {
+    expect(esquemaReporte.safeParse({ ...r, motivo: "otro" }).success).toBe(false);
+    expect(esquemaReporte.safeParse({ ...r, motivo: "otro", detalle: "Habla de otro negocio" }).success).toBe(true);
+  });
+  it("rechaza motivos inventados y detalles largos", () => {
+    expect(esquemaReporte.safeParse({ ...r, motivo: "porque sí" }).success).toBe(false);
+    expect(esquemaReporte.safeParse({ ...r, motivo: "falsa", detalle: "x".repeat(401) }).success).toBe(false);
   });
 });

@@ -1,4 +1,6 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
+import { ReportarResena } from "@/components/resenas/ReportarResena";
 import type { Resena } from "@/lib/datos/tipos";
 import { fechaLarga } from "@/lib/enlaces";
 
@@ -27,9 +29,11 @@ type Props = {
   accion?: ReactNode;
   /** Debajo del título: el formulario de la reseña propia (con sesión). */
   formulario?: ReactNode;
+  /** Para el botón "Reportar": la ruta de la ficha y quién mira (null sin sesión). Sin ruta no se muestra. */
+  reportar?: { ruta: string; usuarioId: string | null };
 };
 
-export function Resenas({ resenas, promedio, cantidad, ejemplo, accion, formulario }: Props) {
+export function Resenas({ resenas, promedio, cantidad, ejemplo, accion, formulario, reportar }: Props) {
   return (
     <section aria-labelledby="t-res" className="grid gap-2">
       <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
@@ -72,6 +76,15 @@ export function Resenas({ resenas, promedio, cantidad, ejemplo, accion, formular
               {r.respuesta}
             </div>
           )}
+          {reportar &&
+            r.autorId !== reportar.usuarioId &&
+            (reportar.usuarioId ? (
+              <ReportarResena resena={r.id} ruta={reportar.ruta} autor={r.autor} />
+            ) : (
+              <Link href={`/entrar?siguiente=${encodeURIComponent(reportar.ruta)}`} className="justify-self-start text-[13px] leading-5 text-rio-suave">
+                Reportar
+              </Link>
+            ))}
         </article>
       ))}
     </section>

@@ -31,6 +31,7 @@ type FilaDetalle = FilaLugar & {
 
 type FilaResena = {
   id: string;
+  user_id: string;
   stars: number;
   text: string;
   owner_reply: string | null;
@@ -129,7 +130,7 @@ export async function leerLugar(db: SupabaseClient, urlBase: string, ciudad: str
     notas(db, [data.id]),
     db
       .from("reviews")
-      .select("id, stars, text, owner_reply, created_at, profiles(display_name)")
+      .select("id, user_id, stars, text, owner_reply, created_at, profiles(display_name)")
       .eq("place_id", data.id)
       .eq("status", "visible")
       .order("created_at", { ascending: false })
@@ -155,6 +156,7 @@ export async function leerLugar(db: SupabaseClient, urlBase: string, ciudad: str
     fotos,
     resenas: (resenas.data ?? []).map((r) => ({
       id: r.id,
+      autorId: r.user_id,
       autor: r.profiles?.display_name ?? "Visitante",
       fecha: r.created_at,
       estrellas: Math.min(5, Math.max(1, r.stars)) as 1 | 2 | 3 | 4 | 5,

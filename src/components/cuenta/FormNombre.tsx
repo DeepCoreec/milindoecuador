@@ -20,7 +20,7 @@ export function FormNombre({ nombre }: { nombre: string }) {
         <input
           id="nombre"
           name="nombre"
-          defaultValue={nombre}
+          defaultValue={estado.valor ?? nombre}
           required
           minLength={2}
           maxLength={40}
