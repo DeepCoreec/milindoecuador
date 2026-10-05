@@ -6,9 +6,9 @@
 ## Estado actual
 
 - **Fase actual:** 1 · Base técnica (la fase 0 queda abierta solo por las maquetas, que el usuario pidió hacer después)
-- **Último paso terminado:** 1.1 Proyecto Next.js con tokens y fuentes del sistema de diseño
-- **Siguiente paso:** 1.2 Dependabot (`.github/dependabot.yml`) y protección de la rama `main`
-- **Bloqueos / esperando al usuario:** que revise el sistema de diseño y pida cambios si algo no le gusta
+- **Último paso terminado:** 1.2 Dependabot configurado (faltan 3 ajustes que hace el usuario en GitHub)
+- **Siguiente paso:** 1.4 Clientes de Supabase (`server.ts`, `client.ts`, `admin.ts` con `server-only`) y `src/proxy.ts`; 1.3 espera a que el usuario cree el proyecto en Supabase
+- **Bloqueos / esperando al usuario:** ajustes de seguridad en GitHub (1.2); crear el proyecto en Supabase y pasar URL y clave pública (1.3); cuenta de Vercel (1.7)
 
 ## Fase 0 · Plan y diseño
 
@@ -26,7 +26,7 @@
 ## Fase 1 · Base técnica
 
 - [x] 1.1 Proyecto Next.js — 2026-10-05: Next.js 16.3, TypeScript estricto, ESLint, Tailwind 4, colores generados desde los tokens (`npm run tokens`), 3 fuentes propias, scripts `typecheck` y `test` (incluye las 36 pruebas RLS). lint, typecheck, test y build sin errores. shadcn/ui se agrega en la fase 2 con los primeros componentes
-- [ ] 1.2 Conectar GitHub (`deepcoreec/milindoecuador`), activar Dependabot y protección de la rama `main`
+- [x] 1.2 GitHub — 2026-10-05: repositorio conectado y `.github/dependabot.yml` (revisión semanal). **Pendiente del usuario** en GitHub → Settings: activar Dependabot alerts y security updates, y proteger `main` contra force push y borrado (desde aquí la API no lo permite)
 - [ ] 1.3 Crear proyecto en Supabase, instalar Supabase CLI y aplicar `0001_esquema_inicial.sql`
 - [ ] 1.4 Clientes de Supabase (`server.ts`, `client.ts`, `admin.ts`) y `proxy.ts` para refrescar la sesión
 - [ ] 1.5 Cabeceras de seguridad (CSP y otras) en `next.config.ts`
