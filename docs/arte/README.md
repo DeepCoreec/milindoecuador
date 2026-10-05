@@ -5,7 +5,8 @@ Ilustraciones propias en estilo serigrafía. Sus colores son variables del siste
 
 | Archivo | Qué es | Dónde se usa |
 | --- | --- | --- |
-| `panorama.svg` | El Cerro Santa Ana: casas, escalinata, faro, capilla, bandera y río | Portada del sitio |
+| `panorama-pixel.html` | **El Cerro Santa Ana en pixel art animado** (canvas 240 x 100): el faro gira, la balandra cruza el río, día y noche | **Portada del sitio** |
+| `panorama.svg` | Versión anterior en serigrafía, quieta | Respaldo; por ejemplo, imagen para compartir en redes |
 | `categoria-restaurantes.svg` | Encebollado humeante sobre fondo `mango` | Selector de categoría |
 | `categoria-hoteles.svg` | Balcón de madera con buganvillas sobre `celeste` | Selector de categoría |
 | `categoria-turismo.svg` | Faro y capilla del cerro sobre `faro` | Selector de categoría |
@@ -14,7 +15,8 @@ Ilustraciones propias en estilo serigrafía. Sus colores son variables del siste
 
 ## Cómo se editan
 
-No se editan a mano: se cambia el generador y se vuelven a crear.
+El pixel art se edita directo en `panorama-pixel.html` (todo el dibujo está en la función `pintar`).
+Agrega `data-quieto` al canvas para una imagen fija. Las demás piezas no se editan a mano: se cambia el generador y se vuelven a crear.
 
 ```bash
 python3 panorama.py > panorama.svg     # siempre sale igual (semilla 444)

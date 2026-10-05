@@ -7,9 +7,9 @@
 ## Idea
 
 Guía de ciudad editorial: mucho espacio, fotos reales como protagonistas y la identidad de Guayaquil
-con **arte propio en estilo serigrafía**: la ilustración **Panorama** del Cerro Santa Ana (portada) y
-cinco afiches ilustrados para las **Categorías**, cada uno con el color de su categoría. De día hay sol;
-en modo oscuro es de noche, con ventanas encendidas y el faro alumbrando. Archivos y generadores en `docs/arte/`.
+con **arte propio**: el **Panorama** del Cerro Santa Ana en pixel art animado (portada: el faro gira y una
+balandra cruza el río) y cinco afiches en estilo serigrafía para las **Categorías**, cada uno con el color de
+su categoría. De día hay sol; en modo oscuro es de noche, con ventanas encendidas y el faro alumbrando. Archivos y generadores en `docs/arte/`.
 
 ## Colores (modo claro / oscuro)
 
@@ -62,6 +62,7 @@ Las reglas de uso de cada uno están en el artefacto.
 ## Ilustración
 
 - Se usa tal cual: sin recolorear, deformar, recortar ni poner texto encima.
+- El Panorama es la única animación automática: se pausa fuera de pantalla y queda fijo con "reducir movimiento".
 - Tinta `on-color` (no cambia entre modos); blanco de cal `papel-alto` de día y `rio` de noche.
 - Nuevas ilustraciones: formas planas, tinta `on-color`, un color de categoría de fondo, grano y un objeto reconocible de Guayaquil.
 

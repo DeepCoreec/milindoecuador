@@ -1,0 +1,222 @@
+<canvas class="mle-panorama-pixel" width="240" height="100" role="img"
+  aria-label="Pixel art animado del Cerro Santa Ana: casas de colores, la escalinata, el faro girando y una balandra que cruza el río Guayas"></canvas>
+<script>
+(function () {
+  "use strict";
+  var W = 240, H = 100, RIO = 80;
+  var cv = document.currentScript.previousElementSibling;
+  var cx = cv.getContext("2d");
+
+  // ---------- colores: siempre desde los tokens del sistema ----------
+  var C = {};
+  function hex(v) {
+    v = (v || "").trim();
+    if (v[0] === "#") {
+      if (v.length === 4) v = "#" + v[1] + v[1] + v[2] + v[2] + v[3] + v[3];
+      return [parseInt(v.slice(1, 3), 16), parseInt(v.slice(3, 5), 16), parseInt(v.slice(5, 7), 16)];
+    }
+    var m = v.match(/\d+(\.\d+)?/g) || [0, 0, 0];
+    return [+m[0], +m[1], +m[2]];
+  }
+  function mix(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
+  function css(c, a) { return "rgba(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + "," + (a == null ? 1 : a) + ")"; }
+  var noche = false;
+  function leerColores() {
+    var s = getComputedStyle(document.documentElement);
+    ["papel", "papel-alto", "rio", "celeste", "celeste-suave", "mango", "mango-suave", "faro", "manglar", "buganvilla", "on-color", "linea"]
+      .forEach(function (k) { C[k] = hex(s.getPropertyValue("--" + k)); });
+    // ¿es de noche? (el papel es oscuro)
+    var p = C.papel; noche = (p[0] + p[1] + p[2]) / 3 < 100;
+    C.cal = noche ? mix(C.rio, C.papel, 0.12) : C["papel-alto"];
+    C.tinta = C["on-color"];
+    C.crema = noche ? mix(C.mango, C.papel, 0.55) : C["mango-suave"];
+    C.cielo1 = noche ? mix(C.papel, [0, 0, 0], 0.35) : mix(C["celeste-suave"], C.celeste, 0.45);
+    C.cielo2 = noche ? C.papel : mix(C["celeste-suave"], C.celeste, 0.2);
+    C.cielo3 = noche ? mix(C.papel, C.celeste, 0.12) : C["celeste-suave"];
+    C.agua = noche ? mix(C["celeste-suave"], C.papel, 0.25) : C.celeste;
+    C.agua2 = noche ? mix(C["celeste-suave"], C.papel, 0.55) : mix(C.celeste, C.tinta, 0.18);
+    C.ladera = noche ? mix(C.manglar, C.papel, 0.45) : C.manglar;
+    C.lejos = mix(C.celeste, C.cielo2, noche ? 0.75 : 0.55);
+  }
+
+  // ---------- azar con semilla (444 escalones) ----------
+  var seed = 444;
+  function rnd() { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }
+  function pick(a) { return a[(rnd() * a.length) | 0]; }
+  function sm(t) { t = Math.max(0, Math.min(1, t)); return t * t * (3 - 2 * t); }
+  function cerro(x) {
+    if (x < 10) return RIO;
+    if (x <= 150) return RIO - 54 * sm((x - 10) / 140);
+    if (x <= 175) return 26;
+    return 26 + 40 * sm((x - 175) / 65);
+  }
+
+  // ---------- escena fija (se calcula una vez) ----------
+  var casas = [], ventanas = [], estrellas = [], ciudad = [], nubes = [];
+  (function construir() {
+    var filas = [], base = RIO - 2, fila = 0;
+    while (base > 32) {
+      var x = -2 + ((rnd() * 4) | 0), f = [];
+      while (x < 238) {
+        var w = pick([7, 8, 9, 10, 12]), h = pick([6, 7, 8, 9, 10]), mid = x + w / 2;
+        if (cerro(mid) < base - 2 && !(mid > 136 && mid < 184 && base < 40)) {
+          var c = { x: x, y: base - h, w: w, h: h, color: pick(["mango", "faro", "buganvilla", "celeste", "crema", "cal"]), balcon: h >= 8 && rnd() < 0.6, puerta: fila === 0, flor: rnd() < 0.35 };
+          f.push(c);
+          for (var wy = c.y + 2; wy + 3 < base - 1; wy += 5) {
+            if (w < 10) ventanas.push({ x: c.x + 2, y: wy, w: w - 4, on: rnd() < 0.75, fase: rnd() * 100 });
+            else for (var q = 0; q < 3; q++) ventanas.push({ x: c.x + ((w - 8) >> 1) + q * 3, y: wy, w: 2, on: rnd() < 0.75, fase: rnd() * 100 });
+          }
+          x += w + pick([0, 0, 1, 1, 2]);
+        } else x += 3;
+      }
+      filas.push(f); base -= 8; fila++;
+    }
+    for (var i = filas.length - 1; i >= 0; i--) casas = casas.concat(filas[i]);
+    for (i = 0; i < 60; i++) estrellas.push({ x: (rnd() * W) | 0, y: (rnd() * 52) | 0, fase: rnd() * 6.28, v: 0.6 + rnd() * 1.6 });
+    for (var cxp = 184; cxp < 240;) { var cw = 4 + ((rnd() * 5) | 0), ch = 10 + ((rnd() * 26) | 0); ciudad.push([cxp, RIO - ch, cw, ch]); cxp += cw + 1; }
+    for (i = 0; i < 3; i++) nubes.push({ x: rnd() * W, y: 8 + rnd() * 22, w: 14 + ((rnd() * 10) | 0), v: 0.6 + rnd() * 0.8 });
+  })();
+
+  function px(x, y, c, a) { cx.fillStyle = css(c, a); cx.fillRect(x | 0, y | 0, 1, 1); }
+  function rect(x, y, w, h, c, a) { cx.fillStyle = css(c, a); cx.fillRect(x | 0, y | 0, w | 0, h | 0); }
+  function circulo(x0, y0, r, c) { for (var y = -r; y <= r; y++) for (var x = -r; x <= r; x++) if (x * x + y * y <= r * r + r * 0.6) px(x0 + x, y0 + y, c); }
+
+  // ---------- un cuadro de la animación ----------
+  function pintar(t) {
+    // cielo en franjas, como pixel art
+    rect(0, 0, W, 18, C.cielo1); rect(0, 18, W, 20, C.cielo2); rect(0, 38, W, RIO - 38, C.cielo3);
+    for (var x = 0; x < W; x += 2) { px(x + (17 % 2), 18, C.cielo1); px(x + 1, 38, C.cielo2); } // tramado entre franjas
+
+    if (noche) {
+      estrellas.forEach(function (s) { var a = 0.45 + 0.55 * Math.sin(t * s.v + s.fase); if (a > 0.15) px(s.x, s.y, C.cal, a); });
+      circulo(40, 20, 7, C.cal); px(37, 18, C.cielo2, 0.35); px(42, 22, C.cielo2, 0.35); px(43, 17, C.cielo2, 0.3); px(38, 23, C.cielo2, 0.25);
+    } else {
+      circulo(40, 22, 8, C.mango); circulo(38, 20, 3, mix(C.mango, [255, 255, 255], 0.35));
+      nubes.forEach(function (n) {
+        var nx = ((n.x + t * n.v) % (W + 40)) - 20;
+        rect(nx, n.y, n.w, 2, C.cal); rect(nx + 3, n.y - 2, n.w - 7, 2, C.cal); rect(nx + 6, n.y - 3, 4, 1, C.cal);
+      });
+    }
+
+    // ciudad lejana
+    ciudad.forEach(function (b) {
+      rect(b[0], b[1], b[2], b[3], C.lejos);
+      if (noche) for (var yy = b[1] + 2; yy < RIO - 2; yy += 3) if (((yy * 7 + b[0]) % 5) < 2) px(b[0] + 1, yy, C.mango, 0.7);
+    });
+
+    // ladera con un borde más claro
+    for (x = 0; x < W; x++) { var y0 = Math.round(cerro(x)); rect(x, y0, 1, RIO - y0, C.ladera); px(x, y0, mix(C.ladera, C.cal, 0.25)); }
+
+    // faro: haz que gira (de noche) y luz que parpadea
+    var fx = 160, ly = 10, ang = t * 0.9, co = Math.cos(ang);
+    if (noche) {
+      var largo = Math.abs(co) * 95, dir = co > 0 ? 1 : -1, fuerza = 0.18 + 0.22 * Math.abs(co);
+      for (var d = 2; d < largo; d++) {
+        var abre = 1 + d * 0.09;
+        for (var k = -abre; k <= abre; k++) {
+          var bx = fx + dir * d, by = ly + k;
+          var borde = 1 - Math.abs(k) / (abre + 0.5);
+          px(bx, by, C.mango, fuerza * (1 - d / (largo + 1)) * (0.35 + 0.65 * borde));
+        }
+      }
+      if (Math.abs(co) < 0.25) circulo(fx, ly, 3, C.mango); // destello cuando mira de frente
+    }
+    // torre
+    rect(fx - 3, 26, 7, 2, C.tinta);
+    for (var ty = 12; ty < 26; ty++) { var tw = ty > 19 ? 5 : 4; rect(fx - ((tw / 2) | 0), ty, tw, 1, (ty === 16 || ty === 17 || ty === 21 || ty === 22) ? C.celeste : C.cal); }
+    rect(fx - 2, 9, 5, 3, C.tinta); px(fx, 10, (noche || Math.sin(t * 3) > 0) ? C.mango : C.cal); px(fx - 1, 10, C.mango, noche ? 1 : 0.6); px(fx + 1, 10, C.mango, noche ? 1 : 0.6);
+    rect(fx - 1, 7, 3, 1, C.tinta); px(fx, 6, C.tinta); rect(fx - 3, 8, 7, 1, C.tinta);
+    // capilla
+    rect(170, 19, 9, 7, C.cal); rect(171, 18, 7, 1, C.cal); rect(172, 17, 5, 1, C.cal); rect(173, 16, 3, 1, C.cal);
+    rect(173, 22, 3, 4, C.tinta); rect(174, 11, 2, 5, C.cal); px(174, 9, C.tinta); px(175, 9, C.tinta); rect(174, 8, 1, 3, C.tinta); rect(173, 9, 3, 1, C.tinta);
+    if (noche) px(174, 23, C.mango, 0.8);
+    // bandera de Guayaquil ondeando
+    rect(141, 11, 1, 16, C.tinta);
+    for (var fxp = 0; fxp < 9; fxp++) {
+      var off = Math.round(Math.sin(t * 4 - fxp * 0.7) * 0.8);
+      for (var fy = 0; fy < 5; fy++) px(142 + fxp, 11 + fy + off, fy % 2 ? C.cal : C.celeste);
+    }
+    
+
+    // casas
+    casas.forEach(function (c) {
+      var col = C[c.color] || C.cal, sombra = mix(col, C.tinta, 0.28);
+      rect(c.x, c.y, c.w, c.h, col);
+      rect(c.x + c.w - 1, c.y, 1, c.h, sombra);
+      rect(c.x - 1, c.y - 1, c.w + 2, 1, C.tinta);
+      if (c.balcon) { rect(c.x - 1, c.y + 5, c.w + 2, 1, C.tinta); rect(c.x - 1, c.y + 6, c.w + 2, 1, mix(C.tinta, col, 0.55)); }
+      if (c.flor && c.balcon) { px(c.x - 1, c.y + 6, C.buganvilla); px(c.x, c.y + 6, C.buganvilla); px(c.x - 1, c.y + 7, C.buganvilla); px(c.x, c.y + 7, mix(C.buganvilla, C.cal, 0.3)); px(c.x - 1, c.y + 8, C.buganvilla); }
+      if (c.puerta) rect(c.x + ((c.w / 2) | 0) - 1, c.y + c.h - 3, 2, 3, C.tinta);
+    });
+    ventanas.forEach(function (v) {
+      if (noche) {
+        var on = v.on ? Math.sin(t * 0.15 + v.fase) > -0.85 : Math.sin(t * 0.2 + v.fase) > 0.92;
+        var apagada = mix(C.tinta, C.papel, 0.3);
+        rect(v.x, v.y, v.w, 1, on ? mix(C.mango, C.faro, 0.2) : apagada);
+        rect(v.x, v.y + 1, v.w, 1, on ? C.mango : apagada);
+      } else {
+        rect(v.x, v.y, v.w, 1, mix(C.tinta, C.celeste, 0.15));          // persiana
+        rect(v.x, v.y + 1, v.w, 1, mix(C.tinta, C.celeste, 0.45));      // vidrio
+      }
+      rect(v.x, v.y + 2, v.w, 1, C.cal, noche ? 0.35 : 0.9);              // alféizar
+    });
+
+    // escalinata en zigzag hasta el faro
+    var P = [[74, 78], [92, 72], [84, 64], [104, 57], [96, 50], [118, 43], [110, 36], [136, 31], [156, 27]];
+    for (var i = 0; i < P.length - 1; i++) {
+      var a = P[i], b = P[i + 1], n = Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1]));
+      for (var s = 0; s <= n; s++) {
+        var sx = Math.round(a[0] + (b[0] - a[0]) * s / n), sy = Math.round(a[1] + (b[1] - a[1]) * s / n);
+        px(sx, sy, C.cal); px(sx, sy - 1, s % 2 ? C.cal : mix(C.cal, C.tinta, 0.35));
+        if (noche && s % 7 === 0) px(sx, sy - 2, C.mango); // farolitos
+      }
+    }
+
+    // palmeras que se mecen
+    [[16, 70], [58, 76], [124, 74], [226, 74]].forEach(function (p, j) {
+      var sw = Math.round(Math.sin(t * 1.3 + j) * 0.9), bx3 = p[0], top = p[1] - 12;
+      for (var yy = top; yy < RIO - 1; yy++) px(bx3 + (yy < top + 4 ? 1 : 0), yy, noche ? C.linea : C.tinta);
+      var hoja = noche ? C.linea : C.tinta;
+      [[-1, 0], [-2, 0], [-3, 1], [-4, 2], [1, 0], [2, 0], [3, 1], [4, 2], [0, -1], [-1, -1], [1, -1], [-2, -2], [2, -2], [-5, 3], [5, 3]]
+        .forEach(function (o) { px(bx3 + 1 + o[0] + (Math.abs(o[0]) > 2 ? sw : 0), top + o[1], hoja); });
+    });
+
+    // malecón con baranda
+    rect(0, RIO - 1, W, 2, noche ? C.linea : C.cal);
+    for (x = 1; x < W; x += 3) px(x, RIO - 3, C.tinta); rect(0, RIO - 4, W, 1, mix(C.tinta, C.cal, 0.4));
+
+    // río
+    rect(0, RIO + 1, W, H - RIO - 1, C.agua);
+    rect(0, RIO + 1, W, 1, C.agua2);
+    for (i = 0; i < 18; i++) {
+      var wy2 = RIO + 4 + ((i * 7) % 15), wl = 3 + (i % 4), wx2 = ((i * 37 + t * (i % 2 ? 4 : -3)) % (W + 20) + W + 20) % (W + 20) - 10;
+      rect(wx2, wy2, wl, 1, C.cal, noche ? 0.25 : 0.55);
+    }
+    if (noche) for (x = 2; x < W; x += 5) { var rl = Math.sin(t * 2 + x) > 0.2; if (rl && ((x * 13) % 7) < 3) rect(x, RIO + 3 + (x % 4), 1, 2, C.mango, 0.45); }
+
+    // balandra cruzando el río (vuelve a empezar al salir)
+    var vx = ((t * 7) % (W + 50)) - 25, vy = RIO + 10 + Math.round(Math.sin(t * 2.2) * 0.6);
+    for (i = 1; i < 8; i++) if (i % 2) px(vx - 4 - i * 2, vy + 2, C.cal, 0.6 - i * 0.07);    // estela
+    rect(vx - 6, vy + 1, 14, 2, C.tinta); rect(vx - 5, vy + 3, 12, 1, C.tinta);              // casco
+    rect(vx, vy - 9, 1, 10, C.tinta);                                                           // mástil
+    for (i = 0; i < 8; i++) rect(vx + 1, vy - 8 + i, Math.ceil(i * 0.75) + 1, 1, C.cal);       // vela mayor
+    for (i = 0; i < 6; i++) rect(vx - 1 - Math.ceil(i * 0.6), vy - 6 + i, Math.ceil(i * 0.6) + 1, 1, C.mango); // foque
+    if (noche) px(vx, vy - 10, C.faro);                                                         // luz del mástil
+    // reflejo del bote
+    rect(vx - 4, vy + 5, 10, 1, C.tinta, 0.25);
+  }
+
+  // ---------- bucle: se pausa fuera de pantalla y respeta "reducir movimiento" ----------
+  leerColores();
+  var quieto = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var visible = true, ultimo = 0, t0 = performance.now();
+  new MutationObserver(function () { leerColores(); if (quieto || cv.hasAttribute("data-quieto")) pintar(25); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "class", "style"] });
+  if (window.matchMedia) matchMedia("(prefers-color-scheme: dark)").addEventListener("change", leerColores);
+  if ("IntersectionObserver" in window) new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }).observe(cv);
+  function cuadro(now) {
+    if (visible && now - ultimo > 1000 / 24) { ultimo = now; pintar((now - t0) / 1000 + 11); }
+    requestAnimationFrame(cuadro);
+  }
+  if (quieto || cv.hasAttribute("data-quieto")) pintar(25); else requestAnimationFrame(cuadro);
+})();
+</script>
