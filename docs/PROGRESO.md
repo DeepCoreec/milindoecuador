@@ -9,7 +9,7 @@
 - **Último paso terminado:** 0.5 Maquetas aprobadas (fase 0 cerrada)
 - **Modo de trabajo (2026-10-05):** el usuario autorizó avanzar paso a paso según el plan sin pedir permiso entre pasos. Se sigue respetando: nada fuera del plan, nada de librerías nuevas sin permiso y verificar y guardar cada paso
 - **Entorno de prueba (solo en la nube de Claude, no en el repo):** Postgres 16 + PostgREST 12 + Supabase Auth 2.180 + buzón SMTP, armados en el scratchpad de la sesión con `arrancar.sh` y `dev.sh`. Si la sesión es nueva hay que volver a armarlo; sirve para probar antes de tener el Supabase real
-- **Siguiente paso:** 4.2 Panel `/admin` según la maqueta "Panel admin": `src/app/admin/layout.tsx` verifica el rol en el servidor con `requireAdmin()` (en `src/lib/auth.ts`, consulta `profiles.role`), resumen con contadores y lista de solicitudes (pendientes primero) para aprobar o rechazar con nota; cada acción vuelve a verificar el rol. Probar que un usuario normal no entra ni puede llamar las acciones
+- **Siguiente paso:** 4.3 Panel `/admin/lugares`: lista de todos los lugares (borrador, publicado, oculto) y `/admin/lugares/[id]` para crear y editar fichas (nombre, categoría, sector, descripción, dato corto, horario, precio, WhatsApp, dirección, estado) con Zod; subir fotos al bucket `fotos-lugares` convertidas a WebP y sin EXIF antes de subir (en el navegador con canvas, sin librerías nuevas), texto alternativo obligatorio, orden y borrar. Revalidar las páginas públicas del lugar al guardar
 - **Bloqueos / esperando al usuario:** ajustes de seguridad en GitHub (1.2); crear el proyecto en Supabase y pasar URL y clave pública (1.3); cuenta de Vercel (1.7)
 
 ## Fase 0 · Plan y diseño
@@ -64,7 +64,7 @@
 ## Fase 4 · Negocios y panel admin
 
 - [x] 4.1 Formulario `/negocios/registro` con captcha y página `/negocios/planes` — 2026-10-05: según la maqueta Registro; acepta el celular como lo escribe la gente ("099 123 4567") y lo guarda como 593…; errores por campo sin borrar lo escrito; Zod → captcha → `admin.ts` (la tabla no acepta escrituras directas). Al enviar ofrece "Avisar por WhatsApp" al número de la guía (`WHATSAPP_GUIA` en `src/lib/sitio.ts`), como dice el plan. `/negocios/planes` con los 3 planes del PLAN, pedido por WhatsApp y cómo se paga. 6 pruebas nuevas. Probado de punta a punta con el Supabase de prueba
-- [ ] 4.2 Panel `/admin`: solicitudes (aprobar o rechazar)
+- [x] 4.2 Panel `/admin`: solicitudes (aprobar o rechazar) — 2026-10-05: `requireAdmin()` en el layout y en cada acción (sin sesión → entrar; usuario normal → 404, no se revela el panel). Resumen con contadores; tabla de solicitudes (pendientes primero) con WhatsApp del dueño. Aprobar crea la ficha como **borrador** con un slug libre (`src/lib/slug.ts`: "malecon-2000-2" si ya existe; 4 pruebas) y marca la solicitud; rechazar guarda una nota. Probado de punta a punta con el Supabase de prueba
 - [ ] 4.3 Panel `/admin`: crear y editar fichas, subir fotos
 - [ ] 4.4 Panel `/admin`: reseñas reportadas (ocultar o mantener) y respuesta del negocio
 - [ ] 4.5 Panel `/admin`: activar destacado y verificado a mano

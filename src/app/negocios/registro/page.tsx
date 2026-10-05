@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   ...paraCompartir("Registra tu negocio gratis", descripcion, "/negocios/registro"),
 };
 
+// Las categorías casi no cambian: la página se vuelve a generar cada hora
+export const revalidate = 3600;
+
 const VENTAJAS = [
   "Ficha con fotos, horario, ubicación y tu WhatsApp",
   "Reseñas de tus clientes y la opción de responderlas",
