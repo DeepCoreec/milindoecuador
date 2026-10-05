@@ -86,6 +86,7 @@ milindoecuador/
 │   │   └── layout/               # cabecera, pie, menú
 │   ├── lib/
 │   │   ├── supabase/
+│   │   │   ├── config.ts         # lee URL y clave pública; sin ellas la página funciona sin sesión
 │   │   │   ├── server.ts         # cliente con la sesión del usuario (componentes de servidor y acciones)
 │   │   │   ├── client.ts         # cliente para el navegador (solo clave pública)
 │   │   │   └── admin.ts          # cliente con service_role; importa 'server-only'
