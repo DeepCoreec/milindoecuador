@@ -36,7 +36,7 @@ export function TarjetaLugar(t: DatosTarjeta) {
         ) : (
           <span>Foto del lugar</span>
         )}
-        {t.insignias && <div className="absolute top-3 right-3 left-3 flex flex-wrap gap-2">{t.insignias}</div>}
+        {t.insignias && <div className="mle-insignias absolute top-3 right-3 left-3 flex flex-wrap gap-2">{t.insignias}</div>}
       </div>
       <h3 className="m-0 text-lg leading-6 font-semibold group-hover:underline group-hover:underline-offset-[3px]">{t.nombre}</h3>
       <p className="m-0 -mt-2 text-sm leading-5 text-rio-suave">{t.datos}</p>

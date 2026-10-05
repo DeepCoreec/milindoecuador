@@ -11,7 +11,7 @@ import { TarjetaLugar } from "@/components/lugares/TarjetaLugar";
 import { Boton } from "@/components/ui/Boton";
 import { Insignia } from "@/components/ui/Insignia";
 import { IconoCompartir, IconoConversacion } from "@/components/ui/iconos";
-import { getCategoriasBarra } from "@/lib/datos/inicio";
+import { getCategoriasBarra } from "@/lib/datos/lugares";
 
 /*
  * Muestrario de componentes. Solo existe en desarrollo (npm run dev):
@@ -32,7 +32,7 @@ function Seccion({ titulo, children }: { titulo: string; children: ReactNode }) 
 
 export default async function PaginaComponentes() {
   if (process.env.NODE_ENV === "production") notFound();
-  const categorias = await getCategoriasBarra();
+  const categorias = await getCategoriasBarra("guayaquil");
 
   return (
     <>

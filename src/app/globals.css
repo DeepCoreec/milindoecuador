@@ -76,6 +76,15 @@ body {
 .sin-barra { scrollbar-width: none; }
 .sin-barra::-webkit-scrollbar { display: none; }
 
+/* Listas desplegables con la flecha del sistema de diseño */
+.mle-select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--rio-suave) 50%), linear-gradient(135deg, var(--rio-suave) 50%, transparent 50%);
+  background-position: calc(100% - 20px) 50%, calc(100% - 15px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+}
+
 /* Menú del celular: el panel entra por la derecha y el velo aparece suave */
 @keyframes mle-entra-derecha { from { transform: translateX(100%); } }
 @keyframes mle-sale-derecha { to { transform: translateX(100%); } }

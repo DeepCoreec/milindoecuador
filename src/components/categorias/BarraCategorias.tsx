@@ -19,7 +19,7 @@ export function BarraCategorias({ categorias, activa }: { categorias: CategoriaB
 
   return (
     <nav aria-label="Categorías" className="min-w-0">
-      <div className="sin-barra -mx-1 flex gap-4 overflow-x-auto px-1 pt-1 pb-3">
+      <div className="sin-barra -mx-2 flex gap-4 overflow-x-auto px-2 pt-2 pb-3">
         {principales.map((c) => (
           <Link
             key={c.slug}

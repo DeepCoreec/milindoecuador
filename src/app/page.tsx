@@ -4,36 +4,17 @@ import { Buscador } from "@/components/busqueda/Buscador";
 import { BarraCategorias } from "@/components/categorias/BarraCategorias";
 import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
-import { TarjetaLugar } from "@/components/lugares/TarjetaLugar";
+import { TarjetaResumen } from "@/components/lugares/TarjetaResumen";
 import { Boton } from "@/components/ui/Boton";
-import { Insignia } from "@/components/ui/Insignia";
-import { getCategoriasBarra, getSeccionesInicio, rutaLugar, type LugarResumen } from "@/lib/datos/inicio";
+import { getCategoriasBarra, getSeccionesInicio } from "@/lib/datos/lugares";
+import type { LugarResumen } from "@/lib/datos/tipos";
 
 /** Fila de tarjetas: se desliza de lado en celular y es una cuadrícula de 4 en escritorio. */
 function Fila({ lugares, tono }: { lugares: LugarResumen[]; tono?: "mango" }) {
   return (
     <div className="sin-barra grid auto-cols-[minmax(240px,72%)] grid-flow-col gap-4 overflow-x-auto pb-1 min-[1000px]:grid-flow-row min-[1000px]:grid-cols-4 min-[1000px]:gap-6 min-[1000px]:overflow-visible">
       {lugares.map((l) => (
-        <TarjetaLugar
-          key={l.slug}
-          href={rutaLugar(l)}
-          nombre={l.nombre}
-          datos={l.datos}
-          promedio={l.promedio}
-          cantidad={l.cantidad}
-          precio={l.precio}
-          tono={tono}
-          extra={l.extra ? <Insignia>{l.extra}</Insignia> : undefined}
-          insignias={
-            l.plan !== "gratis" || l.ejemplo ? (
-              <>
-                {l.plan === "destacado" && <Insignia variante="destacado">Destacado</Insignia>}
-                {l.plan === "verificado" && <Insignia variante="verificado">Verificado</Insignia>}
-                {l.ejemplo && <Insignia variante="ejemplo">Ejemplo</Insignia>}
-              </>
-            ) : undefined
-          }
-        />
+        <TarjetaResumen key={l.slug} ciudad="guayaquil" lugar={l} tono={tono} />
       ))}
     </div>
   );
@@ -54,7 +35,7 @@ const ancho = "mx-auto w-full max-w-[1200px] px-4 md:px-8";
 const seccion = "py-12 min-[900px]:py-16";
 
 export default async function Inicio() {
-  const [categorias, { encebollados, imperdibles }] = await Promise.all([getCategoriasBarra(), getSeccionesInicio()]);
+  const [categorias, { encebollados, imperdibles }] = await Promise.all([getCategoriasBarra("guayaquil"), getSeccionesInicio()]);
 
   return (
     <>

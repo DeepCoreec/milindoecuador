@@ -83,10 +83,10 @@ milindoecuador/
 │   ├── components/
 │   │   ├── ui/                   # Boton, Insignia, iconos (y shadcn/ui cuando se instale)
 │   │   ├── arte/                 # Afiche, afiches.tsx (generado con `npm run arte`), Panorama
-│   │   ├── categorias/           # BarraCategorias
-│   │   ├── lugares/              # tarjeta, ficha, galería, estrellas
+│   │   ├── categorias/           # BarraCategorias, Filtros
+│   │   ├── lugares/              # TarjetaLugar, TarjetaResumen, Estrellas; luego ficha y galería
 │   │   ├── busqueda/
-│   │   └── layout/               # Cabecera, Pie, MenuMovil (panel de Radix)
+│   │   └── layout/               # Cabecera, Pie, MenuMovil (panel de Radix), Migas
 │   ├── lib/
 │   │   ├── supabase/
 │   │   │   ├── config.ts         # lee URL y clave pública; sin ellas la página funciona sin sesión
@@ -94,8 +94,8 @@ milindoecuador/
 │   │   │   ├── client.ts         # cliente para el navegador (solo clave pública)
 │   │   │   └── admin.ts          # cliente con service_role; importa 'server-only'
 │   │   ├── datos/                # funciones de lectura: getLugar, getLugaresPorCategoria…
-│   │   │                         # (hoy inicio.ts devuelve datos de muestra con la forma final)
-│   │   ├── validacion/           # esquemas Zod compartidos
+│   │   │                         # hoy: tipos.ts, lugares.ts (datos de muestra con la forma final), filtrar.ts
+│   │   ├── validacion/           # esquemas Zod compartidos (filtros.ts: filtros de la dirección)
 │   │   ├── captcha.ts            # verificación de Turnstile en el servidor
 │   │   └── auth.ts               # requireUsuario(), requireAdmin()
 │   ├── types/
@@ -107,6 +107,7 @@ milindoecuador/
 ├── tests/
 │   ├── unit/                     # Vitest
 │   ├── rls/reglas.mjs            # 36 pruebas de reglas de seguridad (PGlite, npm run test:rls)
+│   │                             # las pruebas unitarias viven junto a su código: src/**/*.test.ts (vitest.config.mts)
 │   └── e2e/                      # Playwright
 ├── .env.example                  # nombres de variables, sin valores reales
 └── next.config.ts                # cabeceras de seguridad
