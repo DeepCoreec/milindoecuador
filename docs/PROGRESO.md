@@ -6,8 +6,8 @@
 ## Estado actual
 
 - **Fase actual:** 1 · Base técnica (la fase 0 queda abierta solo por las maquetas, que el usuario pidió hacer después)
-- **Último paso terminado:** 1.4 Clientes de Supabase y proxy
-- **Siguiente paso:** 1.5 Cabeceras de seguridad (CSP y otras) en `next.config.ts`, verificadas con el servidor en marcha
+- **Último paso terminado:** 1.5 Cabeceras de seguridad
+- **Siguiente paso:** 1.3 (crear el proyecto en Supabase y aplicar la migración) cuando el usuario pase URL y clave pública; luego 1.6 contra Supabase real y 1.7 Vercel
 - **Bloqueos / esperando al usuario:** ajustes de seguridad en GitHub (1.2); crear el proyecto en Supabase y pasar URL y clave pública (1.3); cuenta de Vercel (1.7)
 
 ## Fase 0 · Plan y diseño
@@ -29,8 +29,8 @@
 - [x] 1.2 GitHub — 2026-10-05: repositorio conectado y `.github/dependabot.yml` (revisión semanal). **Pendiente del usuario** en GitHub → Settings: activar Dependabot alerts y security updates, y proteger `main` contra force push y borrado (desde aquí la API no lo permite)
 - [ ] 1.3 Crear proyecto en Supabase, instalar Supabase CLI y aplicar `0001_esquema_inicial.sql`
 - [x] 1.4 Clientes de Supabase — 2026-10-05: `config.ts`, `server.ts`, `client.ts`, `admin.ts` (con `server-only`, probado: la compilación falla si se importa en el navegador) y `src/proxy.ts` que refresca la sesión con `getClaims()`. Sin claves todavía: la página funciona sin sesión hasta el paso 1.3
-- [ ] 1.5 Cabeceras de seguridad (CSP y otras) en `next.config.ts`
-- [ ] 1.6 Pruebas automáticas de las reglas de seguridad (visitante, usuario, admin)
+- [x] 1.5 Cabeceras de seguridad — 2026-10-05: CSP (Supabase y Turnstile permitidos), HSTS, nosniff, X-Frame-Options DENY, Referrer-Policy, Permissions-Policy, COOP; sin X-Powered-By. Verificadas con el servidor en marcha. CSP sin nonce para mantener páginas estáticas: revisar en 5.4
+- [~] 1.6 Pruebas automáticas de las reglas de seguridad — 2026-10-05: las 36 pruebas corren en `npm test` contra un Postgres en memoria; falta repetirlas contra el Supabase real después del 1.3
 - [ ] 1.7 Conectar Vercel con variables de entorno y publicar una página de prueba
 - **Puerta:** las pruebas de reglas de seguridad pasan.
 

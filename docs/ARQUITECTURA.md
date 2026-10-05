@@ -166,7 +166,7 @@ caracteres; máximo 5 reseñas por usuario cada 24 horas; slugs únicos por ciud
 - [ ] RLS activado en todas las tablas (`select tablename from pg_tables where schemaname = 'public' and not rowsecurity` devuelve 0 filas)
 - [ ] Pruebas de `tests/rls/` pasan como visitante, usuario y admin
 - [ ] Ningún archivo del navegador contiene `SERVICE_ROLE` (buscar en `.next/static`)
-- [ ] Cabeceras de seguridad activas (revisar con securityheaders.com)
+- [ ] Cabeceras de seguridad activas (revisar con securityheaders.com). Decidir si la CSP pasa a usar nonce
 - [ ] Captcha activo en reseñas y solicitudes
 - [ ] Verificación en dos pasos en GitHub, Vercel y Supabase
 - [ ] `npm audit` sin vulnerabilidades altas en dependencias de producción
