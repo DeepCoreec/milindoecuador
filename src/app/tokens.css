@@ -1,0 +1,103 @@
+/* GENERADO por scripts/tokens.mjs desde docs/diseno-tokens.json. No editar a mano. */
+
+/* Modo claro (por defecto) */
+:root,
+[data-theme="light"] {
+  --papel: #F5F8FA;
+  --papel-alto: #FFFFFF;
+  --linea: #D3DFE6;
+  --linea-fuerte: #72909F;
+  --rio: #0E2E40;
+  --rio-suave: #4A6475;
+  --celeste: #5AAFE3;
+  --celeste-tinta: #17628F;
+  --on-celeste-tinta: #FFFFFF;
+  --celeste-suave: #E2F0F9;
+  --mango: #F2B33D;
+  --mango-suave: #FDF1D8;
+  --faro: #D9483B;
+  --manglar: #2F8A62;
+  --buganvilla: #C2457F;
+  --on-color: #0E2E40;
+  --estrella: #A86A00;
+  --whatsapp: #25D366;
+  --exito: #1F7A4D;
+  --error: #B42318;
+  --enlace: var(--celeste-tinta);
+  --sombra-flotante: 0 8px 24px #0e2e4024, 0 2px 6px #0e2e401a;
+  --anillo-foco: 0 0 0 2px #F5F8FA, 0 0 0 4px #17628F;
+  color-scheme: light;
+}
+
+/* Modo oscuro según el teléfono o la computadora */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --papel: #0B1D28;
+    --papel-alto: #122A39;
+    --linea: #25404F;
+    --linea-fuerte: #6F8C9C;
+    --rio: #E8F1F5;
+    --rio-suave: #A3B9C5;
+    --celeste: #6BBCEB;
+    --celeste-tinta: #7FC6F0;
+    --on-celeste-tinta: #0B1D28;
+    --celeste-suave: #123A52;
+    --mango: #F5BE55;
+    --mango-suave: #3A2E12;
+    --faro: #F06B5E;
+    --manglar: #4DB385;
+    --buganvilla: #E070A6;
+    --on-color: #0E2E40;
+    --estrella: #F5BE55;
+    --whatsapp: #25D366;
+    --exito: #5BC48E;
+    --error: #FF8A80;
+    --enlace: var(--celeste-tinta);
+    --sombra-flotante: 0 8px 24px #000000b3;
+    --anillo-foco: 0 0 0 2px #0B1D28, 0 0 0 4px #7FC6F0;
+    color-scheme: dark;
+  }
+}
+
+/* Modo oscuro forzado (también sirve en un solo elemento, como el Panorama) */
+[data-theme="dark"] {
+  --papel: #0B1D28;
+  --papel-alto: #122A39;
+  --linea: #25404F;
+  --linea-fuerte: #6F8C9C;
+  --rio: #E8F1F5;
+  --rio-suave: #A3B9C5;
+  --celeste: #6BBCEB;
+  --celeste-tinta: #7FC6F0;
+  --on-celeste-tinta: #0B1D28;
+  --celeste-suave: #123A52;
+  --mango: #F5BE55;
+  --mango-suave: #3A2E12;
+  --faro: #F06B5E;
+  --manglar: #4DB385;
+  --buganvilla: #E070A6;
+  --on-color: #0E2E40;
+  --estrella: #F5BE55;
+  --whatsapp: #25D366;
+  --exito: #5BC48E;
+  --error: #FF8A80;
+  --enlace: var(--celeste-tinta);
+  --sombra-flotante: 0 8px 24px #000000b3;
+  --anillo-foco: 0 0 0 2px #0B1D28, 0 0 0 4px #7FC6F0;
+  color-scheme: dark;
+}
+
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --radius-sm: 4px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+}

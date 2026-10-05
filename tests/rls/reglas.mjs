@@ -1,6 +1,5 @@
 // Pruebas de las reglas de seguridad (RLS) en un Postgres en memoria (PGlite).
-// Ejecutar: npm i -D @electric-sql/pglite && node tests/rls/reglas.test.mjs
-// En la fase 1 se repiten contra Supabase local con la CLI.
+// Ejecutar: npm run test:rls (también corre dentro de npm test).
 import { PGlite } from "@electric-sql/pglite";
 import { readFileSync } from "node:fs";
 

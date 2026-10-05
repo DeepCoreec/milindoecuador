@@ -41,6 +41,10 @@ milindoecuador/
 │   └── icons/                    # íconos de la app (fase 5)
 ├── src/
 │   ├── app/
+│   │   ├── fonts/                # archivos .woff2 de las 3 fuentes (OFL)
+│   │   ├── fonts.ts              # carga de fuentes con next/font/local
+│   │   ├── globals.css           # Tailwind + clases de colores y fuentes del sistema
+│   │   ├── tokens.css            # GENERADO desde docs/diseno-tokens.json (npm run tokens)
 │   │   ├── layout.tsx            # HTML base, fuentes, metadatos globales
 │   │   ├── page.tsx              # inicio
 │   │   ├── [ciudad]/
@@ -92,9 +96,11 @@ milindoecuador/
 │   ├── types/
 │   │   └── database.ts           # tipos generados con `supabase gen types`
 │   └── proxy.ts                  # refresca la sesión de Supabase en cada visita
+├── scripts/
+│   └── tokens.mjs                # genera src/app/tokens.css desde los tokens aprobados
 ├── tests/
 │   ├── unit/                     # Vitest
-│   ├── rls/                      # pruebas de reglas de seguridad contra Supabase local
+│   ├── rls/reglas.mjs            # 36 pruebas de reglas de seguridad (PGlite, npm run test:rls)
 │   └── e2e/                      # Playwright
 ├── .env.example                  # nombres de variables, sin valores reales
 └── next.config.ts                # cabeceras de seguridad

@@ -1,10 +1,27 @@
-node_modules/
-.next/
-out/
-.env
-.env.local
-.env.*.local
-.vercel/
-*.log
-.DS_Store
+# Dependencias
+/node_modules
+
+# Pruebas
+/coverage
+/test-results
+/playwright-report
+
+# Next.js
+/.next/
+/out/
+/build
+*.tsbuildinfo
+next-env.d.ts
+
+# Variables de entorno: NUNCA se suben (solo el ejemplo sin valores)
+.env*
+!.env.example
+
+# Vercel y Supabase
+.vercel
 supabase/.temp/
+
+# Varios
+.DS_Store
+*.pem
+*.log

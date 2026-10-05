@@ -5,11 +5,9 @@
 
 ## Estado actual
 
-- **Fase actual:** 0 · Plan y diseño
-- **Último paso terminado:** 0.4d 11 categorías con afiche y barra desplegable
-- **Siguiente paso:** 0.5 Maquetas en un artefacto de tipo Design, usando SOLO el sistema de diseño:
-  inicio, categoría, ficha de lugar, registro de negocio y panel admin, en celular (390px) y escritorio.
-  Lugares turísticos reales; negocios marcados como ejemplo.
+- **Fase actual:** 1 · Base técnica (la fase 0 queda abierta solo por las maquetas, que el usuario pidió hacer después)
+- **Último paso terminado:** 1.1 Proyecto Next.js con tokens y fuentes del sistema de diseño
+- **Siguiente paso:** 1.2 Dependabot (`.github/dependabot.yml`) y protección de la rama `main`
 - **Bloqueos / esperando al usuario:** que revise el sistema de diseño y pida cambios si algo no le gusta
 
 ## Fase 0 · Plan y diseño
@@ -21,13 +19,13 @@
 - [x] 0.4d 11 categorías — 2026-10-05: a pedido del usuario; 6 nuevas con su afiche (cafés, vida nocturna, museos, compras, niños, naturaleza), barra con 5 principales y panel "Todas las categorías"; columna `is_main` en `categories`
 - [x] 0.4c Panorama en pixel art animado — 2026-10-05: a pedido del usuario; faro que gira, balandra que cruza el río, siempre de noche (decisión del usuario), pausa fuera de pantalla y con reducir movimiento
 - [x] 0.4b Arte propio — 2026-10-05: a pedido del usuario, las casitas planas se reemplazaron por la ilustración Panorama y 5 afiches de Categoría (día y noche) → `docs/arte/`
-- [ ] 0.5 Maquetas en celular y computadora: inicio, categoría, ficha, registro de negocio, panel admin
+- [ ] 0.5 Maquetas en celular y computadora: inicio, categoría, ficha, registro de negocio, panel admin — **pospuesto por el usuario (2026-10-05): se hará antes de la fase 2**
 - [x] 0.6 Decisiones del plan — 2026-10-05: nombre, inicio de sesión con correo y Google, un solo admin, WhatsApp 593986225038
-- **Puerta:** el usuario aprueba las maquetas.
+- **Puerta:** el usuario aprueba las maquetas (antes de empezar la fase 2, que es la primera que dibuja pantallas).
 
 ## Fase 1 · Base técnica
 
-- [ ] 1.1 Crear proyecto Next.js con TypeScript estricto, ESLint, Tailwind y shadcn/ui; scripts `typecheck` y `test`
+- [x] 1.1 Proyecto Next.js — 2026-10-05: Next.js 16.3, TypeScript estricto, ESLint, Tailwind 4, colores generados desde los tokens (`npm run tokens`), 3 fuentes propias, scripts `typecheck` y `test` (incluye las 36 pruebas RLS). lint, typecheck, test y build sin errores. shadcn/ui se agrega en la fase 2 con los primeros componentes
 - [ ] 1.2 Conectar GitHub (`deepcoreec/milindoecuador`), activar Dependabot y protección de la rama `main`
 - [ ] 1.3 Crear proyecto en Supabase, instalar Supabase CLI y aplicar `0001_esquema_inicial.sql`
 - [ ] 1.4 Clientes de Supabase (`server.ts`, `client.ts`, `admin.ts`) y `proxy.ts` para refrescar la sesión
@@ -100,3 +98,4 @@
 | 2026-10-05 | Arte propio: Panorama del Cerro Santa Ana y afiches de Categoría | Aprobación del usuario y 0.5 Maquetas |
 | 2026-10-05 | Panorama en pixel art animado, siempre de noche | Aprobación del usuario y 0.5 Maquetas |
 | 2026-10-05 | 11 categorías con afiche y barra desplegable; grupos anotados para la versión 2 | 0.5 Maquetas |
+| 2026-10-05 | Maquetas pospuestas por el usuario; 1.1 proyecto Next.js | 1.2 |

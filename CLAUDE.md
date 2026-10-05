@@ -12,6 +12,8 @@ con reseñas y contacto por WhatsApp. Dueño del proyecto: DeepCore (Ecuador). I
 3. Lee la sección de `docs/ARQUITECTURA.md` que toque al paso siguiente.
 4. Resume al usuario en 3 líneas: dónde quedamos, qué sigue y qué vas a hacer ahora. Espera su "ok" antes de empezar.
 
+Este proyecto usa Next.js 16: lee también `AGENTS.md` y la documentación en `node_modules/next/dist/docs/` antes de escribir código.
+
 ## 2. Reglas de trabajo
 
 - **Un paso a la vez.** Trabaja solo en el paso que dice `docs/PROGRESO.md`. No adelantes trabajo de otras fases.
@@ -59,8 +61,9 @@ Si una tarea es larga, divídela en sub-pasos en `docs/PROGRESO.md` y haz commit
 npm run dev        # servidor local en http://localhost:3000
 npm run build      # compilación de producción
 npm run lint       # revisión de estilo
-npm run typecheck  # revisión de tipos (tsc --noEmit)
-npm test           # pruebas
+npm run typecheck  # revisión de tipos (genera los tipos de rutas y corre tsc)
+npm test           # pruebas unitarias + pruebas de reglas de seguridad
+npm run tokens     # regenera src/app/tokens.css si cambian los colores aprobados
 ```
 
 ## 7. Documentos del proyecto

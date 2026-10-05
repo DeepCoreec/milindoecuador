@@ -1,0 +1,60 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+/* Familias tipográficas del sistema de diseño (Tailwind: font-rotulo, font-sans, font-historia) */
+@theme {
+  --font-rotulo: var(--fuente-rotulo), "Arial Black", system-ui, sans-serif;
+  --font-sans: var(--fuente-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-historia: var(--fuente-historia), Georgia, "Times New Roman", serif;
+}
+
+/* Colores y esquinas del sistema de diseño como clases de Tailwind (bg-papel, text-rio, rounded-md…) */
+@theme inline {
+  --color-papel: var(--papel);
+  --color-papel-alto: var(--papel-alto);
+  --color-linea: var(--linea);
+  --color-linea-fuerte: var(--linea-fuerte);
+  --color-rio: var(--rio);
+  --color-rio-suave: var(--rio-suave);
+  --color-celeste: var(--celeste);
+  --color-celeste-tinta: var(--celeste-tinta);
+  --color-on-celeste-tinta: var(--on-celeste-tinta);
+  --color-celeste-suave: var(--celeste-suave);
+  --color-mango: var(--mango);
+  --color-mango-suave: var(--mango-suave);
+  --color-faro: var(--faro);
+  --color-manglar: var(--manglar);
+  --color-buganvilla: var(--buganvilla);
+  --color-on-color: var(--on-color);
+  --color-estrella: var(--estrella);
+  --color-whatsapp: var(--whatsapp);
+  --color-exito: var(--exito);
+  --color-error: var(--error);
+  --color-enlace: var(--enlace);
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --shadow-flotante: var(--sombra-flotante);
+}
+
+body {
+  background: var(--papel);
+  color: var(--rio);
+  font-family: var(--font-sans);
+}
+
+/* Foco de teclado visible en todo lo que se puede tocar */
+:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--anillo-foco);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
