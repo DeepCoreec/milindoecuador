@@ -6,18 +6,20 @@
 ## Estado actual
 
 - **Fase actual:** 0 · Plan y diseño
-- **Último paso terminado:** 0.2 Esquema técnico escrito (CLAUDE.md, ARQUITECTURA.md, migración SQL probada)
-- **Siguiente paso:** 0.3 Elegir 3 a 5 páginas de referencia de diseño con el usuario
-- **Bloqueos / esperando al usuario:** decisiones pendientes de `docs/PLAN.md` (nombre, inicio de sesión, moderación, WhatsApp)
+- **Último paso terminado:** 0.3 Referencias de diseño y 0.6 decisiones (ver `docs/PLAN.md`)
+- **Siguiente paso:** 0.4 Sistema de diseño: crear un artefacto de tipo Design System con logo, colores,
+  tipografías, espaciados y componentes (botón, tarjeta de lugar, buscador, estrellas, insignias),
+  siguiendo la "Dirección visual" de `docs/PLAN.md` y la skill `frontend-design`; luego resumirlo en `docs/DISENO.md`
+- **Bloqueos / esperando al usuario:** ninguno
 
 ## Fase 0 · Plan y diseño
 
 - [x] 0.1 Plan del proyecto escrito y revisado con el usuario — 2026-10-05
 - [x] 0.2 Esquema técnico: CLAUDE.md, ARQUITECTURA.md, PROGRESO.md y migración SQL probada — 2026-10-05
-- [ ] 0.3 Referencias de diseño: el usuario elige 3 a 5 sitios y anotamos qué tomar de cada uno
+- [x] 0.3 Referencias de diseño — 2026-10-05: Airbnb, Time Out, TripAdvisor y Atlas Obscura; el usuario delegó la elección
 - [ ] 0.4 Sistema de diseño: logo, colores, tipografías, espaciados y componentes → `docs/DISENO.md`
 - [ ] 0.5 Maquetas en celular y computadora: inicio, categoría, ficha, registro de negocio, panel admin
-- [ ] 0.6 Respuestas a las decisiones pendientes del plan
+- [x] 0.6 Decisiones del plan — 2026-10-05: nombre, inicio de sesión con correo y Google, un solo admin, WhatsApp 593986225038
 - **Puerta:** el usuario aprueba las maquetas.
 
 ## Fase 1 · Base técnica
@@ -86,3 +88,4 @@
 | Fecha | Qué se hizo | Quedó pendiente |
 | --- | --- | --- |
 | 2026-10-05 | Plan del proyecto, esquema técnico y migración SQL probada | Referencias de diseño y decisiones del usuario |
+| 2026-10-05 | Repositorio subido a GitHub; referencias de diseño y decisiones cerradas | 0.4 Sistema de diseño |

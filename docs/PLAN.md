@@ -50,10 +50,25 @@ En la versión 1 se cobra por transferencia o DeUna y el admin lo activa a mano.
 | 4 · Negocios y panel admin | Registro de negocios, panel completo | Un negocio aprobado de punta a punta |
 | 5 · App y lanzamiento | PWA, SEO, legal, seguridad, dominio | Lighthouse 90+ y revisión de seguridad aprobada |
 
-## Decisiones pendientes del usuario
+## Decisiones tomadas (2026-10-05)
 
-- [ ] Nombre final
-- [ ] Inicio de sesión: correo y Google, o solo uno
-- [ ] Quién modera reseñas y aprueba negocios
-- [ ] 3 a 5 páginas de referencia para el diseño
-- [ ] Número de WhatsApp que recibe las solicitudes
+| Decisión | Respuesta |
+| --- | --- |
+| Nombre | Mi Lindo Ecuador |
+| Inicio de sesión | Correo (enlace mágico, sin contraseña) y Google |
+| Quién modera y aprueba | Solo el dueño (un único admin en la versión 1) |
+| WhatsApp que recibe avisos de solicitudes | 593986225038 (las solicitudes se guardan en la base; WhatsApp es solo el aviso) |
+| Referencias de diseño | Ver tabla siguiente |
+
+## Referencias de diseño
+
+| Sitio | Qué tomamos | Qué NO tomamos |
+| --- | --- | --- |
+| Airbnb | Fotos grandes como protagonistas, tarjetas limpias, ficha con galería y datos clave arriba | Mapa lateral y reservas |
+| Time Out (guías de ciudad) | Voz editorial y local: listas como "Dónde comer encebollado", titulares con personalidad | Exceso de publicidad |
+| TripAdvisor | Bloque de reseñas claro: promedio, cantidad, estrellas y respuesta del negocio | Pantallas saturadas y ventanas emergentes |
+| Atlas Obscura | Cada lugar cuenta una historia o dato curioso, no solo una dirección | Textos largos tipo artículo |
+
+**Dirección visual resultante:** guía de ciudad editorial, con mucho espacio, fotografía real como protagonista
+y la identidad de Guayaquil (celeste y blanco de su bandera, el río Guayas, las casas de colores de Las Peñas)
+en detalles, no en adornos.
