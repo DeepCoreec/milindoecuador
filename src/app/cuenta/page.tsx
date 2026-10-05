@@ -11,6 +11,9 @@ import { requireUsuario } from "@/lib/auth";
 import { getMiCuenta } from "@/lib/datos/cuenta";
 import { fechaLarga } from "@/lib/enlaces";
 
+// Siempre se genera en cada visita: depende de la sesión de quien la abre
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = { title: "Mi cuenta · Mi Lindo Ecuador", robots: { index: false, follow: false } };
 
 const titulo = "m-0 font-rotulo text-xl leading-[26px] font-normal";

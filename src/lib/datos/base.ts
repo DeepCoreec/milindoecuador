@@ -147,6 +147,7 @@ export async function leerLugar(db: SupabaseClient, urlBase: string, ciudad: str
 
   return {
     ...aResumen(data, nota, Date.now()),
+    id: data.id,
     descripcion: data.description,
     horario: data.hours,
     direccion: data.address,

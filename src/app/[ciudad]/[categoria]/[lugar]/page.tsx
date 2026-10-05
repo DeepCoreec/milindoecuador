@@ -10,8 +10,11 @@ import { BotonCompartir } from "@/components/lugares/BotonCompartir";
 import { Galeria } from "@/components/lugares/Galeria";
 import { InsigniasLugar } from "@/components/lugares/InsigniasLugar";
 import { Resenas } from "@/components/lugares/Resenas";
+import { FormResena } from "@/components/resenas/FormResena";
 import { clasesBoton } from "@/components/ui/Boton";
 import { IconoConversacion, IconoUbicacion } from "@/components/ui/iconos";
+import { obtenerUsuario } from "@/lib/auth";
+import { getMiResena } from "@/lib/datos/cuenta";
 import { getCategoria, getCiudad, getLugar, tonoDeCategoria } from "@/lib/datos/lugares";
 import { enlaceComoLlegar, enlaceWhatsApp, mostrarWhatsApp } from "@/lib/enlaces";
 import { paraCompartir } from "@/lib/sitio";
@@ -52,6 +55,9 @@ export default async function FichaLugar({ params }: Props) {
   const comoLlegar = enlaceComoLlegar(lugar.nombre, lugar.direccion, ciudad.nombre);
   const precio = lugar.precio ? PRECIOS[lugar.precio] : null;
   const esNegocio = categoria.slug !== "turismo";
+  const ruta = `/${ciudad.slug}/${categoria.slug}/${lugar.slug}`;
+  const usuario = await obtenerUsuario();
+  const miResena = usuario && lugar.id ? await getMiResena(lugar.id, usuario.id) : null;
 
   return (
     <>
@@ -154,7 +160,20 @@ export default async function FichaLugar({ params }: Props) {
               </h2>
               <p className="m-0 max-w-[62ch] font-historia text-lg leading-[30px]">{lugar.descripcion}</p>
             </section>
-            <Resenas resenas={lugar.resenas} promedio={lugar.promedio} cantidad={lugar.cantidad} ejemplo={lugar.ejemplo} />
+            <Resenas
+              resenas={lugar.resenas}
+              promedio={lugar.promedio}
+              cantidad={lugar.cantidad}
+              ejemplo={lugar.ejemplo}
+              accion={
+                !usuario && (
+                  <Link href={`/entrar?siguiente=${encodeURIComponent(ruta)}`} className={clasesBoton("secundario", "chico")}>
+                    Entra para escribir una reseña
+                  </Link>
+                )
+              }
+              formulario={usuario && lugar.id && <FormResena key={miResena ? "editar" : "nueva"} lugar={lugar.id} ruta={ruta} actual={miResena} />}
+            />
           </div>
         </div>
       </main>

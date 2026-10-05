@@ -48,3 +48,10 @@ export async function getMiCuenta(idUsuario: string) {
     ),
   };
 }
+
+/** La reseña de la persona en un lugar, para llenar el formulario al editar. */
+export async function getMiResena(idLugar: string, idUsuario: string) {
+  const supabase = await crearClienteServidor();
+  const { data } = await supabase.from("reviews").select("stars, text, status").eq("place_id", idLugar).eq("user_id", idUsuario).maybeSingle();
+  return data ? { estrellas: data.stars as number, texto: data.text as string, visible: data.status === "visible" } : null;
+}

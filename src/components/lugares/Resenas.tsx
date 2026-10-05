@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { clasesBoton } from "@/components/ui/Boton";
+import type { ReactNode } from "react";
 import type { Resena } from "@/lib/datos/tipos";
 import { fechaLarga } from "@/lib/enlaces";
 
@@ -9,7 +8,7 @@ function FilaEstrellas({ n }: { n: number }) {
   // 4,5 se dibuja con 4 estrellas llenas; desde 4,6, con 5 (no se infla la nota)
   const llenas = Math.min(5, Math.max(0, Math.round(n - 0.01)));
   return (
-    <span className="text-base leading-5 tracking-[0.1em]" role="img" aria-label={`${formato.format(n)} de 5 estrellas`}>
+    <span className="text-base leading-5 tracking-[0.1em]" role="img" aria-label={`${Number.isInteger(n) ? n : formato.format(n)} de 5 estrellas`}>
       <span className="text-estrella">{"★".repeat(llenas)}</span>
       <span className="text-linea-fuerte">{"★".repeat(5 - llenas)}</span>
     </span>
@@ -17,20 +16,29 @@ function FilaEstrellas({ n }: { n: number }) {
 }
 
 /**
- * Sección de reseñas de la ficha. Las reseñas de verdad (escribir, reportar) llegan en la fase 3;
- * por ahora muestra las que haya y el botón que lleva a entrar.
+ * Sección de reseñas de la ficha: resumen, el formulario o el enlace para escribir, y las reseñas visibles.
  */
-export function Resenas({ resenas, promedio, cantidad, ejemplo }: { resenas: Resena[]; promedio: number | null; cantidad: number; ejemplo: boolean }) {
+type Props = {
+  resenas: Resena[];
+  promedio: number | null;
+  cantidad: number;
+  ejemplo: boolean;
+  /** Junto al título: el enlace para entrar a escribir. */
+  accion?: ReactNode;
+  /** Debajo del título: el formulario de la reseña propia (con sesión). */
+  formulario?: ReactNode;
+};
+
+export function Resenas({ resenas, promedio, cantidad, ejemplo, accion, formulario }: Props) {
   return (
     <section aria-labelledby="t-res" className="grid gap-2">
       <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
         <h2 id="t-res" className="m-0 font-rotulo text-xl leading-[26px] font-normal md:text-2xl md:leading-[30px]">
           Reseñas
         </h2>
-        <Link href="/entrar" className={clasesBoton("secundario", "chico")}>
-          Escribir una reseña
-        </Link>
+        {accion}
       </div>
+      {formulario}
 
       {promedio === null || cantidad === 0 ? (
         <p className="m-0 border-b border-linea pb-5 text-rio-suave">Todavía nadie ha escrito una reseña. Si ya fuiste, cuéntale a los demás cómo te fue.</p>

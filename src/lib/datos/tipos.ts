@@ -45,6 +45,8 @@ export type Resena = {
 
 /** Todo lo que muestra la ficha de un lugar. */
 export type LugarDetalle = LugarResumen & {
+  /** Identificador en la base (no existe en los datos de muestra). */
+  id?: string;
   /** La historia del lugar (columna `description`). */
   descripcion: string;
   horario: string | null;
