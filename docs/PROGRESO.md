@@ -8,7 +8,8 @@
 - **Fase actual:** 1 · Base técnica (abierta solo por 1.3, 1.6 y 1.7, que esperan las cuentas del usuario) y fase 2 (todo hecho menos 2.8, que espera fotos y Supabase)
 - **Último paso terminado:** 0.5 Maquetas aprobadas (fase 0 cerrada)
 - **Modo de trabajo (2026-10-05):** el usuario autorizó avanzar paso a paso según el plan sin pedir permiso entre pasos. Se sigue respetando: nada fuera del plan, nada de librerías nuevas sin permiso y verificar y guardar cada paso
-- **Siguiente paso:** la fase 2 terminó todo lo que no depende del usuario. Lo que sigue necesita sus cuentas: **1.3** (recibir Project URL y clave anon de Supabase y ponerlas en `.env.local` y en Vercel), luego **1.6** (aplicar la migración y `seed.sql` en Supabase y comprobar las reglas contra la base real) y **2.8c**. Mientras no lleguen, NO adelantar la fase 3: su puerta exige probar con Supabase real
+- **Entorno de prueba (solo en la nube de Claude, no en el repo):** Postgres 16 + PostgREST 12 + Supabase Auth 2.180 + buzón SMTP, armados en el scratchpad de la sesión con `arrancar.sh` y `dev.sh`. Si la sesión es nueva hay que volver a armarlo; sirve para probar antes de tener el Supabase real
+- **Siguiente paso:** 3.2 Página `/cuenta` (requiere sesión con `requireUsuario`): nombre visible editable (Zod 2 a 40, acción con el cliente del usuario), lista de mis reseñas (también las ocultas, con su estado), botón Salir y "Borrar mi cuenta" (confirmar escribiendo BORRAR; acción en el servidor con `admin.ts` → `auth.admin.deleteUser`, que borra perfil y reseñas en cascada). Probar con el Supabase de prueba (ver nota de entorno de prueba)
 - **Bloqueos / esperando al usuario:** ajustes de seguridad en GitHub (1.2); crear el proyecto en Supabase y pasar URL y clave pública (1.3); cuenta de Vercel (1.7)
 
 ## Fase 0 · Plan y diseño
@@ -53,7 +54,7 @@
 
 ## Fase 3 · Usuarios y reseñas
 
-- [ ] 3.1 Página `/entrar` con correo (enlace mágico) y Google; ruta `/auth/callback`
+- [x] 3.1 Página `/entrar` con correo (enlace mágico) y Google; ruta `/auth/callback` — 2026-10-05 (adelantada con permiso del usuario mientras la fase 2 espera fotos): acción `entrarConCorreo` (Zod, mensajes claros, aviso si se pide muy seguido), `entrarConGoogle`, `salir`; `/auth/callback` cambia el código por la sesión y solo vuelve a rutas internas (`rutaSegura`, 4 pruebas). Cabecera y menú muestran "Mi cuenta" con sesión sin volver dinámicas las páginas. **Probado de punta a punta con Supabase Auth v2.180 real** (Postgres 16 + PostgREST + Auth + buzón de prueba en la nube de Claude): llega el correo, el enlace inicia sesión y vuelve a la página de origen; enlace reusado → aviso; `siguiente` externo → ignorado. **Pendiente del usuario en Supabase:** Authentication → URL Configuration (Site URL y `…/auth/callback` en Redirect URLs) y activar Google con su cliente OAuth
 - [ ] 3.2 Página `/cuenta` con nombre visible y mis reseñas; opción de borrar la cuenta
 - [ ] 3.3 Escribir, editar y borrar mi reseña (con captcha)
 - [ ] 3.4 Reportar una reseña

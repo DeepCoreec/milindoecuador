@@ -3,12 +3,12 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import Link from "next/link";
 import { clasesBoton } from "@/components/ui/Boton";
+import { useConSesion } from "@/components/sesion/useConSesion";
 import { IconoCerrar, IconoMenu } from "@/components/ui/iconos";
 
 const ENLACES = [
   { href: "/guayaquil", texto: "Explorar Guayaquil" },
   { href: "/buscar", texto: "Buscar" },
-  { href: "/entrar", texto: "Entrar" },
   { href: "/negocios/planes", texto: "Planes para negocios" },
 ];
 
@@ -17,6 +17,7 @@ const ENLACES = [
  * Radix se encarga de lo difícil: atrapa el foco, cierra con Escape y avisa al lector de pantalla.
  */
 export function MenuMovil() {
+  const conSesion = useConSesion();
   return (
     <Dialog.Root>
       <Dialog.Trigger
@@ -39,7 +40,7 @@ export function MenuMovil() {
           </div>
           <Dialog.Description className="sr-only">Enlaces principales de Mi Lindo Ecuador</Dialog.Description>
           <nav aria-label="Menú del celular" className="grid">
-            {ENLACES.map((e) => (
+            {[...ENLACES.slice(0, 2), conSesion ? { href: "/cuenta", texto: "Mi cuenta" } : { href: "/entrar", texto: "Entrar" }, ...ENLACES.slice(2)].map((e) => (
               <Dialog.Close asChild key={e.href}>
                 <Link href={e.href} className="flex min-h-12 items-center border-b border-linea px-1 text-base font-medium text-rio no-underline">
                   {e.texto}
