@@ -6,18 +6,18 @@
 ## Estado actual
 
 - **Fase actual:** 0 · Plan y diseño
-- **Último paso terminado:** 0.3 Referencias de diseño y 0.6 decisiones (ver `docs/PLAN.md`)
-- **Siguiente paso:** 0.4 Sistema de diseño: crear un artefacto de tipo Design System con logo, colores,
-  tipografías, espaciados y componentes (botón, tarjeta de lugar, buscador, estrellas, insignias),
-  siguiendo la "Dirección visual" de `docs/PLAN.md` y la skill `frontend-design`; luego resumirlo en `docs/DISENO.md`
-- **Bloqueos / esperando al usuario:** ninguno
+- **Último paso terminado:** 0.4 Sistema de diseño (artefacto + `docs/DISENO.md` + `docs/diseno-tokens.json`)
+- **Siguiente paso:** 0.5 Maquetas en un artefacto de tipo Design, usando SOLO el sistema de diseño:
+  inicio, categoría, ficha de lugar, registro de negocio y panel admin, en celular (390px) y escritorio.
+  Lugares turísticos reales; negocios marcados como ejemplo.
+- **Bloqueos / esperando al usuario:** que revise el sistema de diseño y pida cambios si algo no le gusta
 
 ## Fase 0 · Plan y diseño
 
 - [x] 0.1 Plan del proyecto escrito y revisado con el usuario — 2026-10-05
 - [x] 0.2 Esquema técnico: CLAUDE.md, ARQUITECTURA.md, PROGRESO.md y migración SQL probada — 2026-10-05
 - [x] 0.3 Referencias de diseño — 2026-10-05: Airbnb, Time Out, TripAdvisor y Atlas Obscura; el usuario delegó la elección
-- [ ] 0.4 Sistema de diseño: logo, colores, tipografías, espaciados y componentes → `docs/DISENO.md`
+- [x] 0.4 Sistema de diseño — 2026-10-05: 21 colores (claro y oscuro, contraste verificado), 3 tipografías OFL, espacios, esquinas, 8 componentes y portada → `docs/DISENO.md`. Logo pendiente
 - [ ] 0.5 Maquetas en celular y computadora: inicio, categoría, ficha, registro de negocio, panel admin
 - [x] 0.6 Decisiones del plan — 2026-10-05: nombre, inicio de sesión con correo y Google, un solo admin, WhatsApp 593986225038
 - **Puerta:** el usuario aprueba las maquetas.
@@ -89,3 +89,4 @@
 | --- | --- | --- |
 | 2026-10-05 | Plan del proyecto, esquema técnico y migración SQL probada | Referencias de diseño y decisiones del usuario |
 | 2026-10-05 | Repositorio subido a GitHub; referencias de diseño y decisiones cerradas | 0.4 Sistema de diseño |
+| 2026-10-05 | Sistema de diseño publicado y revisado en claro y oscuro | 0.5 Maquetas |

@@ -1,0 +1,408 @@
+{
+  "name": "Mi Lindo Ecuador",
+  "version": 1,
+  "color": {
+    "themes": [
+      {
+        "id": "light",
+        "name": "Claro"
+      },
+      {
+        "id": "dark",
+        "name": "Oscuro"
+      }
+    ],
+    "tokens": [
+      {
+        "name": "papel",
+        "value": {
+          "light": "#F5F8FA",
+          "dark": "#0B1D28"
+        },
+        "usage": "Fondo de la página."
+      },
+      {
+        "name": "papel-alto",
+        "value": {
+          "light": "#FFFFFF",
+          "dark": "#122A39"
+        },
+        "usage": "Tarjetas, buscador, menús y la ficha del lugar."
+      },
+      {
+        "name": "linea",
+        "value": {
+          "light": "#D3DFE6",
+          "dark": "#25404F"
+        },
+        "usage": "Líneas divisorias suaves y bordes de tarjetas."
+      },
+      {
+        "name": "linea-fuerte",
+        "value": {
+          "light": "#72909F",
+          "dark": "#6F8C9C"
+        },
+        "usage": "Bordes de campos de formulario y controles; 3:1 sobre papel y papel-alto en ambos modos."
+      },
+      {
+        "name": "rio",
+        "value": {
+          "light": "#0E2E40",
+          "dark": "#E8F1F5"
+        },
+        "usage": "Texto principal, sobre papel, papel-alto y celeste-suave. Es el color del río Guayas: nunca usar negro puro."
+      },
+      {
+        "name": "rio-suave",
+        "value": {
+          "light": "#4A6475",
+          "dark": "#A3B9C5"
+        },
+        "usage": "Texto secundario (sector, horario, cantidad de reseñas), sobre papel y papel-alto."
+      },
+      {
+        "name": "celeste",
+        "value": {
+          "light": "#5AAFE3",
+          "dark": "#6BBCEB"
+        },
+        "usage": "Celeste de la bandera de Guayaquil. Solo como relleno de identidad (portada, logo, categoría Hoteles); nunca para texto."
+      },
+      {
+        "name": "celeste-tinta",
+        "value": {
+          "light": "#17628F",
+          "dark": "#7FC6F0"
+        },
+        "usage": "Botón principal, enlaces y estado activo; como texto, sobre papel, papel-alto y celeste-suave."
+      },
+      {
+        "name": "on-celeste-tinta",
+        "value": {
+          "light": "#FFFFFF",
+          "dark": "#0B1D28"
+        },
+        "usage": "Texto e íconos sobre un relleno celeste-tinta (la etiqueta del botón principal)."
+      },
+      {
+        "name": "celeste-suave",
+        "value": {
+          "light": "#E2F0F9",
+          "dark": "#123A52"
+        },
+        "usage": "Fondos teñidos: chip seleccionado, avisos informativos."
+      },
+      {
+        "name": "mango",
+        "value": {
+          "light": "#F2B33D",
+          "dark": "#F5BE55"
+        },
+        "usage": "Categoría Restaurantes y la insignia Destacado. Texto encima: on-color."
+      },
+      {
+        "name": "mango-suave",
+        "value": {
+          "light": "#FDF1D8",
+          "dark": "#3A2E12"
+        },
+        "usage": "Fondo del bloque de una ficha destacada; texto rio encima."
+      },
+      {
+        "name": "faro",
+        "value": {
+          "light": "#D9483B",
+          "dark": "#F06B5E"
+        },
+        "usage": "Categoría Lugares turísticos (el faro del Cerro Santa Ana). Solo relleno, nunca texto."
+      },
+      {
+        "name": "manglar",
+        "value": {
+          "light": "#2F8A62",
+          "dark": "#4DB385"
+        },
+        "usage": "Categoría Dónde hacer ejercicio. Solo relleno, nunca texto."
+      },
+      {
+        "name": "buganvilla",
+        "value": {
+          "light": "#C2457F",
+          "dark": "#E070A6"
+        },
+        "usage": "Categoría Dónde pasear. Solo relleno, nunca texto."
+      },
+      {
+        "name": "on-color",
+        "value": {
+          "light": "#0E2E40",
+          "dark": "#0E2E40"
+        },
+        "usage": "Texto sobre rellenos claros de color (mango, whatsapp) en los dos modos."
+      },
+      {
+        "name": "estrella",
+        "value": {
+          "light": "#A86A00",
+          "dark": "#F5BE55"
+        },
+        "usage": "Estrellas de calificación; 3:1 o más sobre papel y papel-alto."
+      },
+      {
+        "name": "whatsapp",
+        "value": {
+          "light": "#25D366",
+          "dark": "#25D366"
+        },
+        "usage": "Botón Escribir por WhatsApp, el único lugar donde aparece. Texto on-color."
+      },
+      {
+        "name": "exito",
+        "value": {
+          "light": "#1F7A4D",
+          "dark": "#5BC48E"
+        },
+        "usage": "Mensajes de confirmación, siempre con texto (\"Reseña publicada\"). Sobre papel-alto."
+      },
+      {
+        "name": "error",
+        "value": {
+          "light": "#B42318",
+          "dark": "#FF8A80"
+        },
+        "usage": "Mensajes de error de formularios, siempre con texto que explica cómo arreglarlo. Sobre papel-alto."
+      },
+      {
+        "name": "enlace",
+        "value": "{celeste-tinta}",
+        "usage": "Enlaces dentro del texto: alias de celeste-tinta."
+      }
+    ]
+  },
+  "type": {
+    "fonts": [
+      {
+        "family": "Krona One",
+        "file": "fonts/KronaOne-Regular.woff2",
+        "weight": "400",
+        "style": "normal"
+      },
+      {
+        "family": "Hanken Grotesk",
+        "file": "fonts/HankenGrotesk-400.woff2",
+        "weight": "400",
+        "style": "normal"
+      },
+      {
+        "family": "Hanken Grotesk",
+        "file": "fonts/HankenGrotesk-500.woff2",
+        "weight": "500",
+        "style": "normal"
+      },
+      {
+        "family": "Hanken Grotesk",
+        "file": "fonts/HankenGrotesk-600.woff2",
+        "weight": "600",
+        "style": "normal"
+      },
+      {
+        "family": "Hanken Grotesk",
+        "file": "fonts/HankenGrotesk-700.woff2",
+        "weight": "700",
+        "style": "normal"
+      },
+      {
+        "family": "Source Serif 4",
+        "file": "fonts/SourceSerif4-Regular.woff2",
+        "weight": "400",
+        "style": "normal"
+      }
+    ],
+    "families": {
+      "rotulo": "\"Krona One\", \"Arial Black\", system-ui, sans-serif",
+      "sans": "\"Hanken Grotesk\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "historia": "\"Source Serif 4\", Georgia, \"Times New Roman\", serif"
+    },
+    "groups": [
+      {
+        "name": "Rótulo",
+        "family": "rotulo",
+        "note": "Krona One (licencia OFL): letra ancha de rótulo. Solo títulos grandes y el nombre de la marca, nunca párrafos.",
+        "styles": [
+          {
+            "name": "rotulo-hero",
+            "fontSize": "40px",
+            "lineHeight": "44px",
+            "fontWeight": 400,
+            "letterSpacing": "-0.01em",
+            "sample": "Guayaquil, de punta a punta",
+            "usage": "Título principal de la portada y de cada ciudad. En celular baja a 30px/34px."
+          },
+          {
+            "name": "rotulo-seccion",
+            "fontSize": "24px",
+            "lineHeight": "30px",
+            "fontWeight": 400,
+            "sample": "Dónde comer encebollado",
+            "usage": "Títulos de sección y de listas."
+          }
+        ]
+      },
+      {
+        "name": "Texto",
+        "family": "sans",
+        "note": "Hanken Grotesk (licencia OFL) para toda la interfaz.",
+        "styles": [
+          {
+            "name": "titulo-ficha",
+            "fontSize": "28px",
+            "lineHeight": "34px",
+            "fontWeight": 700,
+            "letterSpacing": "-0.01em",
+            "sample": "Barrio Las Peñas",
+            "usage": "Nombre del lugar en su ficha."
+          },
+          {
+            "name": "titulo-tarjeta",
+            "fontSize": "18px",
+            "lineHeight": "24px",
+            "fontWeight": 600,
+            "sample": "Cangrejal Doña Tere",
+            "usage": "Nombre del lugar en una tarjeta."
+          },
+          {
+            "name": "cuerpo",
+            "fontSize": "16px",
+            "lineHeight": "24px",
+            "fontWeight": 400,
+            "sample": "Abre de martes a domingo, desde el mediodía.",
+            "usage": "Texto general. Nunca menos de 16px en celular."
+          },
+          {
+            "name": "cuerpo-chico",
+            "fontSize": "14px",
+            "lineHeight": "20px",
+            "fontWeight": 400,
+            "sample": "Restaurante en Urdesa",
+            "usage": "Datos secundarios: sector, horario, cantidad de reseñas."
+          },
+          {
+            "name": "etiqueta",
+            "fontSize": "13px",
+            "lineHeight": "16px",
+            "fontWeight": 600,
+            "sample": "Destacado",
+            "usage": "Insignias y etiquetas de campos. En minúsculas con mayúscula inicial, nunca todo en mayúsculas."
+          }
+        ]
+      },
+      {
+        "name": "Historia",
+        "family": "historia",
+        "note": "Source Serif 4 (licencia OFL) solo para la historia o dato curioso de cada lugar.",
+        "styles": [
+          {
+            "name": "historia",
+            "fontSize": "18px",
+            "lineHeight": "30px",
+            "fontWeight": 400,
+            "sample": "Los 444 escalones del Cerro Santa Ana están numerados; el último te deja frente al faro.",
+            "usage": "Bloque Historia de la ficha. Máximo 3 párrafos."
+          }
+        ]
+      }
+    ]
+  },
+  "spacing": {
+    "note": "Base de 4px.",
+    "tokens": [
+      {
+        "name": "space-1",
+        "value": "4px",
+        "usage": "Entre ícono y texto."
+      },
+      {
+        "name": "space-2",
+        "value": "8px",
+        "usage": "Dentro de insignias y entre estrellas y número."
+      },
+      {
+        "name": "space-3",
+        "value": "12px",
+        "usage": "Entre líneas de datos de una tarjeta."
+      },
+      {
+        "name": "space-4",
+        "value": "16px",
+        "usage": "Margen lateral en celular y relleno de tarjetas."
+      },
+      {
+        "name": "space-6",
+        "value": "24px",
+        "usage": "Separación entre tarjetas de una rejilla."
+      },
+      {
+        "name": "space-8",
+        "value": "32px",
+        "usage": "Margen lateral en escritorio."
+      },
+      {
+        "name": "space-12",
+        "value": "48px",
+        "usage": "Entre secciones en celular."
+      },
+      {
+        "name": "space-16",
+        "value": "64px",
+        "usage": "Entre secciones en escritorio."
+      }
+    ]
+  },
+  "radius": {
+    "note": "Esquinas suaves; las fotos mandan, así que llevan el radio más visible.",
+    "tokens": [
+      {
+        "name": "radius-sm",
+        "value": "4px",
+        "usage": "Insignias, campos de texto, ventanas de las fachadas."
+      },
+      {
+        "name": "radius-md",
+        "value": "12px",
+        "usage": "Fotos de tarjetas, botones y tarjetas."
+      },
+      {
+        "name": "radius-lg",
+        "value": "20px",
+        "usage": "Foto principal de la ficha y diálogos."
+      },
+      {
+        "name": "radius-full",
+        "value": "9999px",
+        "usage": "Solo el buscador."
+      }
+    ]
+  },
+  "shadow": {
+    "note": "Una sola elevación para lo que flota. Las tarjetas no llevan sombra: se separan por el borde linea.",
+    "tokens": [
+      {
+        "name": "sombra-flotante",
+        "value": {
+          "light": "0 8px 24px #0e2e4024, 0 2px 6px #0e2e401a",
+          "dark": "0 8px 24px #000000b3"
+        },
+        "usage": "Menús, diálogos y el buscador fijo al hacer scroll."
+      },
+      {
+        "name": "anillo-foco",
+        "value": {
+          "light": "0 0 0 2px #F5F8FA, 0 0 0 4px #17628F",
+          "dark": "0 0 0 2px #0B1D28, 0 0 0 4px #7FC6F0"
+        },
+        "usage": "Foco de teclado: 2px del color del papel y luego 2px de celeste-tinta. Obligatorio en todo lo que se puede tocar."
+      }
+    ]
+  }
+}
