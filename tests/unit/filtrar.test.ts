@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { filtrarLugares, sectoresDe } from "./filtrar";
-import type { LugarResumen } from "./tipos";
+import { filtrarLugares, sectoresDe } from "@/lib/datos/filtrar";
+import type { LugarResumen } from "@/lib/datos/tipos";
 
 const lugar = (slug: string, o: Partial<LugarResumen>): LugarResumen => ({
   slug, categoria: "restaurantes", nombre: slug, sector: "Centro", datos: "", promedio: null, cantidad: 0, precio: 1, plan: "gratis", ejemplo: true, ...o,

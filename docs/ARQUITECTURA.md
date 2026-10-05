@@ -105,9 +105,8 @@ milindoecuador/
 │   ├── tokens.mjs                # genera src/app/tokens.css desde los tokens aprobados
 │   └── arte.mjs                  # convierte los afiches SVG de docs/arte/ en src/components/arte/afiches.tsx
 ├── tests/
-│   ├── unit/                     # Vitest
+│   ├── unit/                     # Vitest (vitest.config.mts)
 │   ├── rls/reglas.mjs            # 36 pruebas de reglas de seguridad (PGlite, npm run test:rls)
-│   │                             # las pruebas unitarias viven junto a su código: src/**/*.test.ts (vitest.config.mts)
 │   └── e2e/                      # Playwright
 ├── .env.example                  # nombres de variables, sin valores reales
 └── next.config.ts                # cabeceras de seguridad

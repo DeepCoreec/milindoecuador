@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { leerFiltros } from "./filtros";
+import { leerFiltros } from "@/lib/validacion/filtros";
 
 describe("leerFiltros", () => {
   it("sin nada en la dirección usa los valores por defecto", () => {
