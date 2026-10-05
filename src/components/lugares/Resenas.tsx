@@ -1,0 +1,70 @@
+import Link from "next/link";
+import { clasesBoton } from "@/components/ui/Boton";
+import type { Resena } from "@/lib/datos/tipos";
+import { fechaLarga } from "@/lib/enlaces";
+
+const formato = new Intl.NumberFormat("es-EC", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+function FilaEstrellas({ n }: { n: number }) {
+  const llenas = Math.round(n);
+  return (
+    <span className="text-base leading-5 tracking-[0.1em]" role="img" aria-label={`${formato.format(n)} de 5 estrellas`}>
+      <span className="text-estrella">{"★".repeat(llenas)}</span>
+      <span className="text-linea-fuerte">{"★".repeat(5 - llenas)}</span>
+    </span>
+  );
+}
+
+/**
+ * Sección de reseñas de la ficha. Las reseñas de verdad (escribir, reportar) llegan en la fase 3;
+ * por ahora muestra las que haya y el botón que lleva a entrar.
+ */
+export function Resenas({ resenas, promedio, cantidad, ejemplo }: { resenas: Resena[]; promedio: number | null; cantidad: number; ejemplo: boolean }) {
+  return (
+    <section aria-labelledby="t-res" className="grid gap-2">
+      <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
+        <h2 id="t-res" className="m-0 font-rotulo text-xl leading-[26px] font-normal md:text-2xl md:leading-[30px]">
+          Reseñas
+        </h2>
+        <Link href="/entrar" className={clasesBoton("secundario", "chico")}>
+          Escribir una reseña
+        </Link>
+      </div>
+
+      {promedio === null || cantidad === 0 ? (
+        <p className="m-0 border-b border-linea pb-5 text-rio-suave">Todavía nadie ha escrito una reseña. Si ya fuiste, cuéntale a los demás cómo te fue.</p>
+      ) : (
+        <div className="flex flex-wrap items-center gap-4">
+          <span className="text-[40px] leading-[44px] font-bold tabular-nums">{formato.format(promedio)}</span>
+          <div className="grid gap-0.5">
+            <FilaEstrellas n={promedio} />
+            <span className="text-sm leading-5 text-rio-suave">
+              {cantidad === 1 ? "1 reseña" : `${cantidad} reseñas`}
+              {ejemplo ? " de ejemplo" : ""}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {resenas.map((r) => (
+        <article key={r.id} className="grid gap-2 border-b border-linea py-5">
+          <div className="flex flex-wrap justify-between gap-2">
+            <b>{r.autor}</b>
+            <time dateTime={r.fecha} className="text-sm leading-5 text-rio-suave">
+              {fechaLarga(r.fecha)}
+            </time>
+          </div>
+          <FilaEstrellas n={r.estrellas} />
+          {/* Texto de usuario: React lo escapa; nunca se inserta como HTML */}
+          <p className="m-0">{r.texto}</p>
+          {r.respuesta && (
+            <div className="mt-1 rounded-xl border border-linea bg-papel-alto px-4 py-3 text-sm leading-5">
+              <strong className="mb-1 block">Respuesta del negocio</strong>
+              {r.respuesta}
+            </div>
+          )}
+        </article>
+      ))}
+    </section>
+  );
+}

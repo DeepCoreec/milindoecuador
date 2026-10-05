@@ -7,11 +7,8 @@ import { Migas } from "@/components/layout/Migas";
 import { Pie } from "@/components/layout/Pie";
 import { TarjetaResumen } from "@/components/lugares/TarjetaResumen";
 import { Boton } from "@/components/ui/Boton";
-import { getCategoria, getCategoriasBarra, getCiudad, getLugaresDeCategoria } from "@/lib/datos/lugares";
+import { getCategoria, getCategoriasBarra, getCiudad, getLugaresDeCategoria, tonoDeCategoria } from "@/lib/datos/lugares";
 import { leerFiltros } from "@/lib/validacion/filtros";
-
-/** Categorías de comida y compras usan el tono mango en las fotos vacías; el resto, celeste. */
-const TONO_MANGO = new Set(["restaurantes", "cafes", "vida-nocturna", "compras"]);
 
 async function cargar(params: PageProps<"/[ciudad]/[categoria]">["params"]) {
   const { ciudad: slugCiudad, categoria: slugCategoria } = await params;
@@ -34,7 +31,7 @@ export default async function PaginaCategoria({ params, searchParams }: PageProp
   ]);
   const ruta = `/${ciudad.slug}/${categoria.slug}`;
   const deEjemplo = lugares.length > 0 && lugares.every((l) => l.ejemplo) ? " de ejemplo" : "";
-  const tono = TONO_MANGO.has(categoria.slug) ? "mango" : "celeste";
+  const tono = tonoDeCategoria(categoria.slug);
 
   return (
     <>

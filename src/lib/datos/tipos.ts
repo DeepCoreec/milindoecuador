@@ -29,3 +29,27 @@ export type LugarResumen = {
   /** Negocio inventado para mostrar el diseño: lleva la insignia "Ejemplo". */
   ejemplo: boolean;
 };
+
+export type Foto = { src: string; alt: string };
+
+export type Resena = {
+  id: string;
+  autor: string;
+  /** Fecha en formato ISO (UTC). Se muestra en hora de Ecuador. */
+  fecha: string;
+  estrellas: 1 | 2 | 3 | 4 | 5;
+  texto: string;
+  respuesta?: string;
+};
+
+/** Todo lo que muestra la ficha de un lugar. */
+export type LugarDetalle = LugarResumen & {
+  /** La historia del lugar (columna `description`). */
+  descripcion: string;
+  horario: string | null;
+  direccion: string | null;
+  /** Solo números, con 593 delante (columna `whatsapp`). */
+  whatsapp: string | null;
+  fotos: Foto[];
+  resenas: Resena[];
+};
