@@ -5,10 +5,10 @@
 
 ## Estado actual
 
-- **Fase actual:** 1 · Base técnica (abierta solo por 1.3, 1.6 y 1.7, que esperan las cuentas del usuario) y, en paralelo con permiso del usuario, la fase 2 en lo que no necesita la base de datos
+- **Fase actual:** 1 · Base técnica (abierta solo por 1.3, 1.6 y 1.7, que esperan las cuentas del usuario) y fase 2 (todo hecho menos 2.8, que espera fotos y Supabase)
 - **Último paso terminado:** 0.5 Maquetas aprobadas (fase 0 cerrada)
 - **Modo de trabajo (2026-10-05):** el usuario autorizó avanzar paso a paso según el plan sin pedir permiso entre pasos. Se sigue respetando: nada fuera del plan, nada de librerías nuevas sin permiso y verificar y guardar cada paso
-- **Siguiente paso:** 2.7 `src/app/sitemap.ts` (inicio, ciudades, categorías y lugares reales; los de ejemplo NO) y `src/app/robots.ts` (permite todo menos `/dev`, `/admin`, `/cuenta`, `/negocios/panel` y `/buscar`; enlaza al sitemap), ambos con `urlSitio()`
+- **Siguiente paso:** la fase 2 terminó todo lo que no depende del usuario. Lo que sigue necesita sus cuentas: **1.3** (recibir Project URL y clave anon de Supabase y ponerlas en `.env.local` y en Vercel), luego **1.6** (aplicar la migración y `seed.sql` en Supabase y comprobar las reglas contra la base real) y **2.8c**. Mientras no lleguen, NO adelantar la fase 3: su puerta exige probar con Supabase real
 - **Bloqueos / esperando al usuario:** ajustes de seguridad en GitHub (1.2); crear el proyecto en Supabase y pasar URL y clave pública (1.3); cuenta de Vercel (1.7)
 
 ## Fase 0 · Plan y diseño
@@ -44,7 +44,10 @@
 - [x] 2.5 Buscador `/buscar` — 2026-10-05: `q` validado con Zod (2 a 80 caracteres); busca sin importar tildes ni mayúsculas en nombre, datos, sector y categoría, exige todas las palabras y pone primero las coincidencias en el nombre. Estado vacío con la barra de categorías. Resultados con `noindex`. Probado con texto malicioso (`<script>`): se muestra como texto. 9 pruebas nuevas (`tests/unit/buscar.test.ts`)
 - [x] 2.6 Enlaces para compartir — 2026-10-05: `metadataBase` desde `NEXT_PUBLIC_SITE_URL` (`src/lib/sitio.ts`, con respaldo local), título, descripción, dirección canónica y Open Graph en cada página. Imágenes al compartir (1200×630) para el inicio, la ciudad, cada categoría y cada lugar, con el panorama en pixel art y las fuentes del proyecto (`src/app/_og/`; las fuentes se pasaron a .ttf porque el generador no lee .woff2). Los negocios de ejemplo dicen "Ejemplo" también en su tarjeta. Botón "Compartir" en la ficha: menú del teléfono o, si no existe, copia el enlace y lo avisa
 - [x] 2.7 `sitemap.ts` y `robots.ts` — 2026-10-05: el sitemap lista inicio, ciudades, categorías y solo lugares reales (los de ejemplo no); robots bloquea `/dev/`, `/admin`, `/cuenta`, `/auth/` y `/buscar`. Además, página 404 propia (`not-found.tsx`, que está en la arquitectura) con buscador y botón al inicio
-- [ ] 2.8 Cargar 20 lugares reales con fotos propias (datos en `supabase/seed.sql` o desde el panel)
+- [~] 2.8 Cargar 20 lugares reales con fotos propias (datos en `supabase/seed.sql` o desde el panel)
+  - [x] 2.8a 2026-10-05: `supabase/seed.sql` con 4 lugares turísticos reales (Malecón 2000, Cerro Santa Ana, Parque Seminario, Isla Santay) como `borrador`; se puede ejecutar varias veces. Probado en PGlite (38 pruebas)
+  - [ ] 2.8b **Usuario:** elegir los otros 16 lugares (restaurantes, hoteles, paseos…) y tomar 3 fotos propias de cada uno: horizontales, con luz de día, sin caras de personas en primer plano, sin logos de otras marcas. Anotar por lugar: nombre, sector, dirección, horario, precio ($, $$, $$$) y WhatsApp si es negocio que aceptó aparecer
+  - [ ] 2.8c Con Supabase listo (1.3 y 1.6): subir las fotos al bucket `fotos-lugares`, completar `seed.sql`, publicar y cambiar `src/lib/datos/lugares.ts` para leer la base (dejar `muestra.ts` solo para desarrollo sin claves)
 - **Puerta:** 20 lugares reales cargados con fotos propias.
 
 ## Fase 3 · Usuarios y reseñas

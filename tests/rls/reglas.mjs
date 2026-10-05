@@ -150,6 +150,15 @@ check("el servidor inserta solicitudes", r.rows?.[0]?.status === "pendiente", r)
 r = await as("service_role", "", `insert into public.business_requests (business_name, category_id, city_id, contact_name, whatsapp) values ('X Y', $1, $2, 'Juan', '0991234567')`, [cat, gye]);
 check("WhatsApp con formato inválido rechazado", !!r.error, r);
 
+console.log("\nDatos iniciales (supabase/seed.sql)");
+const seed = readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8");
+await db.exec(seed);
+await db.exec(seed); // dos veces: no debe duplicar ni fallar
+r = await db.query(`select count(*)::int as n from public.places where slug in ('malecon-2000','cerro-santa-ana','parque-seminario','isla-santay') and status = 'borrador'`);
+check("seed carga los 4 lugares reales como borrador, sin duplicar", r.rows[0].n === 4, r.rows);
+r = await as("anon", "", `select id from public.places where slug = 'malecon-2000'`);
+check("un borrador no se ve en público", r.rows?.length === 0, r);
+
 console.log("\nRLS activado en todas las tablas");
 r = await db.query(`select tablename from pg_tables where schemaname='public' and not rowsecurity`);
 check("ninguna tabla sin RLS", r.rows.length === 0, r.rows);

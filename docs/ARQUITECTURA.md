@@ -106,7 +106,7 @@ milindoecuador/
 │   └── arte.mjs                  # convierte los afiches SVG de docs/arte/ en src/components/arte/afiches.tsx
 ├── tests/
 │   ├── unit/                     # Vitest (vitest.config.mts)
-│   ├── rls/reglas.mjs            # 36 pruebas de reglas de seguridad (PGlite, npm run test:rls)
+│   ├── rls/reglas.mjs            # 38 pruebas de reglas de seguridad y del seed (PGlite, npm run test:rls)
 │   └── e2e/                      # Playwright
 ├── .env.example                  # nombres de variables, sin valores reales
 └── next.config.ts                # cabeceras de seguridad
