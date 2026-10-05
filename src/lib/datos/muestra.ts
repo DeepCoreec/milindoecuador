@@ -1,3 +1,4 @@
+import { datosDe, TEXTO_CATEGORIA } from "./textos";
 import type { Categoria, Ciudad, LugarDetalle, LugarResumen } from "./tipos";
 
 /*
@@ -10,38 +11,39 @@ import type { Categoria, Ciudad, LugarDetalle, LugarResumen } from "./tipos";
 
 export const CIUDADES: Ciudad[] = [{ slug: "guayaquil", nombre: "Guayaquil" }];
 
-export const CATEGORIAS: Categoria[] = [
-  { slug: "restaurantes", nombre: "Restaurantes", principal: true, bajada: "Encebollado, cangrejo, ceviche y mucho más. Ordenados con los destacados primero." },
-  { slug: "hoteles", nombre: "Hoteles", principal: true, bajada: "Hostales, hoteles y casas para quedarte, cerca de lo que quieres ver." },
-  { slug: "turismo", nombre: "Lugares turísticos", nombreCorto: "Turismo", principal: true, bajada: "Lo que no te puedes perder en Guayaquil, del Malecón al Cerro Santa Ana." },
-  { slug: "ejercicio", nombre: "Dónde hacer ejercicio", nombreCorto: "Ejercicio", principal: true, bajada: "Parques para correr, ciclovías, canchas y gimnasios." },
-  { slug: "paseos", nombre: "Dónde pasear", nombreCorto: "Paseos", principal: true, bajada: "Malecones, parques y miradores para caminar sin apuro." },
-  { slug: "cafes", nombre: "Cafés y heladerías", principal: false, bajada: "Un café, un bolón o un helado para la tarde." },
-  { slug: "vida-nocturna", nombre: "Vida nocturna", principal: false, bajada: "Bares, música en vivo y dónde salir de noche." },
-  { slug: "museos", nombre: "Museos y cultura", principal: false, bajada: "Museos, galerías y la historia de la ciudad." },
-  { slug: "compras", nombre: "Compras y mercados", principal: false, bajada: "Mercados, artesanías y centros comerciales." },
-  { slug: "ninos", nombre: "Para niños", principal: false, bajada: "Planes para ir con los más pequeños." },
-  { slug: "naturaleza", nombre: "Naturaleza y aventura", principal: false, bajada: "Manglares, bosques secos y aire libre cerca de la ciudad." },
+const NOMBRES: [slug: string, nombre: string, principal: boolean][] = [
+  ["restaurantes", "Restaurantes", true],
+  ["hoteles", "Hoteles", true],
+  ["turismo", "Lugares turísticos", true],
+  ["ejercicio", "Dónde hacer ejercicio", true],
+  ["paseos", "Dónde pasear", true],
+  ["cafes", "Cafés y heladerías", false],
+  ["vida-nocturna", "Vida nocturna", false],
+  ["museos", "Museos y cultura", false],
+  ["compras", "Compras y mercados", false],
+  ["ninos", "Para niños", false],
+  ["naturaleza", "Naturaleza y aventura", false],
 ];
 
-/** Cómo se dice "en …" para cada sector: "en el centro", "en la Alborada". */
-const EN_SECTOR: Record<string, string> = { Centro: "el centro", Alborada: "la Alborada", Sur: "el sur" };
+/** Igual que las categorías que siembra la migración, con sus textos. */
+export const CATEGORIAS: Categoria[] = NOMBRES.map(([slug, nombre, principal]) => ({ slug, nombre, principal, ...TEXTO_CATEGORIA[slug] }));
 
 const HISTORIA_EJEMPLO =
   "[Ejemplo] Este negocio es inventado: sirve para mostrar cómo se verá una ficha. Aquí el dueño cuenta su historia, qué lo hace especial y qué pedir la primera vez.";
 
-type Opciones = Partial<Pick<LugarDetalle, "plan" | "descripcion" | "horario" | "resenas">>;
+type Opciones = Partial<Pick<LugarDetalle, "destacado" | "verificado" | "descripcion" | "horario" | "resenas">>;
 
 const resto = (slug: string, nombre: string, sector: string, promedio: number | null, cantidad: number, precio: 1 | 2 | 3, o: Opciones = {}): LugarDetalle => ({
   slug,
   categoria: "restaurantes",
   nombre,
   sector,
-  datos: `Restaurante en ${EN_SECTOR[sector] ?? sector}`,
+  datos: datosDe("restaurantes", sector),
   promedio,
   cantidad,
   precio,
-  plan: o.plan ?? "gratis",
+  destacado: o.destacado ?? false,
+  verificado: o.verificado ?? false,
   ejemplo: true,
   descripcion: o.descripcion ?? HISTORIA_EJEMPLO,
   horario: o.horario ?? "[Ejemplo] Martes a domingo, de 12:00 a 22:00",
@@ -51,17 +53,18 @@ const resto = (slug: string, nombre: string, sector: string, promedio: number | 
   resenas: o.resenas ?? [],
 });
 
-const turismo = (slug: string, nombre: string, sector: string, datos: string, extra: string, d: Pick<LugarDetalle, "descripcion" | "horario" | "direccion">): LugarDetalle => ({
-  slug, categoria: "turismo", nombre, sector, datos, promedio: null, cantidad: 0, precio: null, plan: "gratis", extra, ejemplo: false, whatsapp: null, fotos: [], resenas: [], ...d,
+const turismo = (slug: string, nombre: string, sector: string, extra: string, d: Pick<LugarDetalle, "descripcion" | "horario" | "direccion">): LugarDetalle => ({
+  slug, categoria: "turismo", nombre, sector, datos: datosDe("turismo", sector), promedio: null, cantidad: 0, precio: null, destacado: false, verificado: false, extra, ejemplo: false, whatsapp: null, fotos: [], resenas: [], ...d,
 });
 
 export const LUGARES: LugarDetalle[] = [
-  resto("la-sazon-del-estero", "La Sazón del Estero", "Centro", 4.8, 32, 1, { plan: "destacado" }),
-  resto("el-rincon-de-dona-rosa", "El Rincón de Doña Rosa", "Urdesa", 4.6, 18, 1, { plan: "verificado" }),
+  resto("la-sazon-del-estero", "La Sazón del Estero", "Centro", 4.8, 32, 1, { destacado: true }),
+  resto("el-rincon-de-dona-rosa", "El Rincón de Doña Rosa", "Urdesa", 4.6, 18, 1, { verificado: true }),
   resto("encebollados-el-puerto", "Encebollados El Puerto", "Alborada", 4.5, 41, 1),
   resto("picanteria-la-ria", "Picantería La Ría", "Sur", null, 0, 1),
   resto("cangrejal-dona-tere", "Cangrejal Doña Tere", "Urdesa", 4.8, 32, 2, {
-    plan: "destacado",
+    destacado: true,
+    verificado: true,
     descripcion:
       "[Ejemplo] Doña Tere empezó vendiendo cangrejos en una mesa frente a su casa. Hoy sus hijos atienden el local, pero la salsa sigue siendo la receta de ella, y los domingos todavía se sienta en la caja.",
     resenas: [
@@ -73,25 +76,25 @@ export const LUGARES: LugarDetalle[] = [
   resto("cafe-mirador-444", "Café Mirador 444", "Las Peñas", 4.7, 9, 1),
   resto("parrilla-del-salado", "Parrilla del Salado", "Centro", 4.2, 27, 3),
   resto("bolones-de-la-garzota", "Bolones de la Garzota", "La Garzota", null, 0, 1),
-  turismo("malecon-2000", "Malecón 2000", "Centro", "Paseo a orillas del río Guayas", "Entrada libre", {
+  turismo("malecon-2000", "Malecón 2000", "Centro", "Entrada libre", {
     descripcion:
       "Unos dos kilómetros y medio de paseo junto al río Guayas, con jardines, miradores y juegos. En el camino están la Torre Morisca y el Hemiciclo de la Rotonda, que recuerda el encuentro de Bolívar y San Martín en 1822. Al norte termina junto al barrio Las Peñas.",
     horario: "Todos los días",
     direccion: "Av. Malecón Simón Bolívar, centro",
   }),
-  turismo("cerro-santa-ana", "Cerro Santa Ana", "Las Peñas", "Las Peñas y la escalinata hasta el faro", "444 escalones", {
+  turismo("cerro-santa-ana", "Cerro Santa Ana", "Las Peñas", "444 escalones", {
     descripcion:
       "Una escalinata de 444 escalones numerados sube entre casas de colores, tiendas y cafés hasta el faro y la capilla de la cima, desde donde se ve el río y media ciudad. Al pie está Las Peñas, el barrio más antiguo de Guayaquil.",
     horario: "Todos los días",
     direccion: "Al norte del Malecón 2000, junto al barrio Las Peñas",
   }),
-  turismo("parque-seminario", "Parque Seminario", "Centro", "El parque de las iguanas, en el centro", "Entrada libre", {
+  turismo("parque-seminario", "Parque Seminario", "Centro", "Entrada libre", {
     descripcion:
       "También se llama Parque Bolívar, por la estatua ecuestre del Libertador que tiene en el centro. Es famoso por las iguanas que bajan de los árboles y caminan entre la gente, frente a la Catedral.",
     horario: "Todos los días",
     direccion: "Calles Chile y 10 de Agosto, frente a la Catedral",
   }),
-  turismo("isla-santay", "Isla Santay", "Durán", "Manglares, a pie o en bici por el puente", "Naturaleza", {
+  turismo("isla-santay", "Isla Santay", "Durán", "Naturaleza", {
     descripcion:
       "Una isla protegida en medio del río Guayas, con manglares, aves y senderos de madera. Se llega caminando o en bicicleta por el puente que sale del sur del malecón, y adentro vive una pequeña comunidad.",
     horario: "Todos los días",
@@ -103,6 +106,6 @@ export const ENCEBOLLADOS = ["la-sazon-del-estero", "el-rincon-de-dona-rosa", "e
 
 /** Quita los campos de la ficha para listar: así las listas no cargan historias ni reseñas. */
 export function resumen(l: LugarDetalle): LugarResumen {
-  const { slug, categoria, nombre, sector, datos, promedio, cantidad, precio, plan, extra, ejemplo } = l;
-  return { slug, categoria, nombre, sector, datos, promedio, cantidad, precio, plan, extra, ejemplo };
+  const { slug, categoria, nombre, sector, datos, promedio, cantidad, precio, destacado, verificado, extra, ejemplo } = l;
+  return { slug, categoria, nombre, sector, datos, promedio, cantidad, precio, destacado, verificado, extra, ejemplo };
 }

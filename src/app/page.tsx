@@ -31,11 +31,14 @@ function CabezaSeccion({ id, titulo, children }: { id: string; titulo: string; c
   );
 }
 
+// La portada se vuelve a generar cada 5 minutos con los lugares nuevos
+export const revalidate = 300;
+
 const ancho = "mx-auto w-full max-w-[1200px] px-4 md:px-8";
 const seccion = "py-12 min-[900px]:py-16";
 
 export default async function Inicio() {
-  const [categorias, { encebollados, imperdibles }] = await Promise.all([getCategoriasBarra("guayaquil"), getSeccionesInicio()]);
+  const [categorias, { encebollados, imperdibles, tituloComer }] = await Promise.all([getCategoriasBarra("guayaquil"), getSeccionesInicio()]);
 
   return (
     <>
@@ -60,25 +63,29 @@ export default async function Inicio() {
           <BarraCategorias categorias={categorias} />
         </section>
 
-        <section className={`${ancho} pt-6 pb-12 min-[900px]:pb-16`} aria-labelledby="t-ence">
-          <CabezaSeccion id="t-ence" titulo="Dónde comer encebollado">
-            <Boton href="/guayaquil/restaurantes" variante="texto">
-              Ver todos
-            </Boton>
-          </CabezaSeccion>
-          <Fila lugares={encebollados} tono="mango" />
-        </section>
-
-        <section className="border-y border-linea bg-papel-alto">
-          <div className={`${ancho} ${seccion}`} aria-labelledby="t-imp">
-            <CabezaSeccion id="t-imp" titulo="Imperdibles de Guayaquil">
-              <Boton href="/guayaquil/turismo" variante="texto">
-                Ver lugares turísticos
+        {encebollados.length > 0 && (
+          <section className={`${ancho} pt-6 pb-12 min-[900px]:pb-16`} aria-labelledby="t-ence">
+            <CabezaSeccion id="t-ence" titulo={tituloComer}>
+              <Boton href="/guayaquil/restaurantes" variante="texto">
+                Ver todos
               </Boton>
             </CabezaSeccion>
-            <Fila lugares={imperdibles} />
-          </div>
-        </section>
+            <Fila lugares={encebollados} tono="mango" />
+          </section>
+        )}
+
+        {imperdibles.length > 0 && (
+          <section className="border-y border-linea bg-papel-alto">
+            <div className={`${ancho} ${seccion}`} aria-labelledby="t-imp">
+              <CabezaSeccion id="t-imp" titulo="Imperdibles de Guayaquil">
+                <Boton href="/guayaquil/turismo" variante="texto">
+                  Ver lugares turísticos
+                </Boton>
+              </CabezaSeccion>
+              <Fila lugares={imperdibles} />
+            </div>
+          </section>
+        )}
 
         <section className={`${ancho} ${seccion}`} aria-labelledby="t-neg">
           <div className="grid items-center gap-6 rounded-[20px] bg-celeste-suave px-6 py-8 min-[900px]:grid-cols-[minmax(0,1fr)_auto] min-[900px]:px-12 min-[900px]:py-10">

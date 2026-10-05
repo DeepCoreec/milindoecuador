@@ -8,9 +8,9 @@ import { Pie } from "@/components/layout/Pie";
 import { Estrellas } from "@/components/lugares/Estrellas";
 import { BotonCompartir } from "@/components/lugares/BotonCompartir";
 import { Galeria } from "@/components/lugares/Galeria";
+import { InsigniasLugar } from "@/components/lugares/InsigniasLugar";
 import { Resenas } from "@/components/lugares/Resenas";
 import { clasesBoton } from "@/components/ui/Boton";
-import { Insignia } from "@/components/ui/Insignia";
 import { IconoConversacion, IconoUbicacion } from "@/components/ui/iconos";
 import { getCategoria, getCiudad, getLugar, tonoDeCategoria } from "@/lib/datos/lugares";
 import { enlaceComoLlegar, enlaceWhatsApp, mostrarWhatsApp } from "@/lib/enlaces";
@@ -68,13 +68,7 @@ export default async function FichaLugar({ params }: Props) {
 
         <div className="grid grid-cols-[minmax(0,1fr)] gap-8 pt-8 pb-16 [grid-template-areas:'cab'_'info'_'resto'] min-[900px]:grid-cols-[minmax(0,1fr)_360px] min-[900px]:items-start min-[900px]:gap-x-16 min-[900px]:gap-y-10 min-[900px]:[grid-template-areas:'cab_info'_'resto_info']">
           <div className="grid min-w-0 gap-3 [grid-area:cab]">
-            {(lugar.plan !== "gratis" || lugar.ejemplo) && (
-              <div className="flex flex-wrap gap-2">
-                {lugar.plan === "destacado" && <Insignia variante="destacado">Destacado</Insignia>}
-                {lugar.plan === "verificado" && <Insignia variante="verificado">Verificado</Insignia>}
-                {lugar.ejemplo && <Insignia variante="ejemplo">Ejemplo</Insignia>}
-              </div>
-            )}
+            <InsigniasLugar lugar={lugar} className="flex flex-wrap gap-2" />
             <h1 className="m-0 text-[28px] leading-[34px] font-bold tracking-[-0.01em] text-balance">{lugar.nombre}</h1>
             <p className="m-0 text-base leading-6 text-rio-suave">
               {lugar.datos}

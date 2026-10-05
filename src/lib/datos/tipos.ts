@@ -11,8 +11,6 @@ export type Categoria = {
   bajada: string;
 };
 
-export type Plan = "gratis" | "destacado" | "verificado";
-
 export type LugarResumen = {
   slug: string;
   categoria: string;
@@ -23,7 +21,10 @@ export type LugarResumen = {
   promedio: number | null;
   cantidad: number;
   precio: 1 | 2 | 3 | null;
-  plan: Plan;
+  /** Plan "Destacado" vigente: sale primero. */
+  destacado: boolean;
+  /** Plan "Verificado": el negocio confirmó sus datos. */
+  verificado: boolean;
   /** Dato corto para lugares sin precio, por ejemplo "Entrada libre". */
   extra?: string;
   /** Negocio inventado para mostrar el diseño: lleva la insignia "Ejemplo". */

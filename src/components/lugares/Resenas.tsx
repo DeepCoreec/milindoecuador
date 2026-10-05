@@ -6,7 +6,8 @@ import { fechaLarga } from "@/lib/enlaces";
 const formato = new Intl.NumberFormat("es-EC", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 
 function FilaEstrellas({ n }: { n: number }) {
-  const llenas = Math.round(n);
+  // 4,5 se dibuja con 4 estrellas llenas; desde 4,6, con 5 (no se infla la nota)
+  const llenas = Math.min(5, Math.max(0, Math.round(n - 0.01)));
   return (
     <span className="text-base leading-5 tracking-[0.1em]" role="img" aria-label={`${formato.format(n)} de 5 estrellas`}>
       <span className="text-estrella">{"★".repeat(llenas)}</span>

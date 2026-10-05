@@ -92,9 +92,11 @@ milindoecuador/
 │   │   │   ├── config.ts         # lee URL y clave pública; sin ellas la página funciona sin sesión
 │   │   │   ├── server.ts         # cliente con la sesión del usuario (componentes de servidor y acciones)
 │   │   │   ├── client.ts         # cliente para el navegador (solo clave pública)
+│   │   │   ├── publico.ts        # cliente sin sesión para leer el catálogo público (no usa cookies)
 │   │   │   └── admin.ts          # cliente con service_role; importa 'server-only'
 │   │   ├── datos/                # funciones de lectura: getLugar, getLugaresPorCategoria…
-│   │   │                         # hoy: tipos.ts, lugares.ts (datos de muestra con la forma final), filtrar.ts
+│   │   │                         # lugares.ts elige: base.ts (Supabase) si hay claves, muestra.ts si no;
+│   │   │                         # tipos.ts, textos.ts, filtrar.ts, buscar.ts
 │   │   ├── validacion/           # esquemas Zod compartidos (filtros.ts: filtros de la dirección)
 │   │   ├── captcha.ts            # verificación de Turnstile en el servidor
 │   │   └── auth.ts               # requireUsuario(), requireAdmin()

@@ -3,14 +3,14 @@ import { filtrarLugares, sectoresDe } from "@/lib/datos/filtrar";
 import type { LugarResumen } from "@/lib/datos/tipos";
 
 const lugar = (slug: string, o: Partial<LugarResumen>): LugarResumen => ({
-  slug, categoria: "restaurantes", nombre: slug, sector: "Centro", datos: "", promedio: null, cantidad: 0, precio: 1, plan: "gratis", ejemplo: true, ...o,
+  slug, categoria: "restaurantes", nombre: slug, sector: "Centro", datos: "", promedio: null, cantidad: 0, precio: 1, destacado: false, verificado: false, ejemplo: true, ...o,
 });
 
 const lista = [
   lugar("a", { promedio: 4.9, cantidad: 5, precio: 2, sector: "Urdesa" }),
-  lugar("b", { promedio: 4.1, cantidad: 80, plan: "destacado" }),
+  lugar("b", { promedio: 4.1, cantidad: 80, destacado: true }),
   lugar("c", { promedio: null, cantidad: 0, precio: 3 }),
-  lugar("d", { promedio: 4.5, cantidad: 10, plan: "verificado", sector: "Urdesa" }),
+  lugar("d", { promedio: 4.5, cantidad: 10, verificado: true, sector: "Urdesa" }),
 ];
 const nombres = (l: LugarResumen[]) => l.map((x) => x.slug);
 const base = { sector: null, precios: [], orden: "destacados" as const };

@@ -47,7 +47,8 @@
 - [~] 2.8 Cargar 20 lugares reales con fotos propias (datos en `supabase/seed.sql` o desde el panel)
   - [x] 2.8a 2026-10-05: `supabase/seed.sql` con 4 lugares turísticos reales (Malecón 2000, Cerro Santa Ana, Parque Seminario, Isla Santay) como `borrador`; se puede ejecutar varias veces. Probado en PGlite (38 pruebas)
   - [ ] 2.8b **Usuario:** elegir los otros 16 lugares (restaurantes, hoteles, paseos…) y tomar 3 fotos propias de cada uno: horizontales, con luz de día, sin caras de personas en primer plano, sin logos de otras marcas. Anotar por lugar: nombre, sector, dirección, horario, precio ($, $$, $$$) y WhatsApp si es negocio que aceptó aparecer
-  - [ ] 2.8c Con Supabase listo (1.3 y 1.6): subir las fotos al bucket `fotos-lugares`, completar `seed.sql`, publicar y cambiar `src/lib/datos/lugares.ts` para leer la base (dejar `muestra.ts` solo para desarrollo sin claves)
+  - [x] 2.8c-1 2026-10-05: la página ya lee Supabase cuando hay claves (`src/lib/datos/base.ts` con el cliente público `src/lib/supabase/publico.ts`) y usa `muestra.ts` cuando no las hay. Destacado solo si no venció `featured_until`. Fotos desde la URL pública del bucket (`next.config.ts` solo permite `*.supabase.co/storage/v1/object/public/fotos-lugares/**`). Inicio se regenera cada 5 minutos. **Probado contra Postgres 16 real + PostgREST 12** armados en la nube de Claude (no en el repo): la migración y el seed corren sin errores; borradores dan 404; reseñas ocultas no cuentan en el promedio; destacado vencido desaparece
+  - [ ] 2.8c-2 Con Supabase listo (1.3 y 1.6): subir las fotos al bucket `fotos-lugares`, completar `seed.sql` con los 20 lugares, publicar y revisar las páginas con la base real
 - **Puerta:** 20 lugares reales cargados con fotos propias.
 
 ## Fase 3 · Usuarios y reseñas
@@ -80,6 +81,8 @@
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
+- Búsqueda y filtros: hoy se cargan todos los lugares publicados de la ciudad y se filtra en el servidor (bien hasta unos cientos de lugares). Con más lugares, pasar la búsqueda a la base (texto completo en español)
+- Revisar en 5.4: `profiles.role` se puede leer en público (deja ver quién es admin); valorar una vista pública solo con `display_name`
 - **Grupos para salir juntos** (pedido del usuario, 2026-10-05): crear un grupo para ir a hacer algo en Guayaquil. Requiere reglas de seguridad: solo mayores de 18, puntos de encuentro públicos, reportar y bloquear
 - **Armar un plan**: elegir lugar, fecha y hora y compartir un enlace con tarjeta por WhatsApp con amigos (primer paso hacia los grupos)
 - Más categorías: playas cerca de Guayaquil, servicios útiles

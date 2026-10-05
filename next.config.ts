@@ -39,6 +39,10 @@ const cabecerasDeSeguridad = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false, // no anunciar qué tecnología usa el servidor
+  images: {
+    // Solo fotos del bucket público de Supabase (ningún otro sitio puede usar el optimizador)
+    remotePatterns: [{ protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/fotos-lugares/**" }],
+  },
   async headers() {
     return [{ source: "/(.*)", headers: cabecerasDeSeguridad }];
   },

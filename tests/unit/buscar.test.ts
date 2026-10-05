@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { buscarEn } from "@/lib/datos/buscar";
 import { buscarLugares } from "@/lib/datos/lugares";
 import { leerBusqueda, normalizar } from "@/lib/validacion/busqueda";
 
@@ -24,7 +25,14 @@ describe("buscarLugares", () => {
     expect((await nombres("restaurante")).length).toBeGreaterThan(5);
   });
   it("exige todas las palabras", async () => expect(await nombres("restaurante urdesa")).toHaveLength(2));
-  it("pone primero lo que coincide en el nombre", async () => expect(await nombres("manglar")).toEqual(["Sabor a Manglar", "Isla Santay"]));
+  it("pone primero lo que coincide en el nombre", () => {
+    const base = { categoria: "restaurantes", datos: "", promedio: null, cantidad: 0, precio: null, destacado: false, verificado: false, ejemplo: false, textoCategoria: "" };
+    const lista = [
+      { ...base, slug: "a", nombre: "Alfa", sector: "Manglar" },
+      { ...base, slug: "b", nombre: "Sabor a Manglar", sector: "Centro" },
+    ];
+    expect(buscarEn(lista, "manglar").map((l) => l.nombre)).toEqual(["Sabor a Manglar", "Alfa"]);
+  });
   it("los caracteres raros no rompen nada", async () => expect(await nombres("<script>%' or 1=1")).toEqual([]));
   it("otra ciudad no tiene lugares todavía", async () => expect(await buscarLugares("quito", "malecon")).toEqual([]));
 });

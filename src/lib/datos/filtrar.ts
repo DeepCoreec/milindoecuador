@@ -1,12 +1,13 @@
 import type { Filtros } from "@/lib/validacion/filtros";
-import type { LugarResumen, Plan } from "./tipos";
+import type { LugarResumen } from "./tipos";
 
 /*
  * Filtrar y ordenar lugares. Con Supabase esto lo hará la consulta;
  * mientras tanto se hace aquí, con las mismas reglas.
  */
 
-const PESO_PLAN: Record<Plan, number> = { destacado: 2, verificado: 1, gratis: 0 };
+/** Destacado pesa más que verificado; los dos juntos, más que cualquiera solo. */
+const peso = (l: LugarResumen) => (l.destacado ? 2 : 0) + (l.verificado ? 1 : 0);
 
 /** Mejor calificado primero; los que no tienen reseñas van al final. */
 function porCalificacion(a: LugarResumen, b: LugarResumen) {
@@ -22,7 +23,7 @@ export function filtrarLugares(lugares: LugarResumen[], f: Filtros): LugarResume
       ? (a: LugarResumen, b: LugarResumen) => b.cantidad - a.cantidad || porCalificacion(a, b)
       : f.orden === "calificacion"
         ? porCalificacion
-        : (a: LugarResumen, b: LugarResumen) => PESO_PLAN[b.plan] - PESO_PLAN[a.plan] || porCalificacion(a, b);
+        : (a: LugarResumen, b: LugarResumen) => peso(b) - peso(a) || porCalificacion(a, b);
   return quedan.sort(orden);
 }
 
