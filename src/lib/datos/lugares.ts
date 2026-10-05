@@ -1,5 +1,6 @@
 import type { CategoriaBarra } from "@/components/categorias/BarraCategorias";
 import type { Filtros } from "@/lib/validacion/filtros";
+import { buscarEn } from "./buscar";
 import { filtrarLugares, sectoresDe } from "./filtrar";
 import { CATEGORIAS, CIUDADES, ENCEBOLLADOS, LUGARES, resumen } from "./muestra";
 import type { Categoria, Ciudad, LugarDetalle } from "./tipos";
@@ -63,4 +64,13 @@ export async function getSeccionesInicio() {
 const TONO_MANGO = new Set(["restaurantes", "cafes", "vida-nocturna", "compras"]);
 export function tonoDeCategoria(categoria: string): "mango" | "celeste" {
   return TONO_MANGO.has(categoria) ? "mango" : "celeste";
+}
+
+/** Búsqueda de lugares de una ciudad por texto libre (ya validado). */
+export async function buscarLugares(ciudad: string, q: string) {
+  const nombres = new Map(CATEGORIAS.map((c) => [c.slug, c.nombre]));
+  return buscarEn(
+    deCiudad(ciudad).map((l) => ({ ...resumen(l), textoCategoria: nombres.get(l.categoria) ?? "" })),
+    q,
+  );
 }
