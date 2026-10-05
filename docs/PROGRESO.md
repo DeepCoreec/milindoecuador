@@ -9,7 +9,7 @@
 - **Último paso terminado:** 0.5 Maquetas aprobadas (fase 0 cerrada)
 - **Modo de trabajo (2026-10-05):** el usuario autorizó avanzar paso a paso según el plan sin pedir permiso entre pasos. Se sigue respetando: nada fuera del plan, nada de librerías nuevas sin permiso y verificar y guardar cada paso
 - **Entorno de prueba (solo en la nube de Claude, no en el repo):** Postgres 16 + PostgREST 12 + Supabase Auth 2.180 + buzón SMTP, armados en el scratchpad de la sesión con `arrancar.sh` y `dev.sh`. Si la sesión es nueva hay que volver a armarlo; sirve para probar antes de tener el Supabase real
-- **Siguiente paso:** 3.5 es del usuario (5 personas reales prueban con el Supabase real). En paralelo, fase 4: **4.1** formulario `/negocios/registro` según la maqueta "Registro" (Zod en el servidor, captcha, se guarda en `business_requests` con `admin.ts` porque la tabla no acepta escrituras directas) y página `/negocios/planes` con los planes del `docs/PLAN.md` (gratis, destacado 1 $ por 7 días, verificado 2 $)
+- **Siguiente paso:** 4.2 Panel `/admin` según la maqueta "Panel admin": `src/app/admin/layout.tsx` verifica el rol en el servidor con `requireAdmin()` (en `src/lib/auth.ts`, consulta `profiles.role`), resumen con contadores y lista de solicitudes (pendientes primero) para aprobar o rechazar con nota; cada acción vuelve a verificar el rol. Probar que un usuario normal no entra ni puede llamar las acciones
 - **Bloqueos / esperando al usuario:** ajustes de seguridad en GitHub (1.2); crear el proyecto en Supabase y pasar URL y clave pública (1.3); cuenta de Vercel (1.7)
 
 ## Fase 0 · Plan y diseño
@@ -63,7 +63,7 @@
 
 ## Fase 4 · Negocios y panel admin
 
-- [ ] 4.1 Formulario `/negocios/registro` con captcha y página `/negocios/planes`
+- [x] 4.1 Formulario `/negocios/registro` con captcha y página `/negocios/planes` — 2026-10-05: según la maqueta Registro; acepta el celular como lo escribe la gente ("099 123 4567") y lo guarda como 593…; errores por campo sin borrar lo escrito; Zod → captcha → `admin.ts` (la tabla no acepta escrituras directas). Al enviar ofrece "Avisar por WhatsApp" al número de la guía (`WHATSAPP_GUIA` en `src/lib/sitio.ts`), como dice el plan. `/negocios/planes` con los 3 planes del PLAN, pedido por WhatsApp y cómo se paga. 6 pruebas nuevas. Probado de punta a punta con el Supabase de prueba
 - [ ] 4.2 Panel `/admin`: solicitudes (aprobar o rechazar)
 - [ ] 4.3 Panel `/admin`: crear y editar fichas, subir fotos
 - [ ] 4.4 Panel `/admin`: reseñas reportadas (ocultar o mantener) y respuesta del negocio

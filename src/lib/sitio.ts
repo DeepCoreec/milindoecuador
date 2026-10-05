@@ -22,3 +22,6 @@ export function paraCompartir(titulo: string, descripcion: string, ruta: string)
     twitter: { card: "summary_large_image", title: titulo, description: descripcion },
   };
 }
+
+/** WhatsApp del dueño de la guía: recibe los avisos de solicitudes y los pedidos de planes (docs/PLAN.md). */
+export const WHATSAPP_GUIA = "593986225038";
