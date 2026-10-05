@@ -6,7 +6,7 @@
 ## Estado actual
 
 - **Fase actual:** 0 · Plan y diseño
-- **Último paso terminado:** 0.4 Sistema de diseño (artefacto + `docs/DISENO.md` + `docs/diseno-tokens.json`)
+- **Último paso terminado:** 0.4b Arte propio (Panorama y afiches de Categoría en `docs/arte/`)
 - **Siguiente paso:** 0.5 Maquetas en un artefacto de tipo Design, usando SOLO el sistema de diseño:
   inicio, categoría, ficha de lugar, registro de negocio y panel admin, en celular (390px) y escritorio.
   Lugares turísticos reales; negocios marcados como ejemplo.
@@ -18,6 +18,7 @@
 - [x] 0.2 Esquema técnico: CLAUDE.md, ARQUITECTURA.md, PROGRESO.md y migración SQL probada — 2026-10-05
 - [x] 0.3 Referencias de diseño — 2026-10-05: Airbnb, Time Out, TripAdvisor y Atlas Obscura; el usuario delegó la elección
 - [x] 0.4 Sistema de diseño — 2026-10-05: 21 colores (claro y oscuro, contraste verificado), 3 tipografías OFL, espacios, esquinas, 8 componentes y portada → `docs/DISENO.md`. Logo pendiente
+- [x] 0.4b Arte propio — 2026-10-05: a pedido del usuario, las casitas planas se reemplazaron por la ilustración Panorama y 5 afiches de Categoría (día y noche) → `docs/arte/`
 - [ ] 0.5 Maquetas en celular y computadora: inicio, categoría, ficha, registro de negocio, panel admin
 - [x] 0.6 Decisiones del plan — 2026-10-05: nombre, inicio de sesión con correo y Google, un solo admin, WhatsApp 593986225038
 - **Puerta:** el usuario aprueba las maquetas.
@@ -90,3 +91,4 @@
 | 2026-10-05 | Plan del proyecto, esquema técnico y migración SQL probada | Referencias de diseño y decisiones del usuario |
 | 2026-10-05 | Repositorio subido a GitHub; referencias de diseño y decisiones cerradas | 0.4 Sistema de diseño |
 | 2026-10-05 | Sistema de diseño publicado y revisado en claro y oscuro | 0.5 Maquetas |
+| 2026-10-05 | Arte propio: Panorama del Cerro Santa Ana y afiches de Categoría | Aprobación del usuario y 0.5 Maquetas |

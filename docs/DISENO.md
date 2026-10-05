@@ -7,8 +7,9 @@
 ## Idea
 
 Guía de ciudad editorial: mucho espacio, fotos reales como protagonistas y la identidad de Guayaquil
-en los detalles. El elemento propio de la marca es la **Fachada**: el selector de categorías con forma
-de casa de Las Peñas, cada categoría con su color.
+con **arte propio en estilo serigrafía**: la ilustración **Panorama** del Cerro Santa Ana (portada) y
+cinco afiches ilustrados para las **Categorías**, cada uno con el color de su categoría. De día hay sol;
+en modo oscuro es de noche, con ventanas encendidas y el faro alumbrando. Archivos y generadores en `docs/arte/`.
 
 ## Colores (modo claro / oscuro)
 
@@ -55,8 +56,14 @@ Las tres tienen licencia OFL; en la fase 1 sus archivos `.woff2` se sirven desde
 
 ## Componentes definidos
 
-Botón (principal, secundario, WhatsApp, texto) · Fachada · Buscador · Estrellas · Insignia (Destacado, Verificado, neutra) · Tarjeta de lugar · Reseña · Historia.
+Botón (principal, secundario, WhatsApp, texto) · Categoría (afiches ilustrados) · Panorama (ilustración) · Buscador · Estrellas · Insignia (Destacado, Verificado, neutra) · Tarjeta de lugar · Reseña · Historia.
 Las reglas de uso de cada uno están en el artefacto.
+
+## Ilustración
+
+- Se usa tal cual: sin recolorear, deformar, recortar ni poner texto encima.
+- Tinta `on-color` (no cambia entre modos); blanco de cal `papel-alto` de día y `rio` de noche.
+- Nuevas ilustraciones: formas planas, tinta `on-color`, un color de categoría de fondo, grano y un objeto reconocible de Guayaquil.
 
 ## Reglas que más se olvidan
 

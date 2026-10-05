@@ -1,0 +1,1123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 400" role="img" aria-label="Ilustración del Cerro Santa Ana: casas de colores, la escalinata y el faro sobre el río Guayas">
+<style>
+.cielo{fill:var(--celeste-suave)} .astro{fill:var(--mango)} .lejos{fill:var(--celeste);opacity:.35}
+.ladera{fill:var(--manglar)} .rio-agua{fill:var(--celeste)} .ola{stroke:var(--papel-alto);stroke-width:2;fill:none;stroke-linecap:round;opacity:.7}
+.malecon{fill:var(--papel-alto)} .tinta{fill:var(--on-color)} .trazo{stroke:var(--on-color);fill:none;stroke-linecap:round;stroke-linejoin:round}
+.blanco{fill:var(--papel-alto)} .cal{fill:var(--papel-alto)} .palma{fill:var(--on-color)} .palma-tronco{stroke:var(--on-color);fill:none;stroke-linecap:round} .flor{fill:var(--buganvilla)} .ventana{fill:var(--papel-alto)} .mango{fill:var(--mango)} .faro{fill:var(--faro)}
+.buganvilla{fill:var(--buganvilla)} .celeste{fill:var(--celeste)} .crema{fill:var(--mango-suave)}
+.escalon{stroke:var(--papel-alto);stroke-width:7;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.escalon-raya{stroke:var(--on-color);stroke-width:7;fill:none;stroke-dasharray:1.2 4.8;opacity:.55}
+.noche{opacity:0} .haz{fill:var(--mango);opacity:0}
+.grano{opacity:.16;mix-blend-mode:multiply}
+[data-theme="dark"] .cielo{fill:var(--papel)} [data-theme="dark"] .cal{fill:var(--rio);opacity:.88} [data-theme="dark"] .ola{stroke:var(--rio);opacity:.35} [data-theme="dark"] .escalon{stroke:var(--rio);opacity:.8} [data-theme="dark"] .palma{fill:var(--linea)} [data-theme="dark"] .palma-tronco{stroke:var(--linea)} [data-theme="dark"] .malecon{fill:var(--linea)} [data-theme="dark"] .astro{fill:var(--rio)}
+[data-theme="dark"] .ventana{fill:var(--mango)} [data-theme="dark"] .noche{opacity:1}
+[data-theme="dark"] .haz{opacity:.13} [data-theme="dark"] .rio-agua{fill:var(--celeste-suave)}
+[data-theme="dark"] .ladera{fill:var(--manglar);opacity:.7} [data-theme="dark"] .grano{mix-blend-mode:screen;opacity:.1}
+</style>
+<defs>
+<filter id="grano" x="0" y="0" width="100%" height="100%">
+<feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="3" stitchTiles="stitch"/>
+<feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1.4 -.55"/>
+</filter>
+<clipPath id="marco"><rect width="960" height="400"/></clipPath>
+</defs>
+<g clip-path="url(#marco)">
+<rect class="cielo" width="960" height="400"/>
+<circle class="astro" cx="150" cy="96" r="44"/>
+<circle class="noche cal" cx="300" cy="11" r="1.0"/>
+<circle class="noche cal" cx="270" cy="66" r="1.3"/>
+<circle class="noche cal" cx="606" cy="93" r="1.0"/>
+<circle class="noche cal" cx="475" cy="87" r="0.8"/>
+<circle class="noche cal" cx="597" cy="190" r="1.3"/>
+<circle class="noche cal" cx="828" cy="32" r="0.8"/>
+<circle class="noche cal" cx="661" cy="117" r="1.0"/>
+<circle class="noche cal" cx="765" cy="151" r="1.0"/>
+<circle class="noche cal" cx="494" cy="75" r="1.3"/>
+<circle class="noche cal" cx="64" cy="160" r="1.0"/>
+<circle class="noche cal" cx="383" cy="72" r="1.0"/>
+<circle class="noche cal" cx="605" cy="136" r="1.0"/>
+<circle class="noche cal" cx="844" cy="148" r="0.8"/>
+<circle class="noche cal" cx="391" cy="54" r="0.8"/>
+<circle class="noche cal" cx="856" cy="84" r="1.0"/>
+<circle class="noche cal" cx="340" cy="198" r="0.8"/>
+<circle class="noche cal" cx="505" cy="56" r="0.8"/>
+<circle class="noche cal" cx="235" cy="135" r="1.3"/>
+<circle class="noche cal" cx="700" cy="20" r="1.0"/>
+<circle class="noche cal" cx="83" cy="161" r="1.3"/>
+<circle class="noche cal" cx="288" cy="165" r="0.8"/>
+<circle class="noche cal" cx="939" cy="25" r="0.8"/>
+<circle class="noche cal" cx="539" cy="84" r="1.3"/>
+<circle class="noche cal" cx="348" cy="12" r="1.0"/>
+<circle class="noche cal" cx="657" cy="28" r="1.0"/>
+<circle class="noche cal" cx="413" cy="161" r="0.8"/>
+<circle class="noche cal" cx="556" cy="30" r="1.3"/>
+<circle class="noche cal" cx="557" cy="199" r="0.8"/>
+<circle class="noche cal" cx="929" cy="39" r="1.0"/>
+<circle class="noche cal" cx="784" cy="166" r="1.0"/>
+<circle class="noche cal" cx="230" cy="88" r="1.0"/>
+<circle class="noche cal" cx="909" cy="52" r="0.8"/>
+<circle class="noche cal" cx="305" cy="189" r="1.0"/>
+<circle class="noche cal" cx="201" cy="124" r="1.3"/>
+<circle class="noche cal" cx="700" cy="105" r="1.3"/>
+<circle class="noche cal" cx="289" cy="167" r="1.0"/>
+<circle class="noche cal" cx="208" cy="187" r="1.0"/>
+<circle class="noche cal" cx="60" cy="17" r="1.3"/>
+<circle class="noche cal" cx="209" cy="25" r="0.8"/>
+<rect class="lejos" x="720" y="285" width="27" height="45"/>
+<rect class="lejos" x="751" y="245" width="18" height="85"/>
+<rect class="lejos" x="773" y="246" width="18" height="84"/>
+<rect class="lejos" x="799" y="267" width="30" height="63"/>
+<rect class="lejos" x="832" y="202" width="18" height="128"/>
+<rect class="lejos" x="855" y="208" width="23" height="122"/>
+<rect class="lejos" x="882" y="216" width="19" height="114"/>
+<rect class="lejos" x="903" y="287" width="18" height="43"/>
+<rect class="lejos" x="927" y="232" width="21" height="98"/>
+<rect class="lejos" x="955" y="207" width="26" height="123"/>
+<path class="ladera" d="M0,330 L0,330.0 8,330.0 16,330.0 24,330.0 32,330.0 40,330.0 48,329.9 56,329.5 64,328.8 72,327.9 80,326.7 88,325.3 96,323.7 104,321.8 112,319.8 120,317.5 128,315.0 136,312.4 144,309.5 152,306.5 160,303.3 168,300.0 176,296.5 184,292.9 192,289.1 200,285.2 208,281.2 216,277.1 224,272.8 232,268.5 240,264.1 248,259.6 256,255.1 264,250.4 272,245.8 280,241.0 288,236.3 296,231.5 304,226.7 312,221.8 320,217.0 328,212.2 336,207.3 344,202.5 352,197.7 360,193.0 368,188.2 376,183.6 384,178.9 392,174.4 400,169.9 408,165.5 416,161.2 424,156.9 432,152.8 440,148.8 448,144.9 456,141.1 464,137.5 472,134.0 480,130.7 488,127.5 496,124.5 504,121.6 512,119.0 520,116.5 528,114.2 536,112.2 544,110.3 552,108.7 560,107.3 568,106.1 576,105.2 584,104.5 592,104.1 600,104.0 608,104.0 616,104.0 624,104.0 632,104.0 640,104.0 648,104.0 656,104.0 664,104.0 672,104.0 680,104.0 688,104.0 696,104.0 704,104.1 712,105.0 720,106.7 728,109.1 736,112.2 744,116.0 752,120.4 760,125.4 768,130.8 776,136.6 784,142.8 792,149.3 800,156.1 808,163.1 816,170.3 824,177.5 832,184.8 840,192.1 848,199.3 856,206.4 864,213.3 872,220.0 880,226.3 888,232.4 896,238.0 904,243.2 912,247.8 920,251.9 928,255.4 936,258.2 944,260.3 952,261.6 960,262.0 L960,330 Z"/>
+<polygon class="haz" points="640,36 410,20 410,50"/>
+<polygon class="haz" points="640,36 870,20 870,50"/>
+<rect class="tinta" x="624" y="98" width="32" height="8" rx="2"/>
+<polygon class="cal" points="628,98 652,98 648,40 632,40"/>
+<polygon class="celeste" points="629.4,56 650.6,56 650.2,63 629.8,63"/>
+<polygon class="celeste" points="629.4,76 650.6,76 650.2,83 629.8,83"/>
+<rect class="tinta" x="631" y="30" width="18" height="11" rx="2"/>
+<rect class="ventana" x="635" y="32.5" width="10" height="6" rx="1"/>
+<polygon class="tinta" points="629,30 651,30 640,20"/>
+<path class="trazo" stroke-width="1.5" d="M626,98 L626,92 M654,98 L654,92"/>
+<rect class="cal" x="690" y="76" width="34" height="28"/>
+<polygon class="cal" points="688,77 726,77 707,62"/>
+<path class="tinta" d="M703,104 v-12 a4,4 0 0 1 8,0 v12 z"/>
+<rect class="cal" x="702" y="46" width="10" height="18"/>
+<path class="trazo" stroke-width="1.6" d="M707,46 v-9 M703,40 h8"/>
+<path class="trazo" stroke-width="1.6" d="M600,104 V44"/>
+<rect class="celeste" x="601" y="44.0" width="30" height="4.4"/>
+<rect class="cal" x="601" y="48.4" width="30" height="4.4"/>
+<rect class="celeste" x="601" y="52.8" width="30" height="4.4"/>
+<rect class="cal" x="601" y="57.2" width="30" height="4.4"/>
+<rect class="celeste" x="601" y="61.6" width="30" height="4.4"/>
+<circle class="celeste" cx="608" cy="54.8" r="1.4"/>
+<circle class="celeste" cx="616" cy="54.8" r="1.4"/>
+<circle class="celeste" cx="624" cy="54.8" r="1.4"/>
+<rect class="celeste" x="427" y="108" width="42" height="44"/>
+<polygon class="tinta" points="424,108 472,108 468,103 428,103"/>
+<rect class="ventana" x="435.7" y="116" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M439.7,116 v10"/>
+<rect class="ventana" x="452.3" y="116" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M456.3,116 v10"/>
+<rect class="ventana" x="435.7" y="134" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M439.7,134 v10"/>
+<rect class="ventana" x="452.3" y="134" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M456.3,134 v10"/>
+<rect class="celeste" x="471" y="118" width="34" height="34"/>
+<polygon class="tinta" points="468,118 508,118 504,113 472,113"/>
+<rect class="ventana" x="477.0" y="126" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M481.0,126 v10"/>
+<rect class="ventana" x="491.0" y="126" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M495.0,126 v10"/>
+<rect class="mango" x="509" y="108" width="52" height="44"/>
+<polygon class="tinta" points="506,108 564,108 560,103 510,103"/>
+<rect class="ventana" x="516.0" y="116" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M520.0,116 v10"/>
+<rect class="ventana" x="531.0" y="116" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M535.0,116 v10"/>
+<rect class="ventana" x="546.0" y="116" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M550.0,116 v10"/>
+<rect class="tinta" x="508" y="128" width="54" height="2"/>
+<path class="trazo" stroke-width=".9" d="M510.0,130 v5 M513.2,130 v5 M516.4,130 v5 M519.6,130 v5 M522.8,130 v5 M526.0,130 v5 M529.2,130 v5 M532.4,130 v5 M535.6,130 v5 M538.8,130 v5 M542.0,130 v5 M545.2,130 v5 M548.4,130 v5 M551.6,130 v5 M554.8,130 v5 M558.0,130 v5 M508,135 h54"/>
+<circle class="flor" cx="520.1" cy="132.0" r="2.6"/>
+<circle class="flor" cx="515.6" cy="126.3" r="1.8"/>
+<circle class="flor" cx="518.0" cy="130.9" r="2.1"/>
+<circle class="flor" cx="520.6" cy="133.2" r="1.8"/>
+<circle class="flor" cx="517.7" cy="132.1" r="2.6"/>
+<circle class="flor" cx="517.7" cy="131.2" r="1.9"/>
+<circle class="flor" cx="518.3" cy="129.4" r="2.0"/>
+<circle class="flor" cx="516.2" cy="136.8" r="2.6"/>
+<circle class="flor" cx="516.1" cy="126.3" r="1.9"/>
+<rect class="ventana" x="516.0" y="134" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M520.0,134 v10"/>
+<rect class="ventana" x="531.0" y="134" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M535.0,134 v10"/>
+<rect class="ventana" x="546.0" y="134" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M550.0,134 v10"/>
+<rect class="celeste" x="561" y="112" width="52" height="40"/>
+<polygon class="tinta" points="558,112 616,112 612,107 562,107"/>
+<rect class="ventana" x="568.0" y="120" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M572.0,120 v10"/>
+<rect class="ventana" x="583.0" y="120" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M587.0,120 v10"/>
+<rect class="ventana" x="598.0" y="120" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M602.0,120 v10"/>
+<rect class="tinta" x="560" y="132" width="54" height="2"/>
+<path class="trazo" stroke-width=".9" d="M562.0,134 v5 M565.2,134 v5 M568.4,134 v5 M571.6,134 v5 M574.8,134 v5 M578.0,134 v5 M581.2,134 v5 M584.4,134 v5 M587.6,134 v5 M590.8,134 v5 M594.0,134 v5 M597.2,134 v5 M600.4,134 v5 M603.6,134 v5 M606.8,134 v5 M610.0,134 v5 M560,139 h54"/>
+<rect class="ventana" x="568.0" y="138" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M572.0,138 v10"/>
+<rect class="ventana" x="583.0" y="138" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M587.0,138 v10"/>
+<rect class="ventana" x="598.0" y="138" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M602.0,138 v10"/>
+<rect class="celeste" x="617" y="112" width="34" height="40"/>
+<polygon class="tinta" points="614,112 654,112 650,107 618,107"/>
+<rect class="ventana" x="623.0" y="120" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M627.0,120 v10"/>
+<rect class="ventana" x="637.0" y="120" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M641.0,120 v10"/>
+<rect class="ventana" x="623.0" y="138" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M627.0,138 v10"/>
+<rect class="ventana" x="637.0" y="138" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M641.0,138 v10"/>
+<rect class="celeste" x="651" y="108" width="52" height="44"/>
+<polygon class="tinta" points="648,108 706,108 702,103 652,103"/>
+<rect class="ventana" x="658.0" y="116" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M662.0,116 v10"/>
+<rect class="ventana" x="673.0" y="116" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M677.0,116 v10"/>
+<rect class="ventana" x="688.0" y="116" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M692.0,116 v10"/>
+<rect class="tinta" x="650" y="128" width="54" height="2"/>
+<path class="trazo" stroke-width=".9" d="M652.0,130 v5 M655.2,130 v5 M658.4,130 v5 M661.6,130 v5 M664.8,130 v5 M668.0,130 v5 M671.2,130 v5 M674.4,130 v5 M677.6,130 v5 M680.8,130 v5 M684.0,130 v5 M687.2,130 v5 M690.4,130 v5 M693.6,130 v5 M696.8,130 v5 M700.0,130 v5 M650,135 h54"/>
+<circle class="flor" cx="688.1" cy="132.9" r="2.5"/>
+<circle class="flor" cx="687.8" cy="130.5" r="1.8"/>
+<circle class="flor" cx="688.3" cy="129.4" r="1.9"/>
+<circle class="flor" cx="690.6" cy="127.8" r="1.8"/>
+<circle class="flor" cx="691.4" cy="135.4" r="2.4"/>
+<circle class="flor" cx="688.7" cy="129.6" r="1.9"/>
+<circle class="flor" cx="693.7" cy="133.8" r="1.6"/>
+<circle class="flor" cx="686.9" cy="134.4" r="2.5"/>
+<circle class="flor" cx="685.9" cy="135.7" r="2.5"/>
+<rect class="ventana" x="658.0" y="134" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M662.0,134 v10"/>
+<rect class="ventana" x="673.0" y="134" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M677.0,134 v10"/>
+<rect class="ventana" x="688.0" y="134" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M692.0,134 v10"/>
+<rect class="celeste" x="707" y="118" width="30" height="34"/>
+<polygon class="tinta" points="704,118 740,118 736,113 708,113"/>
+<rect class="ventana" x="718.0" y="126" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M722.0,126 v10"/>
+<rect class="buganvilla" x="737" y="108" width="38" height="44"/>
+<polygon class="tinta" points="734,108 778,108 774,103 738,103"/>
+<rect class="ventana" x="744.3" y="116" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M748.3,116 v10"/>
+<rect class="ventana" x="759.7" y="116" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M763.7,116 v10"/>
+<rect class="tinta" x="736" y="128" width="40" height="2"/>
+<path class="trazo" stroke-width=".9" d="M738.0,130 v5 M741.2,130 v5 M744.4,130 v5 M747.6,130 v5 M750.8,130 v5 M754.0,130 v5 M757.2,130 v5 M760.4,130 v5 M763.6,130 v5 M766.8,130 v5 M770.0,130 v5 M736,135 h40"/>
+<circle class="flor" cx="757.6" cy="126.4" r="2.2"/>
+<circle class="flor" cx="757.3" cy="134.0" r="2.0"/>
+<circle class="flor" cx="759.2" cy="131.3" r="2.4"/>
+<circle class="flor" cx="761.2" cy="128.3" r="2.5"/>
+<circle class="flor" cx="754.0" cy="134.0" r="1.7"/>
+<circle class="flor" cx="763.2" cy="130.1" r="2.2"/>
+<circle class="flor" cx="758.2" cy="126.2" r="2.2"/>
+<circle class="flor" cx="759.6" cy="134.6" r="2.0"/>
+<circle class="flor" cx="759.5" cy="128.9" r="2.5"/>
+<rect class="ventana" x="744.3" y="134" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M748.3,134 v10"/>
+<rect class="ventana" x="759.7" y="134" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M763.7,134 v10"/>
+<rect class="mango" x="361" y="152" width="46" height="34"/>
+<polygon class="tinta" points="358,152 410,152 406,147 362,147"/>
+<rect class="ventana" x="371.0" y="160" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M375.0,160 v10"/>
+<rect class="ventana" x="389.0" y="160" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M393.0,160 v10"/>
+<rect class="mango" x="409" y="156" width="46" height="30"/>
+<polygon class="tinta" points="406,156 458,156 454,151 410,151"/>
+<rect class="ventana" x="419.0" y="164" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M423.0,164 v10"/>
+<rect class="ventana" x="437.0" y="164" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M441.0,164 v10"/>
+<rect class="celeste" x="455" y="138" width="34" height="48"/>
+<polygon class="tinta" points="452,138 492,138 488,133 456,133"/>
+<rect class="ventana" x="461.0" y="146" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M465.0,146 v10"/>
+<rect class="ventana" x="475.0" y="146" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M479.0,146 v10"/>
+<rect class="tinta" x="454" y="158" width="36" height="2"/>
+<path class="trazo" stroke-width=".9" d="M456.0,160 v5 M459.2,160 v5 M462.4,160 v5 M465.6,160 v5 M468.8,160 v5 M472.0,160 v5 M475.2,160 v5 M478.4,160 v5 M481.6,160 v5 M484.8,160 v5 M454,165 h36"/>
+<circle class="flor" cx="475.4" cy="164.1" r="1.7"/>
+<circle class="flor" cx="474.5" cy="157.9" r="2.2"/>
+<circle class="flor" cx="476.5" cy="165.6" r="2.2"/>
+<circle class="flor" cx="469.5" cy="156.8" r="2.5"/>
+<circle class="flor" cx="472.5" cy="162.1" r="2.2"/>
+<circle class="flor" cx="474.4" cy="157.2" r="1.8"/>
+<circle class="flor" cx="473.5" cy="156.1" r="1.9"/>
+<circle class="flor" cx="470.8" cy="162.4" r="2.5"/>
+<circle class="flor" cx="474.2" cy="156.4" r="2.3"/>
+<rect class="ventana" x="461.0" y="164" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M465.0,164 v10"/>
+<rect class="ventana" x="475.0" y="164" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M479.0,164 v10"/>
+<rect class="buganvilla" x="489" y="156" width="52" height="30"/>
+<polygon class="tinta" points="486,156 544,156 540,151 490,151"/>
+<rect class="ventana" x="496.0" y="164" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M500.0,164 v10"/>
+<rect class="ventana" x="511.0" y="164" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M515.0,164 v10"/>
+<rect class="ventana" x="526.0" y="164" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M530.0,164 v10"/>
+<rect class="celeste" x="541" y="156" width="34" height="30"/>
+<polygon class="tinta" points="538,156 578,156 574,151 542,151"/>
+<rect class="ventana" x="547.0" y="164" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M551.0,164 v10"/>
+<rect class="ventana" x="561.0" y="164" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M565.0,164 v10"/>
+<rect class="buganvilla" x="581" y="152" width="52" height="34"/>
+<polygon class="tinta" points="578,152 636,152 632,147 582,147"/>
+<rect class="ventana" x="588.0" y="160" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M592.0,160 v10"/>
+<rect class="ventana" x="603.0" y="160" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M607.0,160 v10"/>
+<rect class="ventana" x="618.0" y="160" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M622.0,160 v10"/>
+<rect class="faro" x="633" y="152" width="30" height="34"/>
+<polygon class="tinta" points="630,152 666,152 662,147 634,147"/>
+<rect class="ventana" x="644.0" y="160" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M648.0,160 v10"/>
+<rect class="faro" x="665" y="156" width="30" height="30"/>
+<polygon class="tinta" points="662,156 698,156 694,151 666,151"/>
+<rect class="ventana" x="676.0" y="164" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M680.0,164 v10"/>
+<rect class="mango" x="699" y="146" width="46" height="40"/>
+<polygon class="tinta" points="696,146 748,146 744,141 700,141"/>
+<rect class="ventana" x="709.0" y="154" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M713.0,154 v10"/>
+<rect class="ventana" x="727.0" y="154" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M731.0,154 v10"/>
+<rect class="ventana" x="709.0" y="172" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M713.0,172 v10"/>
+<rect class="ventana" x="727.0" y="172" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M731.0,172 v10"/>
+<rect class="celeste" x="745" y="142" width="46" height="44"/>
+<polygon class="tinta" points="742,142 794,142 790,137 746,137"/>
+<rect class="ventana" x="755.0" y="150" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M759.0,150 v10"/>
+<rect class="ventana" x="773.0" y="150" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M777.0,150 v10"/>
+<rect class="tinta" x="744" y="162" width="48" height="2"/>
+<path class="trazo" stroke-width=".9" d="M746.0,164 v5 M749.2,164 v5 M752.4,164 v5 M755.6,164 v5 M758.8,164 v5 M762.0,164 v5 M765.2,164 v5 M768.4,164 v5 M771.6,164 v5 M774.8,164 v5 M778.0,164 v5 M781.2,164 v5 M784.4,164 v5 M787.6,164 v5 M744,169 h48"/>
+<circle class="flor" cx="769.0" cy="162.5" r="2.1"/>
+<circle class="flor" cx="759.6" cy="161.0" r="2.0"/>
+<circle class="flor" cx="767.7" cy="163.8" r="2.0"/>
+<circle class="flor" cx="762.5" cy="168.1" r="2.6"/>
+<circle class="flor" cx="766.4" cy="160.1" r="2.5"/>
+<circle class="flor" cx="762.8" cy="160.9" r="1.7"/>
+<circle class="flor" cx="765.7" cy="170.3" r="2.6"/>
+<circle class="flor" cx="759.2" cy="169.6" r="1.8"/>
+<circle class="flor" cx="761.2" cy="160.1" r="2.3"/>
+<rect class="ventana" x="755.0" y="168" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M759.0,168 v10"/>
+<rect class="ventana" x="773.0" y="168" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M777.0,168 v10"/>
+<rect class="crema" x="797" y="152" width="34" height="34"/>
+<polygon class="tinta" points="794,152 834,152 830,147 798,147"/>
+<rect class="ventana" x="803.0" y="160" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M807.0,160 v10"/>
+<rect class="ventana" x="817.0" y="160" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M821.0,160 v10"/>
+<rect class="faro" x="301" y="186" width="52" height="34"/>
+<polygon class="tinta" points="298,186 356,186 352,181 302,181"/>
+<rect class="ventana" x="308.0" y="194" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M312.0,194 v10"/>
+<rect class="ventana" x="323.0" y="194" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M327.0,194 v10"/>
+<rect class="ventana" x="338.0" y="194" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M342.0,194 v10"/>
+<rect class="crema" x="359" y="180" width="30" height="40"/>
+<polygon class="tinta" points="356,180 392,180 388,175 360,175"/>
+<rect class="ventana" x="370.0" y="188" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M374.0,188 v10"/>
+<rect class="ventana" x="370.0" y="206" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M374.0,206 v10"/>
+<rect class="buganvilla" x="389" y="186" width="52" height="34"/>
+<polygon class="tinta" points="386,186 444,186 440,181 390,181"/>
+<rect class="ventana" x="396.0" y="194" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M400.0,194 v10"/>
+<rect class="ventana" x="411.0" y="194" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M415.0,194 v10"/>
+<rect class="ventana" x="426.0" y="194" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M430.0,194 v10"/>
+<rect class="crema" x="443" y="180" width="46" height="40"/>
+<polygon class="tinta" points="440,180 492,180 488,175 444,175"/>
+<rect class="ventana" x="453.0" y="188" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M457.0,188 v10"/>
+<rect class="ventana" x="471.0" y="188" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M475.0,188 v10"/>
+<rect class="tinta" x="442" y="200" width="48" height="2"/>
+<path class="trazo" stroke-width=".9" d="M444.0,202 v5 M447.2,202 v5 M450.4,202 v5 M453.6,202 v5 M456.8,202 v5 M460.0,202 v5 M463.2,202 v5 M466.4,202 v5 M469.6,202 v5 M472.8,202 v5 M476.0,202 v5 M479.2,202 v5 M482.4,202 v5 M485.6,202 v5 M442,207 h48"/>
+<rect class="ventana" x="453.0" y="206" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M457.0,206 v10"/>
+<rect class="ventana" x="471.0" y="206" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M475.0,206 v10"/>
+<rect class="celeste" x="491" y="172" width="52" height="48"/>
+<polygon class="tinta" points="488,172 546,172 542,167 492,167"/>
+<rect class="ventana" x="498.0" y="180" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M502.0,180 v10"/>
+<rect class="ventana" x="513.0" y="180" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M517.0,180 v10"/>
+<rect class="ventana" x="528.0" y="180" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M532.0,180 v10"/>
+<rect class="tinta" x="490" y="192" width="54" height="2"/>
+<path class="trazo" stroke-width=".9" d="M492.0,194 v5 M495.2,194 v5 M498.4,194 v5 M501.6,194 v5 M504.8,194 v5 M508.0,194 v5 M511.2,194 v5 M514.4,194 v5 M517.6,194 v5 M520.8,194 v5 M524.0,194 v5 M527.2,194 v5 M530.4,194 v5 M533.6,194 v5 M536.8,194 v5 M540.0,194 v5 M490,199 h54"/>
+<rect class="ventana" x="498.0" y="198" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M502.0,198 v10"/>
+<rect class="ventana" x="513.0" y="198" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M517.0,198 v10"/>
+<rect class="ventana" x="528.0" y="198" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M532.0,198 v10"/>
+<rect class="celeste" x="545" y="172" width="34" height="48"/>
+<polygon class="tinta" points="542,172 582,172 578,167 546,167"/>
+<rect class="ventana" x="551.0" y="180" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M555.0,180 v10"/>
+<rect class="ventana" x="565.0" y="180" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M569.0,180 v10"/>
+<rect class="tinta" x="544" y="192" width="36" height="2"/>
+<path class="trazo" stroke-width=".9" d="M546.0,194 v5 M549.2,194 v5 M552.4,194 v5 M555.6,194 v5 M558.8,194 v5 M562.0,194 v5 M565.2,194 v5 M568.4,194 v5 M571.6,194 v5 M574.8,194 v5 M544,199 h36"/>
+<circle class="flor" cx="552.2" cy="191.2" r="2.0"/>
+<circle class="flor" cx="551.6" cy="196.7" r="2.5"/>
+<circle class="flor" cx="559.9" cy="194.1" r="1.9"/>
+<circle class="flor" cx="557.7" cy="200.9" r="2.3"/>
+<circle class="flor" cx="552.0" cy="199.1" r="1.9"/>
+<circle class="flor" cx="559.9" cy="200.0" r="2.0"/>
+<circle class="flor" cx="552.2" cy="199.3" r="2.3"/>
+<circle class="flor" cx="555.5" cy="194.5" r="2.3"/>
+<circle class="flor" cx="558.7" cy="194.7" r="2.4"/>
+<rect class="ventana" x="551.0" y="198" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M555.0,198 v10"/>
+<rect class="ventana" x="565.0" y="198" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M569.0,198 v10"/>
+<rect class="mango" x="581" y="190" width="38" height="30"/>
+<polygon class="tinta" points="578,190 622,190 618,185 582,185"/>
+<rect class="ventana" x="588.3" y="198" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M592.3,198 v10"/>
+<rect class="ventana" x="603.7" y="198" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M607.7,198 v10"/>
+<rect class="celeste" x="623" y="190" width="52" height="30"/>
+<polygon class="tinta" points="620,190 678,190 674,185 624,185"/>
+<rect class="ventana" x="630.0" y="198" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M634.0,198 v10"/>
+<rect class="ventana" x="645.0" y="198" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M649.0,198 v10"/>
+<rect class="ventana" x="660.0" y="198" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M664.0,198 v10"/>
+<rect class="mango" x="679" y="180" width="42" height="40"/>
+<polygon class="tinta" points="676,180 724,180 720,175 680,175"/>
+<rect class="ventana" x="687.7" y="188" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M691.7,188 v10"/>
+<rect class="ventana" x="704.3" y="188" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M708.3,188 v10"/>
+<rect class="tinta" x="678" y="200" width="44" height="2"/>
+<path class="trazo" stroke-width=".9" d="M680.0,202 v5 M683.2,202 v5 M686.4,202 v5 M689.6,202 v5 M692.8,202 v5 M696.0,202 v5 M699.2,202 v5 M702.4,202 v5 M705.6,202 v5 M708.8,202 v5 M712.0,202 v5 M715.2,202 v5 M718.4,202 v5 M678,207 h44"/>
+<rect class="ventana" x="687.7" y="206" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M691.7,206 v10"/>
+<rect class="ventana" x="704.3" y="206" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M708.3,206 v10"/>
+<rect class="crema" x="721" y="176" width="46" height="44"/>
+<polygon class="tinta" points="718,176 770,176 766,171 722,171"/>
+<rect class="ventana" x="731.0" y="184" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M735.0,184 v10"/>
+<rect class="ventana" x="749.0" y="184" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M753.0,184 v10"/>
+<rect class="tinta" x="720" y="196" width="48" height="2"/>
+<path class="trazo" stroke-width=".9" d="M722.0,198 v5 M725.2,198 v5 M728.4,198 v5 M731.6,198 v5 M734.8,198 v5 M738.0,198 v5 M741.2,198 v5 M744.4,198 v5 M747.6,198 v5 M750.8,198 v5 M754.0,198 v5 M757.2,198 v5 M760.4,198 v5 M763.6,198 v5 M720,203 h48"/>
+<circle class="flor" cx="730.1" cy="204.0" r="2.2"/>
+<circle class="flor" cx="728.7" cy="199.1" r="2.1"/>
+<circle class="flor" cx="734.6" cy="202.2" r="2.3"/>
+<circle class="flor" cx="735.3" cy="194.2" r="1.6"/>
+<circle class="flor" cx="733.0" cy="204.9" r="1.6"/>
+<circle class="flor" cx="727.4" cy="195.3" r="1.9"/>
+<circle class="flor" cx="736.8" cy="202.1" r="2.4"/>
+<circle class="flor" cx="728.1" cy="199.6" r="1.9"/>
+<circle class="flor" cx="728.6" cy="204.8" r="1.7"/>
+<rect class="ventana" x="731.0" y="202" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M735.0,202 v10"/>
+<rect class="ventana" x="749.0" y="202" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M753.0,202 v10"/>
+<rect class="buganvilla" x="771" y="190" width="46" height="30"/>
+<polygon class="tinta" points="768,190 820,190 816,185 772,185"/>
+<rect class="ventana" x="781.0" y="198" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M785.0,198 v10"/>
+<rect class="ventana" x="799.0" y="198" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M803.0,198 v10"/>
+<rect class="buganvilla" x="819" y="176" width="52" height="44"/>
+<polygon class="tinta" points="816,176 874,176 870,171 820,171"/>
+<rect class="ventana" x="826.0" y="184" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M830.0,184 v10"/>
+<rect class="ventana" x="841.0" y="184" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M845.0,184 v10"/>
+<rect class="ventana" x="856.0" y="184" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M860.0,184 v10"/>
+<rect class="tinta" x="818" y="196" width="54" height="2"/>
+<path class="trazo" stroke-width=".9" d="M820.0,198 v5 M823.2,198 v5 M826.4,198 v5 M829.6,198 v5 M832.8,198 v5 M836.0,198 v5 M839.2,198 v5 M842.4,198 v5 M845.6,198 v5 M848.8,198 v5 M852.0,198 v5 M855.2,198 v5 M858.4,198 v5 M861.6,198 v5 M864.8,198 v5 M868.0,198 v5 M818,203 h54"/>
+<rect class="ventana" x="826.0" y="202" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M830.0,202 v10"/>
+<rect class="ventana" x="841.0" y="202" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M845.0,202 v10"/>
+<rect class="ventana" x="856.0" y="202" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M860.0,202 v10"/>
+<rect class="celeste" x="263" y="224" width="46" height="30"/>
+<polygon class="tinta" points="260,224 312,224 308,219 264,219"/>
+<rect class="ventana" x="273.0" y="232" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M277.0,232 v10"/>
+<rect class="ventana" x="291.0" y="232" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M295.0,232 v10"/>
+<rect class="mango" x="311" y="206" width="52" height="48"/>
+<polygon class="tinta" points="308,206 366,206 362,201 312,201"/>
+<rect class="ventana" x="318.0" y="214" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M322.0,214 v10"/>
+<rect class="ventana" x="333.0" y="214" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M337.0,214 v10"/>
+<rect class="ventana" x="348.0" y="214" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M352.0,214 v10"/>
+<rect class="tinta" x="310" y="226" width="54" height="2"/>
+<path class="trazo" stroke-width=".9" d="M312.0,228 v5 M315.2,228 v5 M318.4,228 v5 M321.6,228 v5 M324.8,228 v5 M328.0,228 v5 M331.2,228 v5 M334.4,228 v5 M337.6,228 v5 M340.8,228 v5 M344.0,228 v5 M347.2,228 v5 M350.4,228 v5 M353.6,228 v5 M356.8,228 v5 M360.0,228 v5 M310,233 h54"/>
+<rect class="ventana" x="318.0" y="232" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M322.0,232 v10"/>
+<rect class="ventana" x="333.0" y="232" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M337.0,232 v10"/>
+<rect class="ventana" x="348.0" y="232" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M352.0,232 v10"/>
+<rect class="celeste" x="369" y="220" width="52" height="34"/>
+<polygon class="tinta" points="366,220 424,220 420,215 370,215"/>
+<rect class="ventana" x="376.0" y="228" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M380.0,228 v10"/>
+<rect class="ventana" x="391.0" y="228" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M395.0,228 v10"/>
+<rect class="ventana" x="406.0" y="228" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M410.0,228 v10"/>
+<rect class="buganvilla" x="425" y="214" width="46" height="40"/>
+<polygon class="tinta" points="422,214 474,214 470,209 426,209"/>
+<rect class="ventana" x="435.0" y="222" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M439.0,222 v10"/>
+<rect class="ventana" x="453.0" y="222" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M457.0,222 v10"/>
+<rect class="tinta" x="424" y="234" width="48" height="2"/>
+<path class="trazo" stroke-width=".9" d="M426.0,236 v5 M429.2,236 v5 M432.4,236 v5 M435.6,236 v5 M438.8,236 v5 M442.0,236 v5 M445.2,236 v5 M448.4,236 v5 M451.6,236 v5 M454.8,236 v5 M458.0,236 v5 M461.2,236 v5 M464.4,236 v5 M467.6,236 v5 M424,241 h48"/>
+<circle class="flor" cx="446.9" cy="242.4" r="2.2"/>
+<circle class="flor" cx="444.6" cy="235.9" r="2.5"/>
+<circle class="flor" cx="440.1" cy="240.4" r="2.4"/>
+<circle class="flor" cx="440.5" cy="239.7" r="1.8"/>
+<circle class="flor" cx="443.1" cy="234.1" r="2.4"/>
+<circle class="flor" cx="442.5" cy="241.3" r="1.8"/>
+<circle class="flor" cx="446.8" cy="236.4" r="2.2"/>
+<circle class="flor" cx="448.0" cy="241.8" r="2.6"/>
+<circle class="flor" cx="439.8" cy="232.7" r="2.2"/>
+<rect class="ventana" x="435.0" y="240" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M439.0,240 v10"/>
+<rect class="ventana" x="453.0" y="240" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M457.0,240 v10"/>
+<rect class="buganvilla" x="473" y="214" width="46" height="40"/>
+<polygon class="tinta" points="470,214 522,214 518,209 474,209"/>
+<rect class="ventana" x="483.0" y="222" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M487.0,222 v10"/>
+<rect class="ventana" x="501.0" y="222" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M505.0,222 v10"/>
+<rect class="tinta" x="472" y="234" width="48" height="2"/>
+<path class="trazo" stroke-width=".9" d="M474.0,236 v5 M477.2,236 v5 M480.4,236 v5 M483.6,236 v5 M486.8,236 v5 M490.0,236 v5 M493.2,236 v5 M496.4,236 v5 M499.6,236 v5 M502.8,236 v5 M506.0,236 v5 M509.2,236 v5 M512.4,236 v5 M515.6,236 v5 M472,241 h48"/>
+<rect class="ventana" x="483.0" y="240" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M487.0,240 v10"/>
+<rect class="ventana" x="501.0" y="240" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M505.0,240 v10"/>
+<rect class="buganvilla" x="521" y="220" width="52" height="34"/>
+<polygon class="tinta" points="518,220 576,220 572,215 522,215"/>
+<rect class="ventana" x="528.0" y="228" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M532.0,228 v10"/>
+<rect class="ventana" x="543.0" y="228" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M547.0,228 v10"/>
+<rect class="ventana" x="558.0" y="228" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M562.0,228 v10"/>
+<rect class="faro" x="575" y="210" width="30" height="44"/>
+<polygon class="tinta" points="572,210 608,210 604,205 576,205"/>
+<rect class="ventana" x="586.0" y="218" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M590.0,218 v10"/>
+<rect class="ventana" x="586.0" y="236" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M590.0,236 v10"/>
+<rect class="crema" x="607" y="214" width="46" height="40"/>
+<polygon class="tinta" points="604,214 656,214 652,209 608,209"/>
+<rect class="ventana" x="617.0" y="222" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M621.0,222 v10"/>
+<rect class="ventana" x="635.0" y="222" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M639.0,222 v10"/>
+<rect class="tinta" x="606" y="234" width="48" height="2"/>
+<path class="trazo" stroke-width=".9" d="M608.0,236 v5 M611.2,236 v5 M614.4,236 v5 M617.6,236 v5 M620.8,236 v5 M624.0,236 v5 M627.2,236 v5 M630.4,236 v5 M633.6,236 v5 M636.8,236 v5 M640.0,236 v5 M643.2,236 v5 M646.4,236 v5 M649.6,236 v5 M606,241 h48"/>
+<circle class="flor" cx="648.2" cy="236.0" r="2.2"/>
+<circle class="flor" cx="650.8" cy="236.0" r="1.8"/>
+<circle class="flor" cx="644.9" cy="242.2" r="2.4"/>
+<circle class="flor" cx="647.4" cy="233.1" r="2.0"/>
+<circle class="flor" cx="642.1" cy="237.6" r="2.3"/>
+<circle class="flor" cx="643.6" cy="233.1" r="2.5"/>
+<circle class="flor" cx="648.3" cy="236.4" r="1.8"/>
+<circle class="flor" cx="642.8" cy="233.5" r="2.3"/>
+<circle class="flor" cx="645.0" cy="236.3" r="2.6"/>
+<rect class="ventana" x="617.0" y="240" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M621.0,240 v10"/>
+<rect class="ventana" x="635.0" y="240" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M639.0,240 v10"/>
+<rect class="crema" x="657" y="210" width="42" height="44"/>
+<polygon class="tinta" points="654,210 702,210 698,205 658,205"/>
+<rect class="ventana" x="665.7" y="218" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M669.7,218 v10"/>
+<rect class="ventana" x="682.3" y="218" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M686.3,218 v10"/>
+<rect class="tinta" x="656" y="230" width="44" height="2"/>
+<path class="trazo" stroke-width=".9" d="M658.0,232 v5 M661.2,232 v5 M664.4,232 v5 M667.6,232 v5 M670.8,232 v5 M674.0,232 v5 M677.2,232 v5 M680.4,232 v5 M683.6,232 v5 M686.8,232 v5 M690.0,232 v5 M693.2,232 v5 M696.4,232 v5 M656,237 h44"/>
+<rect class="ventana" x="665.7" y="236" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M669.7,236 v10"/>
+<rect class="ventana" x="682.3" y="236" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M686.3,236 v10"/>
+<rect class="cal" x="703" y="206" width="46" height="48"/>
+<polygon class="tinta" points="700,206 752,206 748,201 704,201"/>
+<rect class="ventana" x="713.0" y="214" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M717.0,214 v10"/>
+<rect class="ventana" x="731.0" y="214" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M735.0,214 v10"/>
+<rect class="ventana" x="713.0" y="232" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M717.0,232 v10"/>
+<rect class="ventana" x="731.0" y="232" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M735.0,232 v10"/>
+<rect class="cal" x="749" y="224" width="30" height="30"/>
+<polygon class="tinta" points="746,224 782,224 778,219 750,219"/>
+<rect class="ventana" x="760.0" y="232" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M764.0,232 v10"/>
+<rect class="mango" x="785" y="224" width="38" height="30"/>
+<polygon class="tinta" points="782,224 826,224 822,219 786,219"/>
+<rect class="ventana" x="792.3" y="232" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M796.3,232 v10"/>
+<rect class="ventana" x="807.7" y="232" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M811.7,232 v10"/>
+<rect class="faro" x="823" y="220" width="38" height="34"/>
+<polygon class="tinta" points="820,220 864,220 860,215 824,215"/>
+<rect class="ventana" x="830.3" y="228" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M834.3,228 v10"/>
+<rect class="ventana" x="845.7" y="228" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M849.7,228 v10"/>
+<rect class="mango" x="861" y="220" width="38" height="34"/>
+<polygon class="tinta" points="858,220 902,220 898,215 862,215"/>
+<rect class="ventana" x="868.3" y="228" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M872.3,228 v10"/>
+<rect class="ventana" x="883.7" y="228" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M887.7,228 v10"/>
+<rect class="celeste" x="195" y="248" width="38" height="40"/>
+<polygon class="tinta" points="192,248 236,248 232,243 196,243"/>
+<rect class="ventana" x="202.3" y="256" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M206.3,256 v10"/>
+<rect class="ventana" x="217.7" y="256" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M221.7,256 v10"/>
+<rect class="ventana" x="202.3" y="274" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M206.3,274 v10"/>
+<rect class="ventana" x="217.7" y="274" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M221.7,274 v10"/>
+<rect class="buganvilla" x="239" y="244" width="38" height="44"/>
+<polygon class="tinta" points="236,244 280,244 276,239 240,239"/>
+<rect class="ventana" x="246.3" y="252" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M250.3,252 v10"/>
+<rect class="ventana" x="261.7" y="252" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M265.7,252 v10"/>
+<rect class="tinta" x="238" y="264" width="40" height="2"/>
+<path class="trazo" stroke-width=".9" d="M240.0,266 v5 M243.2,266 v5 M246.4,266 v5 M249.6,266 v5 M252.8,266 v5 M256.0,266 v5 M259.2,266 v5 M262.4,266 v5 M265.6,266 v5 M268.8,266 v5 M272.0,266 v5 M238,271 h40"/>
+<circle class="flor" cx="260.4" cy="266.5" r="2.3"/>
+<circle class="flor" cx="265.0" cy="264.7" r="2.0"/>
+<circle class="flor" cx="266.5" cy="265.5" r="2.2"/>
+<circle class="flor" cx="260.7" cy="268.7" r="1.7"/>
+<circle class="flor" cx="261.9" cy="263.6" r="1.9"/>
+<circle class="flor" cx="265.7" cy="266.9" r="2.5"/>
+<circle class="flor" cx="266.5" cy="266.8" r="2.4"/>
+<circle class="flor" cx="269.8" cy="269.7" r="2.3"/>
+<circle class="flor" cx="266.5" cy="263.9" r="1.8"/>
+<rect class="ventana" x="246.3" y="270" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M250.3,270 v10"/>
+<rect class="ventana" x="261.7" y="270" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M265.7,270 v10"/>
+<rect class="mango" x="281" y="254" width="52" height="34"/>
+<polygon class="tinta" points="278,254 336,254 332,249 282,249"/>
+<rect class="ventana" x="288.0" y="262" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M292.0,262 v10"/>
+<rect class="ventana" x="303.0" y="262" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M307.0,262 v10"/>
+<rect class="ventana" x="318.0" y="262" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M322.0,262 v10"/>
+<rect class="buganvilla" x="339" y="240" width="42" height="48"/>
+<polygon class="tinta" points="336,240 384,240 380,235 340,235"/>
+<rect class="ventana" x="347.7" y="248" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M351.7,248 v10"/>
+<rect class="ventana" x="364.3" y="248" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M368.3,248 v10"/>
+<rect class="tinta" x="338" y="260" width="44" height="2"/>
+<path class="trazo" stroke-width=".9" d="M340.0,262 v5 M343.2,262 v5 M346.4,262 v5 M349.6,262 v5 M352.8,262 v5 M356.0,262 v5 M359.2,262 v5 M362.4,262 v5 M365.6,262 v5 M368.8,262 v5 M372.0,262 v5 M375.2,262 v5 M378.4,262 v5 M338,267 h44"/>
+<rect class="ventana" x="347.7" y="266" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M351.7,266 v10"/>
+<rect class="ventana" x="364.3" y="266" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M368.3,266 v10"/>
+<rect class="celeste" x="383" y="240" width="42" height="48"/>
+<polygon class="tinta" points="380,240 428,240 424,235 384,235"/>
+<rect class="ventana" x="391.7" y="248" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M395.7,248 v10"/>
+<rect class="ventana" x="408.3" y="248" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M412.3,248 v10"/>
+<rect class="ventana" x="391.7" y="266" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M395.7,266 v10"/>
+<rect class="ventana" x="408.3" y="266" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M412.3,266 v10"/>
+<rect class="celeste" x="427" y="248" width="52" height="40"/>
+<polygon class="tinta" points="424,248 482,248 478,243 428,243"/>
+<rect class="ventana" x="434.0" y="256" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M438.0,256 v10"/>
+<rect class="ventana" x="449.0" y="256" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M453.0,256 v10"/>
+<rect class="ventana" x="464.0" y="256" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M468.0,256 v10"/>
+<rect class="tinta" x="426" y="268" width="54" height="2"/>
+<path class="trazo" stroke-width=".9" d="M428.0,270 v5 M431.2,270 v5 M434.4,270 v5 M437.6,270 v5 M440.8,270 v5 M444.0,270 v5 M447.2,270 v5 M450.4,270 v5 M453.6,270 v5 M456.8,270 v5 M460.0,270 v5 M463.2,270 v5 M466.4,270 v5 M469.6,270 v5 M472.8,270 v5 M476.0,270 v5 M426,275 h54"/>
+<circle class="flor" cx="445.1" cy="275.1" r="1.8"/>
+<circle class="flor" cx="447.6" cy="276.3" r="1.9"/>
+<circle class="flor" cx="446.7" cy="273.4" r="1.9"/>
+<circle class="flor" cx="440.3" cy="275.3" r="2.0"/>
+<circle class="flor" cx="446.8" cy="271.2" r="2.5"/>
+<circle class="flor" cx="443.4" cy="272.1" r="2.0"/>
+<circle class="flor" cx="444.9" cy="274.3" r="2.4"/>
+<circle class="flor" cx="438.8" cy="276.1" r="2.0"/>
+<circle class="flor" cx="448.3" cy="270.5" r="1.9"/>
+<rect class="ventana" x="434.0" y="274" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M438.0,274 v10"/>
+<rect class="ventana" x="449.0" y="274" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M453.0,274 v10"/>
+<rect class="ventana" x="464.0" y="274" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M468.0,274 v10"/>
+<rect class="cal" x="483" y="248" width="34" height="40"/>
+<polygon class="tinta" points="480,248 520,248 516,243 484,243"/>
+<rect class="ventana" x="489.0" y="256" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M493.0,256 v10"/>
+<rect class="ventana" x="503.0" y="256" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M507.0,256 v10"/>
+<rect class="tinta" x="482" y="268" width="36" height="2"/>
+<path class="trazo" stroke-width=".9" d="M484.0,270 v5 M487.2,270 v5 M490.4,270 v5 M493.6,270 v5 M496.8,270 v5 M500.0,270 v5 M503.2,270 v5 M506.4,270 v5 M509.6,270 v5 M512.8,270 v5 M482,275 h36"/>
+<rect class="ventana" x="489.0" y="274" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M493.0,274 v10"/>
+<rect class="ventana" x="503.0" y="274" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M507.0,274 v10"/>
+<rect class="mango" x="517" y="248" width="30" height="40"/>
+<polygon class="tinta" points="514,248 550,248 546,243 518,243"/>
+<rect class="ventana" x="528.0" y="256" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M532.0,256 v10"/>
+<rect class="ventana" x="528.0" y="274" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M532.0,274 v10"/>
+<rect class="cal" x="547" y="244" width="34" height="44"/>
+<polygon class="tinta" points="544,244 584,244 580,239 548,239"/>
+<rect class="ventana" x="553.0" y="252" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M557.0,252 v10"/>
+<rect class="ventana" x="567.0" y="252" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M571.0,252 v10"/>
+<rect class="ventana" x="553.0" y="270" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M557.0,270 v10"/>
+<rect class="ventana" x="567.0" y="270" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M571.0,270 v10"/>
+<rect class="celeste" x="585" y="258" width="30" height="30"/>
+<polygon class="tinta" points="582,258 618,258 614,253 586,253"/>
+<rect class="ventana" x="596.0" y="266" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M600.0,266 v10"/>
+<rect class="celeste" x="619" y="244" width="30" height="44"/>
+<polygon class="tinta" points="616,244 652,244 648,239 620,239"/>
+<rect class="ventana" x="630.0" y="252" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M634.0,252 v10"/>
+<rect class="tinta" x="618" y="264" width="32" height="2"/>
+<path class="trazo" stroke-width=".9" d="M620.0,266 v5 M623.2,266 v5 M626.4,266 v5 M629.6,266 v5 M632.8,266 v5 M636.0,266 v5 M639.2,266 v5 M642.4,266 v5 M645.6,266 v5 M618,271 h32"/>
+<rect class="ventana" x="630.0" y="270" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M634.0,270 v10"/>
+<rect class="crema" x="655" y="254" width="52" height="34"/>
+<polygon class="tinta" points="652,254 710,254 706,249 656,249"/>
+<rect class="ventana" x="662.0" y="262" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M666.0,262 v10"/>
+<rect class="ventana" x="677.0" y="262" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M681.0,262 v10"/>
+<rect class="ventana" x="692.0" y="262" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M696.0,262 v10"/>
+<rect class="faro" x="709" y="248" width="52" height="40"/>
+<polygon class="tinta" points="706,248 764,248 760,243 710,243"/>
+<rect class="ventana" x="716.0" y="256" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M720.0,256 v10"/>
+<rect class="ventana" x="731.0" y="256" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M735.0,256 v10"/>
+<rect class="ventana" x="746.0" y="256" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M750.0,256 v10"/>
+<rect class="tinta" x="708" y="268" width="54" height="2"/>
+<path class="trazo" stroke-width=".9" d="M710.0,270 v5 M713.2,270 v5 M716.4,270 v5 M719.6,270 v5 M722.8,270 v5 M726.0,270 v5 M729.2,270 v5 M732.4,270 v5 M735.6,270 v5 M738.8,270 v5 M742.0,270 v5 M745.2,270 v5 M748.4,270 v5 M751.6,270 v5 M754.8,270 v5 M758.0,270 v5 M708,275 h54"/>
+<circle class="flor" cx="723.3" cy="270.1" r="2.4"/>
+<circle class="flor" cx="723.7" cy="272.0" r="2.3"/>
+<circle class="flor" cx="718.7" cy="266.6" r="2.1"/>
+<circle class="flor" cx="725.0" cy="276.1" r="1.9"/>
+<circle class="flor" cx="718.5" cy="274.8" r="2.5"/>
+<circle class="flor" cx="725.8" cy="273.1" r="2.5"/>
+<circle class="flor" cx="723.6" cy="268.5" r="2.6"/>
+<circle class="flor" cx="721.5" cy="274.4" r="1.8"/>
+<circle class="flor" cx="722.5" cy="267.8" r="2.3"/>
+<rect class="ventana" x="716.0" y="274" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M720.0,274 v10"/>
+<rect class="ventana" x="731.0" y="274" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M735.0,274 v10"/>
+<rect class="ventana" x="746.0" y="274" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M750.0,274 v10"/>
+<rect class="celeste" x="767" y="248" width="52" height="40"/>
+<polygon class="tinta" points="764,248 822,248 818,243 768,243"/>
+<rect class="ventana" x="774.0" y="256" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M778.0,256 v10"/>
+<rect class="ventana" x="789.0" y="256" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M793.0,256 v10"/>
+<rect class="ventana" x="804.0" y="256" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M808.0,256 v10"/>
+<rect class="tinta" x="766" y="268" width="54" height="2"/>
+<path class="trazo" stroke-width=".9" d="M768.0,270 v5 M771.2,270 v5 M774.4,270 v5 M777.6,270 v5 M780.8,270 v5 M784.0,270 v5 M787.2,270 v5 M790.4,270 v5 M793.6,270 v5 M796.8,270 v5 M800.0,270 v5 M803.2,270 v5 M806.4,270 v5 M809.6,270 v5 M812.8,270 v5 M816.0,270 v5 M766,275 h54"/>
+<rect class="ventana" x="774.0" y="274" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M778.0,274 v10"/>
+<rect class="ventana" x="789.0" y="274" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M793.0,274 v10"/>
+<rect class="ventana" x="804.0" y="274" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M808.0,274 v10"/>
+<rect class="crema" x="825" y="258" width="34" height="30"/>
+<polygon class="tinta" points="822,258 862,258 858,253 826,253"/>
+<rect class="ventana" x="831.0" y="266" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M835.0,266 v10"/>
+<rect class="ventana" x="845.0" y="266" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M849.0,266 v10"/>
+<rect class="crema" x="865" y="244" width="42" height="44"/>
+<polygon class="tinta" points="862,244 910,244 906,239 866,239"/>
+<rect class="ventana" x="873.7" y="252" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M877.7,252 v10"/>
+<rect class="ventana" x="890.3" y="252" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M894.3,252 v10"/>
+<rect class="tinta" x="864" y="264" width="44" height="2"/>
+<path class="trazo" stroke-width=".9" d="M866.0,266 v5 M869.2,266 v5 M872.4,266 v5 M875.6,266 v5 M878.8,266 v5 M882.0,266 v5 M885.2,266 v5 M888.4,266 v5 M891.6,266 v5 M894.8,266 v5 M898.0,266 v5 M901.2,266 v5 M904.4,266 v5 M864,271 h44"/>
+<circle class="flor" cx="887.9" cy="264.0" r="2.2"/>
+<circle class="flor" cx="883.9" cy="269.7" r="1.8"/>
+<circle class="flor" cx="884.1" cy="267.9" r="2.6"/>
+<circle class="flor" cx="879.6" cy="264.8" r="1.6"/>
+<circle class="flor" cx="881.6" cy="269.3" r="1.8"/>
+<circle class="flor" cx="880.8" cy="269.1" r="2.5"/>
+<circle class="flor" cx="880.6" cy="262.1" r="2.3"/>
+<circle class="flor" cx="878.7" cy="270.5" r="2.4"/>
+<circle class="flor" cx="882.3" cy="263.6" r="1.9"/>
+<rect class="ventana" x="873.7" y="270" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M877.7,270 v10"/>
+<rect class="ventana" x="890.3" y="270" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M894.3,270 v10"/>
+<rect class="buganvilla" x="909" y="254" width="38" height="34"/>
+<polygon class="tinta" points="906,254 950,254 946,249 910,249"/>
+<rect class="ventana" x="916.3" y="262" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M920.3,262 v10"/>
+<rect class="ventana" x="931.7" y="262" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M935.7,262 v10"/>
+<rect class="cal" x="115" y="292" width="42" height="30"/>
+<polygon class="tinta" points="112,292 160,292 156,287 116,287"/>
+<rect class="ventana" x="123.7" y="300" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M127.7,300 v10"/>
+<rect class="ventana" x="140.3" y="300" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M144.3,300 v10"/>
+<path class="tinta" d="M132.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="cal" x="157" y="278" width="34" height="44"/>
+<polygon class="tinta" points="154,278 194,278 190,273 158,273"/>
+<rect class="ventana" x="163.0" y="286" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M167.0,286 v10"/>
+<rect class="ventana" x="177.0" y="286" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M181.0,286 v10"/>
+<rect class="tinta" x="156" y="298" width="36" height="2"/>
+<path class="trazo" stroke-width=".9" d="M158.0,300 v5 M161.2,300 v5 M164.4,300 v5 M167.6,300 v5 M170.8,300 v5 M174.0,300 v5 M177.2,300 v5 M180.4,300 v5 M183.6,300 v5 M186.8,300 v5 M156,305 h36"/>
+<rect class="ventana" x="163.0" y="304" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M167.0,304 v10"/>
+<rect class="ventana" x="177.0" y="304" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M181.0,304 v10"/>
+<path class="tinta" d="M170.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="cal" x="197" y="282" width="46" height="40"/>
+<polygon class="tinta" points="194,282 246,282 242,277 198,277"/>
+<rect class="ventana" x="207.0" y="290" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M211.0,290 v10"/>
+<rect class="ventana" x="225.0" y="290" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M229.0,290 v10"/>
+<rect class="tinta" x="196" y="302" width="48" height="2"/>
+<path class="trazo" stroke-width=".9" d="M198.0,304 v5 M201.2,304 v5 M204.4,304 v5 M207.6,304 v5 M210.8,304 v5 M214.0,304 v5 M217.2,304 v5 M220.4,304 v5 M223.6,304 v5 M226.8,304 v5 M230.0,304 v5 M233.2,304 v5 M236.4,304 v5 M239.6,304 v5 M196,309 h48"/>
+<circle class="flor" cx="231.6" cy="303.6" r="1.8"/>
+<circle class="flor" cx="225.9" cy="306.4" r="2.0"/>
+<circle class="flor" cx="226.2" cy="309.2" r="2.2"/>
+<circle class="flor" cx="233.9" cy="302.2" r="1.7"/>
+<circle class="flor" cx="230.6" cy="304.7" r="2.0"/>
+<circle class="flor" cx="233.8" cy="309.0" r="2.1"/>
+<circle class="flor" cx="227.9" cy="303.8" r="2.5"/>
+<circle class="flor" cx="231.5" cy="307.0" r="2.3"/>
+<circle class="flor" cx="224.9" cy="308.5" r="2.5"/>
+<rect class="ventana" x="207.0" y="308" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M211.0,308 v10"/>
+<rect class="ventana" x="225.0" y="308" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M229.0,308 v10"/>
+<path class="tinta" d="M216.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="cal" x="245" y="288" width="46" height="34"/>
+<polygon class="tinta" points="242,288 294,288 290,283 246,283"/>
+<rect class="ventana" x="255.0" y="296" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M259.0,296 v10"/>
+<rect class="ventana" x="273.0" y="296" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M277.0,296 v10"/>
+<path class="tinta" d="M264.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="mango" x="295" y="282" width="38" height="40"/>
+<polygon class="tinta" points="292,282 336,282 332,277 296,277"/>
+<rect class="ventana" x="302.3" y="290" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M306.3,290 v10"/>
+<rect class="ventana" x="317.7" y="290" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M321.7,290 v10"/>
+<rect class="tinta" x="294" y="302" width="40" height="2"/>
+<path class="trazo" stroke-width=".9" d="M296.0,304 v5 M299.2,304 v5 M302.4,304 v5 M305.6,304 v5 M308.8,304 v5 M312.0,304 v5 M315.2,304 v5 M318.4,304 v5 M321.6,304 v5 M324.8,304 v5 M328.0,304 v5 M294,309 h40"/>
+<rect class="ventana" x="302.3" y="308" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M306.3,308 v10"/>
+<rect class="ventana" x="317.7" y="308" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M321.7,308 v10"/>
+<path class="tinta" d="M310.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="mango" x="337" y="288" width="30" height="34"/>
+<polygon class="tinta" points="334,288 370,288 366,283 338,283"/>
+<rect class="ventana" x="348.0" y="296" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M352.0,296 v10"/>
+<path class="tinta" d="M348.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="crema" x="373" y="282" width="34" height="40"/>
+<polygon class="tinta" points="370,282 410,282 406,277 374,277"/>
+<rect class="ventana" x="379.0" y="290" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M383.0,290 v10"/>
+<rect class="ventana" x="393.0" y="290" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M397.0,290 v10"/>
+<rect class="tinta" x="372" y="302" width="36" height="2"/>
+<path class="trazo" stroke-width=".9" d="M374.0,304 v5 M377.2,304 v5 M380.4,304 v5 M383.6,304 v5 M386.8,304 v5 M390.0,304 v5 M393.2,304 v5 M396.4,304 v5 M399.6,304 v5 M402.8,304 v5 M372,309 h36"/>
+<rect class="ventana" x="379.0" y="308" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M383.0,308 v10"/>
+<rect class="ventana" x="393.0" y="308" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M397.0,308 v10"/>
+<path class="tinta" d="M386.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="crema" x="413" y="292" width="38" height="30"/>
+<polygon class="tinta" points="410,292 454,292 450,287 414,287"/>
+<rect class="ventana" x="420.3" y="300" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M424.3,300 v10"/>
+<rect class="ventana" x="435.7" y="300" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M439.7,300 v10"/>
+<path class="tinta" d="M428.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="mango" x="453" y="278" width="30" height="44"/>
+<polygon class="tinta" points="450,278 486,278 482,273 454,273"/>
+<rect class="ventana" x="464.0" y="286" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M468.0,286 v10"/>
+<rect class="tinta" x="452" y="298" width="32" height="2"/>
+<path class="trazo" stroke-width=".9" d="M454.0,300 v5 M457.2,300 v5 M460.4,300 v5 M463.6,300 v5 M466.8,300 v5 M470.0,300 v5 M473.2,300 v5 M476.4,300 v5 M479.6,300 v5 M452,305 h32"/>
+<rect class="ventana" x="464.0" y="304" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M468.0,304 v10"/>
+<path class="tinta" d="M464.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="crema" x="485" y="274" width="42" height="48"/>
+<polygon class="tinta" points="482,274 530,274 526,269 486,269"/>
+<rect class="ventana" x="493.7" y="282" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M497.7,282 v10"/>
+<rect class="ventana" x="510.3" y="282" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M514.3,282 v10"/>
+<rect class="tinta" x="484" y="294" width="44" height="2"/>
+<path class="trazo" stroke-width=".9" d="M486.0,296 v5 M489.2,296 v5 M492.4,296 v5 M495.6,296 v5 M498.8,296 v5 M502.0,296 v5 M505.2,296 v5 M508.4,296 v5 M511.6,296 v5 M514.8,296 v5 M518.0,296 v5 M521.2,296 v5 M524.4,296 v5 M484,301 h44"/>
+<circle class="flor" cx="509.4" cy="301.7" r="2.1"/>
+<circle class="flor" cx="511.0" cy="302.2" r="2.0"/>
+<circle class="flor" cx="509.7" cy="298.9" r="1.8"/>
+<circle class="flor" cx="510.2" cy="299.1" r="2.1"/>
+<circle class="flor" cx="510.3" cy="292.7" r="1.8"/>
+<circle class="flor" cx="507.6" cy="299.2" r="2.5"/>
+<circle class="flor" cx="508.5" cy="298.5" r="1.7"/>
+<circle class="flor" cx="515.1" cy="302.8" r="2.0"/>
+<circle class="flor" cx="516.4" cy="302.8" r="1.7"/>
+<rect class="ventana" x="493.7" y="300" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M497.7,300 v10"/>
+<rect class="ventana" x="510.3" y="300" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M514.3,300 v10"/>
+<path class="tinta" d="M502.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="mango" x="527" y="278" width="46" height="44"/>
+<polygon class="tinta" points="524,278 576,278 572,273 528,273"/>
+<rect class="ventana" x="537.0" y="286" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M541.0,286 v10"/>
+<rect class="ventana" x="555.0" y="286" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M559.0,286 v10"/>
+<rect class="tinta" x="526" y="298" width="48" height="2"/>
+<path class="trazo" stroke-width=".9" d="M528.0,300 v5 M531.2,300 v5 M534.4,300 v5 M537.6,300 v5 M540.8,300 v5 M544.0,300 v5 M547.2,300 v5 M550.4,300 v5 M553.6,300 v5 M556.8,300 v5 M560.0,300 v5 M563.2,300 v5 M566.4,300 v5 M569.6,300 v5 M526,305 h48"/>
+<circle class="flor" cx="549.8" cy="303.7" r="2.5"/>
+<circle class="flor" cx="554.0" cy="303.7" r="2.3"/>
+<circle class="flor" cx="548.4" cy="305.2" r="1.8"/>
+<circle class="flor" cx="554.0" cy="304.8" r="1.8"/>
+<circle class="flor" cx="549.4" cy="302.4" r="2.5"/>
+<circle class="flor" cx="554.5" cy="303.5" r="2.4"/>
+<circle class="flor" cx="551.2" cy="304.4" r="2.0"/>
+<circle class="flor" cx="555.8" cy="305.5" r="2.0"/>
+<circle class="flor" cx="551.6" cy="301.6" r="2.1"/>
+<rect class="ventana" x="537.0" y="304" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M541.0,304 v10"/>
+<rect class="ventana" x="555.0" y="304" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M559.0,304 v10"/>
+<path class="tinta" d="M546.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="faro" x="575" y="274" width="30" height="48"/>
+<polygon class="tinta" points="572,274 608,274 604,269 576,269"/>
+<rect class="ventana" x="586.0" y="282" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M590.0,282 v10"/>
+<rect class="ventana" x="586.0" y="300" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M590.0,300 v10"/>
+<path class="tinta" d="M586.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="crema" x="611" y="278" width="46" height="44"/>
+<polygon class="tinta" points="608,278 660,278 656,273 612,273"/>
+<rect class="ventana" x="621.0" y="286" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M625.0,286 v10"/>
+<rect class="ventana" x="639.0" y="286" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M643.0,286 v10"/>
+<rect class="tinta" x="610" y="298" width="48" height="2"/>
+<path class="trazo" stroke-width=".9" d="M612.0,300 v5 M615.2,300 v5 M618.4,300 v5 M621.6,300 v5 M624.8,300 v5 M628.0,300 v5 M631.2,300 v5 M634.4,300 v5 M637.6,300 v5 M640.8,300 v5 M644.0,300 v5 M647.2,300 v5 M650.4,300 v5 M653.6,300 v5 M610,305 h48"/>
+<circle class="flor" cx="630.9" cy="302.6" r="2.5"/>
+<circle class="flor" cx="636.9" cy="297.1" r="1.7"/>
+<circle class="flor" cx="632.3" cy="303.9" r="2.2"/>
+<circle class="flor" cx="635.9" cy="300.3" r="2.2"/>
+<circle class="flor" cx="637.0" cy="306.7" r="1.9"/>
+<circle class="flor" cx="633.5" cy="300.3" r="2.0"/>
+<circle class="flor" cx="637.3" cy="304.5" r="2.0"/>
+<circle class="flor" cx="635.3" cy="303.3" r="2.1"/>
+<circle class="flor" cx="630.4" cy="300.5" r="1.9"/>
+<rect class="ventana" x="621.0" y="304" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M625.0,304 v10"/>
+<rect class="ventana" x="639.0" y="304" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M643.0,304 v10"/>
+<path class="tinta" d="M630.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="celeste" x="661" y="292" width="46" height="30"/>
+<polygon class="tinta" points="658,292 710,292 706,287 662,287"/>
+<rect class="ventana" x="671.0" y="300" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M675.0,300 v10"/>
+<rect class="ventana" x="689.0" y="300" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M693.0,300 v10"/>
+<path class="tinta" d="M680.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="cal" x="709" y="274" width="46" height="48"/>
+<polygon class="tinta" points="706,274 758,274 754,269 710,269"/>
+<rect class="ventana" x="719.0" y="282" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M723.0,282 v10"/>
+<rect class="ventana" x="737.0" y="282" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M741.0,282 v10"/>
+<rect class="tinta" x="708" y="294" width="48" height="2"/>
+<path class="trazo" stroke-width=".9" d="M710.0,296 v5 M713.2,296 v5 M716.4,296 v5 M719.6,296 v5 M722.8,296 v5 M726.0,296 v5 M729.2,296 v5 M732.4,296 v5 M735.6,296 v5 M738.8,296 v5 M742.0,296 v5 M745.2,296 v5 M748.4,296 v5 M751.6,296 v5 M708,301 h48"/>
+<rect class="ventana" x="719.0" y="300" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M723.0,300 v10"/>
+<rect class="ventana" x="737.0" y="300" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M741.0,300 v10"/>
+<path class="tinta" d="M728.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="faro" x="757" y="282" width="52" height="40"/>
+<polygon class="tinta" points="754,282 812,282 808,277 758,277"/>
+<rect class="ventana" x="764.0" y="290" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M768.0,290 v10"/>
+<rect class="ventana" x="779.0" y="290" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M783.0,290 v10"/>
+<rect class="ventana" x="794.0" y="290" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M798.0,290 v10"/>
+<rect class="tinta" x="756" y="302" width="54" height="2"/>
+<path class="trazo" stroke-width=".9" d="M758.0,304 v5 M761.2,304 v5 M764.4,304 v5 M767.6,304 v5 M770.8,304 v5 M774.0,304 v5 M777.2,304 v5 M780.4,304 v5 M783.6,304 v5 M786.8,304 v5 M790.0,304 v5 M793.2,304 v5 M796.4,304 v5 M799.6,304 v5 M802.8,304 v5 M806.0,304 v5 M756,309 h54"/>
+<circle class="flor" cx="801.8" cy="301.3" r="1.7"/>
+<circle class="flor" cx="794.8" cy="302.3" r="2.3"/>
+<circle class="flor" cx="801.3" cy="305.6" r="2.6"/>
+<circle class="flor" cx="798.9" cy="307.6" r="2.0"/>
+<circle class="flor" cx="794.4" cy="303.0" r="1.8"/>
+<circle class="flor" cx="797.5" cy="300.6" r="1.6"/>
+<circle class="flor" cx="802.5" cy="303.3" r="2.0"/>
+<circle class="flor" cx="797.2" cy="310.3" r="2.3"/>
+<circle class="flor" cx="794.4" cy="301.4" r="2.1"/>
+<rect class="ventana" x="764.0" y="308" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M768.0,308 v10"/>
+<rect class="ventana" x="779.0" y="308" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M783.0,308 v10"/>
+<rect class="ventana" x="794.0" y="308" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M798.0,308 v10"/>
+<path class="tinta" d="M779.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="faro" x="811" y="282" width="42" height="40"/>
+<polygon class="tinta" points="808,282 856,282 852,277 812,277"/>
+<rect class="ventana" x="819.7" y="290" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M823.7,290 v10"/>
+<rect class="ventana" x="836.3" y="290" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M840.3,290 v10"/>
+<rect class="tinta" x="810" y="302" width="44" height="2"/>
+<path class="trazo" stroke-width=".9" d="M812.0,304 v5 M815.2,304 v5 M818.4,304 v5 M821.6,304 v5 M824.8,304 v5 M828.0,304 v5 M831.2,304 v5 M834.4,304 v5 M837.6,304 v5 M840.8,304 v5 M844.0,304 v5 M847.2,304 v5 M850.4,304 v5 M810,309 h44"/>
+<circle class="flor" cx="830.5" cy="309.7" r="1.8"/>
+<circle class="flor" cx="830.2" cy="304.6" r="1.9"/>
+<circle class="flor" cx="837.0" cy="308.6" r="2.4"/>
+<circle class="flor" cx="836.0" cy="305.1" r="2.1"/>
+<circle class="flor" cx="839.0" cy="302.6" r="2.3"/>
+<circle class="flor" cx="838.5" cy="309.5" r="2.2"/>
+<circle class="flor" cx="832.0" cy="305.8" r="2.5"/>
+<circle class="flor" cx="837.5" cy="309.7" r="2.3"/>
+<circle class="flor" cx="836.2" cy="304.6" r="2.4"/>
+<rect class="ventana" x="819.7" y="308" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M823.7,308 v10"/>
+<rect class="ventana" x="836.3" y="308" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M840.3,308 v10"/>
+<path class="tinta" d="M828.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="celeste" x="855" y="274" width="34" height="48"/>
+<polygon class="tinta" points="852,274 892,274 888,269 856,269"/>
+<rect class="ventana" x="861.0" y="282" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M865.0,282 v10"/>
+<rect class="ventana" x="875.0" y="282" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M879.0,282 v10"/>
+<rect class="ventana" x="861.0" y="300" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M865.0,300 v10"/>
+<rect class="ventana" x="875.0" y="300" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M879.0,300 v10"/>
+<path class="tinta" d="M868.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="cal" x="895" y="288" width="42" height="34"/>
+<polygon class="tinta" points="892,288 940,288 936,283 896,283"/>
+<rect class="ventana" x="903.7" y="296" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M907.7,296 v10"/>
+<rect class="ventana" x="920.3" y="296" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M924.3,296 v10"/>
+<path class="tinta" d="M912.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<rect class="mango" x="939" y="292" width="34" height="30"/>
+<polygon class="tinta" points="936,292 976,292 972,287 940,287"/>
+<rect class="ventana" x="945.0" y="300" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M949.0,300 v10"/>
+<rect class="ventana" x="959.0" y="300" width="8" height="10" rx="1"/>
+<path class="trazo" stroke-width=".8" d="M963.0,300 v10"/>
+<path class="tinta" d="M952.0,322 v-11 a4,4 0 0 1 8,0 v11 z"/>
+<path class="escalon" d="M300,324 L357,300 L348,275 L427,251 L418,226 L498,202 L489,177 L568,153 L559,128 L616,104"/>
+<path class="escalon-raya" d="M300,324 L357,300 L348,275 L427,251 L418,226 L498,202 L489,177 L568,153 L559,128 L616,104"/>
+<path class="palma-tronco" stroke-width="3" d="M60,326 q-4,-35.0 3,-70"/>
+<path class="palma" d="M63,256 q-9.5,-8 -19.1,22.2 q6.4,-4 19.1,-22.2 z"/>
+<path class="palma" d="M63,256 q-3.8,-8 -7.5,25.9 q2.5,-4 7.5,-25.9 z"/>
+<path class="palma" d="M63,256 q5.5,-8 11.0,25.3 q-3.7,-4 -11.0,-25.3 z"/>
+<path class="palma" d="M63,256 q10.3,-8 20.7,20.9 q-6.9,-4 -20.7,-20.9 z"/>
+<path class="palma" d="M63,256 q-10.3,-8 -20.7,20.9 q6.9,-4 20.7,-20.9 z"/>
+<path class="palma" d="M63,256 q-10.3,-8 -20.7,15.1 q6.9,-4 20.7,-15.1 z"/>
+<path class="palma-tronco" stroke-width="3" d="M250,326 q-4,-29.0 3,-58"/>
+<path class="palma" d="M253,268 q-9.5,-8 -19.1,22.2 q6.4,-4 19.1,-22.2 z"/>
+<path class="palma" d="M253,268 q-3.8,-8 -7.5,25.9 q2.5,-4 7.5,-25.9 z"/>
+<path class="palma" d="M253,268 q5.5,-8 11.0,25.3 q-3.7,-4 -11.0,-25.3 z"/>
+<path class="palma" d="M253,268 q10.3,-8 20.7,20.9 q-6.9,-4 -20.7,-20.9 z"/>
+<path class="palma" d="M253,268 q-10.3,-8 -20.7,20.9 q6.9,-4 20.7,-20.9 z"/>
+<path class="palma" d="M253,268 q-10.3,-8 -20.7,15.1 q6.9,-4 20.7,-15.1 z"/>
+<path class="palma-tronco" stroke-width="3" d="M470,326 q-4,-27.0 3,-54"/>
+<path class="palma" d="M473,272 q-9.5,-8 -19.1,22.2 q6.4,-4 19.1,-22.2 z"/>
+<path class="palma" d="M473,272 q-3.8,-8 -7.5,25.9 q2.5,-4 7.5,-25.9 z"/>
+<path class="palma" d="M473,272 q5.5,-8 11.0,25.3 q-3.7,-4 -11.0,-25.3 z"/>
+<path class="palma" d="M473,272 q10.3,-8 20.7,20.9 q-6.9,-4 -20.7,-20.9 z"/>
+<path class="palma" d="M473,272 q-10.3,-8 -20.7,20.9 q6.9,-4 20.7,-20.9 z"/>
+<path class="palma" d="M473,272 q-10.3,-8 -20.7,15.1 q6.9,-4 20.7,-15.1 z"/>
+<path class="palma-tronco" stroke-width="3" d="M880,326 q-4,-33.0 3,-66"/>
+<path class="palma" d="M883,260 q-9.5,-8 -19.1,22.2 q6.4,-4 19.1,-22.2 z"/>
+<path class="palma" d="M883,260 q-3.8,-8 -7.5,25.9 q2.5,-4 7.5,-25.9 z"/>
+<path class="palma" d="M883,260 q5.5,-8 11.0,25.3 q-3.7,-4 -11.0,-25.3 z"/>
+<path class="palma" d="M883,260 q10.3,-8 20.7,20.9 q-6.9,-4 -20.7,-20.9 z"/>
+<path class="palma" d="M883,260 q-10.3,-8 -20.7,20.9 q6.9,-4 20.7,-20.9 z"/>
+<path class="palma" d="M883,260 q-10.3,-8 -20.7,15.1 q6.9,-4 20.7,-15.1 z"/>
+<rect class="malecon" x="0" y="326" width="960" height="10"/>
+<path class="trazo" stroke-width="1.2" d="M0,320 H960 M4,320 v6 M16,320 v6 M28,320 v6 M40,320 v6 M52,320 v6 M64,320 v6 M76,320 v6 M88,320 v6 M100,320 v6 M112,320 v6 M124,320 v6 M136,320 v6 M148,320 v6 M160,320 v6 M172,320 v6 M184,320 v6 M196,320 v6 M208,320 v6 M220,320 v6 M232,320 v6 M244,320 v6 M256,320 v6 M268,320 v6 M280,320 v6 M292,320 v6 M304,320 v6 M316,320 v6 M328,320 v6 M340,320 v6 M352,320 v6 M364,320 v6 M376,320 v6 M388,320 v6 M400,320 v6 M412,320 v6 M424,320 v6 M436,320 v6 M448,320 v6 M460,320 v6 M472,320 v6 M484,320 v6 M496,320 v6 M508,320 v6 M520,320 v6 M532,320 v6 M544,320 v6 M556,320 v6 M568,320 v6 M580,320 v6 M592,320 v6 M604,320 v6 M616,320 v6 M628,320 v6 M640,320 v6 M652,320 v6 M664,320 v6 M676,320 v6 M688,320 v6 M700,320 v6 M712,320 v6 M724,320 v6 M736,320 v6 M748,320 v6 M760,320 v6 M772,320 v6 M784,320 v6 M796,320 v6 M808,320 v6 M820,320 v6 M832,320 v6 M844,320 v6 M856,320 v6 M868,320 v6 M880,320 v6 M892,320 v6 M904,320 v6 M916,320 v6 M928,320 v6 M940,320 v6 M952,320 v6"/>
+<rect class="rio-agua" x="0" y="336" width="960" height="70"/>
+<path class="ola" d="M512,358 q12,-5 24,0 t24,0"/>
+<path class="ola" d="M597,385 q10,-5 19,0 t19,0"/>
+<path class="ola" d="M51,356 q10,-5 21,0 t21,0"/>
+<path class="ola" d="M114,349 q10,-5 19,0 t19,0"/>
+<path class="ola" d="M73,372 q12,-5 24,0 t24,0"/>
+<path class="ola" d="M616,371 q11,-5 22,0 t22,0"/>
+<path class="ola" d="M177,378 q16,-5 32,0 t32,0"/>
+<path class="ola" d="M521,351 q9,-5 18,0 t18,0"/>
+<path class="ola" d="M720,374 q12,-5 24,0 t24,0"/>
+<path class="ola" d="M740,349 q9,-5 18,0 t18,0"/>
+<path class="ola" d="M116,360 q8,-5 15,0 t15,0"/>
+<path class="ola" d="M488,350 q17,-5 34,0 t34,0"/>
+<path class="ola" d="M761,353 q12,-5 23,0 t23,0"/>
+<path class="ola" d="M725,379 q12,-5 24,0 t24,0"/>
+<path class="tinta" d="M734,370 h52 l-8,9 h-36 z"/>
+<path class="trazo" stroke-width="1.6" d="M760,370 V330"/>
+<polygon class="cal" points="762,332 762,366 786,366"/>
+<polygon class="mango" points="758,336 758,366 740,366"/>
+<rect class="grano" width="960" height="400" filter="url(#grano)"/>
+</g>
+</svg>

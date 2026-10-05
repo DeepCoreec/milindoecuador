@@ -365,7 +365,7 @@
       {
         "name": "radius-sm",
         "value": "4px",
-        "usage": "Insignias, campos de texto, ventanas de las fachadas."
+        "usage": "Insignias y campos de texto."
       },
       {
         "name": "radius-md",
