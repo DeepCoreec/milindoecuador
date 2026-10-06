@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { requireUsuario } from "@/lib/auth";
 import { verificarCaptcha } from "@/lib/captcha";
+import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { esquemaBorrarResena, esquemaResena } from "@/lib/validacion/resenas";
 
@@ -15,8 +16,10 @@ async function ipDeLaVisita() {
 }
 
 /**
- * Publica o edita la reseña de la persona en un lugar. Orden de la arquitectura:
- * 1. Zod  2. captcha  3. sesión  4. escribir con el cliente del usuario (RLS)  5. revalidar la ficha.
+ * Publica o edita la reseña de la persona en un lugar. Orden: 1. Zod  2. captcha  3. sesión
+ * 4. escribir  5. revalidar la ficha. Se escribe con la clave de servicio (admin.ts) porque desde la migración 0003
+ * la base no deja crear ni editar reseñas directo (así nadie se salta el captcha); por eso el autor se fija
+ * aquí con el id de la sesión verificada, y la base sigue exigiendo lugar publicado y el límite diario.
  */
 export async function guardarResena(_previo: EstadoResena, datos: FormData): Promise<EstadoResena> {
   const r = esquemaResena.safeParse({
@@ -34,16 +37,20 @@ export async function guardarResena(_previo: EstadoResena, datos: FormData): Pro
     return { estado: "error", campo: "captcha", mensaje: "Confirma que no eres un robot y vuelve a enviar." };
   }
   const usuario = await requireUsuario(r.data.ruta);
-  const supabase = await crearClienteServidor();
+  const db = crearClienteAdmin();
 
-  const { data: existente } = await supabase.from("reviews").select("id").eq("place_id", r.data.lugar).eq("user_id", usuario.id).maybeSingle();
+  const { data: existente } = await db.from("reviews").select("id").eq("place_id", r.data.lugar).eq("user_id", usuario.id).maybeSingle();
   const { error } = existente
-    ? await supabase.from("reviews").update({ stars: r.data.estrellas, text: r.data.texto }).eq("id", existente.id)
-    : await supabase.from("reviews").insert({ place_id: r.data.lugar, stars: r.data.estrellas, text: r.data.texto });
+    ? await db.from("reviews").update({ stars: r.data.estrellas, text: r.data.texto }).eq("id", existente.id).eq("user_id", usuario.id)
+    : await db.from("reviews").insert({ place_id: r.data.lugar, user_id: usuario.id, stars: r.data.estrellas, text: r.data.texto });
 
   if (error) {
-    const limite = /límite de 5 reseñas/.test(error.message);
-    return { estado: "error", mensaje: limite ? "Llegaste al límite de 5 reseñas por día. Vuelve mañana." : "No se pudo guardar tu reseña. Inténtalo de nuevo." };
+    const mensaje = /límite de 5 reseñas/.test(error.message)
+      ? "Llegaste al límite de 5 reseñas por día. Vuelve mañana."
+      : /publicados/.test(error.message)
+        ? "Este lugar no recibe reseñas por ahora."
+        : "No se pudo guardar tu reseña. Inténtalo de nuevo.";
+    return { estado: "error", mensaje };
   }
   revalidatePath(r.data.ruta);
   revalidatePath("/cuenta");

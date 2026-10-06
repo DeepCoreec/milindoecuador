@@ -31,7 +31,14 @@ export async function aprobarSolicitud(_previo: EstadoAdmin, datos: FormData): P
     .eq("id", r.data.solicitud)
     .maybeSingle();
   if (!s) return { estado: "error", mensaje: "La solicitud no existe" };
-  if (s.status !== "pendiente") return { estado: "error", mensaje: "Esta solicitud ya fue revisada" };
+  // Se marca primero, solo si sigue pendiente: si se aprieta dos veces, la segunda no crea otra ficha
+  const { data: marcada } = await db
+    .from("business_requests")
+    .update({ status: "aprobada", admin_notes: r.data.nota || null })
+    .eq("id", s.id)
+    .eq("status", "pendiente")
+    .select("id");
+  if (!marcada?.length) return { estado: "error", mensaje: "Esta solicitud ya fue revisada" };
 
   const base = aSlug(s.business_name) || "lugar";
   const { data: parecidos } = await db.from("places").select("slug").eq("city_id", s.city_id).like("slug", `${base}%`);
@@ -48,10 +55,10 @@ export async function aprobarSolicitud(_previo: EstadoAdmin, datos: FormData): P
     whatsapp: s.whatsapp,
     status: "borrador",
   });
-  if (errorLugar) return { estado: "error", mensaje: "No se pudo crear la ficha. Inténtalo de nuevo." };
-
-  const { error } = await db.from("business_requests").update({ status: "aprobada", admin_notes: r.data.nota || null }).eq("id", s.id);
-  if (error) return { estado: "error", mensaje: "La ficha se creó, pero no se pudo marcar la solicitud. Márcala de nuevo." };
+  if (errorLugar) {
+    await db.from("business_requests").update({ status: "pendiente", admin_notes: null }).eq("id", s.id);
+    return { estado: "error", mensaje: "No se pudo crear la ficha. Inténtalo de nuevo." };
+  }
   revalidatePath("/admin", "layout");
   return { estado: "ok", mensaje: `Aprobada: se creó la ficha "${s.business_name}" como borrador.` };
 }

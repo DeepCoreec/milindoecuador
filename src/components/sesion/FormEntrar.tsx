@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { entrarConCorreo, type EstadoEntrar } from "@/acciones/sesion";
 import { clasesBoton } from "@/components/ui/Boton";
+import { Captcha } from "@/components/ui/Captcha";
 import { claseAyuda, claseEntrada, claseEtiqueta } from "@/components/ui/clasesFormulario";
 
 const inicial: EstadoEntrar = { estado: "inicio" };
@@ -54,6 +55,7 @@ export function FormEntrar({ siguiente }: { siguiente: string }) {
           </p>
         )}
       </div>
+      <Captcha reiniciar={estado} />
       <button type="submit" disabled={enviando} className={clasesBoton("principal")}>
         {enviando ? "Enviando…" : "Enviarme el enlace"}
       </button>

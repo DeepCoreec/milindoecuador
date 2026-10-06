@@ -9,7 +9,7 @@
 - **Último paso terminado:** 0.5 Maquetas aprobadas (fase 0 cerrada)
 - **Modo de trabajo (2026-10-05):** el usuario autorizó avanzar paso a paso según el plan sin pedir permiso entre pasos. Se sigue respetando: nada fuera del plan, nada de librerías nuevas sin permiso y verificar y guardar cada paso
 - **Entorno de prueba (solo en la nube de Claude, no en el repo):** Postgres 16 + PostgREST 12 + Supabase Auth 2.180 + Supabase Storage (desde su código) + buzón SMTP, armados en el scratchpad de la sesión con `arrancar.sh` y `dev.sh`. Si la sesión es nueva hay que volver a armarlo; sirve para probar antes de tener el Supabase real
-- **Siguiente paso:** 5.4 Revisión de seguridad completa con la lista de `docs/ARQUITECTURA.md` (sección 7): RLS en todas las tablas, pruebas RLS, `SERVICE_ROLE` fuera de `.next/static`, cabeceras, decidir CSP con nonce, captcha, `npm audit` de producción, privacidad y borrar cuenta. Anotar el resultado de cada punto y lo que queda pendiente para hacer en Vercel/Supabase reales
+- **Siguiente paso:** todo lo que no depende del usuario está hecho. Siguen sus cuentas: **1.3** Supabase (URL y clave anon) → aplicar las 3 migraciones y `seed.sql` (**1.6**) → **1.7** Vercel con las variables → repetir en real las pruebas de punta a punta (puertas 3 y 4), Lighthouse y securityheaders.com. Luego 2.8 (fotos), 3.5 (5 personas), 5.2 (datos legales), 5.5 (dominio) y 5.6 (copias de seguridad semanales de la base)
 - **Bloqueos / esperando al usuario:** ajustes de seguridad en GitHub (1.2); crear el proyecto en Supabase y pasar URL y clave pública (1.3); cuenta de Vercel (1.7)
 
 ## Fase 0 · Plan y diseño
@@ -87,7 +87,15 @@
   | Buscar | 98 | 100 | 100 | 58* |
 
   \*Buscar tiene `noindex` a propósito (Google debe llegar a las fichas, no a búsquedas sueltas); por eso Lighthouse le baja el SEO. Cambios: el panorama dibuja un cuadro fijo y anima cuando el navegador queda libre; solo se precarga la fuente de títulos; títulos de sección ocultos para lectores de pantalla en categoría y buscar; las estrellas con `role="img"`. Repetir la medición en Vercel con el dominio real
-- [ ] 5.4 Revisión de seguridad completa (lista en `docs/ARQUITECTURA.md`)
+- [x] 5.4 Revisión de seguridad completa (lista en `docs/ARQUITECTURA.md`) — 2026-10-05: lista recorrida y además un **revisor independiente** (agente que no escribió el código). Sin hallazgos críticos ni altos. Se corrigieron los medios y bajos con la **migración `0003_endurecer_seguridad.sql`** y cambios en el código:
+  - Reseñas: ya no se pueden crear ni editar directo en la base con la clave pública (se saltaba el captcha); las escribe el servidor después del captcha
+  - Perfiles: en público solo se lee el nombre visible; el rol ya no (antes se veía quién es admin); `requireAdmin` usa `is_admin()`
+  - Límite de 5 reseñas al día que no se salta borrando y volviendo a crear (`review_log`), con candado contra envíos simultáneos; solo en lugares publicados
+  - Máximo 10 reportes por persona al día; nombres y textos sin caracteres invisibles (suplantación)
+  - Captcha también al pedir el enlace de entrada (lo verifica Supabase Auth cuando se active en su panel)
+  - Las lecturas del panel vuelven a exigir admin; el optimizador de imágenes solo acepta nuestro proyecto de Supabase; aprobar una solicitud dos veces ya no crea dos fichas
+  - Probado: 47 pruebas RLS, todas las pruebas de punta a punta otra vez, y ataques directos a la base con la clave pública (rechazados)
+  - **Pendiente del usuario:** verificación en dos pasos en GitHub, Vercel y Supabase; activar el captcha de Supabase Auth (Authentication → Attack Protection, con la clave secreta de Turnstile); SMTP propio para los correos
 - [ ] 5.5 Comprar dominio, conectarlo a Vercel y pasar Vercel a plan Pro
 - [ ] 5.6 Copias de seguridad semanales de la base
 - **Puerta:** Lighthouse 90+ y revisión de seguridad aprobada → lanzamiento.

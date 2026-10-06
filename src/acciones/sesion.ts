@@ -25,10 +25,17 @@ export async function entrarConCorreo(_previo: EstadoEntrar, datos: FormData): P
   const supabase = await crearClienteServidor();
   const { error } = await supabase.auth.signInWithOtp({
     email: r.data.correo,
-    options: { emailRedirectTo: vuelta(rutaSegura(datos.get("siguiente"))), shouldCreateUser: true },
+    options: {
+      emailRedirectTo: vuelta(rutaSegura(datos.get("siguiente"))),
+      shouldCreateUser: true,
+      // Lo verifica Supabase Auth (Authentication → Attack Protection → captcha con Turnstile). Así también se protege
+      // a quien llame directo a /auth/v1/otp. No lo verificamos aquí: cada respuesta del captcha sirve una sola vez.
+      captchaToken: typeof datos.get("cf-turnstile-response") === "string" ? (datos.get("cf-turnstile-response") as string) : undefined,
+    },
   });
   if (error) {
     const espera = error.status === 429 || /rate|seconds/i.test(error.message);
+    if (/captcha/i.test(error.message)) return { estado: "error", correo: r.data.correo, mensaje: "Confirma que no eres un robot y vuelve a enviar." };
     return {
       estado: "error",
       correo: r.data.correo,

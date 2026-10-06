@@ -1,12 +1,15 @@
+import { requireAdmin } from "@/lib/auth";
 import { urlPublicaFoto } from "@/lib/fotos";
 import { crearClienteServidor } from "@/lib/supabase/server";
 
 /*
  * Lecturas del panel. Se hacen con la sesión del admin: las reglas RLS solo le muestran
- * solicitudes, borradores y reportes porque su perfil tiene rol admin.
+ * solicitudes, borradores y reportes porque su perfil tiene rol admin. Además, cada función
+ * vuelve a exigir el rol (Next arma el layout y la página en paralelo: no basta con el layout).
  */
 
 export async function getContadores() {
+  await requireAdmin();
   const db = await crearClienteServidor();
   const contar = async (tabla: string, columna: string, valor: string | boolean) => {
     const { count } = await db.from(tabla).select("id", { count: "exact", head: true }).eq(columna, valor);
@@ -35,6 +38,7 @@ export type Solicitud = {
 
 /** Solicitudes de negocios: las pendientes primero y después las más recientes. */
 export async function getSolicitudes(): Promise<Solicitud[]> {
+  await requireAdmin();
   const db = await crearClienteServidor();
   const { data, error } = await db
     .from("business_requests")
@@ -89,6 +93,7 @@ export type LugarAdmin = {
 
 /** Todos los lugares (también borradores y ocultos), los más recientes primero. */
 export async function getLugaresAdmin(): Promise<LugarAdmin[]> {
+  await requireAdmin();
   const db = await crearClienteServidor();
   const { data, error } = await db
     .from("places")
@@ -128,6 +133,7 @@ export async function getLugaresAdmin(): Promise<LugarAdmin[]> {
 
 /** Una ficha completa para editarla. */
 export async function getLugarAdmin(id: string) {
+  await requireAdmin();
   const db = await crearClienteServidor();
   const { data } = await db
     .from("places")
@@ -160,6 +166,7 @@ export type FotoAdmin = { id: string; src: string; alt: string };
 
 /** Fotos de un lugar en su orden (la primera es la principal). */
 export async function getFotosAdmin(lugarId: string, urlSupabase: string): Promise<FotoAdmin[]> {
+  await requireAdmin();
   const db = await crearClienteServidor();
   const { data } = await db.from("place_photos").select("id, storage_path, alt_text").eq("place_id", lugarId).order("sort_order").order("created_at");
   return (data ?? []).map((f) => ({ id: f.id, src: urlPublicaFoto(urlSupabase, f.storage_path), alt: f.alt_text }));
@@ -204,6 +211,7 @@ const aResenaAdmin = (r: FilaResenaAdmin, motivos: string[] = []): ResenaAdmin =
 
 /** Reseñas con reportes sin resolver, las más reportadas primero. */
 export async function getReportadas(): Promise<ResenaAdmin[]> {
+  await requireAdmin();
   const db = await crearClienteServidor();
   const { data, error } = await db
     .from("review_reports")
@@ -225,6 +233,7 @@ export async function getReportadas(): Promise<ResenaAdmin[]> {
 
 /** Todas las reseñas de un lugar (también las ocultas), para responder o moderar desde su ficha. */
 export async function getResenasDeLugar(lugarId: string): Promise<ResenaAdmin[]> {
+  await requireAdmin();
   const db = await crearClienteServidor();
   const { data } = await db.from("reviews").select(COLUMNAS_RESENA).eq("place_id", lugarId).order("created_at", { ascending: false }).returns<FilaResenaAdmin[]>();
   return (data ?? []).map((r) => aResenaAdmin(r));

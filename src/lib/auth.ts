@@ -31,7 +31,8 @@ export async function requireUsuario(siguiente = "/cuenta"): Promise<Usuario> {
 export async function requireAdmin(siguiente = "/admin"): Promise<Usuario> {
   const usuario = await requireUsuario(siguiente);
   const supabase = await crearClienteServidor();
-  const { data } = await supabase.from("profiles").select("role").eq("id", usuario.id).maybeSingle();
-  if (data?.role !== "admin") notFound();
+  // El rol no se puede leer en público (migración 0003): se pregunta a la función is_admin() de la base
+  const { data } = await supabase.rpc("is_admin");
+  if (data !== true) notFound();
   return usuario;
 }

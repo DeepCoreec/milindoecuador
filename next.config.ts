@@ -14,6 +14,14 @@ function origenSupabase(): { http: string; ws: string } {
 }
 const supabase = origenSupabase();
 
+function hostSupabase(): string {
+  try {
+    const u = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "");
+    if (u.protocol === "https:") return u.hostname;
+  } catch {}
+  return "*.supabase.co"; // sin configuración (desarrollo sin claves): no hay fotos de la base que mostrar
+}
+
 // Política de contenido: de dónde puede cargar cosas la página.
 // - Supabase: datos (https y wss para tiempo real) y fotos del bucket.
 // - Cloudflare Turnstile: el captcha (script e iframe).
@@ -54,7 +62,8 @@ const nextConfig: NextConfig = {
   images: {
     // Solo fotos del bucket público de Supabase (ningún otro sitio puede usar el optimizador)
     remotePatterns: [
-      { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/fotos-lugares/**" },
+      // Solo NUESTRO proyecto de Supabase (no cualquier *.supabase.co: evita que otros usen el optimizador de imágenes)
+      { protocol: "https", hostname: hostSupabase(), pathname: "/storage/v1/object/public/fotos-lugares/**" },
       // Solo en desarrollo: el Supabase de prueba local
       ...(desarrollo ? [{ protocol: "http" as const, hostname: "127.0.0.1", port: "54321", pathname: "/storage/v1/object/public/fotos-lugares/**" }] : []),
     ],

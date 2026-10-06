@@ -122,8 +122,10 @@ milindoecuador/
   1. Validar los datos con Zod.
   2. Verificar el captcha si el formulario es público.
   3. Verificar la sesión y el rol (`requireUsuario()` o `requireAdmin()`).
-  4. Escribir con el cliente del usuario (RLS aplica). Solo las solicitudes de negocios usan `admin.ts`,
-     porque la tabla no acepta escrituras directas desde el navegador.
+  4. Escribir con el cliente del usuario (RLS aplica). Usan `admin.ts` (clave de servicio) solo cuando la base
+     no acepta escrituras directas desde el navegador: las solicitudes de negocios, crear y editar reseñas
+     (migración 0003: así nadie se salta el captcha; el autor se fija con el id de la sesión verificada) y
+     borrar la cuenta (Supabase Auth).
   5. `revalidatePath()` de las páginas afectadas.
 - **Fotos:** solo el admin las sube al bucket `fotos-lugares` desde el panel. Antes de subir se
   convierten a WebP y se les quitan los datos EXIF.
@@ -150,14 +152,16 @@ Definida completa en `supabase/migrations/0001_esquema_inicial.sql`. Resumen:
 | `cities`, `categories` | Todos | Admin |
 | `places` | Todos (solo publicados); admin todo | Admin |
 | `place_photos` | Todos (de lugares publicados) | Admin |
-| `profiles` | Todos (nombre visible) | El propio usuario solo su `display_name`; el rol nunca |
-| `reviews` | Todos (solo visibles); el autor ve las suyas | El autor crea, edita y borra la suya; admin modera |
+| `profiles` | Todos, solo `id` y `display_name` (el rol no; se consulta con `is_admin()`) | El propio usuario solo su `display_name`; el rol nunca |
+| `reviews` | Todos (solo visibles); el autor ve las suyas | El servidor crea y edita (después del captcha); el autor borra la suya; admin modera |
+| `review_log` | Nadie | Solo el trigger: cuenta reseñas creadas para el límite diario (no se salta borrando) |
 | `review_reports` | Admin | Usuarios con sesión |
 | `business_requests` | Admin | Solo el servidor, después del captcha |
 | Vista `place_ratings` | Todos | Nadie: se calcula sola |
 
-Reglas dentro de la base: una reseña por usuario y lugar; estrellas de 1 a 5; texto de 10 a 1000
-caracteres; máximo 5 reseñas por usuario cada 24 horas; slugs únicos por ciudad; WhatsApp con formato
+Reglas dentro de la base: una reseña por usuario y lugar, solo en lugares publicados; estrellas de 1 a 5;
+texto de 10 a 1000 caracteres sin caracteres invisibles; máximo 5 reseñas por usuario cada 24 horas
+(aunque borre alguna) y 10 reportes; nombre visible sin caracteres invisibles; slugs únicos por ciudad; WhatsApp con formato
 `593XXXXXXXXX`; el primer admin se asigna a mano desde Supabase (ver el final de la migración).
 
 ## 6. Convenciones
@@ -170,11 +174,17 @@ caracteres; máximo 5 reseñas por usuario cada 24 horas; slugs únicos por ciud
 
 ## 7. Revisión de seguridad antes del lanzamiento
 
-- [ ] RLS activado en todas las tablas (`select tablename from pg_tables where schemaname = 'public' and not rowsecurity` devuelve 0 filas)
-- [ ] Pruebas de `tests/rls/` pasan como visitante, usuario y admin
-- [ ] Ningún archivo del navegador contiene `SERVICE_ROLE` (buscar en `.next/static`)
-- [ ] Cabeceras de seguridad activas (revisar con securityheaders.com). Decidir si la CSP pasa a usar nonce
-- [ ] Captcha activo en reseñas y solicitudes
-- [ ] Verificación en dos pasos en GitHub, Vercel y Supabase
-- [ ] `npm audit` sin vulnerabilidades altas en dependencias de producción
-- [ ] Política de privacidad publicada y opción de borrar la cuenta funcionando
+Revisión hecha el 2026-10-05 (paso 5.4), con un revisor independiente además de la lista. Resultado en `docs/PROGRESO.md`.
+
+- [x] RLS activado en todas las tablas (`select tablename from pg_tables where schemaname = 'public' and not rowsecurity` devuelve 0 filas)
+- [x] Pruebas de `tests/rls/` pasan como visitante, usuario y admin (47)
+- [x] Ningún archivo del navegador contiene `SERVICE_ROLE` ni la clave de servicio (buscado en `.next/static`)
+- [x] Cabeceras de seguridad activas (revisadas con curl; repetir con securityheaders.com en el dominio real). **Decisión CSP:** se mantiene sin nonce (`'unsafe-inline'` en scripts) en la versión 1, para que las páginas públicas sigan siendo estáticas y rápidas; es aceptable porque no hay ningún punto donde se inserte HTML de usuarios. Revisar si se agrega contenido de terceros
+- [x] Captcha en reseñas y solicitudes (en producción, sin clave secreta se rechaza siempre). [ ] Activar también el captcha de Supabase Auth para los enlaces al correo (panel de Supabase)
+- [ ] Verificación en dos pasos en GitHub, Vercel y Supabase (usuario)
+- [x] `npm audit` sin vulnerabilidades en dependencias de producción
+- [x] Política de privacidad publicada (borrador) y opción de borrar la cuenta funcionando
+- [ ] HSTS `preload`: dejarlo solo cuando el dominio propio esté listo; probarlo antes de enviarlo a hstspreload.org
+
+Regla para migraciones futuras: Supabase da todos los permisos a `anon` y `authenticated` en cada tabla nueva.
+Cada migración que cree una tabla debe hacer `revoke all` y dar solo lo necesario, además de RLS.

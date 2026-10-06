@@ -87,39 +87,59 @@ r = await as("anon", "", `select * from public.business_requests`);
 check("no puede leer solicitudes", !!r.error || r.rows.length === 0, r);
 
 console.log("\nUsuario Ana");
-r = await as("authenticated", A, `insert into public.reviews (place_id, stars, text) values ($1, 5, 'Excelente sitio, volvería') returning user_id`, [P["lugar-1"]]);
-check("crea reseña en lugar publicado (user_id automático)", r.rows?.[0]?.user_id === A, r);
-r = await as("authenticated", A, `insert into public.reviews (place_id, stars, text) values ($1, 4, 'Otra reseña igual de larga')`, [P["lugar-1"]]);
+// Desde 0003 las reseñas se crean y editan solo desde el servidor (después del captcha), con la clave de servicio
+r = await as("authenticated", A, `insert into public.reviews (place_id, stars, text) values ($1, 5, 'Salto el captcha directo')`, [P["lugar-1"]]);
+check("no puede crear reseñas directo en la base (sin captcha)", !!r.error, r);
+const resena = (lugar, estrellas, texto, autor = A) =>
+  as("service_role", "", `insert into public.reviews (place_id, user_id, stars, text) values ($1, $2, $3, $4) returning user_id`, [P[lugar], autor, estrellas, texto]);
+r = await resena("lugar-1", 5, "Excelente sitio, volvería");
+check("el servidor crea su reseña con el autor fijado", r.rows?.[0]?.user_id === A, r);
+r = await resena("lugar-1", 4, "Otra reseña igual de larga");
 check("no puede dejar 2 reseñas en el mismo lugar", !!r.error, r);
-r = await as("authenticated", A, `insert into public.reviews (place_id, stars, text) values ($1, 4, 'Reseña en un borrador')`, [P["lugar-7"]]);
-check("no puede reseñar un lugar no publicado", !!r.error, r);
-r = await as("authenticated", A, `insert into public.reviews (place_id, stars, text) values ($1, 9, 'Estrellas inválidas aquí')`, [P["lugar-2"]]);
+r = await resena("lugar-7", 4, "Reseña en un borrador");
+check("no se puede reseñar un lugar no publicado (lo frena la base)", !!r.error && r.error.includes("publicados"), r);
+r = await resena("lugar-2", 9, "Estrellas inválidas aquí");
 check("estrellas fuera de 1 a 5 rechazadas", !!r.error, r);
-r = await as("authenticated", A, `insert into public.reviews (place_id, stars, text, user_id) values ($1, 4, 'Me hago pasar por Beto', $2)`, [P["lugar-2"], B]);
-check("no puede escribir a nombre de otro", !!r.error, r);
+r = await resena("lugar-2", 4, "Texto con \u202Eletras invertidas");
+check("texto con caracteres invisibles rechazado", !!r.error, r);
 r = await as("authenticated", A, `update public.profiles set role = 'admin' where id = $1`, [A]);
 check("no puede hacerse admin", !!r.error, r);
 r = await as("authenticated", A, `update public.profiles set display_name = 'Ana María' where id = $1 returning display_name`, [A]);
 check("puede cambiar su nombre visible", r.rows?.[0]?.display_name === "Ana María", r);
+r = await as("authenticated", A, `update public.profiles set display_name = $2 where id = $1`, [A, "Admin\u200B oficial"]);
+check("nombre con caracteres invisibles rechazado", !!r.error, r);
 r = await as("authenticated", A, `update public.profiles set display_name = 'Hackeado' where id = $1 returning id`, [B]);
 check("no puede cambiar el nombre de otro", r.rows?.length === 0, r);
-r = await as("authenticated", A, `update public.reviews set status = 'oculta' where user_id = $1`, [A]);
-check("no puede cambiar el estado de su reseña", !!r.error, r);
-r = await as("authenticated", A, `update public.reviews set stars = 4 where user_id = $1 returning stars`, [A]);
-check("puede editar las estrellas de su reseña", r.rows?.[0]?.stars === 4, r);
+r = await as("authenticated", A, `update public.reviews set status = 'oculta' where user_id = $1 returning id`, [A]);
+check("no puede cambiar el estado de su reseña", !!r.error || r.rows?.length === 0, r);
+r = await as("authenticated", A, `update public.reviews set stars = 1 where user_id = $1 returning stars`, [A]);
+check("no puede editar su reseña directo en la base (sin captcha)", !!r.error, r);
 r = await as("authenticated", A, `insert into public.places (city_id, category_id, slug, name, sector, description) values ($1, $2, 'mio', 'Mío', 'Centro', 'Descripción de prueba suficientemente larga')`, [gye, cat]);
 check("no puede crear lugares", !!r.error, r);
 r = await as("authenticated", A, `insert into storage.objects (bucket_id, name) values ('fotos-lugares', 'x.jpg')`);
 check("no puede subir fotos", !!r.error, r);
-for (const s of ["lugar-2", "lugar-3", "lugar-4", "lugar-5"]) {
-  await as("authenticated", A, `insert into public.reviews (place_id, stars, text) values ($1, 4, 'Reseña de prueba número')`, [P[s]]);
-}
-r = await as("authenticated", A, `insert into public.reviews (place_id, stars, text) values ($1, 4, 'La sexta reseña del día')`, [P["lugar-6"]]);
+for (const s of ["lugar-2", "lugar-3", "lugar-4", "lugar-5"]) await resena(s, 4, "Reseña de prueba número");
+r = await resena("lugar-6", 4, "La sexta reseña del día");
 check("límite de 5 reseñas por día", !!r.error && r.error.includes("límite"), r);
+await as("authenticated", A, `delete from public.reviews where user_id = $1 and place_id = $2`, [A, P["lugar-5"]]);
+r = await resena("lugar-6", 4, "Borro una y vuelvo a intentar");
+check("el límite no se salta borrando y volviendo a crear", !!r.error && r.error.includes("límite"), r);
+
+console.log("\nPerfiles en público");
+r = await as("anon", "", `select display_name from public.profiles`);
+check("se ve el nombre visible", !r.error && r.rows.length > 0, r);
+r = await as("anon", "", `select role from public.profiles`);
+check("no se puede leer el rol de nadie", !!r.error, r);
+r = await as("anon", "", `select created_at from public.profiles`);
+check("no se puede leer la fecha de alta", !!r.error, r);
+r = await as("authenticated", A, `select public.is_admin() as admin`);
+check("is_admin() es falso para un usuario", r.rows?.[0]?.admin === false, r);
+r = await as("authenticated", ADM, `select public.is_admin() as admin`);
+check("is_admin() es verdadero para el admin", r.rows?.[0]?.admin === true, r);
 
 console.log("\nUsuario Beto");
 r = await as("authenticated", B, `update public.reviews set text = 'Cambio la reseña de Ana' where user_id = $1 returning id`, [A]);
-check("no puede editar reseñas de otros", r.rows?.length === 0, r);
+check("no puede editar reseñas de otros", !!r.error || r.rows?.length === 0, r);
 r = await as("authenticated", B, `delete from public.reviews where user_id = $1 returning id`, [A]);
 check("no puede borrar reseñas de otros", r.rows?.length === 0, r);
 const revA = (await db.query(`select id from public.reviews where user_id=$1 and place_id=$2`, [A, P["lugar-1"]])).rows[0].id;

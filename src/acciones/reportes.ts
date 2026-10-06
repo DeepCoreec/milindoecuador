@@ -25,6 +25,7 @@ export async function reportarResena(_previo: EstadoReporte, datos: FormData): P
   const { error } = await supabase.from("review_reports").insert({ review_id: r.data.resena, reason: razon.slice(0, 500) });
   if (error) {
     if (error.code === "23505") return { estado: "ok", mensaje: "Ya habías reportado esta reseña. La revisaremos pronto." };
+    if (/límite de reportes/.test(error.message)) return { estado: "error", mensaje: "Llegaste al límite de reportes por hoy. Gracias por ayudar; vuelve mañana.", ...escrito };
     return { estado: "error", mensaje: "No se pudo enviar el reporte. Inténtalo de nuevo.", ...escrito };
   }
   return { estado: "ok", mensaje: "Gracias. La revisaremos pronto." };
