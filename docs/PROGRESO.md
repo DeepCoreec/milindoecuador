@@ -9,7 +9,7 @@
 - **Último paso terminado:** 0.5 Maquetas aprobadas (fase 0 cerrada)
 - **Modo de trabajo (2026-10-05):** el usuario autorizó avanzar paso a paso según el plan sin pedir permiso entre pasos. Se sigue respetando: nada fuera del plan, nada de librerías nuevas sin permiso y verificar y guardar cada paso
 - **Entorno de prueba (solo en la nube de Claude, no en el repo):** Postgres 16 + PostgREST 12 + Supabase Auth 2.180 + Supabase Storage (desde su código) + buzón SMTP, armados en el scratchpad de la sesión con `arrancar.sh` y `dev.sh`. Si la sesión es nueva hay que volver a armarlo; sirve para probar antes de tener el Supabase real
-- **Siguiente paso:** todo lo que no depende del usuario está hecho. Siguen sus cuentas: **1.3** Supabase (URL y clave anon) → aplicar las 3 migraciones y `seed.sql` (**1.6**) → **1.7** Vercel con las variables → repetir en real las pruebas de punta a punta (puertas 3 y 4), Lighthouse y securityheaders.com. Luego 2.8 (fotos), 3.5 (5 personas), 5.2 (datos legales), 5.5 (dominio) y 5.6 (copias de seguridad semanales de la base)
+- **Siguiente paso:** seguir `docs/PUESTA-EN-MARCHA.md` con el usuario: Turnstile → Supabase (3 migraciones + seed) → Vercel → admin → `npm run test:e2e`, Lighthouse y securityheaders.com contra la página real → cerrar puertas con la aprobación del usuario. Luego 2.8, 3.5, 5.2 (datos legales) y 5.5 (dominio)
 - **Bloqueos / esperando al usuario:** ajustes de seguridad en GitHub (1.2); crear el proyecto en Supabase y pasar URL y clave pública (1.3); cuenta de Vercel (1.7)
 
 ## Fase 0 · Plan y diseño

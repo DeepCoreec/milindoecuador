@@ -73,4 +73,5 @@ npm run tokens     # regenera src/app/tokens.css si cambian los colores aprobado
 - `docs/ARQUITECTURA.md` — carpetas, rutas, tecnologías y convenciones.
 - `docs/PROGRESO.md` — bitácora: dónde estamos y qué sigue. **Se actualiza en cada paso.**
 - `docs/DISENO.md` — sistema de diseño (se crea en la fase 0).
+- `docs/PUESTA-EN-MARCHA.md` — pasos para conectar Supabase, Vercel, Turnstile y GitHub reales.
 - `supabase/migrations/` — la base de datos completa, en orden.
