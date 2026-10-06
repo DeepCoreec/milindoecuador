@@ -5,7 +5,7 @@
 
 ## Estado actual
 
-- **Fase actual:** 1 · Base técnica (abierta solo por 1.3, 1.6 y 1.7, que esperan las cuentas del usuario) y fase 2 (todo hecho menos 2.8, que espera fotos y Supabase)
+- **Fase actual:** todo el código del plan está hecho y probado con un Supabase de prueba (fases 1 a 5). Falta lo que depende del usuario: cuentas (1.2 ajustes de GitHub, 1.3 Supabase, 1.7 Vercel), fotos (2.8), 5 personas (3.5), datos legales (5.2), dominio (5.5) y secretos de copias (5.6). Ninguna puerta de fase se da por cerrada hasta repetir las pruebas con el Supabase real y la aprobación del usuario
 - **Último paso terminado:** 0.5 Maquetas aprobadas (fase 0 cerrada)
 - **Modo de trabajo (2026-10-05):** el usuario autorizó avanzar paso a paso según el plan sin pedir permiso entre pasos. Se sigue respetando: nada fuera del plan, nada de librerías nuevas sin permiso y verificar y guardar cada paso
 - **Entorno de prueba (solo en la nube de Claude, no en el repo):** Postgres 16 + PostgREST 12 + Supabase Auth 2.180 + Supabase Storage (desde su código) + buzón SMTP, armados en el scratchpad de la sesión con `arrancar.sh` y `dev.sh`. Si la sesión es nueva hay que volver a armarlo; sirve para probar antes de tener el Supabase real
