@@ -12,7 +12,12 @@ const MAXIMO_FINAL = 5 * 1024 * 1024; // límite del bucket
 export async function aWebp(archivo: File, lado = 1600, calidad = 0.82): Promise<Blob> {
   if (!TIPOS.includes(archivo.type)) throw new Error("Usa una foto JPG, PNG o WebP");
   if (archivo.size > MAXIMO_ORIGINAL) throw new Error("La foto pesa demasiado (máximo 25 MB)");
-  const imagen = await createImageBitmap(archivo, { imageOrientation: "from-image" });
+  let imagen: ImageBitmap;
+  try {
+    imagen = await createImageBitmap(archivo, { imageOrientation: "from-image" });
+  } catch {
+    throw new Error("No se pudo abrir esa foto. Puede estar dañada: prueba con otra.");
+  }
   const escala = Math.min(1, lado / Math.max(imagen.width, imagen.height));
   const ancho = Math.round(imagen.width * escala);
   const alto = Math.round(imagen.height * escala);

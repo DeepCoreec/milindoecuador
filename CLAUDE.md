@@ -63,6 +63,7 @@ npm run build      # compilación de producción
 npm run lint       # revisión de estilo
 npm run typecheck  # revisión de tipos (genera los tipos de rutas y corre tsc)
 npm test           # pruebas unitarias + pruebas de reglas de seguridad
+npm run test:e2e   # flujos completos en navegador (necesita la página levantada y Supabase; ver tests/e2e)
 npm run tokens     # regenera src/app/tokens.css si cambian los colores aprobados
 ```
 

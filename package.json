@@ -11,7 +11,8 @@
     "tokens": "node scripts/tokens.mjs",
     "test": "vitest run --passWithNoTests && npm run test:rls",
     "test:rls": "node tests/rls/reglas.mjs",
-    "arte": "node scripts/arte.mjs"
+    "arte": "node scripts/arte.mjs",
+    "test:e2e": "playwright test -c tests/e2e/playwright.config.ts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.23",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^22.20.5",
     "@types/react": "^19",

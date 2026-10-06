@@ -109,7 +109,7 @@ milindoecuador/
 ├── tests/
 │   ├── unit/                     # Vitest (vitest.config.mts)
 │   ├── rls/reglas.mjs            # 38 pruebas de reglas de seguridad y del seed (PGlite, npm run test:rls)
-│   └── e2e/                      # Playwright
+│   └── e2e/                      # Playwright: npm run test:e2e (flujos completos; ver playwright.config.ts)
 ├── .env.example                  # nombres de variables, sin valores reales
 └── next.config.ts                # cabeceras de seguridad
 ```
