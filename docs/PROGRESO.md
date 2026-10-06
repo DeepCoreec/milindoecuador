@@ -106,6 +106,10 @@
 - 2026-10-05 Actualizaciones de Dependabot: **aceptada** React y React DOM 19.3.0 (todas las pruebas, también de punta a punta). **Rechazadas por ahora:** ESLint 10 (rompe eslint-plugin-react de eslint-config-next), TypeScript 7 (typescript-eslint no lo soporta) y @types/node 26 (la página corre en Node 22). Dependabot ya no propone esos saltos grandes; revisarlos a mano cada pocos meses. Los pull requests viejos de esas 3 se pueden cerrar en GitHub
 - 2026-10-05 Pruebas de punta a punta del proyecto: `npm run test:e2e` (Playwright, `tests/e2e/`): catálogo en celular y escritorio, 404 de borradores, cuenta (nombre y borrar), reseñas (publicar, editar, reportar, borrar) y la puerta de la fase 4 completa (solicitud → panel → foto → destacado → publicado). Inician sesión sin correo (enlace generado con la clave de servicio, solo en la prueba) y borran todo lo que crean. 9 pruebas pasan contra el Supabase de prueba. De paso se corrigió que una foto dañada mostraba el error del navegador en inglés
 
+## Versión 2
+
+- 2026-10-06: el usuario pidió panel para dueños, "Cómo llegar" con Google Maps (sin API de pago) y publicación directa con filtro automático. Propuesta escrita en `docs/PLAN-V2.md` (fases 6 a 9). **Falta su aprobación** y decidir si el admin aprueba el alta de cada negocio. No programar nada de la v2 antes de eso
+
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
 - Búsqueda y filtros: hoy se cargan todos los lugares publicados de la ciudad y se filtra en el servidor (bien hasta unos cientos de lugares). Con más lugares, pasar la búsqueda a la base (texto completo en español)
