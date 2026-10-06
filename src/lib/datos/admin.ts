@@ -1,3 +1,4 @@
+import { urlPublicaFoto } from "@/lib/fotos";
 import { crearClienteServidor } from "@/lib/supabase/server";
 
 /*
@@ -150,4 +151,13 @@ export async function getLugarAdmin(id: string) {
     >()
     .maybeSingle();
   return data;
+}
+
+export type FotoAdmin = { id: string; src: string; alt: string };
+
+/** Fotos de un lugar en su orden (la primera es la principal). */
+export async function getFotosAdmin(lugarId: string, urlSupabase: string): Promise<FotoAdmin[]> {
+  const db = await crearClienteServidor();
+  const { data } = await db.from("place_photos").select("id, storage_path, alt_text").eq("place_id", lugarId).order("sort_order").order("created_at");
+  return (data ?? []).map((f) => ({ id: f.id, src: urlPublicaFoto(urlSupabase, f.storage_path), alt: f.alt_text }));
 }

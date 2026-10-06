@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FormLugar, type DatosFormLugar } from "@/components/admin/FormLugar";
-import { getLugarAdmin } from "@/lib/datos/admin";
+import { FotosLugar } from "@/components/admin/FotosLugar";
+import { configSupabase } from "@/lib/supabase/config";
+import { getFotosAdmin, getLugarAdmin, type FotoAdmin } from "@/lib/datos/admin";
 import { getCategorias } from "@/lib/datos/lugares";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -15,6 +17,7 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
 
   let datos: DatosFormLugar;
   let enlace: string | null = null;
+  let fotos: FotoAdmin[] = [];
   if (id === "nuevo") {
     datos = { id, nombre: "", categoria: categorias[0]?.slug ?? "", sector: "", descripcion: "", dato: "", horario: "", direccion: "", precio: "", whatsapp: "", estado: "borrador" };
   } else {
@@ -35,6 +38,7 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
       estado: l.status,
     };
     if (l.status === "publicado") enlace = `/guayaquil/${categoria}/${l.slug}`;
+    fotos = await getFotosAdmin(l.id, configSupabase()!.url);
   }
 
   return (
@@ -56,6 +60,7 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
         )}
       </div>
       <FormLugar lugar={datos} categorias={categorias} />
+      {id !== "nuevo" && <FotosLugar lugar={id} fotos={fotos} />}
     </div>
   );
 }

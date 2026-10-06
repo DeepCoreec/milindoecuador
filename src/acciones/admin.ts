@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { aSlug, slugLibre } from "@/lib/slug";
 import { crearClienteServidor } from "@/lib/supabase/server";
-import { esquemaDecision, esquemaLugar } from "@/lib/validacion/admin";
+import { esquemaDecision, esquemaFoto, esquemaIdFoto, esquemaLugar, esquemaMoverFoto } from "@/lib/validacion/admin";
 
 /*
  * Acciones del panel. Cada una vuelve a verificar el rol en el servidor (requireAdmin),
@@ -120,4 +120,62 @@ export async function guardarLugar(_previo: EstadoLugar, datos: FormData): Promi
   if (!data?.length) return { estado: "error", mensaje: "La ficha no existe", valores };
   revalidatePath("/", "layout");
   return { estado: "ok", mensaje: "Cambios guardados" };
+}
+
+/**
+ * Registra una foto que el navegador del admin ya subió al bucket (convertida a WebP, sin EXIF).
+ * El camino debe ser de ESTE lugar. Si la fila no se puede guardar, se borra el archivo.
+ */
+export async function registrarFoto(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaFoto.safeParse({ lugar: datos.get("lugar"), camino: datos.get("camino"), alt: datos.get("alt") });
+  if (!r.success) return { estado: "error", mensaje: r.error.issues[0]?.message ?? "Datos inválidos" };
+  if (!r.data.camino.startsWith(`lugares/${r.data.lugar}/`)) return { estado: "error", mensaje: "La foto no es de este lugar" };
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  const { data: ultima } = await db.from("place_photos").select("sort_order").eq("place_id", r.data.lugar).order("sort_order", { ascending: false }).limit(1).maybeSingle();
+  const { error } = await db
+    .from("place_photos")
+    .insert({ place_id: r.data.lugar, storage_path: r.data.camino, alt_text: r.data.alt, sort_order: (ultima?.sort_order ?? -1) + 1 });
+  if (error) {
+    await db.storage.from("fotos-lugares").remove([r.data.camino]);
+    return { estado: "error", mensaje: "No se pudo guardar la foto. Inténtalo de nuevo." };
+  }
+  revalidatePath("/", "layout");
+  return { estado: "ok", mensaje: "Foto agregada" };
+}
+
+/** Borra una foto: la fila y el archivo del bucket. */
+export async function borrarFoto(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaIdFoto.safeParse({ foto: datos.get("foto") });
+  if (!r.success) return { estado: "error", mensaje: "Datos inválidos" };
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  const { data } = await db.from("place_photos").delete().eq("id", r.data.foto).select("storage_path");
+  const camino = data?.[0]?.storage_path;
+  if (!camino) return { estado: "error", mensaje: "La foto ya no existe" };
+  await db.storage.from("fotos-lugares").remove([camino]);
+  revalidatePath("/", "layout");
+  return { estado: "ok", mensaje: "Foto borrada" };
+}
+
+/** Cambia el orden: intercambia la foto con la de antes o la de después. La primera es la foto principal. */
+export async function moverFoto(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaMoverFoto.safeParse({ foto: datos.get("foto"), direccion: datos.get("direccion") });
+  if (!r.success) return { estado: "error", mensaje: "Datos inválidos" };
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  const { data: foto } = await db.from("place_photos").select("id, place_id, sort_order").eq("id", r.data.foto).maybeSingle();
+  if (!foto) return { estado: "error", mensaje: "La foto ya no existe" };
+  const { data: todas } = await db.from("place_photos").select("id, sort_order").eq("place_id", foto.place_id).order("sort_order").order("created_at");
+  const lista = todas ?? [];
+  const i = lista.findIndex((f) => f.id === foto.id);
+  const j = r.data.direccion === "antes" ? i - 1 : i + 1;
+  if (i < 0 || j < 0 || j >= lista.length) return { estado: "inicio" };
+  // Se renumera toda la lista para que no haya órdenes repetidos
+  [lista[i], lista[j]] = [lista[j], lista[i]];
+  for (const [n, f] of lista.entries()) {
+    if (f.sort_order !== n) await db.from("place_photos").update({ sort_order: n }).eq("id", f.id);
+  }
+  revalidatePath("/", "layout");
+  return { estado: "ok" };
 }

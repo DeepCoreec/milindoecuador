@@ -35,3 +35,11 @@ export const esquemaLugar = z.object({
   }),
   estado: z.enum(["borrador", "publicado", "oculto"]),
 });
+
+export const esquemaFoto = z.object({
+  lugar: z.uuid(),
+  camino: z.string().regex(/^lugares\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.webp$/, "Camino de foto inválido"),
+  alt: texto(3, 160, "Descripción de la foto"),
+});
+export const esquemaIdFoto = z.object({ foto: z.uuid() });
+export const esquemaMoverFoto = z.object({ foto: z.uuid(), direccion: z.enum(["antes", "despues"]) });

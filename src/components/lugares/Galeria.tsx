@@ -26,7 +26,7 @@ export function Galeria({ fotos, tono }: { fotos: Foto[]; tono: "celeste" | "man
               src={f.src}
               alt={f.alt}
               fill
-              priority={i === 0}
+              preload={i === 0}
               sizes={i === 0 ? "(min-width: 900px) 760px, 100vw" : "380px"}
               className="object-cover"
             />

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { urlPublicaFoto } from "@/lib/fotos";
 import { datosDe, TEXTO_CATEGORIA } from "./textos";
 import type { Categoria, Ciudad, LugarDetalle, LugarResumen } from "./tipos";
 
@@ -142,7 +143,7 @@ export async function leerLugar(db: SupabaseClient, urlBase: string, ciudad: str
   const fotos = [...data.place_photos]
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((f) => ({
-      src: `${urlBase}/storage/v1/object/public/fotos-lugares/${f.storage_path.split("/").map(encodeURIComponent).join("/")}`,
+      src: urlPublicaFoto(urlBase, f.storage_path),
       alt: f.alt_text,
     }));
 

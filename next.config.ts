@@ -2,6 +2,18 @@ import type { NextConfig } from "next";
 
 const desarrollo = process.env.NODE_ENV === "development";
 
+// Dirección de Supabase desde la configuración (si falta, se permite cualquier proyecto *.supabase.co).
+// Así el navegador solo puede hablar con NUESTRO proyecto, y en desarrollo funciona el Supabase de prueba local.
+function origenSupabase(): { http: string; ws: string } {
+  try {
+    const u = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "");
+    return { http: u.origin, ws: `${u.protocol === "https:" ? "wss" : "ws"}://${u.host}` };
+  } catch {
+    return { http: "https://*.supabase.co", ws: "wss://*.supabase.co" };
+  }
+}
+const supabase = origenSupabase();
+
 // Política de contenido: de dónde puede cargar cosas la página.
 // - Supabase: datos (https y wss para tiempo real) y fotos del bucket.
 // - Cloudflare Turnstile: el captcha (script e iframe).
@@ -10,15 +22,15 @@ const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com${desarrollo ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' blob: data: https://*.supabase.co",
+  `img-src 'self' blob: data: ${supabase.http}`,
   "font-src 'self'",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com",
+  `connect-src 'self' ${supabase.http} ${supabase.ws} https://challenges.cloudflare.com`,
   "frame-src https://challenges.cloudflare.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
-  "upgrade-insecure-requests",
+  ...(desarrollo ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 
 const cabecerasDeSeguridad = [
@@ -41,7 +53,12 @@ const nextConfig: NextConfig = {
   poweredByHeader: false, // no anunciar qué tecnología usa el servidor
   images: {
     // Solo fotos del bucket público de Supabase (ningún otro sitio puede usar el optimizador)
-    remotePatterns: [{ protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/fotos-lugares/**" }],
+    remotePatterns: [
+      { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/fotos-lugares/**" },
+      // Solo en desarrollo: el Supabase de prueba local
+      ...(desarrollo ? [{ protocol: "http" as const, hostname: "127.0.0.1", port: "54321", pathname: "/storage/v1/object/public/fotos-lugares/**" }] : []),
+    ],
+    dangerouslyAllowLocalIP: desarrollo,
   },
   async headers() {
     return [{ source: "/(.*)", headers: cabecerasDeSeguridad }];
