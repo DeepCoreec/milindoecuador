@@ -5,12 +5,12 @@
 
 ## Estado actual
 
-- **Fase actual:** todo el código del plan está hecho y probado con un Supabase de prueba (fases 1 a 5). Falta lo que depende del usuario: cuentas (1.2 ajustes de GitHub, 1.3 Supabase, 1.7 Vercel), fotos (2.8), 5 personas (3.5), datos legales (5.2), dominio (5.5) y secretos de copias (5.6). Ninguna puerta de fase se da por cerrada hasta repetir las pruebas con el Supabase real y la aprobación del usuario
+- **Fase actual:** todo el código del plan está hecho y probado con un Supabase de prueba (fases 1 a 5). Falta lo que depende del usuario: cuentas (1.2 ajustes de GitHub), fotos (2.8), 5 personas (3.5), datos legales (5.2), dominio (5.5) y secretos de copias (5.6). Ninguna puerta de fase se da por cerrada hasta repetir las pruebas con el Supabase real y la aprobación del usuario
 - **Último paso terminado:** 0.5 Maquetas aprobadas (fase 0 cerrada)
 - **Modo de trabajo (2026-10-05):** el usuario autorizó avanzar paso a paso según el plan sin pedir permiso entre pasos. Se sigue respetando: nada fuera del plan, nada de librerías nuevas sin permiso y verificar y guardar cada paso
 - **Entorno de prueba (solo en la nube de Claude, no en el repo):** Postgres 16 + PostgREST 12 + Supabase Auth 2.180 + Supabase Storage (desde su código) + buzón SMTP, armados en el scratchpad de la sesión con `arrancar.sh` y `dev.sh`. Si la sesión es nueva hay que volver a armarlo; sirve para probar antes de tener el Supabase real
 - **Siguiente paso:** seguir `docs/PUESTA-EN-MARCHA.md` con el usuario: Turnstile → Supabase (3 migraciones + seed) → Vercel → admin → `npm run test:e2e`, Lighthouse y securityheaders.com contra la página real → cerrar puertas con la aprobación del usuario. Luego 2.8, 3.5, 5.2 (datos legales) y 5.5 (dominio)
-- **Estado de Supabase (2026-10-06):** base cargada (0001, 0002, 0003 y seed). El acceso al panel falló unas horas ("You do not have access to this project") y se arregló solo. Siguiente: Turnstile (site key) → URL Configuration y plantilla de correo en Supabase → 6 variables en Vercel → redeploy → admin
+- **Estado real (2026-10-06):** Turnstile creado (hostname milindoecuador.vercel.app; secret rotada tras verse en una captura). Supabase: Site URL y Redirect URL puestas, captcha Turnstile activado. Probado: entrar con enlace mágico funciona de punta a punta con deepcoreec@gmail.com; se le dio rol admin por SQL. Siguiente: confirmar /admin, plantilla de correo en español, SMTP propio (el correo de Supabase solo envía a miembros de la organización), `npm run test:e2e` y Lighthouse contra la página real, publicar los 4 lugares del seed
 - **Bloqueos / esperando al usuario:** ajustes de seguridad en GitHub (1.2); crear el proyecto en Supabase y pasar URL y clave pública (1.3); variables de entorno en Vercel (1.7, la cuenta y el primer despliegue ya están)
 
 ## Fase 0 · Plan y diseño
@@ -34,7 +34,7 @@
 - [x] 1.4 Clientes de Supabase — 2026-10-05: `config.ts`, `server.ts`, `client.ts`, `admin.ts` (con `server-only`, probado: la compilación falla si se importa en el navegador) y `src/proxy.ts` que refresca la sesión con `getClaims()`. Sin claves todavía: la página funciona sin sesión hasta el paso 1.3
 - [x] 1.5 Cabeceras de seguridad — 2026-10-05: CSP (Supabase y Turnstile permitidos), HSTS, nosniff, X-Frame-Options DENY, Referrer-Policy, Permissions-Policy, COOP; sin X-Powered-By. Verificadas con el servidor en marcha. CSP sin nonce para mantener páginas estáticas: revisar en 5.4
 - [~] 1.6 Pruebas automáticas de las reglas de seguridad — 2026-10-05: las 36 pruebas corren en `npm test` contra un Postgres en memoria; falta repetirlas contra el Supabase real después del 1.3
-- [ ] 1.7 Conectar Vercel con variables de entorno y publicar una página de prueba — 2026-10-06: primer despliegue hecho por el usuario (proyecto `milindoecuador`, plan Hobby, sin variables; se ve con los lugares de muestra). Falta: poner las 6 variables tras crear Supabase y Turnstile, y volver a desplegar
+- [x] 1.7 Conectar Vercel con variables de entorno y publicar una página de prueba — 2026-10-06: https://milindoecuador.vercel.app con las 6 variables (4 Config en Production+Preview; las 2 secretas como Secret solo en Production) y redeploy. La página ya lee de Supabase real
 - **Puerta:** las pruebas de reglas de seguridad pasan.
 
 ## Fase 2 · Catálogo público
