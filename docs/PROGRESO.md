@@ -100,6 +100,10 @@
 - [~] 5.6 Copias de seguridad semanales de la base — 2026-10-05: flujo `.github/workflows/copia-semanal.yml` (lunes 03:17 de Guayaquil y a mano): copia `public` + `auth`, la cifra con AES-256 y la guarda 90 días; sin secretos no hace nada. Ciclo completo probado en local (copiar → cifrar → descifrar → restaurar: mismos conteos en todas las tablas). Cómo restaurar en `docs/ARQUITECTURA.md` §8. **Pendiente del usuario:** secretos `SUPABASE_DB_URL` y `CLAVE_COPIAS` en GitHub, correr una vez a mano y probar una restauración real
 - **Puerta:** Lighthouse 90+ y revisión de seguridad aprobada → lanzamiento.
 
+## Mantenimiento
+
+- 2026-10-05 Actualizaciones de Dependabot: **aceptada** React y React DOM 19.3.0 (todas las pruebas, también de punta a punta). **Rechazadas por ahora:** ESLint 10 (rompe eslint-plugin-react de eslint-config-next), TypeScript 7 (typescript-eslint no lo soporta) y @types/node 26 (la página corre en Node 22). Dependabot ya no propone esos saltos grandes; revisarlos a mano cada pocos meses. Los pull requests viejos de esas 3 se pueden cerrar en GitHub
+
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
 - Búsqueda y filtros: hoy se cargan todos los lugares publicados de la ciudad y se filtra en el servidor (bien hasta unos cientos de lugares). Con más lugares, pasar la búsqueda a la base (texto completo en español)
