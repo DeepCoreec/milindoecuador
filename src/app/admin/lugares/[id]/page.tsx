@@ -2,10 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FormLugar, type DatosFormLugar } from "@/components/admin/FormLugar";
 import { FotosLugar } from "@/components/admin/FotosLugar";
+import { PlanLugar } from "@/components/admin/PlanLugar";
 import { configSupabase } from "@/lib/supabase/config";
 import { ResenaAdmin } from "@/components/admin/ResenaAdmin";
 import { getFotosAdmin, getLugarAdmin, getResenasDeLugar, type FotoAdmin, type ResenaAdmin as DatosResena } from "@/lib/datos/admin";
 import { getCategorias } from "@/lib/datos/lugares";
+import { destacadoVigente } from "@/lib/planes";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
@@ -20,6 +22,7 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
   let enlace: string | null = null;
   let fotos: FotoAdmin[] = [];
   let resenas: DatosResena[] = [];
+  let plan = { vigente: false, destacadoHasta: null as string | null, verificado: false };
   if (id === "nuevo") {
     datos = { id, nombre: "", categoria: categorias[0]?.slug ?? "", sector: "", descripcion: "", dato: "", horario: "", direccion: "", precio: "", whatsapp: "", estado: "borrador" };
   } else {
@@ -40,6 +43,7 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
       estado: l.status,
     };
     if (l.status === "publicado") enlace = `/guayaquil/${categoria}/${l.slug}`;
+    plan = { vigente: destacadoVigente(l.is_featured, l.featured_until), destacadoHasta: l.featured_until, verificado: l.is_verified };
     [fotos, resenas] = await Promise.all([getFotosAdmin(l.id, configSupabase()!.url), getResenasDeLugar(l.id)]);
   }
 
@@ -63,6 +67,7 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
       </div>
       <FormLugar lugar={datos} categorias={categorias} />
       {id !== "nuevo" && <FotosLugar lugar={id} fotos={fotos} />}
+      {id !== "nuevo" && <PlanLugar lugar={id} {...plan} />}
       {id !== "nuevo" && (
         <section aria-labelledby="t-resenas" className="grid gap-4">
           <h2 id="t-resenas" className="m-0 text-xl leading-[26px] font-semibold">

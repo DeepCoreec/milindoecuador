@@ -3,9 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
+import { DIAS_DESTACADO, nuevoVencimiento } from "@/lib/planes";
 import { aSlug, slugLibre } from "@/lib/slug";
 import { crearClienteServidor } from "@/lib/supabase/server";
-import { esquemaDecision, esquemaFoto, esquemaIdFoto, esquemaLugar, esquemaModerar, esquemaMoverFoto, esquemaRespuesta } from "@/lib/validacion/admin";
+import { esquemaDecision, esquemaFoto, esquemaIdFoto, esquemaLugar, esquemaModerar, esquemaMoverFoto, esquemaPlan, esquemaRespuesta } from "@/lib/validacion/admin";
 
 /*
  * Acciones del panel. Cada una vuelve a verificar el rol en el servidor (requireAdmin),
@@ -73,7 +74,10 @@ export async function rechazarSolicitud(_previo: EstadoAdmin, datos: FormData): 
   return { estado: "ok", mensaje: "Solicitud rechazada" };
 }
 
-/** `intento` cambia en cada error: el formulario se vuelve a dibujar con lo escrito (las listas desplegables no se recuperan solas). */
+/**
+ * `intento` cambia con cada respuesta: el formulario se vuelve a dibujar con los valores correctos.
+ * Sin esto, React deja las listas desplegables en su valor inicial y un segundo guardado borraba, por ejemplo, el precio.
+ */
 export type EstadoLugar = EstadoAdmin & { errores?: string[]; valores?: Record<string, string>; intento?: number };
 
 const CAMPOS_LUGAR = ["id", "nombre", "categoria", "sector", "descripcion", "dato", "horario", "direccion", "precio", "whatsapp", "estado"] as const;
@@ -119,7 +123,7 @@ export async function guardarLugar(_previo: EstadoLugar, datos: FormData): Promi
   if (error) return { estado: "error", mensaje: "No se pudo guardar. Inténtalo de nuevo.", valores, intento: Date.now() };
   if (!data?.length) return { estado: "error", mensaje: "La ficha no existe", valores };
   revalidatePath("/", "layout");
-  return { estado: "ok", mensaje: "Cambios guardados" };
+  return { estado: "ok", mensaje: "Cambios guardados", intento: Date.now() };
 }
 
 /**
@@ -211,4 +215,26 @@ export async function responderResena(_previo: EstadoAdmin, datos: FormData): Pr
   if (error) return { estado: "error", mensaje: "No se pudo guardar la respuesta" };
   revalidatePath("/", "layout");
   return { estado: "ok", mensaje: r.data.respuesta ? "Respuesta publicada" : "Respuesta quitada" };
+}
+
+/** Activa o quita los planes pagados (en la versión 1 se cobran por transferencia o DeUna y se activan a mano). */
+export async function cambiarPlan(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaPlan.safeParse({ lugar: datos.get("lugar"), accion: datos.get("accion") });
+  if (!r.success) return { estado: "error", mensaje: "Datos inválidos" };
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  const { data: lugar } = await db.from("places").select("featured_until, is_featured").eq("id", r.data.lugar).maybeSingle();
+  if (!lugar) return { estado: "error", mensaje: "La ficha no existe" };
+
+  const actual = lugar.is_featured ? lugar.featured_until : null;
+  const cambios =
+    r.data.accion === "destacar-semana" || r.data.accion === "destacar-seis-semanas"
+      ? { is_featured: true, featured_until: nuevoVencimiento(actual, r.data.accion === "destacar-semana" ? DIAS_DESTACADO.semana : DIAS_DESTACADO.seisSemanas).toISOString() }
+      : r.data.accion === "quitar-destacado"
+        ? { is_featured: false, featured_until: null }
+        : { is_verified: r.data.accion === "verificar" };
+  const { error } = await db.from("places").update(cambios).eq("id", r.data.lugar);
+  if (error) return { estado: "error", mensaje: "No se pudo cambiar el plan" };
+  revalidatePath("/", "layout");
+  return { estado: "ok", mensaje: "Plan actualizado" };
 }

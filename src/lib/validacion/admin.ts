@@ -46,3 +46,8 @@ export const esquemaMoverFoto = z.object({ foto: z.uuid(), direccion: z.enum(["a
 
 export const esquemaModerar = z.object({ resena: z.uuid(), decision: z.enum(["ocultar", "mantener", "mostrar"]) });
 export const esquemaRespuesta = z.object({ resena: z.uuid(), respuesta: opcional(1000, "Respuesta") });
+
+export const esquemaPlan = z.object({
+  lugar: z.uuid(),
+  accion: z.enum(["destacar-semana", "destacar-seis-semanas", "quitar-destacado", "verificar", "quitar-verificado"]),
+});

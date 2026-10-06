@@ -131,7 +131,7 @@ export async function getLugarAdmin(id: string) {
   const db = await crearClienteServidor();
   const { data } = await db
     .from("places")
-    .select("id, slug, name, sector, description, short_fact, hours, address, price_level, whatsapp, status, categories(slug)")
+    .select("id, slug, name, sector, description, short_fact, hours, address, price_level, whatsapp, status, is_featured, featured_until, is_verified, categories(slug)")
     .eq("id", id)
     .returns<
       {
@@ -146,6 +146,9 @@ export async function getLugarAdmin(id: string) {
         price_level: number | null;
         whatsapp: string | null;
         status: LugarAdmin["estado"];
+        is_featured: boolean;
+        featured_until: string | null;
+        is_verified: boolean;
         categories: { slug: string } | null;
       }[]
     >()
