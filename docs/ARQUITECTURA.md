@@ -188,3 +188,17 @@ Revisión hecha el 2026-10-05 (paso 5.4), con un revisor independiente además d
 
 Regla para migraciones futuras: Supabase da todos los permisos a `anon` y `authenticated` en cada tabla nueva.
 Cada migración que cree una tabla debe hacer `revoke all` y dar solo lo necesario, además de RLS.
+
+## 8. Copias de seguridad
+
+- **Base de datos:** `.github/workflows/copia-semanal.yml` hace cada lunes una copia de los esquemas `public`
+  (la guía) y `auth` (las cuentas), la **cifra con contraseña** (AES-256) y la guarda 90 días en GitHub Actions.
+  Necesita los secretos `SUPABASE_DB_URL` y `CLAVE_COPIAS` (la contraseña se guarda también fuera de GitHub).
+- **Fotos:** viven en Supabase Storage y no entran en esa copia. Guardar siempre los originales de las fotos
+  propias en la computadora o en una carpeta de respaldo.
+- **Restaurar** (probado el 2026-10-05 con la base de prueba):
+  1. Descargar el archivo `copia-AAAA-MM-DD.dump.gpg` desde GitHub → Actions → la ejecución → Artifacts.
+  2. `gpg -d copia-AAAA-MM-DD.dump.gpg > copia.dump` (pide la contraseña).
+  3. Restaurar en un proyecto de Supabase nuevo o vacío: `pg_restore -d "<cadena de conexión>" --no-owner copia.dump`
+     (el aviso "schema public already exists" es normal).
+  4. Borrar `copia.dump` al terminar: tiene datos personales sin cifrar.

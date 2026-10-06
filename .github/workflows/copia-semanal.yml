@@ -1,0 +1,60 @@
+# Copia de seguridad semanal de la base de datos (paso 5.6).
+# - Corre cada lunes a las 03:17 de Guayaquil (08:17 UTC) y también a mano desde la pestaña Actions.
+# - La copia sale CIFRADA con contraseña (tiene correos de usuarios): sin la contraseña no se puede leer.
+# - Se guarda 90 días como "artifact" del flujo.
+# Necesita 2 secretos en GitHub → Settings → Secrets and variables → Actions:
+#   SUPABASE_DB_URL  cadena de conexión de Supabase (Project Settings → Database → Connection string, "Session pooler")
+#   CLAVE_COPIAS     contraseña larga para cifrar; guárdala también fuera de GitHub (sin ella la copia no sirve)
+# Mientras falten los secretos, el flujo termina sin hacer nada.
+# Las FOTOS no van aquí: viven en Supabase Storage (ver docs/ARQUITECTURA.md, copias de seguridad).
+name: Copia semanal de la base
+
+on:
+  schedule:
+    - cron: "17 8 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  copia:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Revisar que existan los secretos
+        id: revisar
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+          CLAVE: ${{ secrets.CLAVE_COPIAS }}
+        run: |
+          if [ -z "$DB" ] || [ -z "$CLAVE" ]; then
+            echo "::notice::Faltan SUPABASE_DB_URL o CLAVE_COPIAS: no se hace copia."
+            echo "listo=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "listo=si" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Copiar y cifrar
+        if: steps.revisar.outputs.listo == 'si'
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+          CLAVE: ${{ secrets.CLAVE_COPIAS }}
+        run: |
+          set -euo pipefail
+          fecha=$(TZ=America/Guayaquil date +%Y-%m-%d)
+          # pg_dump 17 sirve para servidores 15, 16 y 17. Solo datos de la guía (public) y cuentas (auth).
+          docker run --rm -e DB postgres:17 sh -c 'pg_dump "$DB" --format=custom --no-owner --no-privileges --schema=public --schema=auth' > copia.dump
+          test -s copia.dump
+          gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase "$CLAVE" -o "copia-$fecha.dump.gpg" copia.dump
+          shred -u copia.dump
+          ls -la "copia-$fecha.dump.gpg"
+
+      - name: Guardar la copia cifrada (90 días)
+        if: steps.revisar.outputs.listo == 'si'
+        uses: actions/upload-artifact@v4
+        with:
+          name: copia-base
+          path: copia-*.dump.gpg
+          retention-days: 90
+          if-no-files-found: error

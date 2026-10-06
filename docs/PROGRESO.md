@@ -97,7 +97,7 @@
   - Probado: 47 pruebas RLS, todas las pruebas de punta a punta otra vez, y ataques directos a la base con la clave pública (rechazados)
   - **Pendiente del usuario:** verificación en dos pasos en GitHub, Vercel y Supabase; activar el captcha de Supabase Auth (Authentication → Attack Protection, con la clave secreta de Turnstile); SMTP propio para los correos
 - [ ] 5.5 Comprar dominio, conectarlo a Vercel y pasar Vercel a plan Pro
-- [ ] 5.6 Copias de seguridad semanales de la base
+- [~] 5.6 Copias de seguridad semanales de la base — 2026-10-05: flujo `.github/workflows/copia-semanal.yml` (lunes 03:17 de Guayaquil y a mano): copia `public` + `auth`, la cifra con AES-256 y la guarda 90 días; sin secretos no hace nada. Ciclo completo probado en local (copiar → cifrar → descifrar → restaurar: mismos conteos en todas las tablas). Cómo restaurar en `docs/ARQUITECTURA.md` §8. **Pendiente del usuario:** secretos `SUPABASE_DB_URL` y `CLAVE_COPIAS` en GitHub, correr una vez a mano y probar una restauración real
 - **Puerta:** Lighthouse 90+ y revisión de seguridad aprobada → lanzamiento.
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
