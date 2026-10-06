@@ -9,7 +9,7 @@
 - **Último paso terminado:** 0.5 Maquetas aprobadas (fase 0 cerrada)
 - **Modo de trabajo (2026-10-05):** el usuario autorizó avanzar paso a paso según el plan sin pedir permiso entre pasos. Se sigue respetando: nada fuera del plan, nada de librerías nuevas sin permiso y verificar y guardar cada paso
 - **Entorno de prueba (solo en la nube de Claude, no en el repo):** Postgres 16 + PostgREST 12 + Supabase Auth 2.180 + Supabase Storage (desde su código) + buzón SMTP, armados en el scratchpad de la sesión con `arrancar.sh` y `dev.sh`. Si la sesión es nueva hay que volver a armarlo; sirve para probar antes de tener el Supabase real
-- **Siguiente paso:** 5.2 páginas `/legal/terminos` y `/legal/privacidad` en lenguaje simple (qué datos se guardan: correo, nombre visible, reseñas, solicitudes de negocios; para qué; cuánto tiempo; cómo borrar la cuenta en /cuenta; Supabase y Vercel como proveedores; contacto). **Necesita del usuario:** razón social o nombre de DeepCore, RUC, correo de contacto y ciudad, para no inventarlos. Recomendar que lo revise un abogado (Ley Orgánica de Protección de Datos Personales de Ecuador)
+- **Siguiente paso:** 5.3 Lighthouse 90+ en las 5 pantallas principales (inicio, categoría, ficha, registro, buscar) con la compilación de producción, en celular; corregir lo que baje de 90 en rendimiento, accesibilidad, buenas prácticas y SEO
 - **Bloqueos / esperando al usuario:** ajustes de seguridad en GitHub (1.2); crear el proyecto en Supabase y pasar URL y clave pública (1.3); cuenta de Vercel (1.7)
 
 ## Fase 0 · Plan y diseño
@@ -75,7 +75,7 @@
 ## Fase 5 · App y lanzamiento
 
 - [x] 5.1 PWA: `manifest.ts`, íconos y botón "Instalar app" — 2026-10-05: manifiesto (nombre, colores de noche, `standalone`), íconos 192/512, maskable, favicon y apple-icon sacados del panorama en pixel art (faro, capilla y casas); color de la barra del teléfono según modo claro u oscuro; "Instalar app" en el pie solo cuando el navegador lo ofrece. Chrome confirma que es instalable (sin errores fuera del modo incógnito de la prueba)
-- [ ] 5.2 Páginas `/legal/terminos` y `/legal/privacidad`
+- [~] 5.2 Páginas `/legal/terminos` y `/legal/privacidad` — 2026-10-05: borradores en lenguaje simple y fieles a lo que la página hace (datos que se guardan, para qué, proveedores, cuánto tiempo, derechos según la LOPDP, borrar cuenta, reglas de reseñas y de negocios, pagos manuales). Agregadas al sitemap. **Falta del usuario:** llenar en `src/lib/legal.ts` la razón social, el RUC y el correo (hoy dicen "por completar") y que lo revise un abogado
 - [ ] 5.3 Optimización: Lighthouse 90+ en las 5 pantallas principales
 - [ ] 5.4 Revisión de seguridad completa (lista en `docs/ARQUITECTURA.md`)
 - [ ] 5.5 Comprar dominio, conectarlo a Vercel y pasar Vercel a plan Pro

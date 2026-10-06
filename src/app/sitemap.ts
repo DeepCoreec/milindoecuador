@@ -8,7 +8,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const url = (ruta: string) => new URL(ruta, base).toString();
   const [ciudades, categorias] = await Promise.all([getCiudades(), getCategorias()]);
 
-  const paginas: MetadataRoute.Sitemap = [{ url: url("/"), changeFrequency: "daily", priority: 1 }];
+  const paginas: MetadataRoute.Sitemap = [
+    { url: url("/"), changeFrequency: "daily", priority: 1 },
+    { url: url("/negocios/registro"), changeFrequency: "monthly", priority: 0.5 },
+    { url: url("/negocios/planes"), changeFrequency: "monthly", priority: 0.5 },
+    { url: url("/legal/terminos"), changeFrequency: "yearly", priority: 0.2 },
+    { url: url("/legal/privacidad"), changeFrequency: "yearly", priority: 0.2 },
+  ];
   for (const ciudad of ciudades) {
     paginas.push({ url: url(`/${ciudad.slug}`), changeFrequency: "weekly", priority: 0.8 });
     for (const c of categorias) paginas.push({ url: url(`/${ciudad.slug}/${c.slug}`), changeFrequency: "daily", priority: 0.7 });
