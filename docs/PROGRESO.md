@@ -10,7 +10,7 @@
 - **Modo de trabajo (2026-10-05):** el usuario autorizó avanzar paso a paso según el plan sin pedir permiso entre pasos. Se sigue respetando: nada fuera del plan, nada de librerías nuevas sin permiso y verificar y guardar cada paso
 - **Entorno de prueba (solo en la nube de Claude, no en el repo):** Postgres 16 + PostgREST 12 + Supabase Auth 2.180 + Supabase Storage (desde su código) + buzón SMTP, armados en el scratchpad de la sesión con `arrancar.sh` y `dev.sh`. Si la sesión es nueva hay que volver a armarlo; sirve para probar antes de tener el Supabase real
 - **Siguiente paso:** seguir `docs/PUESTA-EN-MARCHA.md` con el usuario: Turnstile → Supabase (3 migraciones + seed) → Vercel → admin → `npm run test:e2e`, Lighthouse y securityheaders.com contra la página real → cerrar puertas con la aprobación del usuario. Luego 2.8, 3.5, 5.2 (datos legales) y 5.5 (dominio)
-- **Bloqueos / esperando al usuario:** ajustes de seguridad en GitHub (1.2); crear el proyecto en Supabase y pasar URL y clave pública (1.3); cuenta de Vercel (1.7)
+- **Bloqueos / esperando al usuario:** ajustes de seguridad en GitHub (1.2); crear el proyecto en Supabase y pasar URL y clave pública (1.3); variables de entorno en Vercel (1.7, la cuenta y el primer despliegue ya están)
 
 ## Fase 0 · Plan y diseño
 
@@ -33,7 +33,7 @@
 - [x] 1.4 Clientes de Supabase — 2026-10-05: `config.ts`, `server.ts`, `client.ts`, `admin.ts` (con `server-only`, probado: la compilación falla si se importa en el navegador) y `src/proxy.ts` que refresca la sesión con `getClaims()`. Sin claves todavía: la página funciona sin sesión hasta el paso 1.3
 - [x] 1.5 Cabeceras de seguridad — 2026-10-05: CSP (Supabase y Turnstile permitidos), HSTS, nosniff, X-Frame-Options DENY, Referrer-Policy, Permissions-Policy, COOP; sin X-Powered-By. Verificadas con el servidor en marcha. CSP sin nonce para mantener páginas estáticas: revisar en 5.4
 - [~] 1.6 Pruebas automáticas de las reglas de seguridad — 2026-10-05: las 36 pruebas corren en `npm test` contra un Postgres en memoria; falta repetirlas contra el Supabase real después del 1.3
-- [ ] 1.7 Conectar Vercel con variables de entorno y publicar una página de prueba
+- [ ] 1.7 Conectar Vercel con variables de entorno y publicar una página de prueba — 2026-10-06: primer despliegue hecho por el usuario (proyecto `milindoecuador`, plan Hobby, sin variables; se ve con los lugares de muestra). Falta: poner las 6 variables tras crear Supabase y Turnstile, y volver a desplegar
 - **Puerta:** las pruebas de reglas de seguridad pasan.
 
 ## Fase 2 · Catálogo público
