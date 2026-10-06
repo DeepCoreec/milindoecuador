@@ -111,7 +111,7 @@ function BorrarResena({ lugar, ruta }: { lugar: string; ruta: string }) {
   const [preguntar, setPreguntar] = useState(false);
   if (!preguntar) {
     return (
-      <button type="button" onClick={() => setPreguntar(true)} className={clasesBoton("texto", "chico", "justify-self-start text-error")}>
+      <button type="button" onClick={() => setPreguntar(true)} className={clasesBoton("texto", "chico", "justify-self-start text-error!")}>
         Borrar mi reseña
       </button>
     );
@@ -121,7 +121,7 @@ function BorrarResena({ lugar, ruta }: { lugar: string; ruta: string }) {
       <input type="hidden" name="lugar" value={lugar} />
       <input type="hidden" name="ruta" value={ruta} />
       <span className="text-sm leading-5">¿Seguro? No se puede deshacer.</span>
-      <button type="submit" disabled={borrando} className={clasesBoton("secundario", "chico", "border-error text-error")}>
+      <button type="submit" disabled={borrando} className={clasesBoton("secundario", "chico", "border-error! text-error!")}>
         Sí, borrar
       </button>
       <button type="button" onClick={() => setPreguntar(false)} className={clasesBoton("texto", "chico")}>

@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import { FormLugar, type DatosFormLugar } from "@/components/admin/FormLugar";
 import { FotosLugar } from "@/components/admin/FotosLugar";
 import { configSupabase } from "@/lib/supabase/config";
-import { getFotosAdmin, getLugarAdmin, type FotoAdmin } from "@/lib/datos/admin";
+import { ResenaAdmin } from "@/components/admin/ResenaAdmin";
+import { getFotosAdmin, getLugarAdmin, getResenasDeLugar, type FotoAdmin, type ResenaAdmin as DatosResena } from "@/lib/datos/admin";
 import { getCategorias } from "@/lib/datos/lugares";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -18,6 +19,7 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
   let datos: DatosFormLugar;
   let enlace: string | null = null;
   let fotos: FotoAdmin[] = [];
+  let resenas: DatosResena[] = [];
   if (id === "nuevo") {
     datos = { id, nombre: "", categoria: categorias[0]?.slug ?? "", sector: "", descripcion: "", dato: "", horario: "", direccion: "", precio: "", whatsapp: "", estado: "borrador" };
   } else {
@@ -38,7 +40,7 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
       estado: l.status,
     };
     if (l.status === "publicado") enlace = `/guayaquil/${categoria}/${l.slug}`;
-    fotos = await getFotosAdmin(l.id, configSupabase()!.url);
+    [fotos, resenas] = await Promise.all([getFotosAdmin(l.id, configSupabase()!.url), getResenasDeLugar(l.id)]);
   }
 
   return (
@@ -61,6 +63,14 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
       </div>
       <FormLugar lugar={datos} categorias={categorias} />
       {id !== "nuevo" && <FotosLugar lugar={id} fotos={fotos} />}
+      {id !== "nuevo" && (
+        <section aria-labelledby="t-resenas" className="grid gap-4">
+          <h2 id="t-resenas" className="m-0 text-xl leading-[26px] font-semibold">
+            Reseñas ({resenas.length})
+          </h2>
+          {resenas.length === 0 ? <p className="m-0 text-rio-suave">Todavía no tiene reseñas.</p> : resenas.map((r) => <ResenaAdmin key={r.id} resena={r} modo="lugar" />)}
+        </section>
+      )}
     </div>
   );
 }

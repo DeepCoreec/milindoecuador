@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { aSlug, slugLibre } from "@/lib/slug";
 import { crearClienteServidor } from "@/lib/supabase/server";
-import { esquemaDecision, esquemaFoto, esquemaIdFoto, esquemaLugar, esquemaMoverFoto } from "@/lib/validacion/admin";
+import { esquemaDecision, esquemaFoto, esquemaIdFoto, esquemaLugar, esquemaModerar, esquemaMoverFoto, esquemaRespuesta } from "@/lib/validacion/admin";
 
 /*
  * Acciones del panel. Cada una vuelve a verificar el rol en el servidor (requireAdmin),
@@ -178,4 +178,37 @@ export async function moverFoto(_previo: EstadoAdmin, datos: FormData): Promise<
   }
   revalidatePath("/", "layout");
   return { estado: "ok" };
+}
+
+/**
+ * Decide sobre una reseña: ocultarla, mantenerla o volver a mostrarla.
+ * Ocultar y mantener cierran los reportes que tenía.
+ */
+export async function moderarResena(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaModerar.safeParse({ resena: datos.get("resena"), decision: datos.get("decision") });
+  if (!r.success) return { estado: "error", mensaje: "Datos inválidos" };
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  if (r.data.decision !== "mantener") {
+    const { error } = await db.from("reviews").update({ status: r.data.decision === "ocultar" ? "oculta" : "visible" }).eq("id", r.data.resena);
+    if (error) return { estado: "error", mensaje: "No se pudo cambiar la reseña" };
+  }
+  if (r.data.decision !== "mostrar") {
+    const { error } = await db.from("review_reports").update({ resolved: true }).eq("review_id", r.data.resena).eq("resolved", false);
+    if (error) return { estado: "error", mensaje: "No se pudieron cerrar los reportes" };
+  }
+  revalidatePath("/", "layout");
+  return { estado: "ok", mensaje: r.data.decision === "ocultar" ? "Reseña oculta" : r.data.decision === "mostrar" ? "Reseña visible otra vez" : "Reseña mantenida" };
+}
+
+/** Respuesta del negocio a una reseña (la escribe el admin en nombre del negocio). Vacía la quita. */
+export async function responderResena(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaRespuesta.safeParse({ resena: datos.get("resena"), respuesta: datos.get("respuesta") ?? "" });
+  if (!r.success) return { estado: "error", mensaje: r.error.issues[0]?.message ?? "Datos inválidos" };
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  const { error } = await db.from("reviews").update({ owner_reply: r.data.respuesta }).eq("id", r.data.resena);
+  if (error) return { estado: "error", mensaje: "No se pudo guardar la respuesta" };
+  revalidatePath("/", "layout");
+  return { estado: "ok", mensaje: r.data.respuesta ? "Respuesta publicada" : "Respuesta quitada" };
 }

@@ -6,8 +6,8 @@ export default async function ResumenAdmin() {
   const c = await getContadores();
   const cajas = [
     { texto: "Solicitudes pendientes", n: c.pendientes, href: "/admin/solicitudes" },
-    { texto: "Lugares publicados", n: c.publicados },
-    { texto: "Reseñas reportadas", n: c.reportes },
+    { texto: "Lugares publicados", n: c.publicados, href: "/admin/lugares" },
+    { texto: "Reseñas reportadas", n: c.reportes, href: "/admin/reportes" },
   ];
   return (
     <>

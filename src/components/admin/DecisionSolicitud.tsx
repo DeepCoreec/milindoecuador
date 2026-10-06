@@ -36,7 +36,7 @@ export function DecisionSolicitud({ id, negocio }: { id: string; negocio: string
           </label>
           <input id={`nota-${id}`} name="nota" maxLength={1000} className={`${claseEntrada} min-h-10 py-1.5 text-[15px]`} />
           <div className="flex gap-2">
-            <button type="submit" disabled={rechazando} className={clasesBoton("secundario", "chico", "border-error text-error")}>
+            <button type="submit" disabled={rechazando} className={clasesBoton("secundario", "chico", "border-error! text-error!")}>
               {rechazando ? "Rechazando…" : "Rechazar"}
             </button>
             <button type="button" onClick={() => setConNota(false)} className={clasesBoton("texto", "chico")}>

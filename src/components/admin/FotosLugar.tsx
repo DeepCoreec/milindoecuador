@@ -81,7 +81,7 @@ export function FotosLugar({ lugar, fotos }: { lugar: string; fotos: FotoAdmin[]
                 )}
                 <form action={borrar}>
                   <input type="hidden" name="foto" value={f.id} />
-                  <button type="submit" disabled={ocupado} className={clasesBoton("texto", "chico", "min-h-9 text-error")} aria-label={`Borrar foto: ${f.alt}`}>
+                  <button type="submit" disabled={ocupado} className={clasesBoton("texto", "chico", "min-h-9 text-error!")} aria-label={`Borrar foto: ${f.alt}`}>
                     Borrar
                   </button>
                 </form>

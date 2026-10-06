@@ -161,3 +161,68 @@ export async function getFotosAdmin(lugarId: string, urlSupabase: string): Promi
   const { data } = await db.from("place_photos").select("id, storage_path, alt_text").eq("place_id", lugarId).order("sort_order").order("created_at");
   return (data ?? []).map((f) => ({ id: f.id, src: urlPublicaFoto(urlSupabase, f.storage_path), alt: f.alt_text }));
 }
+
+export type ResenaAdmin = {
+  id: string;
+  autor: string;
+  estrellas: number;
+  texto: string;
+  fecha: string;
+  visible: boolean;
+  respuesta: string | null;
+  lugar: { nombre: string; id: string } | null;
+  motivos: string[];
+};
+
+type FilaResenaAdmin = {
+  id: string;
+  stars: number;
+  text: string;
+  status: "visible" | "oculta";
+  owner_reply: string | null;
+  created_at: string;
+  profiles: { display_name: string } | null;
+  places: { id: string; name: string } | null;
+};
+
+const COLUMNAS_RESENA = "id, stars, text, status, owner_reply, created_at, profiles(display_name), places(id, name)";
+
+const aResenaAdmin = (r: FilaResenaAdmin, motivos: string[] = []): ResenaAdmin => ({
+  id: r.id,
+  autor: r.profiles?.display_name ?? "Visitante",
+  estrellas: r.stars,
+  texto: r.text,
+  fecha: r.created_at,
+  visible: r.status === "visible",
+  respuesta: r.owner_reply,
+  lugar: r.places ? { id: r.places.id, nombre: r.places.name } : null,
+  motivos,
+});
+
+/** Reseñas con reportes sin resolver, las más reportadas primero. */
+export async function getReportadas(): Promise<ResenaAdmin[]> {
+  const db = await crearClienteServidor();
+  const { data, error } = await db
+    .from("review_reports")
+    .select(`reason, reviews(${COLUMNAS_RESENA})`)
+    .eq("resolved", false)
+    .order("created_at", { ascending: false })
+    .limit(500)
+    .returns<{ reason: string; reviews: FilaResenaAdmin | null }[]>();
+  if (error) throw new Error("No se pudieron leer los reportes");
+  const grupos = new Map<string, { fila: FilaResenaAdmin; motivos: string[] }>();
+  for (const r of data ?? []) {
+    if (!r.reviews) continue;
+    const g = grupos.get(r.reviews.id) ?? { fila: r.reviews, motivos: [] };
+    g.motivos.push(r.reason);
+    grupos.set(r.reviews.id, g);
+  }
+  return [...grupos.values()].map((g) => aResenaAdmin(g.fila, g.motivos)).sort((a, b) => b.motivos.length - a.motivos.length);
+}
+
+/** Todas las reseñas de un lugar (también las ocultas), para responder o moderar desde su ficha. */
+export async function getResenasDeLugar(lugarId: string): Promise<ResenaAdmin[]> {
+  const db = await crearClienteServidor();
+  const { data } = await db.from("reviews").select(COLUMNAS_RESENA).eq("place_id", lugarId).order("created_at", { ascending: false }).returns<FilaResenaAdmin[]>();
+  return (data ?? []).map((r) => aResenaAdmin(r));
+}
