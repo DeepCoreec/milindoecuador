@@ -68,11 +68,14 @@ export default async function PaginaCategoria({ params, searchParams }: PageProp
               {deEjemplo}
             </p>
             {lugares.length > 0 ? (
+              <>
+              <h2 className="sr-only">Lugares</h2>
               <div className="grid grid-cols-2 gap-x-4 gap-y-6 max-[599px]:[&_h3]:text-base max-[599px]:[&_h3]:leading-[22px] max-[599px]:[&_.mle-insignias]:inset-x-2 max-[599px]:[&_.mle-insignias]:top-2 max-[599px]:[&_.mle-insignias]:gap-1 min-[1000px]:grid-cols-3 min-[1000px]:gap-6">
                 {lugares.map((l) => (
                   <TarjetaResumen key={l.slug} ciudad={ciudad.slug} lugar={l} tono={tono} />
                 ))}
               </div>
+              </>
             ) : (
               <div className="grid justify-items-start gap-3 border-t border-linea pt-6">
                 <p className="m-0 font-semibold">Ningún lugar coincide con estos filtros.</p>

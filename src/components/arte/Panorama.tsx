@@ -8,6 +8,8 @@ const CUADRO_FIJO = 25; // instante con la balandra a mitad del río
 /**
  * El Cerro Santa Ana en pixel art, siempre de noche. La única animación que corre sola:
  * 24 cuadros por segundo, se pausa fuera de pantalla y queda fija con "reducir movimiento".
+ * Primero se dibuja un cuadro fijo y la animación arranca cuando el navegador queda libre,
+ * para no competir con la carga de la página.
  */
 export function Panorama({ quieto = false, className = "" }: { quieto?: boolean; className?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -22,7 +24,8 @@ export function Panorama({ quieto = false, className = "" }: { quieto?: boolean;
     let visible = true;
     let ultimo = 0;
     let pedido = 0;
-    const t0 = performance.now();
+    let cancelarEspera = () => {};
+    let t0 = performance.now();
 
     const cuadro = (ahora: number) => {
       if (visible && ahora - ultimo > 1000 / 24) {
@@ -31,10 +34,22 @@ export function Panorama({ quieto = false, className = "" }: { quieto?: boolean;
       }
       pedido = requestAnimationFrame(cuadro);
     };
+    const animar = () => {
+      t0 = performance.now() - (CUADRO_FIJO - 11) * 1000; // sigue desde el cuadro fijo, sin saltos
+      pedido = requestAnimationFrame(cuadro);
+    };
     const arrancar = () => {
       cancelAnimationFrame(pedido);
-      if (quieto || reducir.matches) escena.pintar(CUADRO_FIJO);
-      else pedido = requestAnimationFrame(cuadro);
+      escena.pintar(CUADRO_FIJO);
+      if (quieto || reducir.matches) return;
+      cancelarEspera();
+      if (typeof window.requestIdleCallback === "function") {
+        const id = window.requestIdleCallback(animar, { timeout: 4000 });
+        cancelarEspera = () => window.cancelIdleCallback(id);
+      } else {
+        const id = setTimeout(animar, 2500);
+        cancelarEspera = () => clearTimeout(id);
+      }
     };
 
     const observador = new IntersectionObserver((e) => {
@@ -46,6 +61,7 @@ export function Panorama({ quieto = false, className = "" }: { quieto?: boolean;
 
     return () => {
       cancelAnimationFrame(pedido);
+      cancelarEspera();
       observador.disconnect();
       reducir.removeEventListener("change", arrancar);
     };

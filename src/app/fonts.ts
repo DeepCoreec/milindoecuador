@@ -20,6 +20,9 @@ export const fuenteSans = localFont({
   ],
   variable: "--fuente-sans",
   display: "swap",
+  // No se precarga: el texto aparece al instante con la fuente de respaldo ajustada y cambia sin saltos
+  // (precargar los 4 pesos competía con lo importante en conexiones lentas; medido con Lighthouse en 5.3)
+  preload: false,
 });
 
 // Source Serif 4: solo la historia de cada lugar.
@@ -28,4 +31,5 @@ export const fuenteHistoria = localFont({
   weight: "400",
   variable: "--fuente-historia",
   display: "swap",
+  preload: false, // solo se usa en la historia de cada ficha
 });

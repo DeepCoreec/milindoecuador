@@ -10,6 +10,7 @@ export function Estrellas({ promedio, cantidad, corto = false }: { promedio: num
   return (
     <span
       className="inline-flex items-center gap-1.5 text-sm leading-5 text-rio-suave tabular-nums"
+      role="img"
       aria-label={`${valor} de 5 estrellas, ${resenas}`}
     >
       <span aria-hidden="true" className="text-base text-estrella">

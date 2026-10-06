@@ -34,11 +34,14 @@ export default async function PaginaBuscar({ searchParams }: PageProps<"/buscar"
         )}
 
         {lugares.length > 0 ? (
+          <>
+          <h2 className="sr-only">Resultados</h2>
           <div className="grid grid-cols-2 gap-x-4 gap-y-6 max-[599px]:[&_.mle-insignias]:inset-x-2 max-[599px]:[&_.mle-insignias]:top-2 max-[599px]:[&_.mle-insignias]:gap-1 max-[599px]:[&_h3]:text-base max-[599px]:[&_h3]:leading-[22px] min-[1000px]:grid-cols-3 min-[1000px]:gap-6">
             {lugares.map((l) => (
               <TarjetaResumen key={`${l.categoria}/${l.slug}`} ciudad={CIUDAD} lugar={l} tono={tonoDeCategoria(l.categoria)} />
             ))}
           </div>
+          </>
         ) : (
           <section aria-labelledby="t-explora" className={q ? "mt-2" : "mt-10"}>
             <h2 id="t-explora" className="m-0 mb-4 font-rotulo text-xl leading-[26px] font-normal">
