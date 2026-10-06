@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BotonInstalar } from "./BotonInstalar";
 
 export function Pie() {
   return (
@@ -16,6 +17,7 @@ export function Pie() {
           <Link href="/negocios/planes" className="text-rio-suave">Planes para negocios</Link>
           <Link href="/legal/terminos" className="text-rio-suave">Términos</Link>
           <Link href="/legal/privacidad" className="text-rio-suave">Privacidad</Link>
+          <BotonInstalar className="cursor-pointer border-0 bg-transparent p-0 text-sm leading-5 font-semibold text-celeste-tinta underline underline-offset-2" />
         </nav>
       </div>
     </footer>
