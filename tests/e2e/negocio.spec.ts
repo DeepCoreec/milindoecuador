@@ -40,6 +40,13 @@ test("puerta de la fase 4: un negocio de punta a punta", async ({ page, context,
   await page.goto(`/admin/lugares/${lugar!.id}`);
   await page.getByLabel("Precio").selectOption("1");
   await page.getByLabel("Horario (opcional)").fill("Todos los días, de 6:00 a 13:00");
+  // Ubicación con el signo cambiado: se explica el error y no se pierde lo escrito
+  await page.getByLabel("Ubicación exacta (opcional)").fill("2.140100, 79.906500");
+  await page.getByRole("button", { name: "Guardar cambios" }).click();
+  await expect(page.getByText(/fuera de Ecuador/)).toBeVisible();
+  await expect(page.getByLabel("Horario (opcional)")).toHaveValue("Todos los días, de 6:00 a 13:00");
+  await page.getByLabel("Ubicación exacta (opcional)").fill("-2.140100, -79.906500");
+  await expect(page.getByRole("link", { name: "Ver el punto en Google Maps" })).toHaveAttribute("href", /query=-2\.1401,-79\.9065/);
   await page.getByRole("button", { name: "Guardar cambios" }).click();
   await expect(page.getByText("Cambios guardados")).toBeVisible();
 
@@ -63,5 +70,8 @@ test("puerta de la fase 4: un negocio de punta a punta", async ({ page, context,
   await expect(visita.locator("main a", { hasText: negocio }).getByText("Destacado")).toBeVisible();
   await visita.goto(new URL(`/guayaquil/restaurantes/${lugar!.slug}`, baseURL).toString());
   await expect(visita.getByRole("link", { name: "Escribir por WhatsApp" }).first()).toHaveAttribute("href", /wa\.me\/593987654321/);
+  // Fase 7: con la ubicación exacta, "Cómo llegar" abre la ruta en Google Maps y hay enlace a Waze
+  await expect(visita.getByRole("link", { name: "Cómo llegar" })).toHaveAttribute("href", "https://www.google.com/maps/dir/?api=1&destination=-2.1401,-79.9065");
+  await expect(visita.getByRole("link", { name: "Waze" })).toHaveAttribute("href", "https://waze.com/ul?ll=-2.1401,-79.9065&navigate=yes");
   await visita.close();
 });

@@ -26,6 +26,8 @@ type FilaDetalle = FilaLugar & {
   description: string;
   hours: string | null;
   address: string | null;
+  latitude: number | string | null;
+  longitude: number | string | null;
   whatsapp: string | null;
   place_photos: { storage_path: string; alt_text: string; sort_order: number }[];
 };
@@ -117,7 +119,7 @@ export async function leerLugaresDeCiudad(db: SupabaseClient, ciudad: string): P
 export async function leerLugar(db: SupabaseClient, urlBase: string, ciudad: string, categoria: string, slug: string): Promise<LugarDetalle | null> {
   const { data, error } = await db
     .from("places")
-    .select(`${COLUMNAS}, description, hours, address, whatsapp, place_photos(storage_path, alt_text, sort_order), cities!inner(slug)`)
+    .select(`${COLUMNAS}, description, hours, address, latitude, longitude, whatsapp, place_photos(storage_path, alt_text, sort_order), cities!inner(slug)`)
     .eq("cities.slug", ciudad)
     .eq("categories.slug", categoria)
     .eq("slug", slug)
@@ -153,6 +155,7 @@ export async function leerLugar(db: SupabaseClient, urlBase: string, ciudad: str
     descripcion: data.description,
     horario: data.hours,
     direccion: data.address,
+    ubicacion: data.latitude != null && data.longitude != null ? { lat: Number(data.latitude), lng: Number(data.longitude) } : null,
     whatsapp: data.whatsapp,
     fotos,
     resenas: (resenas.data ?? []).map((r) => ({

@@ -8,7 +8,7 @@
 > **Mapa rápido:** Versión 1 = construida y publicada (faltan sus puertas). Versión 2 = en marcha, fase 6.
 > Plan v1: `docs/PLAN.md` · Plan v2: `docs/PLAN-V2.md` · Puesta en marcha de cuentas: `docs/PUESTA-EN-MARCHA.md`
 
-- **Fase actual:** Versión 2 · Fase 6 (Entrar y correo). Plan v2 aprobado por el usuario el 2026-10-06
+- **Fase actual:** Versión 2 · Fase 6 (Entrar y correo: faltan los pasos del usuario 6.3–6.6) y Fase 7 (código listo en la rama `v2-como-llegar`; falta que el usuario ejecute `0004_ubicacion.sql`, luego unir a main y probar la puerta en 3 lugares). Plan v2 aprobado por el usuario el 2026-10-06
 - **Último paso terminado:** ver el último `[x]` de la sección "Versión 2"
 - **Siguiente paso:** el primer `[ ]` de la sección "Versión 2" que no diga "(usuario)". Los pasos "(usuario)" son clics en cuentas del usuario (Claude no tiene acceso a ellas): se le guía paso a paso
 - **Página real:** https://milindoecuador.vercel.app · Supabase `rlwcvrkyojcqgjigoyan` (São Paulo) · Turnstile "Mi Lindo Ecuador" · admin: deepcoreec@gmail.com
@@ -126,7 +126,7 @@
 ### Fase 7 · Cómo llegar
 - [x] 7.1 Migración 0004: latitud y longitud en `places` (con límites de Ecuador) — 2026-10-06: `latitude`/`longitude` juntas o ninguna, dentro de Ecuador con Galápagos (un signo cambiado se rechaza). 6 pruebas de reglas nuevas (53). Aplicada al Supabase de prueba. **(usuario) Ejecutar `0004_ubicacion.sql` en el SQL Editor del Supabase real ANTES de pasar a main el código de 7.2 y 7.3** (ese código lee las columnas nuevas)
 - [x] 7.2 Formulario de lugar: campos de ubicación, "Usar mi ubicación actual" y pegar coordenadas de Google Maps — 2026-10-06: campo "Ubicación exacta" en el panel; entiende las coordenadas copiadas de Google Maps y los enlaces largos (prefiere el pin `!3d!4d`); los enlaces cortos maps.app.goo.gl no traen coordenadas y se piden los números. Botón "Usar mi ubicación actual" (se abrió `geolocation=(self)` en Permissions-Policy, solo para nuestro sitio) y "Ver el punto en Google Maps". Zod rechaza puntos fuera de Ecuador con un mensaje que explica el signo menos. 7 pruebas nuevas (68). En la rama `v2-como-llegar` hasta que el usuario ejecute 0004
-- [ ] 7.3 Ficha: botones "Cómo llegar" con ruta en Google Maps y en Waze (si no hay coordenadas, se busca por dirección como hoy)
+- [x] 7.3 Ficha: botones "Cómo llegar" con ruta en Google Maps y en Waze (si no hay coordenadas, se busca por dirección como hoy) — 2026-10-06: con ubicación, "Cómo llegar" abre `google.com/maps/dir/?api=1&destination=lat,lng` (la app en el celular, con la ruta desde donde está la persona) y en Información sale "Ruta: Google Maps · Waze". La prueba e2e de la fase 4 ahora también pone la ubicación (con el signo cambiado primero) y revisa los dos enlaces: 10 pasan. **Rama `v2-como-llegar`: pasar a main cuando el usuario ejecute 0004 en el Supabase real**
 - **Puerta:** desde el celular, "Cómo llegar" abre la ruta correcta en 3 lugares reales
 
 ### Fase 8 · Cuentas de dueño

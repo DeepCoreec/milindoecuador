@@ -53,6 +53,8 @@ export type LugarDetalle = LugarResumen & {
   descripcion: string;
   horario: string | null;
   direccion: string | null;
+  /** Ubicación exacta (columnas `latitude` y `longitude`, versión 2). Sin ella, "Cómo llegar" busca por nombre. */
+  ubicacion?: { lat: number; lng: number } | null;
   /** Solo números, con 593 delante (columna `whatsapp`). */
   whatsapp: string | null;
   fotos: Foto[];

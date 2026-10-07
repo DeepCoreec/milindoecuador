@@ -17,6 +17,7 @@ import { obtenerUsuario } from "@/lib/auth";
 import { getMiResena } from "@/lib/datos/cuenta";
 import { getCategoria, getCiudad, getLugar, tonoDeCategoria } from "@/lib/datos/lugares";
 import { enlaceComoLlegar, enlaceWhatsApp, mostrarWhatsApp } from "@/lib/enlaces";
+import { enlaceRutaGoogle, enlaceRutaWaze } from "@/lib/ubicacion";
 import { paraCompartir } from "@/lib/sitio";
 
 const PRECIOS = { 1: ["$", "económico"], 2: ["$$", "medio"], 3: ["$$$", "alto"] } as const;
@@ -52,7 +53,8 @@ export default async function FichaLugar({ params }: Props) {
   const p = await params;
   const { ciudad, categoria, lugar } = await cargar(p.ciudad, p.categoria, p.lugar);
   const whatsapp = enlaceWhatsApp(lugar.whatsapp, lugar.nombre);
-  const comoLlegar = enlaceComoLlegar(lugar.nombre, lugar.direccion, ciudad.nombre);
+  // Con la ubicación exacta abre la ruta ya trazada; sin ella, busca el lugar por nombre y dirección
+  const comoLlegar = lugar.ubicacion ? enlaceRutaGoogle(lugar.ubicacion) : enlaceComoLlegar(lugar.nombre, lugar.direccion, ciudad.nombre);
   const precio = lugar.precio ? PRECIOS[lugar.precio] : null;
   const esNegocio = categoria.slug !== "turismo";
   const ruta = `/${ciudad.slug}/${categoria.slug}/${lugar.slug}`;
@@ -115,6 +117,20 @@ export default async function FichaLugar({ params }: Props) {
               )}
               <dt className="text-rio-suave">Sector</dt>
               <dd className="m-0">{lugar.sector}</dd>
+              {lugar.ubicacion && (
+                <>
+                  <dt className="text-rio-suave">Ruta</dt>
+                  <dd className="m-0">
+                    <a href={enlaceRutaGoogle(lugar.ubicacion)} target="_blank" rel="noopener noreferrer">
+                      Google Maps
+                    </a>
+                    {" · "}
+                    <a href={enlaceRutaWaze(lugar.ubicacion)} target="_blank" rel="noopener noreferrer">
+                      Waze
+                    </a>
+                  </dd>
+                </>
+              )}
               {precio ? (
                 <>
                   <dt className="text-rio-suave">Precio</dt>
