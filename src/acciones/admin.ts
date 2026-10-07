@@ -87,7 +87,7 @@ export async function rechazarSolicitud(_previo: EstadoAdmin, datos: FormData): 
  */
 export type EstadoLugar = EstadoAdmin & { errores?: string[]; valores?: Record<string, string>; intento?: number };
 
-const CAMPOS_LUGAR = ["id", "nombre", "categoria", "sector", "descripcion", "dato", "horario", "direccion", "precio", "whatsapp", "estado"] as const;
+const CAMPOS_LUGAR = ["id", "nombre", "categoria", "sector", "descripcion", "dato", "horario", "direccion", "ubicacion", "precio", "whatsapp", "estado"] as const;
 
 /** Crea o edita una ficha. Al crear, el slug sale del nombre; al editar, el slug no cambia (no se rompen enlaces). */
 export async function guardarLugar(_previo: EstadoLugar, datos: FormData): Promise<EstadoLugar> {
@@ -111,6 +111,8 @@ export async function guardarLugar(_previo: EstadoLugar, datos: FormData): Promi
     short_fact: r.data.dato,
     hours: r.data.horario,
     address: r.data.direccion,
+    latitude: r.data.ubicacion?.lat ?? null,
+    longitude: r.data.ubicacion?.lng ?? null,
     price_level: r.data.precio,
     whatsapp: r.data.whatsapp,
     status: r.data.estado,

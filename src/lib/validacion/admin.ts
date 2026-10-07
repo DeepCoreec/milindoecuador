@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { enEcuador, leerUbicacion, type Ubicacion } from "@/lib/ubicacion";
 
 export const esquemaDecision = z.object({
   solicitud: z.uuid(),
@@ -25,6 +26,22 @@ export const esquemaLugar = z.object({
   dato: opcional(80, "Dato corto"),
   horario: opcional(120, "Horario"),
   direccion: opcional(200, "Dirección"),
+  ubicacion: z
+    .string()
+    .max(2000, "Ubicación: pega solo las coordenadas")
+    .optional()
+    .transform((v, ctx): Ubicacion | null => {
+      const u = leerUbicacion(v ?? "");
+      if (u === "invalida") {
+        ctx.addIssue({ code: "custom", message: "Ubicación: pega las coordenadas que da Google Maps, por ejemplo -2.189400, -79.880800" });
+        return null;
+      }
+      if (u && !enEcuador(u)) {
+        ctx.addIssue({ code: "custom", message: "Ubicación: ese punto queda fuera de Ecuador. Revisa que no falte el signo menos (-)" });
+        return null;
+      }
+      return u;
+    }),
   precio: z.enum(["", "1", "2", "3"]).transform((v) => (v ? Number(v) : null)),
   whatsapp: z.string().transform((v, ctx) => {
     if (!v.trim()) return null;

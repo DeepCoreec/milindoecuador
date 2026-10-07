@@ -52,7 +52,7 @@ const cabecerasDeSeguridad = [
   // Al ir a otro sitio, solo se envía el dominio, no la ruta completa.
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   // La página no usa cámara, micrófono, ubicación ni pagos del navegador.
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self), payment=(), usb=()" },
   // Aísla la ventana de otras pestañas abiertas desde otros sitios.
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
 ];

@@ -4,6 +4,7 @@ import { useActionState, type ReactNode } from "react";
 import { guardarLugar, type EstadoLugar } from "@/acciones/admin";
 import { clasesBoton } from "@/components/ui/Boton";
 import { claseAyuda, claseEntrada, claseEtiqueta } from "@/components/ui/clasesFormulario";
+import { CampoUbicacion } from "./CampoUbicacion";
 
 const inicial: EstadoLugar = { estado: "inicio" };
 
@@ -16,6 +17,8 @@ export type DatosFormLugar = {
   dato: string;
   horario: string;
   direccion: string;
+  /** Coordenadas como texto: "-2.189400, -79.880800" (o vacío). */
+  ubicacion: string;
   precio: string;
   whatsapp: string;
   estado: "borrador" | "publicado" | "oculto";
@@ -72,6 +75,7 @@ export function FormLugar({ lugar, categorias }: { lugar: DatosFormLugar; catego
       <Campo id="l-direccion" etiqueta="Dirección (opcional)">
         <input id="l-direccion" name="direccion" maxLength={200} defaultValue={v.direccion} className={claseEntrada} />
       </Campo>
+      <CampoUbicacion id="l-ubicacion" valor={v.ubicacion} />
       <div className="grid gap-5 sm:grid-cols-3">
         <Campo id="l-precio" etiqueta="Precio">
           <select id="l-precio" name="precio" defaultValue={v.precio} className={`mle-select ${claseEntrada} pr-10`}>

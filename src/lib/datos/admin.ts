@@ -137,7 +137,7 @@ export async function getLugarAdmin(id: string) {
   const db = await crearClienteServidor();
   const { data } = await db
     .from("places")
-    .select("id, slug, name, sector, description, short_fact, hours, address, price_level, whatsapp, status, is_featured, featured_until, is_verified, categories(slug)")
+    .select("id, slug, name, sector, description, short_fact, hours, address, latitude, longitude, price_level, whatsapp, status, is_featured, featured_until, is_verified, categories(slug)")
     .eq("id", id)
     .returns<
       {
@@ -149,6 +149,8 @@ export async function getLugarAdmin(id: string) {
         short_fact: string | null;
         hours: string | null;
         address: string | null;
+        latitude: number | null;
+        longitude: number | null;
         price_level: number | null;
         whatsapp: string | null;
         status: LugarAdmin["estado"];
