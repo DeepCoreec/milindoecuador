@@ -269,11 +269,23 @@ check("una persona reporta una sola vez cada lugar", !!r.error, r);
 r = await as("authenticated", A, `select * from public.place_reports`);
 check("los reportes no se leen desde el navegador", !!r.error || r.rows.length === 0, r);
 await as("authenticated", B, `insert into public.place_reports (place_id, reason) values ($1, 'Dirección falsa')`, [P["lugar-3"]]);
+await as("authenticated", "00000000-0000-0000-0000-0000000000c2", `insert into public.place_reports (place_id, reason) values ($1, 'Estafa')`, [P["lugar-3"]]);
+r = await db.query(`select status from public.places where id = $1`, [P["lugar-3"]]);
+check("3 reportes de cuentas nuevas no la ocultan (0008)", r.rows[0].status === "publicado", r.rows);
+await db.exec(`update public.place_reports set resolved = true`);
+await db.exec(`update public.profiles set created_at = now() - interval '30 days'`);
+await db.exec(`delete from public.place_reports`);
+await as("authenticated", A, `insert into public.place_reports (place_id, reason) values ($1, 'Fotos falsas')`, [P["lugar-3"]]);
+await as("authenticated", B, `insert into public.place_reports (place_id, reason) values ($1, 'Dirección falsa')`, [P["lugar-3"]]);
 r = await db.query(`select status from public.places where id = $1`, [P["lugar-3"]]);
 check("con 2 reportes sigue publicado", r.rows[0].status === "publicado", r.rows);
 await as("authenticated", "00000000-0000-0000-0000-0000000000c2", `insert into public.place_reports (place_id, reason) values ($1, 'Estafa')`, [P["lugar-3"]]);
 r = await db.query(`select status from public.places where id = $1`, [P["lugar-3"]]);
-check("con 3 reportes se oculta sola", r.rows[0].status === "oculto", r.rows);
+check("con 3 reportes de cuentas con 7 días o más se oculta sola", r.rows[0].status === "oculto", r.rows);
+await db.query(`update public.places set is_verified = true where id = $1`, [P["lugar-2"]]);
+for (const u of [A, B, "00000000-0000-0000-0000-0000000000c2"]) await as("authenticated", u, `insert into public.place_reports (place_id, reason) values ($1, 'Estafa')`, [P["lugar-2"]]);
+r = await db.query(`select status from public.places where id = $1`, [P["lugar-2"]]);
+check("una ficha verificada no se oculta sola", r.rows[0].status === "publicado", r.rows);
 r = await db.query(`select count(*)::int n from public.place_changes where place_id = $1 and kind = 'oculta-por-reportes'`, [P["lugar-3"]]);
 check("y queda anotado para el admin", r.rows[0].n === 1, r.rows);
 
@@ -310,6 +322,19 @@ r = await as("authenticated", A, `delete from public.favorites where place_id = 
 check("cada uno quita los suyos", r.rows?.length === 1, r);
 r = await as("anon", "", `select * from public.favorites`);
 check("sin sesión no hay favoritos", !!r.error, r);
+
+console.log("\nAjustes de seguridad (0008)");
+r = await as("anon", "", `select public.motivo_no_permitido('mierda', false)`);
+check("el navegador no puede preguntar por la lista de palabras", !!r.error, r);
+r = await as("authenticated", A, `select public.motivo_no_permitido('mierda', false)`);
+check("ni con sesión", !!r.error, r);
+r = await as("authenticated", A, `update public.profiles set display_name = 'Ana Pendeja' where id = $1`, [A]);
+check("los disparadores siguen revisando (corren con su propio permiso)", /texto_no_permitido/.test(r.error ?? ""), r);
+r = await as("authenticated", A, `select public.anotar_con_limite($1, $2, 'ficha', array['ficha'], 2, 'x')`, [A, P["lugar-4"]]);
+check("el navegador no anota cambios con límite", !!r.error, r);
+const anotados = [];
+for (let i = 0; i < 3; i++) anotados.push((await as("service_role", "", `select public.anotar_con_limite($1, $2, 'ficha', array['ficha'], 2, 'cambio') as id`, ["00000000-0000-0000-0000-0000000000c3", P["lugar-4"]])).rows?.[0]?.id);
+check("el límite atómico corta al llegar al máximo", anotados[0] != null && anotados[1] != null && anotados[2] == null, anotados);
 
 console.log("\nDatos iniciales (supabase/seed.sql)");
 const seed = readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8");

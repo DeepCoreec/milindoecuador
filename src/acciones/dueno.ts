@@ -12,9 +12,10 @@ import { esquemaIdFoto, esquemaMoverFoto } from "@/lib/validacion/admin";
 /*
  * Acciones de "Mi negocio" (versión 2, fase 9). El dueño publica al instante.
  * Cada acción, en el servidor y en este orden:
- *   1. Zod;  2. sesión;  3. que la cuenta sea dueña de ESE lugar;  4. límite diario;
+ *   1. Zod;  2. sesión;  3. que la cuenta sea dueña de ESE lugar;
+ *   4. límite diario: se anota el cambio para el admin solo si hay cupo (atómico, migración 0008);
  *   5. escribir con admin.ts (el dueño no tiene permisos en la base, migración 0005);
- *   6. la base revisa los textos (migración 0006) y anotamos el cambio para el admin.
+ *   6. la base revisa los textos (migración 0006); si algo falla, se borra la anotación.
  */
 
 export type EstadoDueno = {
@@ -25,7 +26,7 @@ export type EstadoDueno = {
   intento?: number;
 };
 
-const LIMITES = { ficha: 40, foto: 30, respuesta: 50 } as const;
+const LIMITES = { ficha: 40, permisosFoto: 40, fotosOrden: 60, respuesta: 50 } as const;
 const SESION = "Tu sesión se cerró. Entra otra vez a tu cuenta.";
 const NO_ES_TUYO = "Este negocio no está en tu cuenta.";
 
@@ -45,27 +46,19 @@ async function miLugar(lugarId: string): Promise<{ usuario: { id: string }; luga
   return { usuario, lugar: data as Lugar };
 }
 
-/** Paso 4: cuántos cambios de este tipo hizo la cuenta en las últimas 24 horas. */
-async function dentroDelLimite(usuarioId: string, tipos: string[], maximo: number): Promise<boolean> {
-  const desde = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-  const { count } = await crearClienteAdmin()
-    .from("place_changes")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", usuarioId)
-    .in("kind", tipos)
-    .gte("created_at", desde);
-  return (count ?? 0) < maximo;
+/**
+ * Paso 4: anota el cambio solo si la cuenta no llegó al límite de las últimas 24 horas.
+ * Se cuenta y se anota en la misma transacción de la base (migración 0008): dos pedidos al mismo tiempo no
+ * pasan el límite. Devuelve el id de la anotación (para borrarla si después el guardado falla) o null.
+ */
+async function reservar(usuario: string, lugar: string, tipo: string, contar: string[], maximo: number, detalle: string, revisado = false) {
+  const { data, error } = await crearClienteAdmin().rpc("anotar_con_limite", { usuario, lugar, tipo, contar, maximo, detalle, revisado });
+  return error ? null : (data as number | null);
 }
+const quitar = (id: number) => crearClienteAdmin().from("place_changes").delete().eq("id", id);
 
 async function anotar(lugarId: string, usuarioId: string, kind: string, detail: string) {
-  await crearClienteAdmin()
-    .from("place_changes")
-    .insert({
-      place_id: lugarId,
-      user_id: usuarioId,
-      kind,
-      detail: detail.slice(0, 300),
-    });
+  await crearClienteAdmin().from("place_changes").insert({ place_id: lugarId, user_id: usuarioId, kind, detail: detail.slice(0, 300) });
 }
 
 const LIMITE_DIA = "Llegaste al límite de cambios por hoy. Vuelve mañana o escríbenos si es urgente.";
@@ -98,13 +91,6 @@ export async function guardarMiNegocio(_previo: EstadoDueno, datos: FormData): P
     };
   const m = await miLugar(r.data.lugar);
   if ("error" in m) return { estado: "error", mensaje: m.error, valores, intento: Date.now() };
-  if (!(await dentroDelLimite(m.usuario.id, ["ficha", "estado"], LIMITES.ficha)))
-    return {
-      estado: "error",
-      mensaje: LIMITE_DIA,
-      valores,
-      intento: Date.now(),
-    };
 
   const db = crearClienteAdmin();
   const { data: antes } = await db
@@ -141,15 +127,18 @@ export async function guardarMiNegocio(_previo: EstadoDueno, datos: FormData): P
       intento: Date.now(),
     };
 
+  const anotado = await reservar(m.usuario.id, m.lugar.id, "ficha", ["ficha", "estado"], LIMITES.ficha, `Cambió: ${cambiados.map((k) => ETIQUETAS[k]).join(", ")}`);
+  if (!anotado) return { estado: "error", mensaje: LIMITE_DIA, valores, intento: Date.now() };
   const { error } = await db.from("places").update(fila).eq("id", m.lugar.id).eq("owner_id", m.usuario.id);
-  if (error)
+  if (error) {
+    await quitar(anotado);
     return {
       estado: "error",
       mensaje: mensajeModeracion(error) ?? "No se pudo guardar. Inténtalo de nuevo.",
       valores,
       intento: Date.now(),
     };
-  await anotar(m.lugar.id, m.usuario.id, "ficha", `Cambió: ${cambiados.map((k) => ETIQUETAS[k]).join(", ")}`);
+  }
   revalidatePath("/", "layout");
   return {
     estado: "ok",
@@ -176,7 +165,6 @@ export async function cambiarEstadoMiNegocio(_previo: EstadoDueno, datos: FormDa
       mensaje: "Tu ficha está en revisión. Escríbenos por WhatsApp para resolverlo.",
     };
   if (m.lugar.status === r.data.estado) return { estado: "ok", mensaje: "Sin cambios" };
-  if (!(await dentroDelLimite(m.usuario.id, ["ficha", "estado"], LIMITES.ficha))) return { estado: "error", mensaje: LIMITE_DIA };
 
   const db = crearClienteAdmin();
   if (r.data.estado === "publicado") {
@@ -192,13 +180,13 @@ export async function cambiarEstadoMiNegocio(_previo: EstadoDueno, datos: FormDa
         mensaje: "Antes de publicar, sube al menos una foto.",
       };
   }
+  const anotado = await reservar(m.usuario.id, m.lugar.id, "estado", ["ficha", "estado"], LIMITES.ficha, r.data.estado === "publicado" ? "Publicó la ficha" : "Pausó la ficha (borrador)");
+  if (!anotado) return { estado: "error", mensaje: LIMITE_DIA };
   const { error } = await db.from("places").update({ status: r.data.estado }).eq("id", m.lugar.id).eq("owner_id", m.usuario.id).neq("status", "oculto");
-  if (error)
-    return {
-      estado: "error",
-      mensaje: "No se pudo cambiar. Inténtalo de nuevo.",
-    };
-  await anotar(m.lugar.id, m.usuario.id, "estado", r.data.estado === "publicado" ? "Publicó la ficha" : "Pausó la ficha (borrador)");
+  if (error) {
+    await quitar(anotado);
+    return { estado: "error", mensaje: "No se pudo cambiar. Inténtalo de nuevo." };
+  }
   revalidatePath("/", "layout");
   return {
     estado: "ok",
@@ -221,7 +209,9 @@ export async function pedirSubidaFoto(lugarId: string): Promise<{ camino: string
     return {
       error: "Ya hay 15 fotos, el máximo. Borra alguna para subir otra.",
     };
-  if (!(await dentroDelLimite(m.usuario.id, ["foto-nueva"], LIMITES.foto))) return { error: "Llegaste al límite de fotos por hoy. Vuelve mañana." };
+  // Cada permiso cuenta (aunque la foto no se registre): así nadie sube archivos sin fin. No sale en "Cambios recientes".
+  if (!(await reservar(m.usuario.id, m.lugar.id, "foto-permiso", ["foto-permiso"], LIMITES.permisosFoto, "Pidió subir una foto", true)))
+    return { error: "Llegaste al límite de fotos por hoy. Vuelve mañana." };
   const camino = `lugares/${m.lugar.id}/${crypto.randomUUID()}.webp`;
   const { data, error } = await db.storage.from("fotos-lugares").createSignedUploadUrl(camino);
   if (error || !data) return { error: "No se pudo preparar la subida. Inténtalo de nuevo." };
@@ -291,10 +281,14 @@ export async function borrarFotoDueno(_previo: EstadoDueno, datos: FormData): Pr
   const m = await miFoto(r.data.foto);
   if ("error" in m) return { estado: "error", mensaje: m.error };
   const db = crearClienteAdmin();
+  const anotado = await reservar(m.usuario.id, m.lugar.id, "foto-borrada", ["foto-borrada", "foto-orden"], LIMITES.fotosOrden, `Borró una foto: ${m.foto.alt_text}`);
+  if (!anotado) return { estado: "error", mensaje: LIMITE_DIA };
   const { error } = await db.from("place_photos").delete().eq("id", m.foto.id).eq("place_id", m.lugar.id);
-  if (error) return { estado: "error", mensaje: "No se pudo borrar" };
+  if (error) {
+    await quitar(anotado);
+    return { estado: "error", mensaje: "No se pudo borrar" };
+  }
   await db.storage.from("fotos-lugares").remove([m.foto.storage_path as string]);
-  await anotar(m.lugar.id, m.usuario.id, "foto-borrada", `Borró una foto: ${m.foto.alt_text}`);
   revalidatePath("/", "layout");
   return { estado: "ok", mensaje: "Foto borrada" };
 }
@@ -313,10 +307,11 @@ export async function moverFotoDueno(_previo: EstadoDueno, datos: FormData): Pro
   const i = lista.findIndex((f) => f.id === m.foto.id);
   const j = r.data.direccion === "antes" ? i - 1 : i + 1;
   if (i < 0 || j < 0 || j >= lista.length) return { estado: "ok" };
+  if (!(await reservar(m.usuario.id, m.lugar.id, "foto-orden", ["foto-borrada", "foto-orden"], LIMITES.fotosOrden, "Cambió el orden de las fotos")))
+    return { estado: "error", mensaje: LIMITE_DIA };
   // Se renumeran todas para que el orden quede limpio (0, 1, 2…)
   [lista[i], lista[j]] = [lista[j]!, lista[i]!];
   await Promise.all(lista.map((f, k) => db.from("place_photos").update({ sort_order: k }).eq("id", f.id).eq("place_id", m.lugar.id)));
-  await anotar(m.lugar.id, m.usuario.id, "foto-orden", "Cambió el orden de las fotos");
   revalidatePath("/", "layout");
   return { estado: "ok", mensaje: "Orden cambiado" };
 }
@@ -337,14 +332,13 @@ export async function responderComoDueno(_previo: EstadoDueno, datos: FormData):
   if (!resena) return { estado: "error", mensaje: "La reseña ya no existe" };
   const m = await miLugar(resena.place_id as string);
   if ("error" in m) return { estado: "error", mensaje: m.error };
-  if (!(await dentroDelLimite(m.usuario.id, ["respuesta"], LIMITES.respuesta))) return { estado: "error", mensaje: LIMITE_DIA };
+  const anotado = await reservar(m.usuario.id, m.lugar.id, "respuesta", ["respuesta"], LIMITES.respuesta, r.data.respuesta ? `Respondió: ${r.data.respuesta}` : "Quitó una respuesta");
+  if (!anotado) return { estado: "error", mensaje: LIMITE_DIA };
   const { error } = await db.from("reviews").update({ owner_reply: r.data.respuesta }).eq("id", resena.id).eq("place_id", m.lugar.id);
-  if (error)
-    return {
-      estado: "error",
-      mensaje: mensajeModeracion(error) ?? "No se pudo guardar la respuesta",
-    };
-  await anotar(m.lugar.id, m.usuario.id, "respuesta", r.data.respuesta ? `Respondió: ${r.data.respuesta}` : "Quitó una respuesta");
+  if (error) {
+    await quitar(anotado);
+    return { estado: "error", mensaje: mensajeModeracion(error) ?? "No se pudo guardar la respuesta" };
+  }
   revalidatePath("/", "layout");
   return {
     estado: "ok",

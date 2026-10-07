@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
+import { urlSitio } from "@/lib/sitio";
 import { configSupabase } from "@/lib/supabase/config";
 
 /*
@@ -11,12 +12,34 @@ import { configSupabase } from "@/lib/supabase/config";
  */
 const esquema = z.object({ lugar: z.uuid(), tipo: z.enum(["views", "whatsapp", "route"]) });
 
+/** Lee el cuerpo, como máximo `limite` bytes (aunque no venga content-length). */
+async function leerCorto(request: NextRequest, limite: number): Promise<string | null> {
+  const lector = request.body?.getReader();
+  if (!lector) return null;
+  const partes: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await lector.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > limite) {
+      await lector.cancel();
+      return null;
+    }
+    partes.push(value);
+  }
+  return new TextDecoder().decode(Buffer.concat(partes));
+}
+
 export async function POST(request: NextRequest) {
-  const largo = Number(request.headers.get("content-length") ?? "0");
-  if (largo > 200) return new NextResponse(null, { status: 413 });
+  // Solo desde nuestras páginas (el navegador siempre manda Origin en un POST de otro sitio)
+  const origen = request.headers.get("origin");
+  if (origen && origen !== urlSitio().origin && origen !== request.nextUrl.origin) return new NextResponse(null, { status: 403 });
+  const texto = await leerCorto(request, 200);
+  if (texto === null) return new NextResponse(null, { status: 413 });
   let cuerpo: unknown;
   try {
-    cuerpo = JSON.parse(await request.text());
+    cuerpo = JSON.parse(texto);
   } catch {
     return new NextResponse(null, { status: 400 });
   }

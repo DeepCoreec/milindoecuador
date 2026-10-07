@@ -82,7 +82,7 @@ test("el dueño completa, publica y maneja su negocio", async ({ page, context, 
 
   // Todo quedó anotado para el admin
   const { data: cambios } = await admin().from("place_changes").select("kind").eq("place_id", lugar.id);
-  expect(new Set((cambios ?? []).map((c) => c.kind))).toEqual(new Set(["ficha", "foto-nueva", "estado", "respuesta"]));
+  expect(new Set((cambios ?? []).map((c) => c.kind))).toEqual(new Set(["ficha", "foto-permiso", "foto-nueva", "estado", "respuesta"]));
 });
 
 test("reportes de lugares y cambios recientes en el panel", async ({ page, context, baseURL, browser }, info) => {
@@ -96,10 +96,12 @@ test("reportes de lugares y cambios recientes en el panel", async ({ page, conte
     detail: "Subió una foto: prueba de cambios",
   });
 
-  // Tres personas lo reportan: se oculta solo
+  // Tres personas (con cuentas de más de 7 días) lo reportan: se oculta solo
   for (const apodo of ["rep1", "rep2", "rep3"]) {
     const ctx = await browser.newContext();
     const u = await crearUsuario(apodo);
+    // Solo cuentan para ocultar solas las cuentas con 7 días o más (migración 0008)
+    await admin().from("profiles").update({ created_at: new Date(Date.now() - 30 * 86_400_000).toISOString() }).eq("id", u.id);
     await iniciarSesion(ctx, u.correo, baseURL!);
     const p = await ctx.newPage();
     await p.goto(new URL(lugar.ruta, baseURL).toString());

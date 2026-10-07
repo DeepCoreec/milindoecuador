@@ -5,7 +5,7 @@ import { urlSitio } from "@/lib/sitio";
 export default function robots(): MetadataRoute.Robots {
   const base = urlSitio();
   return {
-    rules: { userAgent: "*", allow: "/", disallow: ["/dev/", "/admin", "/cuenta", "/auth/", "/buscar"] },
+    rules: { userAgent: "*", allow: "/", disallow: ["/dev/", "/admin", "/cuenta", "/mi-negocio", "/auth/", "/api/", "/buscar", "/entrar", "/crear-cuenta", "/recuperar"] },
     sitemap: new URL("/sitemap.xml", base).toString(),
   };
 }

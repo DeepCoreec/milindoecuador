@@ -59,7 +59,9 @@ milindoecuador/
 │   │   ├── negocios/
 │   │   │   ├── registro/page.tsx
 │   │   │   └── planes/page.tsx
-│   │   ├── entrar/page.tsx
+│   │   ├── entrar/page.tsx  crear-cuenta/  recuperar/   # correo y contraseña (v2)
+│   │   ├── mi-negocio/page.tsx  mi-negocio/[id]/page.tsx # el dueño maneja su ficha (v2)
+│   │   ├── api/evento/route.ts                   # estadísticas para el dueño (v2)
 │   │   ├── auth/callback/route.ts               # vuelta del correo o de Google
 │   │   ├── cuenta/page.tsx                       # requiere sesión
 │   │   ├── admin/                                # requiere rol admin
@@ -127,8 +129,15 @@ milindoecuador/
      (migración 0003: así nadie se salta el captcha; el autor se fija con el id de la sesión verificada) y
      borrar la cuenta (Supabase Auth).
   5. `revalidatePath()` de las páginas afectadas.
-- **Fotos:** solo el admin las sube al bucket `fotos-lugares` desde el panel. Antes de subir se
-  convierten a WebP y se les quitan los datos EXIF.
+- **Fotos:** el admin las sube al bucket `fotos-lugares` desde el panel (las reglas del bucket le dejan). El dueño
+  (versión 2) recibe del servidor un permiso de subida firmado, de un solo uso, para un camino que elige el servidor;
+  no tiene permisos en el bucket. Antes de subir se convierten a WebP en el navegador y se les quitan los datos EXIF.
+- **Dueños (versión 2):** no tienen NINGÚN permiso de escritura en la base. Editan solo con `src/acciones/dueno.ts`:
+  Zod → sesión → dueño de ESE lugar (`owner_id`, leído de la base, nunca del navegador) → límite diario atómico
+  (`anotar_con_limite`) → `admin.ts` → la base revisa los textos. Las lecturas de "Mi negocio" (`src/lib/datos/dueno.ts`)
+  usan `admin.ts` siempre filtrando por la cuenta de la sesión.
+- **Moderación (versión 2):** disparadores en la base rechazan palabras prohibidas (`banned_words`, la edita el admin),
+  enlaces y teléfonos en descripciones, reseñas y respuestas. `src/lib/moderacion.ts` traduce el rechazo a un mensaje.
 
 ## 4. Variables de entorno
 
@@ -139,13 +148,14 @@ milindoecuador/
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clientes de Supabase | Sí (está protegida por RLS) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Solo `src/lib/supabase/admin.ts` | **No. Nunca en el navegador ni en git** |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Widget del captcha | Sí |
+| `NEXT_PUBLIC_GOOGLE_ACTIVO` | `si` muestra "Entrar con Google" (solo cuando Google está configurado en Supabase) | Sí |
 | `TURNSTILE_SECRET_KEY` | `src/lib/captcha.ts` | **No** |
 
 `.env.local` está en `.gitignore`. En Vercel se cargan en Settings → Environment Variables.
 
 ## 5. Base de datos
 
-Definida completa en `supabase/migrations/0001_esquema_inicial.sql`. Resumen:
+Definida completa en `supabase/migrations/` (0001 a 0008, en orden). Resumen:
 
 | Tabla | Lee | Escribe |
 | --- | --- | --- |
@@ -158,6 +168,12 @@ Definida completa en `supabase/migrations/0001_esquema_inicial.sql`. Resumen:
 | `review_reports` | Admin | Usuarios con sesión |
 | `business_requests` | Admin | Solo el servidor, después del captcha |
 | Vista `place_ratings` | Todos | Nadie: se calcula sola |
+| `places.owner_id` (0005) | Nadie desde el navegador | Solo el servidor (al aprobar una solicitud con cuenta) |
+| `banned_words` (0006) | Admin | Admin |
+| `place_changes` (0006) | Admin ("Cambios recientes") | Solo el servidor; el admin marca revisado |
+| `place_reports` (0006) | Admin | Usuarios con sesión (lugares publicados, 1 por persona, 10 por día); 3 reportes de cuentas con 7+ días ocultan la ficha (salvo verificadas) |
+| `place_stats` (0007) | Admin; el dueño, por el servidor | Solo `contar_evento`, desde `POST /api/evento` |
+| `favorites` (0007) | Cada uno los suyos | Cada uno los suyos (lugares publicados, máximo 500) |
 
 Reglas dentro de la base: una reseña por usuario y lugar, solo en lugares publicados; estrellas de 1 a 5;
 texto de 10 a 1000 caracteres sin caracteres invisibles; máximo 5 reseñas por usuario cada 24 horas

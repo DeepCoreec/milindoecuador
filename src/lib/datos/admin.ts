@@ -282,6 +282,7 @@ export async function getCambios(): Promise<Cambio[]> {
   const { data } = await db
     .from("place_changes")
     .select("id, kind, detail, reviewed, created_at, places(id, name, slug, status, categories(slug)), profiles(display_name)")
+    .neq("kind", "foto-permiso")
     .order("reviewed")
     .order("created_at", { ascending: false })
     .limit(150)
