@@ -98,3 +98,24 @@ Claude lo hace con estas herramientas (ya probadas con el Supabase de prueba):
 - 20 lugares reales con fotos propias (paso 2.8).
 - 5 personas prueban la página (paso 3.5).
 - Dominio propio (paso 5.5): comprarlo, conectarlo en Vercel → Domains, y actualizar `NEXT_PUBLIC_SITE_URL`, la Site URL y las Redirect URLs de Supabase y los dominios de Turnstile.
+
+## 8. Publicar la versión 2 (dueños, Cómo llegar, moderación, extras)
+
+El código de la versión 2 está en la rama `v2` de GitHub. Lee columnas y tablas nuevas, así que **primero la base y
+después el código** (si se publica antes, la página falla).
+
+1. **Base de datos** — Supabase → SQL Editor → **+** (una consulta nueva para cada archivo), pega y ejecuta en orden.
+   Cada uno debe decir "Success"; si uno falla, detente y avisa:
+   1. `supabase/migrations/0004_ubicacion.sql`
+   2. `supabase/migrations/0005_duenos.sql`
+   3. `supabase/migrations/0006_moderacion.sql` (avisará "destructive operation": es normal, toca **Run query**)
+   4. `supabase/migrations/0007_extras.sql`
+   5. `supabase/migrations/0008_ajustes_seguridad.sql` (también avisará: **Run query**)
+2. **Ajustes de Supabase** (Authentication):
+   - Sign In / Providers → **Email**: Confirm email activado y **Minimum password length = 8** (§2.5).
+   - Sign In / Providers → **Secure password change** activado (pide entrar de nuevo antes de cambiar la contraseña:
+     si alguien roba una sesión, no se queda con la cuenta).
+   - Emails: plantillas en español de "Confirm signup" y "Reset password" (§2.5).
+3. **Código** — Claude une la rama `v2` a `main` y la sube (`git merge v2 && git push`); Vercel publica solo.
+4. **Probar** en la página real: crear cuenta, registrar un negocio, aprobarlo, entrar a "Mi negocio", poner foto,
+   ubicación y horario, publicar, reportar desde otra cuenta, "Cambios recientes" y "Palabras prohibidas" en el panel.

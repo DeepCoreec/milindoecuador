@@ -8,7 +8,7 @@
 > **Mapa rápido:** Versión 1 = construida y publicada (faltan sus puertas). Versión 2 = en marcha, fase 6.
 > Plan v1: `docs/PLAN.md` · Plan v2: `docs/PLAN-V2.md` · Puesta en marcha de cuentas: `docs/PUESTA-EN-MARCHA.md`
 
-- **Fase actual:** Versión 2 · Fase 6 (Entrar y correo: faltan los pasos del usuario 6.3–6.6) y Fase 7 (código listo en la rama `v2-como-llegar`; falta que el usuario ejecute `0004_ubicacion.sql`, luego unir a main y probar la puerta en 3 lugares). Plan v2 aprobado por el usuario el 2026-10-06
+- **Fase actual (2026-10-07):** TODO el código de la versión 2 (fases 6 a 10) está hecho y probado con el Supabase de prueba. Las fases 7–10 viven en la rama `v2` (no en main) porque necesitan las migraciones 0004–0008 en el Supabase real. **Siguiente paso:** con el usuario, seguir `docs/PUESTA-EN-MARCHA.md` §8 (ejecutar 0004→0008, ajustes de Auth) y luego `git checkout main && git merge v2 && git push`. Después, las puertas con la página real: 6 (alguien que no es admin entra: necesita dominio + Resend, pasos 6.3–6.6), 7 (Cómo llegar en 3 lugares), 8 (pruebas de reglas contra la base real), 9 (3 negocios reales llenan su ficha), 10 (el usuario prueba los extras)
 - **Último paso terminado:** ver el último `[x]` de la sección "Versión 2"
 - **Siguiente paso:** el primer `[ ]` de la sección "Versión 2" que no diga "(usuario)". Los pasos "(usuario)" son clics en cuentas del usuario (Claude no tiene acceso a ellas): se le guía paso a paso
 - **Página real:** https://milindoecuador.vercel.app · Supabase `rlwcvrkyojcqgjigoyan` (São Paulo) · Turnstile "Mi Lindo Ecuador" · admin: deepcoreec@gmail.com
@@ -130,26 +130,29 @@
 - **Puerta:** desde el celular, "Cómo llegar" abre la ruta correcta en 3 lugares reales
 
 ### Fase 8 · Cuentas de dueño
-- [ ] 8.1 Migración 0005: dueño de cada lugar y de cada solicitud, con reglas de seguridad
-- [ ] 8.2 La solicitud de negocio pide iniciar sesión; al aprobarla, la cuenta queda como dueña
-- [ ] 8.3 Pruebas de reglas: un dueño no puede tocar un negocio ajeno ni hacerse admin
+- [x] 8.1 Migración 0005: dueño de cada lugar y de cada solicitud, con reglas de seguridad — 2026-10-07: `places.owner_id` y `business_requests.user_id`. El dueño no se lee en público (lectura de `places` por columnas) y nadie lo cambia desde el navegador, ni el admin (permisos de insert/update por columnas). El dueño NO recibe permisos de escritura: edita solo desde el servidor (fase 9)
+- [x] 8.2 La solicitud de negocio pide iniciar sesión; al aprobarla, la cuenta queda como dueña — 2026-10-07: `/negocios/registro` sin sesión muestra "Primero, tu cuenta" (crear cuenta / entrar, vuelve al registro); máximo 3 solicitudes pendientes por cuenta; `aprobarSolicitud` crea la ficha con admin.ts (después de requireAdmin) poniendo el dueño. La prueba e2e de la fase 4 lo comprueba
+- [x] 8.3 Pruebas de reglas: un dueño no puede tocar un negocio ajeno ni hacerse admin — 2026-10-07: 9 pruebas nuevas (62): nadie lee el dueño, el dueño no edita directo ni su propia ficha, nadie cambia el dueño salvo el servidor, el admin sigue creando y editando. Que nadie se haga admin ya lo cubrían las pruebas de perfiles
 - **Puerta:** las pruebas de seguridad pasan
 
 ### Fase 9 · Mi negocio y moderación
-- [ ] 9.1 Filtro automático de textos (palabras prohibidas editables por el admin, enlaces y teléfonos) en servidor y base
-- [ ] 9.2 Página "Mi negocio": editar datos, horario, precio, sector, WhatsApp y ubicación (sale al instante)
-- [ ] 9.3 Fotos del dueño: hasta 15, ordenar y borrar
-- [ ] 9.4 El dueño responde las reseñas de su negocio
-- [ ] 9.5 Límites diarios por cuenta (cambios y fotos)
-- [ ] 9.6 Panel: "Cambios recientes" y ocultar ficha o foto con un clic
-- [ ] 9.7 "Reportar este lugar"; con 3 reportes se oculta sola
-- [ ] 9.8 Pruebas de punta a punta del flujo del dueño
+- [x] 9.1 Filtro automático de textos (palabras prohibidas editables por el admin, enlaces y teléfonos) en servidor y base — 2026-10-07: migración 0006 (`banned_words`, `normalizar_texto`, `motivo_no_permitido` y disparadores en lugares, reseñas, solicitudes y nombres; solo revisa los campos que cambian). Compara palabras enteras sin tildes, mayúsculas, números-letra ni letras repetidas; "m.i.e.r.d.a" no se detecta (para eso, reportes). Enlaces y teléfonos se bloquean en descripción, dato, reseñas y respuestas. Página `/admin/palabras` para agregar y quitar. Mensajes claros en todas las acciones (`src/lib/moderacion.ts`). La misma migración trae el registro de cambios, los reportes de lugares y el límite de 15 fotos (pasos 9.3, 9.6 y 9.7). 26 pruebas de reglas nuevas (88) y 3 unitarias (71)
+- [x] 9.2 Página "Mi negocio": editar datos, horario, precio, sector, WhatsApp y ubicación (sale al instante) — 2026-10-07: `/mi-negocio` (lista) y `/mi-negocio/[id]` (solo su dueño; si no, 404). Mismo formulario del panel en modo dueño (sin categoría ni estado). Botón Publicar/Pausar con lista de lo que falta (descripción y 1 foto); una ficha oculta por el admin o por reportes no la puede volver a mostrar. Acciones en `src/acciones/dueno.ts`: Zod → sesión → dueño de ESE lugar → límite diario → admin.ts → la base revisa textos → se anota en `place_changes`. Enlace "Mi negocio" en /cuenta
+- [x] 9.3 Fotos del dueño: hasta 15, ordenar y borrar — 2026-10-07: el servidor da un permiso de subida firmado de un solo uso para un camino que elige él (el dueño no tiene permisos en el bucket); al registrar comprueba que el archivo existe y es de ese lugar. Máximo 15 en la base (0006) y 30 fotos nuevas por día
+- [x] 9.4 El dueño responde las reseñas de su negocio — 2026-10-07: respuesta debajo de cada reseña visible, pasa por el filtro (sin insultos, enlaces ni teléfonos), 50 por día. Prueba e2e nueva `dueno.spec.ts` (celular): otro usuario recibe 404, teléfono bloqueado, guardar, foto, publicar, se ve en la guía, respuesta con insulto bloqueada y respuesta normal publicada, cambios anotados
+- [x] 9.5 Límites diarios por cuenta (cambios y fotos) — 2026-10-07: en las acciones del dueño, contando `place_changes` de las últimas 24 h: 40 cambios de ficha o publicar/pausar, 30 fotos nuevas, 50 respuestas; más 3 solicitudes pendientes por cuenta (8.2). Como el dueño no tiene ningún otro camino para escribir, el límite del servidor no se puede saltar
+- [x] 9.6 Panel: "Cambios recientes" y ocultar ficha o foto con un clic — 2026-10-07: `/admin/cambios` con contador en el menú; sin revisar primero; "Ocultar ficha", "Revisado" y "Marcar todos". Una foto mala se borra desde la ficha en el panel (o se oculta la ficha entera). También se arregló que el menú marcaba "Lugares" en "Lugares reportados"
+- [x] 9.7 "Reportar este lugar"; con 3 reportes se oculta sola — 2026-10-07: en la ficha (con sesión; sin ella, enlace a entrar), 6 motivos. La base oculta la ficha al 3.er reporte de personas distintas y lo anota en Cambios recientes. `/admin/lugares-reportados`: "Mostrar otra vez" o "Dejar oculta" (cierra los reportes)
+- [x] 9.8 Pruebas de punta a punta del flujo del dueño — 2026-10-07: `tests/e2e/dueno.spec.ts` (2 pruebas): el flujo del dueño y reportes → se oculta sola → el admin la muestra → cambios recientes → ocultar → palabra nueva bloqueada al instante. **Puerta de la fase 9 (pendiente con la página real):** 3 negocios reales llenan su ficha solos
 - **Puerta:** 3 negocios reales llenan su ficha solos y el filtro bloquea las palabras de prueba
 
+### Revisión de seguridad de la versión 2
+- [x] 2026-10-07 Revisión independiente (otro agente, sin ver cómo se hizo): sin fallas altas. Arreglado en la migración 0008 y el código: (M1) cada permiso de subida de foto cuenta para el límite (40/día) y no se puede subir sin fin; (M2) para ocultar sola una ficha solo cuentan reportes de cuentas con 7 días o más y las fichas verificadas no se ocultan solas; (B1) las funciones de la moderación ya no se pueden llamar desde el navegador (no se puede averiguar la lista de palabras); (B2) límites diarios atómicos (`anotar_con_limite`); (B3) borrar y ordenar fotos también tienen límite; (B4) `/api/evento` revisa el Origin y lee como máximo 200 bytes. Aceptado: (B5) quitar EXIF depende del navegador del dueño (riesgo para su propia privacidad); (B6) se resuelve activando "Secure password change" en Supabase (PUESTA-EN-MARCHA §8). 7 pruebas de reglas nuevas (110); e2e: 12 pasan; `next build` sin errores
+
 ### Fase 10 · Extras
-- [ ] 10.1 "Abierto ahora / Cerrado" según el horario
-- [ ] 10.2 Estadísticas para el dueño (vistas, toques a WhatsApp y "Cómo llegar")
-- [ ] 10.3 Favoritos
+- [x] 10.1 "Abierto ahora / Cerrado" según el horario — 2026-10-07: migración 0007 (`places.opening_hours`, JSON por día). Editor "Horario por día" en el panel y en Mi negocio (casilla por día, abre/cierra, copiar lunes a viernes; cierre menor = después de medianoche; iguales = 24 h). En la ficha: "Abierto · cierra a las 22:00" / "Cerrado · abre mañana a las 8:00" en hora de Ecuador, calculado en el navegador cada minuto (la página puede venir de caché), y el horario resumido ("Lun a jue: 8:00 – 22:00"). `src/lib/horario.ts` con 9 pruebas
+- [x] 10.2 Estadísticas para el dueño (vistas, toques a WhatsApp y "Cómo llegar") — 2026-10-07: tabla `place_stats` por día y función `contar_evento` (solo el servidor la llama; ignora lugares no publicados). `POST /api/evento` (Zod, sin guardar IP ni cuenta); la ficha avisa una vista por navegador y día y cada toque a WhatsApp, Cómo llegar, Google Maps o Waze. "Cómo te va" en Mi negocio: últimos 7 y 30 días. Son números orientativos (se podrían inflar a propósito)
+- [x] 10.3 Favoritos — 2026-10-07: tabla `favorites` (cada uno ve, agrega y quita solo los suyos, solo lugares publicados, máximo 500). Botón "Guardar" con corazón en la ficha (sin sesión lleva a entrar) y "Lugares guardados" en Mi cuenta. Prueba e2e `extras.spec.ts` (horario por día desde Mi negocio → "Abierto las 24 horas", vista y WhatsApp contados una vez, guardar/quitar, números en Mi negocio). 15 pruebas de reglas nuevas (103)
 - **Puerta:** el usuario los prueba y los aprueba
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
