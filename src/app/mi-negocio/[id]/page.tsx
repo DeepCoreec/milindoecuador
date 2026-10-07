@@ -13,12 +13,17 @@ import { textoUbicacion } from "@/lib/ubicacion";
 import { DESCRIPCION_PENDIENTE } from "@/lib/validacion/dueno";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Mi negocio · Mi Lindo Ecuador", robots: { index: false, follow: false } };
+export const metadata: Metadata = {
+  title: "Mi negocio · Mi Lindo Ecuador",
+  robots: { index: false, follow: false },
+};
 
 const titulo = "m-0 text-xl leading-[26px] font-semibold";
 
 /** Editar mi negocio (versión 2, pasos 9.2 a 9.4). Lo que se guarda sale al instante si la ficha está publicada. */
-export default async function PaginaMiNegocio({ params }: PageProps<"/mi-negocio/[id]">) {
+export default async function PaginaMiNegocio({
+  params,
+}: PageProps<"/mi-negocio/[id]">) {
   const { id } = await params;
   const usuario = await requireDueno(id, `/mi-negocio/${id}`);
   const n = await getMiNegocio(usuario, id);
@@ -32,11 +37,20 @@ export default async function PaginaMiNegocio({ params }: PageProps<"/mi-negocio
           <Link href="/mi-negocio" className="text-sm leading-5 text-rio-suave">
             ← Mis negocios
           </Link>
-          <h1 className="m-0 font-rotulo text-[28px] leading-[34px] font-normal">{n.nombre}</h1>
-          <p className="m-0 text-sm leading-5 text-rio-suave">{n.categoria}. Para cambiar la categoría, escríbenos por WhatsApp.</p>
+          <h1 className="m-0 font-rotulo text-[28px] leading-[34px] font-normal">
+            {n.nombre}
+          </h1>
+          <p className="m-0 text-sm leading-5 text-rio-suave">
+            {n.categoria}. Para cambiar la categoría, escríbenos por WhatsApp.
+          </p>
         </div>
 
-        <EstadoNegocio lugar={n.id} estado={n.estado} listo={{ descripcion: !pendiente, fotos: n.fotos.length > 0 }} ruta={n.ruta} />
+        <EstadoNegocio
+          lugar={n.id}
+          estado={n.estado}
+          listo={{ descripcion: !pendiente, fotos: n.fotos.length > 0 }}
+          ruta={n.ruta}
+        />
 
         <section aria-labelledby="t-datos" className="grid gap-3">
           <h2 id="t-datos" className={titulo}>
@@ -53,7 +67,10 @@ export default async function PaginaMiNegocio({ params }: PageProps<"/mi-negocio
               dato: n.dato ?? "",
               horario: n.horario ?? "",
               direccion: n.direccion ?? "",
-              ubicacion: n.latitud != null && n.longitud != null ? textoUbicacion({ lat: n.latitud, lng: n.longitud }) : "",
+              ubicacion:
+                n.latitud != null && n.longitud != null
+                  ? textoUbicacion({ lat: n.latitud, lng: n.longitud })
+                  : "",
               precio: n.precio ? String(n.precio) : "",
               whatsapp: n.whatsapp ? n.whatsapp.replace(/^593/, "0") : "",
               estado: n.estado,
@@ -68,24 +85,39 @@ export default async function PaginaMiNegocio({ params }: PageProps<"/mi-negocio
             Reseñas de tus clientes
           </h2>
           {n.resenas.length === 0 ? (
-            <p className="m-0 text-rio-suave">Todavía no hay reseñas. Comparte tu ficha con tus clientes para que te dejen una.</p>
+            <p className="m-0 text-rio-suave">
+              Todavía no hay reseñas. Comparte tu ficha con tus clientes para
+              que te dejen una.
+            </p>
           ) : (
             n.resenas.map((r) => (
-              <article key={r.id} className="grid gap-3 rounded-xl border border-linea bg-papel-alto p-5">
+              <article
+                key={r.id}
+                className="grid gap-3 rounded-xl border border-linea bg-papel-alto p-5"
+              >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <b>{r.autor}</b>
-                  <time dateTime={r.fecha} className="text-sm leading-5 text-rio-suave">
+                  <time
+                    dateTime={r.fecha}
+                    className="text-sm leading-5 text-rio-suave"
+                  >
                     {fechaLarga(r.fecha)}
                   </time>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="tracking-[0.1em] text-estrella" role="img" aria-label={`${r.estrellas} de 5 estrellas`}>
+                  <span
+                    className="tracking-[0.1em] text-estrella"
+                    role="img"
+                    aria-label={`${r.estrellas} de 5 estrellas`}
+                  >
                     {"★".repeat(r.estrellas)}
                   </span>
                   {!r.visible && <Insignia>Oculta por moderación</Insignia>}
                 </div>
                 <p className="m-0">{r.texto}</p>
-                {r.visible && <RespuestaDueno resena={r.id} respuesta={r.respuesta} />}
+                {r.visible && (
+                  <RespuestaDueno resena={r.id} respuesta={r.respuesta} />
+                )}
               </article>
             ))
           )}

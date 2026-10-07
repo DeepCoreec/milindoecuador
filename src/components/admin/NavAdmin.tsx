@@ -11,7 +11,7 @@ export function NavAdmin({ items }: { items: Item[] }) {
   return (
     <nav aria-label="Panel" className="sin-barra flex gap-1 overflow-x-auto min-[900px]:mt-6 min-[900px]:flex-col">
       {items.map((i) => {
-        const actual = i.href === "/admin" ? ruta === "/admin" : ruta.startsWith(i.href);
+        const actual = i.href === "/admin" ? ruta === "/admin" : ruta === i.href || ruta.startsWith(`${i.href}/`);
         return (
           <Link
             key={i.href}

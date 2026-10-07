@@ -8,9 +8,16 @@ import { requireUsuario } from "@/lib/auth";
 import { getMisNegocios } from "@/lib/datos/dueno";
 
 export const dynamic = "force-dynamic";
-export const metadata: Metadata = { title: "Mi negocio · Mi Lindo Ecuador", robots: { index: false, follow: false } };
+export const metadata: Metadata = {
+  title: "Mi negocio · Mi Lindo Ecuador",
+  robots: { index: false, follow: false },
+};
 
-const ESTADOS = { publicado: "Se ve en la guía", borrador: "Sin publicar", oculto: "En revisión" } as const;
+const ESTADOS = {
+  publicado: "Se ve en la guía",
+  borrador: "Sin publicar",
+  oculto: "En revisión",
+} as const;
 
 /** Los negocios de la cuenta (versión 2, paso 9.2). */
 export default async function PaginaMisNegocios() {
@@ -20,13 +27,21 @@ export default async function PaginaMisNegocios() {
     <>
       <Cabecera />
       <main className="mx-auto grid w-full max-w-[720px] flex-1 content-start gap-6 px-4 pt-10 pb-20 text-rio md:px-8">
-        <h1 className="m-0 font-rotulo text-[28px] leading-[34px] font-normal">Mi negocio</h1>
+        <h1 className="m-0 font-rotulo text-[28px] leading-[34px] font-normal">
+          Mi negocio
+        </h1>
         {negocios.length === 0 ? (
           <div className="grid gap-4 rounded-xl border border-linea bg-papel-alto p-6">
             <p className="m-0 text-rio-suave">
-              Todavía no tienes negocios en la guía. Envía tu solicitud: cuando la aprobemos, aparece aquí para que pongas tus fotos, horario y ubicación.
+              Todavía no tienes negocios en la guía. Envía tu solicitud: cuando
+              la aprobemos, aparece aquí para que pongas tus fotos, horario y
+              ubicación.
             </p>
-            <Boton href="/negocios/registro" variante="principal" className="justify-self-start">
+            <Boton
+              href="/negocios/registro"
+              variante="principal"
+              className="justify-self-start"
+            >
               Registrar mi negocio
             </Boton>
           </div>

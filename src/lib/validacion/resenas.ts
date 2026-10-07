@@ -30,3 +30,22 @@ export const esquemaReporte = z
     detalle: z.string().trim().max(400, "Máximo 400 caracteres").optional().default(""),
   })
   .refine((r) => r.motivo !== "otro" || r.detalle.length >= 3, { message: "Cuéntanos el motivo en pocas palabras", path: ["detalle"] });
+
+/** Motivos para reportar un lugar (versión 2, paso 9.7). Con 3 reportes de personas distintas, se oculta solo. */
+export const MOTIVOS_REPORTE_LUGAR = {
+  falso: "No existe o es falso",
+  fotos: "Fotos inapropiadas o que no son del lugar",
+  estafa: "Estafa o publicidad engañosa",
+  ofensivo: "Tiene insultos u ofensas",
+  datos: "Datos equivocados (horario, dirección, WhatsApp)",
+  otro: "Otro motivo",
+} as const;
+
+export const esquemaReporteLugar = z
+  .object({
+    lugar: z.uuid(),
+    ruta: rutaFicha,
+    motivo: z.enum(Object.keys(MOTIVOS_REPORTE_LUGAR) as [keyof typeof MOTIVOS_REPORTE_LUGAR, ...(keyof typeof MOTIVOS_REPORTE_LUGAR)[]], { error: "Elige un motivo" }),
+    detalle: z.string().trim().max(400, "Máximo 400 caracteres").optional().default(""),
+  })
+  .refine((r) => r.motivo !== "otro" || r.detalle.length >= 3, { message: "Cuéntanos el motivo en pocas palabras", path: ["detalle"] });

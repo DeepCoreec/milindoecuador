@@ -7,6 +7,7 @@ import { Migas } from "@/components/layout/Migas";
 import { Pie } from "@/components/layout/Pie";
 import { Estrellas } from "@/components/lugares/Estrellas";
 import { BotonCompartir } from "@/components/lugares/BotonCompartir";
+import { ReportarLugar } from "@/components/lugares/ReportarLugar";
 import { Galeria } from "@/components/lugares/Galeria";
 import { InsigniasLugar } from "@/components/lugares/InsigniasLugar";
 import { Resenas } from "@/components/lugares/Resenas";
@@ -167,6 +168,14 @@ export default async function FichaLugar({ params }: Props) {
                 ¿Este es tu negocio? <Link href="/negocios/planes">Pide destacarlo</Link>
               </p>
             )}
+            {lugar.id &&
+              (usuario ? (
+                <ReportarLugar lugar={lugar.id} ruta={ruta} nombre={lugar.nombre} />
+              ) : (
+                <Link href={`/entrar?siguiente=${encodeURIComponent(ruta)}`} className="justify-self-start text-[13px] leading-5 text-rio-suave">
+                  ¿Algo está mal? Entra para reportar este lugar
+                </Link>
+              ))}
           </aside>
 
           <div className="grid min-w-0 gap-8 [grid-area:resto]">

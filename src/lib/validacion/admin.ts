@@ -78,3 +78,8 @@ export const esquemaPalabra = z.object({
     .max(60, "Máximo 60 caracteres")
     .regex(/^[\p{L} ]+$/u, "Solo letras y espacios"),
 });
+
+/** Cambios recientes y lugares reportados (versión 2, pasos 9.6 y 9.7). */
+export const esquemaRevisado = z.object({ cambio: z.union([z.literal("todos"), z.coerce.number().int().positive()]) });
+export const esquemaLugarAdmin = z.object({ lugar: z.uuid() });
+export const esquemaDecisionLugar = z.object({ lugar: z.uuid(), decision: z.enum(["mostrar", "ocultar"]) });

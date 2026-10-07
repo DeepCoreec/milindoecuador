@@ -8,7 +8,7 @@
 > **Mapa rápido:** Versión 1 = construida y publicada (faltan sus puertas). Versión 2 = en marcha, fase 6.
 > Plan v1: `docs/PLAN.md` · Plan v2: `docs/PLAN-V2.md` · Puesta en marcha de cuentas: `docs/PUESTA-EN-MARCHA.md`
 
-- **Fase actual:** Versión 2 · Fase 6 (Entrar y correo: faltan los pasos del usuario 6.3–6.6) y Fase 7 (código listo en la rama `v2-como-llegar`; falta que el usuario ejecute `0004_ubicacion.sql`, luego unir a main y probar la puerta en 3 lugares). Plan v2 aprobado por el usuario el 2026-10-06
+- **Fase actual (2026-10-07):** el código de las fases 7, 8 y 9 está en la rama `v2` (se publica cuando el usuario ejecute 0004–0006, ver PUESTA-EN-MARCHA). Antes: Versión 2 · Fase 6 (Entrar y correo: faltan los pasos del usuario 6.3–6.6) y Fase 7 (código listo en la rama `v2-como-llegar`; falta que el usuario ejecute `0004_ubicacion.sql`, luego unir a main y probar la puerta en 3 lugares). Plan v2 aprobado por el usuario el 2026-10-06
 - **Último paso terminado:** ver el último `[x]` de la sección "Versión 2"
 - **Siguiente paso:** el primer `[ ]` de la sección "Versión 2" que no diga "(usuario)". Los pasos "(usuario)" son clics en cuentas del usuario (Claude no tiene acceso a ellas): se le guía paso a paso
 - **Página real:** https://milindoecuador.vercel.app · Supabase `rlwcvrkyojcqgjigoyan` (São Paulo) · Turnstile "Mi Lindo Ecuador" · admin: deepcoreec@gmail.com
@@ -140,10 +140,10 @@
 - [x] 9.2 Página "Mi negocio": editar datos, horario, precio, sector, WhatsApp y ubicación (sale al instante) — 2026-10-07: `/mi-negocio` (lista) y `/mi-negocio/[id]` (solo su dueño; si no, 404). Mismo formulario del panel en modo dueño (sin categoría ni estado). Botón Publicar/Pausar con lista de lo que falta (descripción y 1 foto); una ficha oculta por el admin o por reportes no la puede volver a mostrar. Acciones en `src/acciones/dueno.ts`: Zod → sesión → dueño de ESE lugar → límite diario → admin.ts → la base revisa textos → se anota en `place_changes`. Enlace "Mi negocio" en /cuenta
 - [x] 9.3 Fotos del dueño: hasta 15, ordenar y borrar — 2026-10-07: el servidor da un permiso de subida firmado de un solo uso para un camino que elige él (el dueño no tiene permisos en el bucket); al registrar comprueba que el archivo existe y es de ese lugar. Máximo 15 en la base (0006) y 30 fotos nuevas por día
 - [x] 9.4 El dueño responde las reseñas de su negocio — 2026-10-07: respuesta debajo de cada reseña visible, pasa por el filtro (sin insultos, enlaces ni teléfonos), 50 por día. Prueba e2e nueva `dueno.spec.ts` (celular): otro usuario recibe 404, teléfono bloqueado, guardar, foto, publicar, se ve en la guía, respuesta con insulto bloqueada y respuesta normal publicada, cambios anotados
-- [ ] 9.5 Límites diarios por cuenta (cambios y fotos)
-- [ ] 9.6 Panel: "Cambios recientes" y ocultar ficha o foto con un clic
-- [ ] 9.7 "Reportar este lugar"; con 3 reportes se oculta sola
-- [ ] 9.8 Pruebas de punta a punta del flujo del dueño
+- [x] 9.5 Límites diarios por cuenta (cambios y fotos) — 2026-10-07: en las acciones del dueño, contando `place_changes` de las últimas 24 h: 40 cambios de ficha o publicar/pausar, 30 fotos nuevas, 50 respuestas; más 3 solicitudes pendientes por cuenta (8.2). Como el dueño no tiene ningún otro camino para escribir, el límite del servidor no se puede saltar
+- [x] 9.6 Panel: "Cambios recientes" y ocultar ficha o foto con un clic — 2026-10-07: `/admin/cambios` con contador en el menú; sin revisar primero; "Ocultar ficha", "Revisado" y "Marcar todos". Una foto mala se borra desde la ficha en el panel (o se oculta la ficha entera). También se arregló que el menú marcaba "Lugares" en "Lugares reportados"
+- [x] 9.7 "Reportar este lugar"; con 3 reportes se oculta sola — 2026-10-07: en la ficha (con sesión; sin ella, enlace a entrar), 6 motivos. La base oculta la ficha al 3.er reporte de personas distintas y lo anota en Cambios recientes. `/admin/lugares-reportados`: "Mostrar otra vez" o "Dejar oculta" (cierra los reportes)
+- [x] 9.8 Pruebas de punta a punta del flujo del dueño — 2026-10-07: `tests/e2e/dueno.spec.ts` (2 pruebas): el flujo del dueño y reportes → se oculta sola → el admin la muestra → cambios recientes → ocultar → palabra nueva bloqueada al instante. **Puerta de la fase 9 (pendiente con la página real):** 3 negocios reales llenan su ficha solos
 - **Puerta:** 3 negocios reales llenan su ficha solos y el filtro bloquea las palabras de prueba
 
 ### Fase 10 · Extras

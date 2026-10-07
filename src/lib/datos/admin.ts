@@ -11,16 +11,26 @@ import { crearClienteServidor } from "@/lib/supabase/server";
 export async function getContadores() {
   await requireAdmin();
   const db = await crearClienteServidor();
-  const contar = async (tabla: string, columna: string, valor: string | boolean) => {
-    const { count } = await db.from(tabla).select("id", { count: "exact", head: true }).eq(columna, valor);
+  const contar = async (
+    tabla: string,
+    columna: string,
+    valor: string | boolean,
+  ) => {
+    const { count } = await db
+      .from(tabla)
+      .select("id", { count: "exact", head: true })
+      .eq(columna, valor);
     return count ?? 0;
   };
-  const [pendientes, publicados, reportes] = await Promise.all([
-    contar("business_requests", "status", "pendiente"),
-    contar("places", "status", "publicado"),
-    contar("review_reports", "resolved", false),
-  ]);
-  return { pendientes, publicados, reportes };
+  const [pendientes, publicados, reportes, cambios, lugaresReportados] =
+    await Promise.all([
+      contar("business_requests", "status", "pendiente"),
+      contar("places", "status", "publicado"),
+      contar("review_reports", "resolved", false),
+      contar("place_changes", "reviewed", false),
+      contar("place_reports", "resolved", false),
+    ]);
+  return { pendientes, publicados, reportes, cambios, lugaresReportados };
 }
 
 export type Solicitud = {
@@ -42,7 +52,9 @@ export async function getSolicitudes(): Promise<Solicitud[]> {
   const db = await crearClienteServidor();
   const { data, error } = await db
     .from("business_requests")
-    .select("id, business_name, sector, contact_name, whatsapp, description, status, admin_notes, created_at, categories(name)")
+    .select(
+      "id, business_name, sector, contact_name, whatsapp, description, status, admin_notes, created_at, categories(name)",
+    )
     .order("created_at", { ascending: false })
     .limit(200)
     .returns<
@@ -97,7 +109,9 @@ export async function getLugaresAdmin(): Promise<LugarAdmin[]> {
   const db = await crearClienteServidor();
   const { data, error } = await db
     .from("places")
-    .select("id, slug, name, sector, status, is_featured, featured_until, is_verified, categories(slug, name), place_photos(count)")
+    .select(
+      "id, slug, name, sector, status, is_featured, featured_until, is_verified, categories(slug, name), place_photos(count)",
+    )
     .order("updated_at", { ascending: false })
     .limit(500)
     .returns<
@@ -125,7 +139,9 @@ export async function getLugaresAdmin(): Promise<LugarAdmin[]> {
     sector: f.sector,
     estado: f.status,
     destacadoHasta: f.featured_until,
-    destacado: f.is_featured && (!f.featured_until || new Date(f.featured_until).getTime() > ahora),
+    destacado:
+      f.is_featured &&
+      (!f.featured_until || new Date(f.featured_until).getTime() > ahora),
     verificado: f.is_verified,
     fotos: f.place_photos[0]?.count ?? 0,
   }));
@@ -137,7 +153,9 @@ export async function getLugarAdmin(id: string) {
   const db = await crearClienteServidor();
   const { data } = await db
     .from("places")
-    .select("id, slug, name, sector, description, short_fact, hours, address, latitude, longitude, price_level, whatsapp, status, is_featured, featured_until, is_verified, categories(slug)")
+    .select(
+      "id, slug, name, sector, description, short_fact, hours, address, latitude, longitude, price_level, whatsapp, status, is_featured, featured_until, is_verified, categories(slug)",
+    )
     .eq("id", id)
     .returns<
       {
@@ -167,11 +185,23 @@ export async function getLugarAdmin(id: string) {
 export type FotoAdmin = { id: string; src: string; alt: string };
 
 /** Fotos de un lugar en su orden (la primera es la principal). */
-export async function getFotosAdmin(lugarId: string, urlSupabase: string): Promise<FotoAdmin[]> {
+export async function getFotosAdmin(
+  lugarId: string,
+  urlSupabase: string,
+): Promise<FotoAdmin[]> {
   await requireAdmin();
   const db = await crearClienteServidor();
-  const { data } = await db.from("place_photos").select("id, storage_path, alt_text").eq("place_id", lugarId).order("sort_order").order("created_at");
-  return (data ?? []).map((f) => ({ id: f.id, src: urlPublicaFoto(urlSupabase, f.storage_path), alt: f.alt_text }));
+  const { data } = await db
+    .from("place_photos")
+    .select("id, storage_path, alt_text")
+    .eq("place_id", lugarId)
+    .order("sort_order")
+    .order("created_at");
+  return (data ?? []).map((f) => ({
+    id: f.id,
+    src: urlPublicaFoto(urlSupabase, f.storage_path),
+    alt: f.alt_text,
+  }));
 }
 
 export type ResenaAdmin = {
@@ -197,9 +227,13 @@ type FilaResenaAdmin = {
   places: { id: string; name: string } | null;
 };
 
-const COLUMNAS_RESENA = "id, stars, text, status, owner_reply, created_at, profiles(display_name), places(id, name)";
+const COLUMNAS_RESENA =
+  "id, stars, text, status, owner_reply, created_at, profiles(display_name), places(id, name)";
 
-const aResenaAdmin = (r: FilaResenaAdmin, motivos: string[] = []): ResenaAdmin => ({
+const aResenaAdmin = (
+  r: FilaResenaAdmin,
+  motivos: string[] = [],
+): ResenaAdmin => ({
   id: r.id,
   autor: r.profiles?.display_name ?? "Visitante",
   estrellas: r.stars,
@@ -223,21 +257,33 @@ export async function getReportadas(): Promise<ResenaAdmin[]> {
     .limit(500)
     .returns<{ reason: string; reviews: FilaResenaAdmin | null }[]>();
   if (error) throw new Error("No se pudieron leer los reportes");
-  const grupos = new Map<string, { fila: FilaResenaAdmin; motivos: string[] }>();
+  const grupos = new Map<
+    string,
+    { fila: FilaResenaAdmin; motivos: string[] }
+  >();
   for (const r of data ?? []) {
     if (!r.reviews) continue;
     const g = grupos.get(r.reviews.id) ?? { fila: r.reviews, motivos: [] };
     g.motivos.push(r.reason);
     grupos.set(r.reviews.id, g);
   }
-  return [...grupos.values()].map((g) => aResenaAdmin(g.fila, g.motivos)).sort((a, b) => b.motivos.length - a.motivos.length);
+  return [...grupos.values()]
+    .map((g) => aResenaAdmin(g.fila, g.motivos))
+    .sort((a, b) => b.motivos.length - a.motivos.length);
 }
 
 /** Todas las reseñas de un lugar (también las ocultas), para responder o moderar desde su ficha. */
-export async function getResenasDeLugar(lugarId: string): Promise<ResenaAdmin[]> {
+export async function getResenasDeLugar(
+  lugarId: string,
+): Promise<ResenaAdmin[]> {
   await requireAdmin();
   const db = await crearClienteServidor();
-  const { data } = await db.from("reviews").select(COLUMNAS_RESENA).eq("place_id", lugarId).order("created_at", { ascending: false }).returns<FilaResenaAdmin[]>();
+  const { data } = await db
+    .from("reviews")
+    .select(COLUMNAS_RESENA)
+    .eq("place_id", lugarId)
+    .order("created_at", { ascending: false })
+    .returns<FilaResenaAdmin[]>();
   return (data ?? []).map((r) => aResenaAdmin(r));
 }
 
@@ -247,4 +293,114 @@ export async function getPalabras(): Promise<string[]> {
   const db = await crearClienteServidor();
   const { data } = await db.from("banned_words").select("word").order("word");
   return (data ?? []).map((p) => p.word as string);
+}
+
+const rutaFicha = (l: { slug: string; categories: { slug: string } | null }) =>
+  `/guayaquil/${l.categories?.slug ?? ""}/${l.slug}`;
+
+export type Cambio = {
+  id: number;
+  tipo: string;
+  detalle: string | null;
+  revisado: boolean;
+  fecha: string;
+  autor: string;
+  lugar: { id: string; nombre: string; estado: string; ruta: string } | null;
+};
+
+/** "Cambios recientes" de los dueños (versión 2, paso 9.6): los sin revisar primero. */
+export async function getCambios(): Promise<Cambio[]> {
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  const { data } = await db
+    .from("place_changes")
+    .select(
+      "id, kind, detail, reviewed, created_at, places(id, name, slug, status, categories(slug)), profiles(display_name)",
+    )
+    .order("reviewed")
+    .order("created_at", { ascending: false })
+    .limit(150)
+    .returns<
+      {
+        id: number;
+        kind: string;
+        detail: string | null;
+        reviewed: boolean;
+        created_at: string;
+        places: {
+          id: string;
+          name: string;
+          slug: string;
+          status: string;
+          categories: { slug: string } | null;
+        } | null;
+        profiles: { display_name: string } | null;
+      }[]
+    >();
+  return (data ?? []).map((c) => ({
+    id: c.id,
+    tipo: c.kind,
+    detalle: c.detail,
+    revisado: c.reviewed,
+    fecha: c.created_at,
+    autor:
+      c.profiles?.display_name ??
+      (c.kind === "oculta-por-reportes" ? "La guía" : "Cuenta borrada"),
+    lugar: c.places
+      ? {
+          id: c.places.id,
+          nombre: c.places.name,
+          estado: c.places.status,
+          ruta: rutaFicha(c.places),
+        }
+      : null,
+  }));
+}
+
+export type LugarReportado = {
+  id: string;
+  nombre: string;
+  estado: string;
+  ruta: string;
+  motivos: string[];
+};
+
+/** Lugares con reportes sin resolver (versión 2, paso 9.7). */
+export async function getLugaresReportados(): Promise<LugarReportado[]> {
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  const { data } = await db
+    .from("place_reports")
+    .select(
+      "reason, created_at, places(id, name, slug, status, categories(slug))",
+    )
+    .eq("resolved", false)
+    .order("created_at", { ascending: false })
+    .returns<
+      {
+        reason: string;
+        created_at: string;
+        places: {
+          id: string;
+          name: string;
+          slug: string;
+          status: string;
+          categories: { slug: string } | null;
+        } | null;
+      }[]
+    >();
+  const porLugar = new Map<string, LugarReportado>();
+  for (const r of data ?? []) {
+    if (!r.places) continue;
+    const l = porLugar.get(r.places.id) ?? {
+      id: r.places.id,
+      nombre: r.places.name,
+      estado: r.places.status,
+      ruta: rutaFicha(r.places),
+      motivos: [],
+    };
+    l.motivos.push(r.reason);
+    porLugar.set(l.id, l);
+  }
+  return [...porLugar.values()];
 }
