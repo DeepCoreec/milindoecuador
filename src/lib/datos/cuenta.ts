@@ -55,3 +55,30 @@ export async function getMiResena(idLugar: string, idUsuario: string) {
   const { data } = await supabase.from("reviews").select("stars, text, status").eq("place_id", idLugar).eq("user_id", idUsuario).maybeSingle();
   return data ? { estrellas: data.stars as number, texto: data.text as string, visible: data.status === "visible" } : null;
 }
+
+/** ¿La persona guardó este lugar? (versión 2, paso 10.3) La base solo le muestra sus favoritos. */
+export async function esFavorito(lugarId: string): Promise<boolean> {
+  const supabase = await crearClienteServidor();
+  const { data } = await supabase.from("favorites").select("place_id").eq("place_id", lugarId).maybeSingle();
+  return !!data;
+}
+
+export type Favorito = { nombre: string; ruta: string; datos: string };
+
+/** Los lugares guardados de la persona, los más recientes primero (solo los que siguen publicados). */
+export async function getMisFavoritos(): Promise<Favorito[]> {
+  const supabase = await crearClienteServidor();
+  const { data } = await supabase
+    .from("favorites")
+    .select("created_at, places(name, slug, sector, categories(slug, name), cities(slug))")
+    .order("created_at", { ascending: false })
+    .limit(200)
+    .returns<{ places: { name: string; slug: string; sector: string; categories: { slug: string; name: string } | null; cities: { slug: string } | null } | null }[]>();
+  return (data ?? [])
+    .filter((f) => f.places)
+    .map(({ places: l }) => ({
+      nombre: l!.name,
+      ruta: `/${l!.cities?.slug ?? "guayaquil"}/${l!.categories?.slug ?? ""}/${l!.slug}`,
+      datos: `${l!.categories?.name ?? ""} · ${l!.sector}`,
+    }));
+}

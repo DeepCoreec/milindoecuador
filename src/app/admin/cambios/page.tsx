@@ -24,21 +24,14 @@ export default async function PaginaCambios() {
   const pendientes = cambios.filter((c) => !c.revisado).length;
   return (
     <>
-      <h1 className="m-0 font-rotulo text-[28px] leading-[34px] font-normal">
-        Cambios recientes
-      </h1>
+      <h1 className="m-0 font-rotulo text-[28px] leading-[34px] font-normal">Cambios recientes</h1>
       <p className="mt-2 mb-6 max-w-[64ch] text-rio-suave">
-        Los dueños publican al instante y el filtro automático ya revisó los
-        textos. Mira sobre todo las fotos nuevas: si algo no va, oculta la ficha
-        y escríbele al dueño.
+        Los dueños publican al instante y el filtro automático ya revisó los textos. Mira sobre todo las fotos nuevas: si algo no va, oculta la ficha y
+        escríbele al dueño.
       </p>
       {pendientes > 0 && (
         <div className="mb-4">
-          <BotonAccion
-            accion={marcarRevisado}
-            campos={{ cambio: "todos" }}
-            texto={`Marcar los ${pendientes} como revisados`}
-          />
+          <BotonAccion accion={marcarRevisado} campos={{ cambio: "todos" }} texto={`Marcar los ${pendientes} como revisados`} />
         </div>
       )}
       {cambios.length === 0 ? (
@@ -46,18 +39,12 @@ export default async function PaginaCambios() {
       ) : (
         <ol className="m-0 grid max-w-[880px] list-none gap-3 p-0">
           {cambios.map((c) => (
-            <li
-              key={c.id}
-              className={`grid gap-2 rounded-xl border p-4 ${c.revisado ? "border-linea" : "border-linea-fuerte bg-papel-alto"}`}
-            >
+            <li key={c.id} className={`grid gap-2 rounded-xl border p-4 ${c.revisado ? "border-linea" : "border-linea-fuerte bg-papel-alto"}`}>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span className="flex flex-wrap items-center gap-2">
                   <Insignia>{TIPOS[c.tipo] ?? c.tipo}</Insignia>
                   {c.lugar ? (
-                    <Link
-                      href={`/admin/lugares/${c.lugar.id}`}
-                      className="font-semibold"
-                    >
+                    <Link href={`/admin/lugares/${c.lugar.id}`} className="font-semibold">
                       {c.lugar.nombre}
                     </Link>
                   ) : (
@@ -65,26 +52,15 @@ export default async function PaginaCambios() {
                   )}
                   {c.lugar?.estado === "oculto" && <Insignia>Oculta</Insignia>}
                 </span>
-                <time
-                  dateTime={c.fecha}
-                  className="text-sm leading-5 text-rio-suave"
-                >
+                <time dateTime={c.fecha} className="text-sm leading-5 text-rio-suave">
                   {fechaLarga(c.fecha)} · {c.autor}
                 </time>
               </div>
-              {c.detalle && (
-                <p className="m-0 text-[15px] leading-[22px] break-words">
-                  {c.detalle}
-                </p>
-              )}
+              {c.detalle && <p className="m-0 text-[15px] leading-[22px] break-words">{c.detalle}</p>}
               <div className="flex flex-wrap gap-3">
                 {c.lugar?.estado === "publicado" && (
                   <>
-                    <Link
-                      href={c.lugar.ruta}
-                      target="_blank"
-                      className="text-sm leading-5"
-                    >
+                    <Link href={c.lugar.ruta} target="_blank" className="text-sm leading-5">
                       Ver la ficha
                     </Link>
                     <BotonAccion

@@ -9,7 +9,7 @@ import { Pie } from "@/components/layout/Pie";
 import { clasesBoton } from "@/components/ui/Boton";
 import { Insignia } from "@/components/ui/Insignia";
 import { requireUsuario } from "@/lib/auth";
-import { getMiCuenta } from "@/lib/datos/cuenta";
+import { getMiCuenta, getMisFavoritos } from "@/lib/datos/cuenta";
 import { fechaLarga } from "@/lib/enlaces";
 
 // Siempre se genera en cada visita: depende de la sesión de quien la abre
@@ -23,7 +23,7 @@ export default async function PaginaCuenta({ searchParams }: PageProps<"/cuenta"
   const usuario = await requireUsuario("/cuenta");
   // Viene del enlace de "Olvidé mi contraseña": se le pide escribir una nueva
   const recuperando = (await searchParams).contrasena === "nueva";
-  const { nombre, resenas } = await getMiCuenta(usuario.id);
+  const [{ nombre, resenas }, favoritos] = await Promise.all([getMiCuenta(usuario.id), getMisFavoritos()]);
 
   return (
     <>
@@ -69,6 +69,26 @@ export default async function PaginaCuenta({ searchParams }: PageProps<"/cuenta"
             </p>
           )}
           <FormContrasena />
+        </section>
+
+        <section aria-labelledby="t-guardados" className="grid gap-2">
+          <h2 id="t-guardados" className={`${titulo} mb-2`}>
+            Lugares guardados
+          </h2>
+          {favoritos.length === 0 ? (
+            <p className="m-0 text-rio-suave">Toca «Guardar» en un lugar para tenerlo aquí y no olvidarte de ir.</p>
+          ) : (
+            <ul className="m-0 grid list-none gap-0 p-0">
+              {favoritos.map((f) => (
+                <li key={f.ruta} className="grid gap-0.5 border-b border-linea py-3">
+                  <Link href={f.ruta} className="font-semibold">
+                    {f.nombre}
+                  </Link>
+                  <span className="text-sm leading-5 text-rio-suave">{f.datos}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
 
         <section aria-labelledby="t-resenas" className="grid gap-2">

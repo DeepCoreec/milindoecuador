@@ -9,7 +9,7 @@ export const DESCRIPCION_PENDIENTE = "Descripción pendiente";
  * la categoría, el estado, los planes y el dueño no los toca desde aquí.
  */
 export const esquemaNegocio = esquemaLugar
-  .pick({ nombre: true, sector: true, descripcion: true, dato: true, horario: true, direccion: true, ubicacion: true, precio: true, whatsapp: true })
+  .pick({ nombre: true, sector: true, descripcion: true, dato: true, horario: true, direccion: true, ubicacion: true, horarioDias: true, precio: true, whatsapp: true })
   .extend({ lugar: z.uuid() });
 
 export const esquemaEstadoDueno = z.object({ lugar: z.uuid(), estado: z.enum(["borrador", "publicado"]) });

@@ -8,6 +8,7 @@ import { ResenaAdmin } from "@/components/admin/ResenaAdmin";
 import { getFotosAdmin, getLugarAdmin, getResenasDeLugar, type FotoAdmin, type ResenaAdmin as DatosResena } from "@/lib/datos/admin";
 import { getCategorias } from "@/lib/datos/lugares";
 import { destacadoVigente } from "@/lib/planes";
+import { leerHorario } from "@/lib/horario";
 import { textoUbicacion } from "@/lib/ubicacion";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -25,7 +26,7 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
   let resenas: DatosResena[] = [];
   let plan = { vigente: false, destacadoHasta: null as string | null, verificado: false };
   if (id === "nuevo") {
-    datos = { id, nombre: "", categoria: categorias[0]?.slug ?? "", sector: "", descripcion: "", dato: "", horario: "", direccion: "", ubicacion: "", precio: "", whatsapp: "", estado: "borrador" };
+    datos = { id, nombre: "", categoria: categorias[0]?.slug ?? "", sector: "", descripcion: "", dato: "", horario: "", direccion: "", ubicacion: "", horarioDias: "", precio: "", whatsapp: "", estado: "borrador" };
   } else {
     const l = await getLugarAdmin(id);
     if (!l) notFound();
@@ -40,6 +41,7 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
       horario: l.hours ?? "",
       direccion: l.address ?? "",
       ubicacion: l.latitude != null && l.longitude != null ? textoUbicacion({ lat: Number(l.latitude), lng: Number(l.longitude) }) : "",
+      horarioDias: leerHorario(l.opening_hours) ? JSON.stringify(leerHorario(l.opening_hours)) : "",
       precio: l.price_level ? String(l.price_level) : "",
       whatsapp: l.whatsapp ? l.whatsapp.replace(/^593/, "0") : "",
       estado: l.status,

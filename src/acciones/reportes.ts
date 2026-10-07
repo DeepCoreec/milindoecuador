@@ -2,12 +2,7 @@
 
 import { requireUsuario } from "@/lib/auth";
 import { crearClienteServidor } from "@/lib/supabase/server";
-import {
-  esquemaReporte,
-  esquemaReporteLugar,
-  MOTIVOS_REPORTE,
-  MOTIVOS_REPORTE_LUGAR,
-} from "@/lib/validacion/resenas";
+import { esquemaReporte, esquemaReporteLugar, MOTIVOS_REPORTE, MOTIVOS_REPORTE_LUGAR } from "@/lib/validacion/resenas";
 
 export type EstadoReporte = {
   estado: "inicio" | "ok" | "error";
@@ -17,10 +12,7 @@ export type EstadoReporte = {
 };
 
 /** Reporta una reseña para que el admin la revise. La base no deja reportar dos veces la misma. */
-export async function reportarResena(
-  _previo: EstadoReporte,
-  datos: FormData,
-): Promise<EstadoReporte> {
+export async function reportarResena(_previo: EstadoReporte, datos: FormData): Promise<EstadoReporte> {
   const r = esquemaReporte.safeParse({
     resena: datos.get("resena"),
     ruta: datos.get("ruta"),
@@ -43,9 +35,7 @@ export async function reportarResena(
   const motivo = MOTIVOS_REPORTE[r.data.motivo];
   const razon = r.data.detalle ? `${motivo}: ${r.data.detalle}` : motivo;
   const supabase = await crearClienteServidor();
-  const { error } = await supabase
-    .from("review_reports")
-    .insert({ review_id: r.data.resena, reason: razon.slice(0, 500) });
+  const { error } = await supabase.from("review_reports").insert({ review_id: r.data.resena, reason: razon.slice(0, 500) });
   if (error) {
     if (error.code === "23505")
       return {
@@ -55,8 +45,7 @@ export async function reportarResena(
     if (/límite de reportes/.test(error.message))
       return {
         estado: "error",
-        mensaje:
-          "Llegaste al límite de reportes por hoy. Gracias por ayudar; vuelve mañana.",
+        mensaje: "Llegaste al límite de reportes por hoy. Gracias por ayudar; vuelve mañana.",
         ...escrito,
       };
     return {
@@ -73,10 +62,7 @@ export async function reportarResena(
  * hasta que el admin lo revise (migración 0006). Se escribe con la sesión: la base exige que sea un lugar publicado,
  * una vez por persona y máximo 10 reportes al día.
  */
-export async function reportarLugar(
-  _previo: EstadoReporte,
-  datos: FormData,
-): Promise<EstadoReporte> {
+export async function reportarLugar(_previo: EstadoReporte, datos: FormData): Promise<EstadoReporte> {
   const r = esquemaReporteLugar.safeParse({
     lugar: datos.get("lugar"),
     ruta: datos.get("ruta"),
@@ -99,9 +85,7 @@ export async function reportarLugar(
   const razon = r.data.detalle ? `${motivo}: ${r.data.detalle}` : motivo;
   const supabase = await crearClienteServidor();
   // Sin .select(): quien reporta no puede leer los reportes (ni el suyo)
-  const { error } = await supabase
-    .from("place_reports")
-    .insert({ place_id: r.data.lugar, reason: razon.slice(0, 500) });
+  const { error } = await supabase.from("place_reports").insert({ place_id: r.data.lugar, reason: razon.slice(0, 500) });
   if (error) {
     if (error.code === "23505")
       return {
@@ -111,8 +95,7 @@ export async function reportarLugar(
     if (/límite de reportes/.test(error.message))
       return {
         estado: "error",
-        mensaje:
-          "Llegaste al límite de reportes por hoy. Gracias por ayudar; vuelve mañana.",
+        mensaje: "Llegaste al límite de reportes por hoy. Gracias por ayudar; vuelve mañana.",
         ...escrito,
       };
     return {

@@ -4,11 +4,8 @@ import { useActionState, type ReactNode } from "react";
 import { guardarLugar, type EstadoLugar } from "@/acciones/admin";
 import { guardarMiNegocio } from "@/acciones/dueno";
 import { clasesBoton } from "@/components/ui/Boton";
-import {
-  claseAyuda,
-  claseEntrada,
-  claseEtiqueta,
-} from "@/components/ui/clasesFormulario";
+import { claseAyuda, claseEntrada, claseEtiqueta } from "@/components/ui/clasesFormulario";
+import { CampoHorario } from "./CampoHorario";
 import { CampoUbicacion } from "./CampoUbicacion";
 
 const inicial: EstadoLugar = { estado: "inicio" };
@@ -24,22 +21,14 @@ export type DatosFormLugar = {
   direccion: string;
   /** Coordenadas como texto: "-2.189400, -79.880800" (o vacío). */
   ubicacion: string;
+  /** Horario por día como JSON (o vacío), versión 2. */
+  horarioDias: string;
   precio: string;
   whatsapp: string;
   estado: "borrador" | "publicado" | "oculto";
 };
 
-function Campo({
-  id,
-  etiqueta,
-  ayuda,
-  children,
-}: {
-  id: string;
-  etiqueta: string;
-  ayuda?: string;
-  children: ReactNode;
-}) {
+function Campo({ id, etiqueta, ayuda, children }: { id: string; etiqueta: string; ayuda?: string; children: ReactNode }) {
   return (
     <div className="grid min-w-0 content-start gap-1.5">
       <label htmlFor={id} className={claseEtiqueta}>
@@ -65,39 +54,19 @@ export function FormLugar({
   modo?: "admin" | "dueno";
 }) {
   const dueno = modo === "dueno";
-  const [estado, accion, guardando] = useActionState(
-    dueno ? guardarMiNegocio : guardarLugar,
-    inicial,
-  );
+  const [estado, accion, guardando] = useActionState(dueno ? guardarMiNegocio : guardarLugar, inicial);
   const v = { ...lugar, ...(estado.valores ?? {}) } as DatosFormLugar;
   // Tras un error, los campos vuelven con lo escrito (la acción lo devuelve en `valores`)
   return (
-    <form
-      key={estado.intento ?? 0}
-      action={accion}
-      noValidate
-      className="grid gap-5 rounded-xl border border-linea bg-papel-alto p-6"
-    >
+    <form key={estado.intento ?? 0} action={accion} noValidate className="grid gap-5 rounded-xl border border-linea bg-papel-alto p-6">
       <input type="hidden" name={dueno ? "lugar" : "id"} value={lugar.id} />
       <Campo id="l-nombre" etiqueta="Nombre">
-        <input
-          id="l-nombre"
-          name="nombre"
-          required
-          maxLength={120}
-          defaultValue={v.nombre}
-          className={claseEntrada}
-        />
+        <input id="l-nombre" name="nombre" required maxLength={120} defaultValue={v.nombre} className={claseEntrada} />
       </Campo>
       <div className={`grid gap-5 ${dueno ? "" : "sm:grid-cols-2"}`}>
         {!dueno && (
           <Campo id="l-categoria" etiqueta="Categoría">
-            <select
-              id="l-categoria"
-              name="categoria"
-              defaultValue={v.categoria}
-              className={`mle-select ${claseEntrada} pr-10`}
-            >
+            <select id="l-categoria" name="categoria" defaultValue={v.categoria} className={`mle-select ${claseEntrada} pr-10`}>
               {categorias.map((c) => (
                 <option key={c.slug} value={c.slug}>
                   {c.nombre}
@@ -106,48 +75,16 @@ export function FormLugar({
             </select>
           </Campo>
         )}
-        <Campo
-          id="l-sector"
-          etiqueta="Sector"
-          ayuda="Así aparece en el filtro: Centro, Urdesa, Alborada…"
-        >
-          <input
-            id="l-sector"
-            name="sector"
-            required
-            maxLength={80}
-            defaultValue={v.sector}
-            className={claseEntrada}
-          />
+        <Campo id="l-sector" etiqueta="Sector" ayuda="Así aparece en el filtro: Centro, Urdesa, Alborada…">
+          <input id="l-sector" name="sector" required maxLength={80} defaultValue={v.sector} className={claseEntrada} />
         </Campo>
       </div>
-      <Campo
-        id="l-descripcion"
-        etiqueta="La historia"
-        ayuda="De 20 a 2000 caracteres. Cuenta qué tiene de especial, no solo la dirección."
-      >
-        <textarea
-          id="l-descripcion"
-          name="descripcion"
-          rows={6}
-          maxLength={2000}
-          defaultValue={v.descripcion}
-          className={`${claseEntrada} resize-y`}
-        />
+      <Campo id="l-descripcion" etiqueta="La historia" ayuda="De 20 a 2000 caracteres. Cuenta qué tiene de especial, no solo la dirección.">
+        <textarea id="l-descripcion" name="descripcion" rows={6} maxLength={2000} defaultValue={v.descripcion} className={`${claseEntrada} resize-y`} />
       </Campo>
       <div className="grid gap-5 sm:grid-cols-2">
-        <Campo
-          id="l-dato"
-          etiqueta="Dato corto (opcional)"
-          ayuda="Se ve en la tarjeta cuando no hay precio: «Entrada libre»."
-        >
-          <input
-            id="l-dato"
-            name="dato"
-            maxLength={80}
-            defaultValue={v.dato}
-            className={claseEntrada}
-          />
+        <Campo id="l-dato" etiqueta="Dato corto (opcional)" ayuda="Se ve en la tarjeta cuando no hay precio: «Entrada libre».">
+          <input id="l-dato" name="dato" maxLength={80} defaultValue={v.dato} className={claseEntrada} />
         </Campo>
         <Campo id="l-horario" etiqueta="Horario (opcional)">
           <input
@@ -161,25 +98,13 @@ export function FormLugar({
         </Campo>
       </div>
       <Campo id="l-direccion" etiqueta="Dirección (opcional)">
-        <input
-          id="l-direccion"
-          name="direccion"
-          maxLength={200}
-          defaultValue={v.direccion}
-          className={claseEntrada}
-        />
+        <input id="l-direccion" name="direccion" maxLength={200} defaultValue={v.direccion} className={claseEntrada} />
       </Campo>
       <CampoUbicacion id="l-ubicacion" valor={v.ubicacion} />
-      <div
-        className={`grid gap-5 ${dueno ? "sm:grid-cols-2" : "sm:grid-cols-3"}`}
-      >
+      <CampoHorario valor={v.horarioDias} />
+      <div className={`grid gap-5 ${dueno ? "sm:grid-cols-2" : "sm:grid-cols-3"}`}>
         <Campo id="l-precio" etiqueta="Precio">
-          <select
-            id="l-precio"
-            name="precio"
-            defaultValue={v.precio}
-            className={`mle-select ${claseEntrada} pr-10`}
-          >
+          <select id="l-precio" name="precio" defaultValue={v.precio} className={`mle-select ${claseEntrada} pr-10`}>
             <option value="">Sin precio</option>
             <option value="1">$ económico</option>
             <option value="2">$$ medio</option>
@@ -187,24 +112,11 @@ export function FormLugar({
           </select>
         </Campo>
         <Campo id="l-whatsapp" etiqueta="WhatsApp (opcional)">
-          <input
-            id="l-whatsapp"
-            name="whatsapp"
-            inputMode="tel"
-            maxLength={20}
-            defaultValue={v.whatsapp}
-            placeholder="099 123 4567"
-            className={claseEntrada}
-          />
+          <input id="l-whatsapp" name="whatsapp" inputMode="tel" maxLength={20} defaultValue={v.whatsapp} placeholder="099 123 4567" className={claseEntrada} />
         </Campo>
         {!dueno && (
           <Campo id="l-estado" etiqueta="Estado">
-            <select
-              id="l-estado"
-              name="estado"
-              defaultValue={v.estado}
-              className={`mle-select ${claseEntrada} pr-10`}
-            >
+            <select id="l-estado" name="estado" defaultValue={v.estado} className={`mle-select ${claseEntrada} pr-10`}>
               <option value="borrador">Borrador (no se ve)</option>
               <option value="publicado">Publicado</option>
               <option value="oculto">Oculto</option>
@@ -221,25 +133,12 @@ export function FormLugar({
         </div>
       )}
       {estado.estado === "ok" && (
-        <p
-          role="status"
-          className="m-0 text-sm leading-5 font-semibold text-exito"
-        >
+        <p role="status" className="m-0 text-sm leading-5 font-semibold text-exito">
           {estado.mensaje}
         </p>
       )}
-      <button
-        type="submit"
-        disabled={guardando}
-        className={clasesBoton("principal", "normal", "justify-self-start")}
-      >
-        {guardando
-          ? "Guardando…"
-          : lugar.id === "nuevo"
-            ? "Crear ficha"
-            : dueno
-              ? "Guardar datos"
-              : "Guardar cambios"}
+      <button type="submit" disabled={guardando} className={clasesBoton("principal", "normal", "justify-self-start")}>
+        {guardando ? "Guardando…" : lugar.id === "nuevo" ? "Crear ficha" : dueno ? "Guardar datos" : "Guardar cambios"}
       </button>
     </form>
   );

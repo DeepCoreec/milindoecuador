@@ -7,17 +7,21 @@ import { Migas } from "@/components/layout/Migas";
 import { Pie } from "@/components/layout/Pie";
 import { Estrellas } from "@/components/lugares/Estrellas";
 import { BotonCompartir } from "@/components/lugares/BotonCompartir";
+import { BotonGuardar } from "@/components/lugares/BotonGuardar";
 import { ReportarLugar } from "@/components/lugares/ReportarLugar";
+import { AbiertoAhora } from "@/components/lugares/AbiertoAhora";
+import { ContarVista, EnlaceContado } from "@/components/lugares/Estadisticas";
 import { Galeria } from "@/components/lugares/Galeria";
 import { InsigniasLugar } from "@/components/lugares/InsigniasLugar";
 import { Resenas } from "@/components/lugares/Resenas";
 import { FormResena } from "@/components/resenas/FormResena";
 import { clasesBoton } from "@/components/ui/Boton";
-import { IconoConversacion, IconoUbicacion } from "@/components/ui/iconos";
+import { IconoConversacion, IconoCorazon, IconoUbicacion } from "@/components/ui/iconos";
 import { obtenerUsuario } from "@/lib/auth";
-import { getMiResena } from "@/lib/datos/cuenta";
+import { esFavorito, getMiResena } from "@/lib/datos/cuenta";
 import { getCategoria, getCiudad, getLugar, tonoDeCategoria } from "@/lib/datos/lugares";
 import { enlaceComoLlegar, enlaceWhatsApp, mostrarWhatsApp } from "@/lib/enlaces";
+import { resumenHorario } from "@/lib/horario";
 import { enlaceRutaGoogle, enlaceRutaWaze } from "@/lib/ubicacion";
 import { paraCompartir } from "@/lib/sitio";
 
@@ -60,7 +64,7 @@ export default async function FichaLugar({ params }: Props) {
   const esNegocio = categoria.slug !== "turismo";
   const ruta = `/${ciudad.slug}/${categoria.slug}/${lugar.slug}`;
   const usuario = await obtenerUsuario();
-  const miResena = usuario && lugar.id ? await getMiResena(lugar.id, usuario.id) : null;
+  const [miResena, guardado] = usuario && lugar.id ? await Promise.all([getMiResena(lugar.id, usuario.id), esFavorito(lugar.id)]) : [null, false];
 
   return (
     <>
@@ -73,6 +77,7 @@ export default async function FichaLugar({ params }: Props) {
             { texto: lugar.nombre },
           ]}
         />
+        {lugar.id && <ContarVista lugar={lugar.id} />}
         <Galeria fotos={lugar.fotos} tono={tonoDeCategoria(categoria.slug)} />
 
         <div className="grid grid-cols-[minmax(0,1fr)] gap-8 pt-8 pb-16 [grid-template-areas:'cab'_'info'_'resto'] min-[900px]:grid-cols-[minmax(0,1fr)_360px] min-[900px]:items-start min-[900px]:gap-x-16 min-[900px]:gap-y-10 min-[900px]:[grid-template-areas:'cab_info'_'resto_info']">
@@ -84,17 +89,27 @@ export default async function FichaLugar({ params }: Props) {
               {precio && `, precio ${precio[1]} (${precio[0]})`}
             </p>
             <Estrellas promedio={lugar.promedio} cantidad={lugar.cantidad} />
+            {lugar.horarioDias && <AbiertoAhora horario={lugar.horarioDias} />}
             <div className="mt-2 flex flex-wrap gap-3">
               {whatsapp && (
-                <a href={whatsapp} target="_blank" rel="noopener noreferrer" className={clasesBoton("whatsapp")}>
+                <EnlaceContado lugar={lugar.id} tipo="whatsapp" href={whatsapp} target="_blank" rel="noopener noreferrer" className={clasesBoton("whatsapp")}>
                   <IconoConversacion />
                   Escribir por WhatsApp
-                </a>
+                </EnlaceContado>
               )}
-              <a href={comoLlegar} target="_blank" rel="noopener noreferrer" className={clasesBoton("secundario")}>
+              <EnlaceContado lugar={lugar.id} tipo="route" href={comoLlegar} target="_blank" rel="noopener noreferrer" className={clasesBoton("secundario")}>
                 <IconoUbicacion />
                 Cómo llegar
-              </a>
+              </EnlaceContado>
+              {lugar.id &&
+                (usuario ? (
+                  <BotonGuardar lugar={lugar.id} ruta={ruta} guardado={guardado} />
+                ) : (
+                  <Link href={`/entrar?siguiente=${encodeURIComponent(ruta)}`} className={clasesBoton("secundario")}>
+                    <IconoCorazon />
+                    Guardar
+                  </Link>
+                ))}
               <BotonCompartir titulo={`${lugar.nombre} · Mi Lindo Ecuador`} texto={`Mira ${lugar.nombre} en Mi Lindo Ecuador`} />
             </div>
           </div>
@@ -104,10 +119,19 @@ export default async function FichaLugar({ params }: Props) {
               Información
             </h2>
             <dl className="m-0 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2.5 text-[15px] leading-[22px]">
-              {lugar.horario && (
+              {(lugar.horarioDias || lugar.horario) && (
                 <>
                   <dt className="text-rio-suave">Horario</dt>
-                  <dd className="m-0">{lugar.horario}</dd>
+                  <dd className="m-0">
+                    {lugar.horarioDias && (
+                      <ul className="m-0 grid list-none gap-0.5 p-0">
+                        {resumenHorario(lugar.horarioDias).map((l) => (
+                          <li key={l}>{l}</li>
+                        ))}
+                      </ul>
+                    )}
+                    {lugar.horario && <span className={lugar.horarioDias ? "mt-1 block text-rio-suave" : undefined}>{lugar.horario}</span>}
+                  </dd>
                 </>
               )}
               {lugar.direccion && (
@@ -122,13 +146,13 @@ export default async function FichaLugar({ params }: Props) {
                 <>
                   <dt className="text-rio-suave">Ruta</dt>
                   <dd className="m-0">
-                    <a href={enlaceRutaGoogle(lugar.ubicacion)} target="_blank" rel="noopener noreferrer">
+                    <EnlaceContado lugar={lugar.id} tipo="route" href={enlaceRutaGoogle(lugar.ubicacion)} target="_blank" rel="noopener noreferrer">
                       Google Maps
-                    </a>
+                    </EnlaceContado>
                     {" · "}
-                    <a href={enlaceRutaWaze(lugar.ubicacion)} target="_blank" rel="noopener noreferrer">
+                    <EnlaceContado lugar={lugar.id} tipo="route" href={enlaceRutaWaze(lugar.ubicacion)} target="_blank" rel="noopener noreferrer">
                       Waze
-                    </a>
+                    </EnlaceContado>
                   </dd>
                 </>
               )}
@@ -157,10 +181,10 @@ export default async function FichaLugar({ params }: Props) {
             {whatsapp && (
               // En celular ya está arriba; aquí solo en escritorio (la envoltura evita el choque con inline-flex)
               <span className="hidden min-[900px]:contents">
-                <a href={whatsapp} target="_blank" rel="noopener noreferrer" className={clasesBoton("whatsapp")}>
+                <EnlaceContado lugar={lugar.id} tipo="whatsapp" href={whatsapp} target="_blank" rel="noopener noreferrer" className={clasesBoton("whatsapp")}>
                   <IconoConversacion />
                   Escribir por WhatsApp
-                </a>
+                </EnlaceContado>
               </span>
             )}
             {esNegocio && (

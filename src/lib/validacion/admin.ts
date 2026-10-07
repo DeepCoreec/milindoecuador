@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DIAS, HORA, type Horario } from "@/lib/horario";
 import { enEcuador, leerUbicacion, type Ubicacion } from "@/lib/ubicacion";
 
 export const esquemaDecision = z.object({
@@ -41,6 +42,27 @@ export const esquemaLugar = z.object({
         return null;
       }
       return u;
+    }),
+  /** Horario por día (versión 2, paso 10.1), como JSON desde el editor: {"lun": ["08:00", "22:00"]}. */
+  horarioDias: z
+    .string()
+    .max(600, "Horario por día: demasiado largo")
+    .optional()
+    .transform((v, ctx): Horario | null => {
+      if (!v) return null;
+      let datos: unknown;
+      try {
+        datos = JSON.parse(v);
+      } catch {
+        ctx.addIssue({ code: "custom", message: "Horario por día: vuelve a elegir las horas" });
+        return null;
+      }
+      const r = z.partialRecord(z.enum(DIAS), z.tuple([z.string().regex(HORA), z.string().regex(HORA)])).safeParse(datos);
+      if (!r.success || Object.keys(datos as object).some((k) => !(DIAS as readonly string[]).includes(k))) {
+        ctx.addIssue({ code: "custom", message: "Horario por día: revisa las horas (de 00:00 a 23:59)" });
+        return null;
+      }
+      return Object.keys(r.data).length ? (r.data as Horario) : null;
     }),
   precio: z.enum(["", "1", "2", "3"]).transform((v) => (v ? Number(v) : null)),
   whatsapp: z.string().transform((v, ctx) => {

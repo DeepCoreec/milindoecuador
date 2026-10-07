@@ -147,9 +147,9 @@
 - **Puerta:** 3 negocios reales llenan su ficha solos y el filtro bloquea las palabras de prueba
 
 ### Fase 10 · Extras
-- [ ] 10.1 "Abierto ahora / Cerrado" según el horario
-- [ ] 10.2 Estadísticas para el dueño (vistas, toques a WhatsApp y "Cómo llegar")
-- [ ] 10.3 Favoritos
+- [x] 10.1 "Abierto ahora / Cerrado" según el horario — 2026-10-07: migración 0007 (`places.opening_hours`, JSON por día). Editor "Horario por día" en el panel y en Mi negocio (casilla por día, abre/cierra, copiar lunes a viernes; cierre menor = después de medianoche; iguales = 24 h). En la ficha: "Abierto · cierra a las 22:00" / "Cerrado · abre mañana a las 8:00" en hora de Ecuador, calculado en el navegador cada minuto (la página puede venir de caché), y el horario resumido ("Lun a jue: 8:00 – 22:00"). `src/lib/horario.ts` con 9 pruebas
+- [x] 10.2 Estadísticas para el dueño (vistas, toques a WhatsApp y "Cómo llegar") — 2026-10-07: tabla `place_stats` por día y función `contar_evento` (solo el servidor la llama; ignora lugares no publicados). `POST /api/evento` (Zod, sin guardar IP ni cuenta); la ficha avisa una vista por navegador y día y cada toque a WhatsApp, Cómo llegar, Google Maps o Waze. "Cómo te va" en Mi negocio: últimos 7 y 30 días. Son números orientativos (se podrían inflar a propósito)
+- [x] 10.3 Favoritos — 2026-10-07: tabla `favorites` (cada uno ve, agrega y quita solo los suyos, solo lugares publicados, máximo 500). Botón "Guardar" con corazón en la ficha (sin sesión lleva a entrar) y "Lugares guardados" en Mi cuenta. Prueba e2e `extras.spec.ts` (horario por día desde Mi negocio → "Abierto las 24 horas", vista y WhatsApp contados una vez, guardar/quitar, números en Mi negocio). 15 pruebas de reglas nuevas (103)
 - **Puerta:** el usuario los prueba y los aprueba
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)

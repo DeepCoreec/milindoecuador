@@ -1,3 +1,5 @@
+import type { Horario } from "@/lib/horario";
+
 /** Formas de los datos que usan las páginas. Iguales con datos de muestra o con Supabase. */
 
 export type Ciudad = { slug: string; nombre: string };
@@ -55,6 +57,8 @@ export type LugarDetalle = LugarResumen & {
   direccion: string | null;
   /** Ubicación exacta (columnas `latitude` y `longitude`, versión 2). Sin ella, "Cómo llegar" busca por nombre. */
   ubicacion?: { lat: number; lng: number } | null;
+  /** Horario por día (columna `opening_hours`, versión 2): para "Abierto ahora". */
+  horarioDias?: Horario | null;
   /** Solo números, con 593 delante (columna `whatsapp`). */
   whatsapp: string | null;
   fotos: Foto[];

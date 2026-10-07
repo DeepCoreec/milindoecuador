@@ -16,19 +16,10 @@ type Props = {
 };
 
 /** Un botón del panel que ejecuta una acción y muestra su resultado al lado. */
-export function BotonAccion({
-  accion,
-  campos,
-  texto,
-  etiqueta,
-  variante = "secundario",
-}: Props) {
+export function BotonAccion({ accion, campos, texto, etiqueta, variante = "secundario" }: Props) {
   const [r, ejecutar, ocupado] = useActionState(accion, inicial);
   return (
-    <form
-      action={ejecutar}
-      className="inline-flex flex-wrap items-center gap-2"
-    >
+    <form action={ejecutar} className="inline-flex flex-wrap items-center gap-2">
       {Object.entries(campos).map(([k, v]) => (
         <input key={k} type="hidden" name={k} value={v} />
       ))}
@@ -36,11 +27,7 @@ export function BotonAccion({
         type="submit"
         disabled={ocupado}
         aria-label={etiqueta}
-        className={clasesBoton(
-          variante === "peligro" ? "secundario" : variante,
-          "chico",
-          variante === "peligro" ? "text-error!" : "",
-        )}
+        className={clasesBoton(variante === "peligro" ? "secundario" : variante, "chico", variante === "peligro" ? "text-error!" : "")}
       >
         {ocupado ? "…" : texto}
       </button>

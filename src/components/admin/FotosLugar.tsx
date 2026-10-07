@@ -2,24 +2,10 @@
 
 import Image from "next/image";
 import { startTransition, useActionState, useState } from "react";
-import {
-  borrarFoto,
-  moverFoto,
-  registrarFoto,
-  type EstadoAdmin,
-} from "@/acciones/admin";
-import {
-  borrarFotoDueno,
-  moverFotoDueno,
-  pedirSubidaFoto,
-  registrarFotoDueno,
-} from "@/acciones/dueno";
+import { borrarFoto, moverFoto, registrarFoto, type EstadoAdmin } from "@/acciones/admin";
+import { borrarFotoDueno, moverFotoDueno, pedirSubidaFoto, registrarFotoDueno } from "@/acciones/dueno";
 import { clasesBoton } from "@/components/ui/Boton";
-import {
-  claseAyuda,
-  claseEntrada,
-  claseEtiqueta,
-} from "@/components/ui/clasesFormulario";
+import { claseAyuda, claseEntrada, claseEtiqueta } from "@/components/ui/clasesFormulario";
 import type { FotoAdmin } from "@/lib/datos/admin";
 import { aWebp } from "@/lib/imagen";
 import { crearClienteNavegador } from "@/lib/supabase/client";
@@ -40,22 +26,9 @@ const ACCIONES = {
  * `modo="dueno"` (versión 2): el servidor da un permiso de subida de un solo uso, porque el dueño no tiene
  * permisos en el bucket; el admin sube directo (las reglas del bucket le dejan).
  */
-export function FotosLugar({
-  lugar,
-  fotos,
-  modo = "admin",
-  maximo,
-}: {
-  lugar: string;
-  fotos: FotoAdmin[];
-  modo?: "admin" | "dueno";
-  maximo?: number;
-}) {
+export function FotosLugar({ lugar, fotos, modo = "admin", maximo }: { lugar: string; fotos: FotoAdmin[]; modo?: "admin" | "dueno"; maximo?: number }) {
   const acciones = ACCIONES[modo];
-  const [registro, registrar, registrando] = useActionState(
-    acciones.registrar,
-    inicial,
-  );
+  const [registro, registrar, registrando] = useActionState(acciones.registrar, inicial);
   const [, borrar, borrando] = useActionState(acciones.borrar, inicial);
   const [, mover, moviendo] = useActionState(acciones.mover, inicial);
   const lleno = maximo !== undefined && fotos.length >= maximo;
@@ -69,11 +42,8 @@ export function FotosLugar({
   async function subir(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
-    const archivo = (form.elements.namedItem("archivo") as HTMLInputElement)
-      .files?.[0];
-    const alt = (
-      form.elements.namedItem("alt") as HTMLInputElement
-    ).value.trim();
+    const archivo = (form.elements.namedItem("archivo") as HTMLInputElement).files?.[0];
+    const alt = (form.elements.namedItem("alt") as HTMLInputElement).value.trim();
     if (!archivo) return setAviso({ tipo: "error", texto: "Elige una foto" });
     if (alt.length < 3)
       return setAviso({
@@ -90,26 +60,15 @@ export function FotosLugar({
         const permiso = await pedirSubidaFoto(lugar);
         if ("error" in permiso) throw new Error(permiso.error);
         camino = permiso.camino;
-        const { error } = await bucket.uploadToSignedUrl(
-          camino,
-          permiso.token,
-          webp,
-          { contentType: "image/webp" },
-        );
-        if (error)
-          throw new Error(
-            "No se pudo subir la foto. Revisa tu conexión e inténtalo de nuevo.",
-          );
+        const { error } = await bucket.uploadToSignedUrl(camino, permiso.token, webp, { contentType: "image/webp" });
+        if (error) throw new Error("No se pudo subir la foto. Revisa tu conexión e inténtalo de nuevo.");
       } else {
         camino = `lugares/${lugar}/${crypto.randomUUID()}.webp`;
         const { error } = await bucket.upload(camino, webp, {
           contentType: "image/webp",
           upsert: false,
         });
-        if (error)
-          throw new Error(
-            "No se pudo subir la foto. Revisa tu conexión e inténtalo de nuevo.",
-          );
+        if (error) throw new Error("No se pudo subir la foto. Revisa tu conexión e inténtalo de nuevo.");
       }
       const datos = new FormData();
       datos.set("lugar", lugar);
@@ -137,17 +96,13 @@ export function FotosLugar({
       : null);
 
   return (
-    <section
-      aria-labelledby="t-fotos"
-      className="grid gap-5 rounded-xl border border-linea bg-papel-alto p-6"
-    >
+    <section aria-labelledby="t-fotos" className="grid gap-5 rounded-xl border border-linea bg-papel-alto p-6">
       <div className="grid gap-1">
         <h2 id="t-fotos" className="m-0 text-xl leading-[26px] font-semibold">
           Fotos
         </h2>
         <p className={`m-0 ${claseAyuda}`}>
-          La primera es la foto principal. Sube fotos propias, horizontales y de
-          día.
+          La primera es la foto principal. Sube fotos propias, horizontales y de día.
           {maximo !== undefined && ` Llevas ${fotos.length} de ${maximo}.`}
         </p>
       </div>
@@ -157,22 +112,12 @@ export function FotosLugar({
           {fotos.map((f, i) => (
             <li key={f.id} className="grid gap-2">
               <div className="relative aspect-[3/2] overflow-hidden rounded-md bg-celeste-suave">
-                <Image
-                  src={f.src}
-                  alt={f.alt}
-                  fill
-                  sizes="200px"
-                  className="object-cover"
-                />
+                <Image src={f.src} alt={f.alt} fill sizes="200px" className="object-cover" />
                 {i === 0 && (
-                  <span className="absolute top-2 left-2 rounded-sm bg-mango px-2 py-0.5 text-[13px] leading-4 font-semibold text-on-color">
-                    Principal
-                  </span>
+                  <span className="absolute top-2 left-2 rounded-sm bg-mango px-2 py-0.5 text-[13px] leading-4 font-semibold text-on-color">Principal</span>
                 )}
               </div>
-              <span className="text-[13px] leading-[18px] text-rio-suave">
-                {f.alt}
-              </span>
+              <span className="text-[13px] leading-[18px] text-rio-suave">{f.alt}</span>
               <div className="flex flex-wrap gap-1">
                 {(["antes", "despues"] as const).map((d) =>
                   (d === "antes" ? i > 0 : i < fotos.length - 1) ? (
@@ -182,11 +127,7 @@ export function FotosLugar({
                       <button
                         type="submit"
                         disabled={ocupado}
-                        className={clasesBoton(
-                          "secundario",
-                          "chico",
-                          "min-h-9 px-3",
-                        )}
+                        className={clasesBoton("secundario", "chico", "min-h-9 px-3")}
                         aria-label={`Mover ${d === "antes" ? "antes" : "después"}: ${f.alt}`}
                       >
                         {d === "antes" ? "←" : "→"}
@@ -199,11 +140,7 @@ export function FotosLugar({
                   <button
                     type="submit"
                     disabled={ocupado}
-                    className={clasesBoton(
-                      "texto",
-                      "chico",
-                      "min-h-9 text-error!",
-                    )}
+                    className={clasesBoton("texto", "chico", "min-h-9 text-error!")}
                     aria-label={`Borrar foto: ${f.alt}`}
                   >
                     Borrar
@@ -233,19 +170,10 @@ export function FotosLugar({
             <label htmlFor="f-alt" className={claseEtiqueta}>
               ¿Qué se ve en la foto?
             </label>
-            <input
-              id="f-alt"
-              name="alt"
-              maxLength={160}
-              placeholder="Ej.: Plato de encebollado con chifles"
-              className={claseEntrada}
-            />
+            <input id="f-alt" name="alt" maxLength={160} placeholder="Ej.: Plato de encebollado con chifles" className={claseEntrada} />
           </div>
         </div>
-        <p className={`m-0 ${claseAyuda}`}>
-          Se convierte a WebP y se le quitan los datos de ubicación antes de
-          subirla.
-        </p>
+        <p className={`m-0 ${claseAyuda}`}>Se convierte a WebP y se le quitan los datos de ubicación antes de subirla.</p>
         {resultado && resultado.texto && (
           <p
             role={resultado.tipo === "error" ? "alert" : "status"}
@@ -254,16 +182,8 @@ export function FotosLugar({
             {resultado.texto}
           </p>
         )}
-        <button
-          type="submit"
-          disabled={ocupado || lleno}
-          className={clasesBoton("secundario", "normal", "justify-self-start")}
-        >
-          {lleno
-            ? "Ya tienes el máximo de fotos"
-            : subiendo
-              ? "Preparando y subiendo…"
-              : "Subir foto"}
+        <button type="submit" disabled={ocupado || lleno} className={clasesBoton("secundario", "normal", "justify-self-start")}>
+          {lleno ? "Ya tienes el máximo de fotos" : subiendo ? "Preparando y subiendo…" : "Subir foto"}
         </button>
       </form>
     </section>

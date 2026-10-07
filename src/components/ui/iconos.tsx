@@ -53,3 +53,9 @@ export const IconoVisto = () => (
     <path d="m5 12 5 5L20 7" />
   </svg>
 );
+/** Corazón de "Guardar" (favoritos, versión 2). Relleno cuando está guardado. */
+export const IconoCorazon = ({ lleno = false }: { lleno?: boolean }) => (
+  <svg {...comun} fill={lleno ? "currentColor" : "none"}>
+    <path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10Z" />
+  </svg>
+);
