@@ -15,6 +15,7 @@ sin que el admin tenga que aprobar cada cambio y **sin pagar servicios extra**.
 | Mapas | Solo enlaces a **Google Maps** (y Waze). Sin API de pago ni tarjeta. No hay mapa dibujado dentro de la página |
 | Quién llena las fichas | **El dueño del negocio**, desde su cuenta |
 | Cambios de los dueños | **Se publican al instante.** Un filtro automático revisa el texto antes de guardar; el admin revisa después, cuando quiera |
+| Fotos por negocio | Hasta 15 (pedido del usuario, 2026-10-06) |
 | Costo | 0 $ al mes en servicios (salvo el dominio, ~10–15 $ al año) |
 
 ## Decisión pendiente (la pregunta del 2026-10-06)
@@ -22,6 +23,12 @@ sin que el admin tenga que aprobar cada cambio y **sin pagar servicios extra**.
 | Pregunta | Recomendación de Claude |
 | --- | --- |
 | ¿El admin aprueba el **negocio nuevo** una sola vez (un clic) antes de que salga, o sale directo? | Aprobar **solo el alta** del negocio (un clic, una vez). Evita negocios falsos y copias de negocios ajenos. Después, todos los cambios del dueño salen al instante |
+
+| ¿Agregar **correo con contraseña** al entrar? | Sí, junto con Google (ver respuesta del 2026-10-06). Pendiente de confirmar |
+
+## Problemas conocidos de la versión 1
+
+- "Entrar con Google" da error: falta configurar el proveedor Google en Supabase (Google Cloud → cliente OAuth). Es configuración, no código
 
 ## Funciones nuevas
 
@@ -33,7 +40,7 @@ sin que el admin tenga que aprobar cada cambio y **sin pagar servicios extra**.
 2. **Cuenta de dueño.** La solicitud de negocio se hace con la cuenta del dueño. Al aprobarse, esa cuenta queda
    como dueña de ese negocio (y solo de ese).
 3. **"Mi negocio".** Página donde el dueño edita su ficha: descripción, horario, precio, sector, WhatsApp,
-   ubicación y fotos (hasta 8), y responde las reseñas. Lo que guarda sale al instante.
+   ubicación y fotos (hasta 15, se guardan comprimidas en WebP), y responde las reseñas. Lo que guarda sale al instante.
 4. **Moderación automática (el "bot").** Antes de guardar cualquier texto (fichas, reseñas, respuestas):
    - lista de palabras prohibidas en español de Ecuador (groserías, insultos, contenido sexual), que el admin puede ampliar;
    - bloquea enlaces y números de teléfono dentro de los textos (evita spam y estafas);
