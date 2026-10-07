@@ -124,7 +124,7 @@
 - **Puerta:** una persona que no es el admin crea su cuenta y entra
 
 ### Fase 7 · Cómo llegar
-- [ ] 7.1 Migración 0004: latitud y longitud en `places` (con límites de Ecuador)
+- [x] 7.1 Migración 0004: latitud y longitud en `places` (con límites de Ecuador) — 2026-10-06: `latitude`/`longitude` juntas o ninguna, dentro de Ecuador con Galápagos (un signo cambiado se rechaza). 6 pruebas de reglas nuevas (53). Aplicada al Supabase de prueba. **(usuario) Ejecutar `0004_ubicacion.sql` en el SQL Editor del Supabase real ANTES de pasar a main el código de 7.2 y 7.3** (ese código lee las columnas nuevas)
 - [ ] 7.2 Formulario de lugar: campos de ubicación, "Usar mi ubicación actual" y pegar coordenadas de Google Maps
 - [ ] 7.3 Ficha: botones "Cómo llegar" con ruta en Google Maps y en Waze (si no hay coordenadas, se busca por dirección como hoy)
 - **Puerta:** desde el celular, "Cómo llegar" abre la ruta correcta en 3 lugares reales

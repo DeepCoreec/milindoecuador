@@ -176,6 +176,20 @@ check("el servidor inserta solicitudes", r.rows?.[0]?.status === "pendiente", r)
 r = await as("service_role", "", `insert into public.business_requests (business_name, category_id, city_id, contact_name, whatsapp) values ('X Y', $1, $2, 'Juan', '0991234567')`, [cat, gye]);
 check("WhatsApp con formato inválido rechazado", !!r.error, r);
 
+console.log("\nUbicación (0004)");
+r = await as("authenticated", ADM, `update public.places set latitude = -2.190, longitude = -79.880 where id = $1 returning latitude`, [P["lugar-1"]]);
+check("el admin guarda la ubicación", Number(r.rows?.[0]?.latitude) === -2.19, r);
+r = await as("authenticated", ADM, `update public.places set latitude = 2.190, longitude = 79.880 where id = $1`, [P["lugar-1"]]);
+check("rechaza una ubicación fuera de Ecuador (signo cambiado)", !!r.error, r);
+r = await as("authenticated", ADM, `update public.places set latitude = -2.2, longitude = null where id = $1`, [P["lugar-2"]]);
+check("rechaza latitud sin longitud", !!r.error, r);
+r = await as("authenticated", ADM, `update public.places set latitude = -0.74, longitude = -90.31 where id = $1 returning id`, [P["lugar-3"]]);
+check("acepta Galápagos", r.rows?.length === 1, r);
+r = await as("authenticated", A, `update public.places set latitude = -2.1, longitude = -79.9 where id = $1 returning id`, [P["lugar-2"]]);
+check("un usuario común no cambia la ubicación", !!r.error || r.rows.length === 0, r);
+r = await as("anon", "", `select latitude, longitude from public.places where id = $1`, [P["lugar-1"]]);
+check("el visitante lee la ubicación de un lugar publicado", Number(r.rows?.[0]?.longitude) === -79.88, r);
+
 console.log("\nDatos iniciales (supabase/seed.sql)");
 const seed = readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8");
 await db.exec(seed);
