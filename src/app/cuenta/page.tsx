@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { salir } from "@/acciones/sesion";
 import { FormBorrarCuenta } from "@/components/cuenta/FormBorrarCuenta";
+import { FormContrasena } from "@/components/cuenta/FormContrasena";
 import { FormNombre } from "@/components/cuenta/FormNombre";
 import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
@@ -18,8 +19,10 @@ export const metadata: Metadata = { title: "Mi cuenta · Mi Lindo Ecuador", robo
 
 const titulo = "m-0 font-rotulo text-xl leading-[26px] font-normal";
 
-export default async function PaginaCuenta() {
+export default async function PaginaCuenta({ searchParams }: PageProps<"/cuenta">) {
   const usuario = await requireUsuario("/cuenta");
+  // Viene del enlace de "Olvidé mi contraseña": se le pide escribir una nueva
+  const recuperando = (await searchParams).contrasena === "nueva";
   const { nombre, resenas } = await getMiCuenta(usuario.id);
 
   return (
@@ -43,6 +46,18 @@ export default async function PaginaCuenta() {
             Tu nombre
           </h2>
           <FormNombre nombre={nombre} />
+        </section>
+
+        <section id="contrasena" aria-labelledby="t-contrasena" className="grid scroll-mt-24 gap-4 rounded-xl border border-linea bg-papel-alto p-6">
+          <h2 id="t-contrasena" className={titulo}>
+            Contraseña
+          </h2>
+          {recuperando && (
+            <p role="status" className="m-0 rounded-sm bg-celeste-suave p-3 text-sm leading-5">
+              Ya entraste con el enlace del correo. Escribe ahora tu contraseña nueva y guárdala.
+            </p>
+          )}
+          <FormContrasena />
         </section>
 
         <section aria-labelledby="t-resenas" className="grid gap-2">

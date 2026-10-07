@@ -116,7 +116,7 @@
 
 ### Fase 6 · Entrar y correo
 - [x] 6.1 Esconder "Entrar con Google" hasta que Google esté configurado (`NEXT_PUBLIC_GOOGLE_ACTIVO=si`) — 2026-10-06: el botón y la línea "o con tu correo" solo salen con la variable en "si"; la acción del servidor también se niega sin ella. 1 prueba nueva (57 en total)
-- [ ] 6.2 Entrar con correo y contraseña: crear cuenta (confirmación por correo), entrar, "Olvidé mi contraseña", cambiarla en "Mi cuenta"; con captcha y Zod. El enlace mágico se quita
+- [x] 6.2 Entrar con correo y contraseña: crear cuenta (confirmación por correo), entrar, "Olvidé mi contraseña", cambiarla en "Mi cuenta"; con captcha y Zod. El enlace mágico se quita — 2026-10-06: páginas `/entrar`, `/crear-cuenta`, `/recuperar` y sección "Contraseña" en `/cuenta` (con botón Mostrar). Mensajes que no revelan qué correos tienen cuenta; límite de 72 bytes (bcrypt). Probado con el Supabase de prueba: crear → confirmar por correo → entrar → contraseña mala → cambiarla → olvidé → nueva (15 comprobaciones) + 1 prueba e2e nueva (10 pasan) + 4 unitarias (61). **Pendiente del usuario:** en Supabase poner Minimum password length = 8 y Confirm email activado (`docs/PUESTA-EN-MARCHA.md` §2.5). Su cuenta de admin no tiene contraseña: ponerla con "Olvidé mi contraseña"
 - [ ] 6.3 (usuario) Comprar el dominio y conectarlo en Vercel (= paso 5.5 de la v1)
 - [ ] 6.4 (usuario) Cuenta en Resend, verificar el dominio y poner su SMTP en Supabase
 - [ ] 6.5 Correos en español (confirmar cuenta, recuperar contraseña): plantillas en `docs/PUESTA-EN-MARCHA.md`; (usuario) pegarlas en Supabase

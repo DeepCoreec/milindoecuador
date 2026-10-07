@@ -29,12 +29,18 @@ Lo que dice 🔒 es secreto: nunca va en el chat, en el código ni en GitHub; so
 4. **Direcciones** (Authentication → URL Configuration):
    - Site URL: `https://<tu-dominio-de-vercel>`
    - Redirect URLs: `https://<tu-dominio-de-vercel>/auth/callback` y `http://localhost:3000/auth/callback`
-5. **Correo** (Authentication → Emails):
-   - Activa **Email** con enlace mágico (Magic Link).
-   - Recomendado: **SMTP propio** (un servicio de correo como Resend o Brevo), porque el correo de prueba de Supabase solo manda unos pocos por hora.
-   - Plantilla "Magic Link" en español:
-     - Asunto: `Tu enlace para entrar a Mi Lindo Ecuador`
-     - Cuerpo: `<p>Hola:</p><p>Toca este enlace para entrar a Mi Lindo Ecuador. Funciona una sola vez y por poco tiempo.</p><p><a href="{{ .ConfirmationURL }}">Entrar a Mi Lindo Ecuador</a></p><p>Si no lo pediste, ignora este correo.</p>`
+5. **Correo y contraseña** (versión 2, paso 6.2):
+   - Authentication → Sign In / Providers → **Email**: activado, con **Confirm email** activado.
+     En **Minimum password length** pon **8** (la página ya lo exige, pero así también lo exige Supabase si alguien le habla directo).
+   - Recomendado: **SMTP propio** (Resend, paso 6.4), porque el correo de Supabase solo manda unos pocos por hora y solo a los miembros de tu organización.
+   - Authentication → Emails → plantillas en español (paso 6.5):
+     - **Confirm signup** — Asunto: `Confirma tu cuenta de Mi Lindo Ecuador` — Cuerpo:
+       `<p>Hola:</p><p>Toca este enlace para activar tu cuenta de Mi Lindo Ecuador. Después entra con tu correo y tu contraseña.</p><p><a href="{{ .ConfirmationURL }}">Activar mi cuenta</a></p><p>Si no creaste una cuenta, ignora este correo.</p>`
+     - **Reset password** — Asunto: `Crea una contraseña nueva para Mi Lindo Ecuador` — Cuerpo:
+       `<p>Hola:</p><p>Pediste una contraseña nueva. Toca este enlace en el mismo teléfono o computadora donde la pediste y escribe la nueva en "Mi cuenta". Funciona una sola vez y por poco tiempo.</p><p><a href="{{ .ConfirmationURL }}">Crear contraseña nueva</a></p><p>Si no lo pediste, ignora este correo: tu contraseña sigue igual.</p>`
+     - **Magic Link** (ya no se usa en la página, pero por si acaso) — Asunto: `Tu enlace para entrar a Mi Lindo Ecuador` — Cuerpo:
+       `<p>Hola:</p><p>Toca este enlace para entrar a Mi Lindo Ecuador. Funciona una sola vez y por poco tiempo.</p><p><a href="{{ .ConfirmationURL }}">Entrar a Mi Lindo Ecuador</a></p><p>Si no lo pediste, ignora este correo.</p>`
+   - Las cuentas creadas antes (con el enlace mágico) no tienen contraseña: se pone una con "Olvidé mi contraseña".
 6. **Protección contra robots** (Authentication → Attack Protection): activa **CAPTCHA**, proveedor **Turnstile**, y pega la **Secret key** 🔒 de Cloudflare.
 7. **Entrar con Google** (opcional, puede ser después): Authentication → Providers → Google. Necesita un "OAuth client" de Google Cloud con la dirección de vuelta que muestra Supabase (`https://<ref>.supabase.co/auth/v1/callback`). Cuando funcione, poner en Vercel `NEXT_PUBLIC_GOOGLE_ACTIVO` = `si` y volver a desplegar: hasta entonces el botón "Entrar con Google" no aparece.
 8. **Verificación en dos pasos** de tu cuenta de Supabase: Account → Security.

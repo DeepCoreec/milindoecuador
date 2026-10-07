@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { googleActivo } from "@/lib/sitio";
-import { esquemaCorreo, rutaSegura } from "@/lib/validacion/sesion";
+import { esquemaCorreo, esquemaCrearCuenta, esquemaEntrar, esquemaNuevaContrasena, rutaSegura } from "@/lib/validacion/sesion";
 
 describe("rutaSegura", () => {
   it("acepta rutas internas", () => {
@@ -35,5 +35,27 @@ describe("googleActivo", () => {
     expect(googleActivo()).toBe(false);
     vi.stubEnv("NEXT_PUBLIC_GOOGLE_ACTIVO", "si");
     expect(googleActivo()).toBe(true);
+  });
+});
+
+describe("contraseñas", () => {
+  const correo = "ana@gmail.com";
+  it("crear cuenta exige 8 caracteres y que las dos sean iguales", () => {
+    expect(esquemaCrearCuenta.safeParse({ correo, contrasena: "corta", repetir: "corta" }).error?.issues[0]?.message).toMatch(/8 caracteres/);
+    const distinta = esquemaCrearCuenta.safeParse({ correo, contrasena: "una frase larga", repetir: "otra frase larga" });
+    expect(distinta.error?.issues[0]?.path).toEqual(["repetir"]);
+    expect(esquemaCrearCuenta.safeParse({ correo, contrasena: "una frase larga", repetir: "una frase larga" }).success).toBe(true);
+  });
+  it("no recorta los espacios: son parte de la contraseña", () => {
+    expect(esquemaNuevaContrasena.parse({ contrasena: " con espacios ", repetir: " con espacios " }).contrasena).toBe(" con espacios ");
+  });
+  it("rechaza más de 72 bytes (bcrypt ignora el resto), también con tildes", () => {
+    expect(esquemaNuevaContrasena.safeParse({ contrasena: "a".repeat(73), repetir: "a".repeat(73) }).success).toBe(false);
+    const tildes = "á".repeat(40); // 40 letras pero 80 bytes
+    expect(esquemaNuevaContrasena.safeParse({ contrasena: tildes, repetir: tildes }).success).toBe(false);
+  });
+  it("entrar no exige el mínimo (no da pistas) pero sí que no esté vacía", () => {
+    expect(esquemaEntrar.safeParse({ correo, contrasena: "x" }).success).toBe(true);
+    expect(esquemaEntrar.safeParse({ correo, contrasena: "" }).success).toBe(false);
   });
 });

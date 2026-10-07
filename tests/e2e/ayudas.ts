@@ -24,10 +24,10 @@ export function admin(): SupabaseClient {
 
 const creados: string[] = [];
 
-/** Crea una cuenta ya confirmada. Con `esAdmin`, le da el rol de admin. */
-export async function crearUsuario(apodo: string, esAdmin = false) {
+/** Crea una cuenta ya confirmada. Con `esAdmin`, le da el rol de admin; con `contrasena`, se puede entrar con ella. */
+export async function crearUsuario(apodo: string, esAdmin = false, contrasena?: string) {
   const correo = `${apodo}.${Date.now().toString(36)}@e2e.milindoecuador.test`;
-  const { data, error } = await admin().auth.admin.createUser({ email: correo, email_confirm: true });
+  const { data, error } = await admin().auth.admin.createUser({ email: correo, email_confirm: true, password: contrasena });
   if (error || !data.user) throw new Error(`No se pudo crear el usuario de prueba: ${error?.message}`);
   creados.push(data.user.id);
   if (esAdmin) {
