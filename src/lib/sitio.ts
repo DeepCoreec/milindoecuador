@@ -25,3 +25,11 @@ export function paraCompartir(titulo: string, descripcion: string, ruta: string)
 
 /** WhatsApp del dueño de la guía: recibe los avisos de solicitudes y los pedidos de planes (docs/PLAN.md). */
 export const WHATSAPP_GUIA = "593986225038";
+
+/**
+ * "Entrar con Google" solo aparece cuando Google ya está configurado en Supabase (docs/PUESTA-EN-MARCHA.md).
+ * Se activa poniendo NEXT_PUBLIC_GOOGLE_ACTIVO=si en Vercel; así nadie ve un botón que da error.
+ */
+export function googleActivo(): boolean {
+  return process.env.NEXT_PUBLIC_GOOGLE_ACTIVO === "si";
+}

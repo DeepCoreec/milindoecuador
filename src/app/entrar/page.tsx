@@ -6,6 +6,7 @@ import { Pie } from "@/components/layout/Pie";
 import { FormEntrar } from "@/components/sesion/FormEntrar";
 import { clasesBoton } from "@/components/ui/Boton";
 import { obtenerUsuario } from "@/lib/auth";
+import { googleActivo } from "@/lib/sitio";
 import { rutaSegura } from "@/lib/validacion/sesion";
 
 export const metadata: Metadata = { title: "Entrar · Mi Lindo Ecuador", robots: { index: false, follow: false } };
@@ -27,7 +28,7 @@ function LogoGoogle() {
   );
 }
 
-/** Entrar con un enlace al correo o con Google. Sirve también para crear la cuenta. */
+/** Entrar con un enlace al correo o con Google (cuando está activo). Sirve también para crear la cuenta. */
 export default async function PaginaEntrar({ searchParams }: PageProps<"/entrar">) {
   const p = await searchParams;
   const siguiente = rutaSegura(p.siguiente);
@@ -47,16 +48,20 @@ export default async function PaginaEntrar({ searchParams }: PageProps<"/entrar"
             {error}
           </p>
         )}
-        <form action={entrarConGoogle}>
-          <input type="hidden" name="siguiente" value={siguiente} />
-          <button type="submit" className={clasesBoton("secundario", "normal", "w-full")}>
-            <LogoGoogle />
-            Entrar con Google
-          </button>
-        </form>
-        <div className="flex items-center gap-3 text-sm text-rio-suave" aria-hidden="true">
-          <span className="h-px flex-1 bg-linea" />o con tu correo<span className="h-px flex-1 bg-linea" />
-        </div>
+        {googleActivo() && (
+          <>
+            <form action={entrarConGoogle}>
+              <input type="hidden" name="siguiente" value={siguiente} />
+              <button type="submit" className={clasesBoton("secundario", "normal", "w-full")}>
+                <LogoGoogle />
+                Entrar con Google
+              </button>
+            </form>
+            <div className="flex items-center gap-3 text-sm text-rio-suave" aria-hidden="true">
+              <span className="h-px flex-1 bg-linea" />o con tu correo<span className="h-px flex-1 bg-linea" />
+            </div>
+          </>
+        )}
         <FormEntrar siguiente={siguiente} />
         <p className="m-0 text-[13px] leading-[18px] text-rio-suave">
           Al entrar aceptas los términos y la política de privacidad de Mi Lindo Ecuador.

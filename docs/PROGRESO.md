@@ -115,7 +115,7 @@
 > Plan: `docs/PLAN-V2.md` (aprobado 2026-10-06). "(usuario)" = lo hace el usuario en sus cuentas con guía de Claude.
 
 ### Fase 6 · Entrar y correo
-- [ ] 6.1 Esconder "Entrar con Google" hasta que Google esté configurado (`NEXT_PUBLIC_GOOGLE_ACTIVO=si`)
+- [x] 6.1 Esconder "Entrar con Google" hasta que Google esté configurado (`NEXT_PUBLIC_GOOGLE_ACTIVO=si`) — 2026-10-06: el botón y la línea "o con tu correo" solo salen con la variable en "si"; la acción del servidor también se niega sin ella. 1 prueba nueva (57 en total)
 - [ ] 6.2 Entrar con correo y contraseña: crear cuenta (confirmación por correo), entrar, "Olvidé mi contraseña", cambiarla en "Mi cuenta"; con captcha y Zod. El enlace mágico se quita
 - [ ] 6.3 (usuario) Comprar el dominio y conectarlo en Vercel (= paso 5.5 de la v1)
 - [ ] 6.4 (usuario) Cuenta en Resend, verificar el dominio y poner su SMTP en Supabase

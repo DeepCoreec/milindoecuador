@@ -36,7 +36,7 @@ Lo que dice 🔒 es secreto: nunca va en el chat, en el código ni en GitHub; so
      - Asunto: `Tu enlace para entrar a Mi Lindo Ecuador`
      - Cuerpo: `<p>Hola:</p><p>Toca este enlace para entrar a Mi Lindo Ecuador. Funciona una sola vez y por poco tiempo.</p><p><a href="{{ .ConfirmationURL }}">Entrar a Mi Lindo Ecuador</a></p><p>Si no lo pediste, ignora este correo.</p>`
 6. **Protección contra robots** (Authentication → Attack Protection): activa **CAPTCHA**, proveedor **Turnstile**, y pega la **Secret key** 🔒 de Cloudflare.
-7. **Entrar con Google** (opcional, puede ser después): Authentication → Providers → Google. Necesita un "OAuth client" de Google Cloud con la dirección de vuelta que muestra Supabase (`https://<ref>.supabase.co/auth/v1/callback`).
+7. **Entrar con Google** (opcional, puede ser después): Authentication → Providers → Google. Necesita un "OAuth client" de Google Cloud con la dirección de vuelta que muestra Supabase (`https://<ref>.supabase.co/auth/v1/callback`). Cuando funcione, poner en Vercel `NEXT_PUBLIC_GOOGLE_ACTIVO` = `si` y volver a desplegar: hasta entonces el botón "Entrar con Google" no aparece.
 8. **Verificación en dos pasos** de tu cuenta de Supabase: Account → Security.
 
 ## 3. Vercel — 10 minutos

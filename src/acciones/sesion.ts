@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { configSupabase } from "@/lib/supabase/config";
 import { crearClienteServidor } from "@/lib/supabase/server";
-import { urlSitio } from "@/lib/sitio";
+import { googleActivo, urlSitio } from "@/lib/sitio";
 import { esquemaCorreo, rutaSegura } from "@/lib/validacion/sesion";
 
 export type EstadoEntrar = { estado: "inicio" | "enviado" | "error"; mensaje?: string; correo?: string };
@@ -48,6 +48,7 @@ export async function entrarConCorreo(_previo: EstadoEntrar, datos: FormData): P
 /** Entrar con Google: Supabase arma la dirección de Google y volvemos a /auth/callback. */
 export async function entrarConGoogle(datos: FormData): Promise<void> {
   if (!configSupabase()) redirect("/entrar?error=sin-servicio");
+  if (!googleActivo()) redirect("/entrar?error=google");
   const supabase = await crearClienteServidor();
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
