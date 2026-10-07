@@ -7,8 +7,15 @@ test("puerta de la fase 4: un negocio de punta a punta", async ({ page, context,
   test.skip(info.project.name !== "escritorio", "un flujo completo basta en un tamaño");
   const negocio = `${marca} Encebollados`;
 
-  // 1. El dueño envía la solicitud, sin cuenta
-  const dueno = await browser.newPage();
+  // 1. Sin cuenta se pide entrar; con cuenta, el dueño envía la solicitud (versión 2)
+  const anonimo = await browser.newPage();
+  await anonimo.goto(new URL("/negocios/registro", baseURL).toString());
+  await expect(anonimo.getByRole("heading", { name: "Primero, tu cuenta" })).toBeVisible();
+  await anonimo.close();
+  const ctxDueno = await browser.newContext();
+  const d = await crearUsuario("dueno");
+  await iniciarSesion(ctxDueno, d.correo, baseURL!);
+  const dueno = await ctxDueno.newPage();
   await dueno.goto(new URL("/negocios/registro", baseURL).toString());
   await dueno.getByLabel("Nombre del negocio").fill(negocio);
   await dueno.getByLabel("Categoría").selectOption("restaurantes");
@@ -18,7 +25,7 @@ test("puerta de la fase 4: un negocio de punta a punta", async ({ page, context,
   await dueno.getByLabel(/Acepto los/).check();
   await dueno.getByRole("button", { name: "Enviar solicitud" }).click();
   await expect(dueno.getByText("¡Solicitud enviada!")).toBeVisible();
-  await dueno.close();
+  await ctxDueno.close();
 
   // 2. Un usuario normal no ve el panel
   const normal = await browser.newContext();
@@ -35,8 +42,9 @@ test("puerta de la fase 4: un negocio de punta a punta", async ({ page, context,
   await page.getByRole("button", { name: `Aprobar ${negocio}` }).click();
   await expect(page.locator("tr", { hasText: negocio }).getByText("Aprobada")).toBeVisible();
 
-  const { data: lugar } = await admin().from("places").select("id, slug, status").eq("name", negocio).single();
+  const { data: lugar } = await admin().from("places").select("id, slug, status, owner_id").eq("name", negocio).single();
   expect(lugar?.status).toBe("borrador");
+  expect(lugar?.owner_id).toBe(d.id); // la cuenta que pidió queda como dueña
   await page.goto(`/admin/lugares/${lugar!.id}`);
   await page.getByLabel("Precio").selectOption("1");
   await page.getByLabel("Horario (opcional)").fill("Todos los días, de 6:00 a 13:00");

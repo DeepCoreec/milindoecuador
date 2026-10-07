@@ -190,6 +190,27 @@ check("un usuario común no cambia la ubicación", !!r.error || r.rows.length ==
 r = await as("anon", "", `select latitude, longitude from public.places where id = $1`, [P["lugar-1"]]);
 check("el visitante lee la ubicación de un lugar publicado", Number(r.rows?.[0]?.longitude) === -79.88, r);
 
+console.log("\nDueños (0005)");
+await db.query(`update public.places set owner_id = $1 where id = $2`, [B, P["lugar-4"]]);
+r = await as("anon", "", `select owner_id from public.places where id = $1`, [P["lugar-4"]]);
+check("el visitante no puede leer quién es el dueño", !!r.error, r);
+r = await as("authenticated", B, `select owner_id from public.places where id = $1`, [P["lugar-4"]]);
+check("ni el propio dueño lo lee desde el navegador", !!r.error, r);
+r = await as("anon", "", `select id, name, latitude from public.places where id = $1`, [P["lugar-4"]]);
+check("las demás columnas se siguen leyendo", r.rows?.length === 1, r);
+r = await as("authenticated", B, `update public.places set description = 'Cambiada por el dueño sin pasar por el servidor' where id = $1 returning id`, [P["lugar-4"]]);
+check("el dueño no edita su ficha directo (solo el servidor)", !!r.error || r.rows.length === 0, r);
+r = await as("authenticated", ADM, `update public.places set owner_id = $1 where id = $2`, [A, P["lugar-4"]]);
+check("ni el admin cambia el dueño desde el navegador", !!r.error, r);
+r = await as("authenticated", ADM, `update public.places set name = 'Lugar 4 editado' where id = $1 returning name`, [P["lugar-4"]]);
+check("el admin sigue editando las fichas", r.rows?.[0]?.name === "Lugar 4 editado", r);
+r = await as("authenticated", ADM, `insert into public.places (city_id, category_id, slug, name, sector, description) values ($1, $2, 'nuevo-admin', 'Nuevo', 'Centro', 'Descripción de prueba suficientemente larga') returning id`, [gye, cat]);
+check("el admin sigue creando fichas", r.rows?.length === 1, r);
+r = await as("authenticated", ADM, `insert into public.places (city_id, category_id, slug, name, sector, description, owner_id) values ($1, $2, 'nuevo-admin-2', 'Nuevo', 'Centro', 'Descripción de prueba suficientemente larga', $3)`, [gye, cat, A]);
+check("al crear, el navegador no puede poner dueño", !!r.error, r);
+r = await as("service_role", "", `update public.places set owner_id = $1 where id = $2 returning owner_id`, [A, P["lugar-4"]]);
+check("el servidor sí asigna el dueño", r.rows?.[0]?.owner_id === A, r);
+
 console.log("\nDatos iniciales (supabase/seed.sql)");
 const seed = readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8");
 await db.exec(seed);

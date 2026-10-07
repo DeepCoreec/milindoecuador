@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { DIAS_DESTACADO, nuevoVencimiento } from "@/lib/planes";
 import { aSlug, slugLibre } from "@/lib/slug";
+import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { esquemaDecision, esquemaFoto, esquemaIdFoto, esquemaLugar, esquemaModerar, esquemaMoverFoto, esquemaPlan, esquemaRespuesta } from "@/lib/validacion/admin";
 
@@ -16,9 +17,14 @@ import { esquemaDecision, esquemaFoto, esquemaIdFoto, esquemaLugar, esquemaModer
 
 export type EstadoAdmin = { estado: "inicio" | "ok" | "error"; mensaje?: string };
 
-const DESCRIPCION_PENDIENTE = "Descripción pendiente: escríbela desde el panel antes de publicar.";
+const DESCRIPCION_PENDIENTE = "Descripción pendiente: escríbela desde «Mi negocio» o desde el panel antes de publicar.";
 
-/** Aprueba una solicitud: crea la ficha como BORRADOR (no se ve en público) y marca la solicitud. */
+/**
+ * Aprueba una solicitud: crea la ficha como BORRADOR (no se ve en público) y marca la solicitud.
+ * Si la pidió una cuenta (versión 2), esa cuenta queda como dueña y la completa desde «Mi negocio».
+ * El dueño solo lo puede poner el servidor (migración 0005), por eso la ficha se crea con admin.ts,
+ * siempre después de requireAdmin().
+ */
 export async function aprobarSolicitud(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
   const r = esquemaDecision.safeParse({ solicitud: datos.get("solicitud"), nota: datos.get("nota") ?? undefined });
   if (!r.success) return { estado: "error", mensaje: r.error.issues[0]?.message ?? "Datos inválidos" };
@@ -27,7 +33,7 @@ export async function aprobarSolicitud(_previo: EstadoAdmin, datos: FormData): P
 
   const { data: s } = await db
     .from("business_requests")
-    .select("id, business_name, category_id, city_id, sector, whatsapp, description, status")
+    .select("id, business_name, category_id, city_id, sector, whatsapp, description, status, user_id")
     .eq("id", r.data.solicitud)
     .maybeSingle();
   if (!s) return { estado: "error", mensaje: "La solicitud no existe" };
@@ -45,7 +51,8 @@ export async function aprobarSolicitud(_previo: EstadoAdmin, datos: FormData): P
   const slug = slugLibre(base, new Set((parecidos ?? []).map((p) => p.slug)));
   const descripcion = s.description && s.description.trim().length >= 20 ? s.description.trim() : DESCRIPCION_PENDIENTE;
 
-  const { error: errorLugar } = await db.from("places").insert({
+  const { error: errorLugar } = await crearClienteAdmin().from("places").insert({
+    owner_id: s.user_id ?? null,
     city_id: s.city_id,
     category_id: s.category_id,
     slug,
@@ -60,7 +67,12 @@ export async function aprobarSolicitud(_previo: EstadoAdmin, datos: FormData): P
     return { estado: "error", mensaje: "No se pudo crear la ficha. Inténtalo de nuevo." };
   }
   revalidatePath("/admin", "layout");
-  return { estado: "ok", mensaje: `Aprobada: se creó la ficha "${s.business_name}" como borrador.` };
+  return {
+    estado: "ok",
+    mensaje: s.user_id
+      ? `Aprobada: se creó la ficha "${s.business_name}" como borrador. El dueño ya puede completarla y publicarla desde «Mi negocio».`
+      : `Aprobada: se creó la ficha "${s.business_name}" como borrador.`,
+  };
 }
 
 /** Rechaza una solicitud, con una nota opcional para recordar el motivo. */

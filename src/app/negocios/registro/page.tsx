@@ -5,6 +5,7 @@ import { Pie } from "@/components/layout/Pie";
 import { FormRegistro } from "@/components/negocios/FormRegistro";
 import { Boton } from "@/components/ui/Boton";
 import { IconoVisto } from "@/components/ui/iconos";
+import { obtenerUsuario } from "@/lib/auth";
 import { getCategorias } from "@/lib/datos/lugares";
 import { paraCompartir, WHATSAPP_GUIA } from "@/lib/sitio";
 
@@ -15,17 +16,18 @@ export const metadata: Metadata = {
   ...paraCompartir("Registra tu negocio gratis", descripcion, "/negocios/registro"),
 };
 
-// Las categorías casi no cambian: la página se vuelve a generar cada hora
-export const revalidate = 3600;
+// Versión 2: depende de la sesión (para registrar un negocio hace falta cuenta)
+export const dynamic = "force-dynamic";
 
 const VENTAJAS = [
   "Ficha con fotos, horario, ubicación y tu WhatsApp",
   "Reseñas de tus clientes y la opción de responderlas",
+  "Tú mismo cambias tu ficha cuando quieras, desde tu cuenta",
   "Un enlace propio para compartir en Instagram y WhatsApp",
 ];
 
 export default async function PaginaRegistro() {
-  const categorias = (await getCategorias()).map(({ slug, nombre }) => ({ slug, nombre }));
+  const [categorias, usuario] = await Promise.all([getCategorias().then((c) => c.map(({ slug, nombre }) => ({ slug, nombre }))), obtenerUsuario()]);
   return (
     <>
       <Cabecera />
@@ -36,7 +38,7 @@ export default async function PaginaRegistro() {
             <h1 className="m-0 font-rotulo text-[30px] leading-[34px] font-normal tracking-[-0.01em] text-balance md:text-[40px] md:leading-[44px]">
               Registra tu negocio gratis
             </h1>
-            <p className="m-0 max-w-[60ch] text-rio-suave">Llena tus datos y revisamos tu solicitud. Cuando tu ficha esté lista, te escribimos por WhatsApp.</p>
+            <p className="m-0 max-w-[60ch] text-rio-suave">Llena tus datos y revisamos tu solicitud. Cuando la aprobemos, completas tu ficha tú mismo desde «Mi negocio»: fotos, horario y ubicación.</p>
             <ul className="m-0 mt-2 grid list-none gap-3 p-0">
               {VENTAJAS.map((v) => (
                 <li key={v} className="flex gap-3 [&_svg]:size-[22px] [&_svg]:flex-none [&_svg]:text-exito">
@@ -49,7 +51,24 @@ export default async function PaginaRegistro() {
               Ver planes para destacar tu negocio
             </Boton>
           </div>
-          <FormRegistro categorias={categorias} avisoWhatsApp={WHATSAPP_GUIA} />
+          {usuario ? (
+            <FormRegistro categorias={categorias} avisoWhatsApp={WHATSAPP_GUIA} />
+          ) : (
+            <div className="grid gap-4 rounded-xl border border-linea bg-papel-alto p-6">
+              <h2 className="m-0 text-xl leading-[26px] font-semibold">Primero, tu cuenta</h2>
+              <p className="m-0 text-rio-suave">
+                Con tu cuenta manejas tu negocio en la guía: cambias fotos, horario y ubicación cuando quieras, y respondes las reseñas.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Boton href="/crear-cuenta?siguiente=%2Fnegocios%2Fregistro" variante="principal">
+                  Crear mi cuenta
+                </Boton>
+                <Boton href="/entrar?siguiente=%2Fnegocios%2Fregistro" variante="secundario">
+                  Ya tengo cuenta
+                </Boton>
+              </div>
+            </div>
+          )}
         </div>
       </main>
       <Pie />

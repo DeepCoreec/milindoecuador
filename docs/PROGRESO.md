@@ -130,9 +130,9 @@
 - **Puerta:** desde el celular, "Cómo llegar" abre la ruta correcta en 3 lugares reales
 
 ### Fase 8 · Cuentas de dueño
-- [ ] 8.1 Migración 0005: dueño de cada lugar y de cada solicitud, con reglas de seguridad
-- [ ] 8.2 La solicitud de negocio pide iniciar sesión; al aprobarla, la cuenta queda como dueña
-- [ ] 8.3 Pruebas de reglas: un dueño no puede tocar un negocio ajeno ni hacerse admin
+- [x] 8.1 Migración 0005: dueño de cada lugar y de cada solicitud, con reglas de seguridad — 2026-10-07: `places.owner_id` y `business_requests.user_id`. El dueño no se lee en público (lectura de `places` por columnas) y nadie lo cambia desde el navegador, ni el admin (permisos de insert/update por columnas). El dueño NO recibe permisos de escritura: edita solo desde el servidor (fase 9)
+- [x] 8.2 La solicitud de negocio pide iniciar sesión; al aprobarla, la cuenta queda como dueña — 2026-10-07: `/negocios/registro` sin sesión muestra "Primero, tu cuenta" (crear cuenta / entrar, vuelve al registro); máximo 3 solicitudes pendientes por cuenta; `aprobarSolicitud` crea la ficha con admin.ts (después de requireAdmin) poniendo el dueño. La prueba e2e de la fase 4 lo comprueba
+- [x] 8.3 Pruebas de reglas: un dueño no puede tocar un negocio ajeno ni hacerse admin — 2026-10-07: 9 pruebas nuevas (62): nadie lee el dueño, el dueño no edita directo ni su propia ficha, nadie cambia el dueño salvo el servidor, el admin sigue creando y editando. Que nadie se haga admin ya lo cubrían las pruebas de perfiles
 - **Puerta:** las pruebas de seguridad pasan
 
 ### Fase 9 · Mi negocio y moderación
