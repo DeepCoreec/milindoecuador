@@ -17,7 +17,7 @@ Este proyecto usa Next.js 16: lee también `AGENTS.md` y la documentación en `n
 ## 2. Reglas de trabajo
 
 - **Un paso a la vez.** Trabaja solo en el paso que dice `docs/PROGRESO.md`. No adelantes trabajo de otras fases.
-- **Nada fuera del plan.** Si algo no está en `docs/PLAN.md` o `docs/ARQUITECTURA.md`, no lo agregues.
+- **Nada fuera del plan.** Si algo no está en `docs/PLAN.md`, `docs/PLAN-V2.md` o `docs/ARQUITECTURA.md`, no lo agregues.
   Anótalo en la sección "Ideas para después" de `docs/PROGRESO.md` y sigue.
 - **Sin librerías nuevas sin permiso.** Las permitidas están en `docs/ARQUITECTURA.md`. Para cualquier otra, pregunta primero.
 - **Puertas de fase.** Una fase solo se cierra cuando se cumple su puerta (ver `docs/PLAN.md`) y el usuario la aprueba.
@@ -69,7 +69,8 @@ npm run tokens     # regenera src/app/tokens.css si cambian los colores aprobado
 
 ## 7. Documentos del proyecto
 
-- `docs/PLAN.md` — qué se construye, fases y puertas (resumen del plan aprobado).
+- `docs/PLAN.md` — versión 1: qué se construye, fases y puertas (resumen del plan aprobado).
+- `docs/PLAN-V2.md` — versión 2 (dueños, cómo llegar, moderación automática, extras): fases 6 a 10.
 - `docs/ARQUITECTURA.md` — carpetas, rutas, tecnologías y convenciones.
 - `docs/PROGRESO.md` — bitácora: dónde estamos y qué sigue. **Se actualiza en cada paso.**
 - `docs/DISENO.md` — sistema de diseño (se crea en la fase 0).

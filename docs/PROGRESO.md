@@ -5,13 +5,17 @@
 
 ## Estado actual
 
-- **Fase actual:** todo el código del plan está hecho y probado con un Supabase de prueba (fases 1 a 5). Falta lo que depende del usuario: cuentas (1.2 ajustes de GitHub), fotos (2.8), 5 personas (3.5), datos legales (5.2), dominio (5.5) y secretos de copias (5.6). Ninguna puerta de fase se da por cerrada hasta repetir las pruebas con el Supabase real y la aprobación del usuario
-- **Último paso terminado:** 0.5 Maquetas aprobadas (fase 0 cerrada)
+> **Mapa rápido:** Versión 1 = construida y publicada (faltan sus puertas). Versión 2 = en marcha, fase 6.
+> Plan v1: `docs/PLAN.md` · Plan v2: `docs/PLAN-V2.md` · Puesta en marcha de cuentas: `docs/PUESTA-EN-MARCHA.md`
+
+- **Fase actual:** Versión 2 · Fase 6 (Entrar y correo). Plan v2 aprobado por el usuario el 2026-10-06
+- **Último paso terminado:** ver el último `[x]` de la sección "Versión 2"
+- **Siguiente paso:** el primer `[ ]` de la sección "Versión 2" que no diga "(usuario)". Los pasos "(usuario)" son clics en cuentas del usuario (Claude no tiene acceso a ellas): se le guía paso a paso
+- **Página real:** https://milindoecuador.vercel.app · Supabase `rlwcvrkyojcqgjigoyan` (São Paulo) · Turnstile "Mi Lindo Ecuador" · admin: deepcoreec@gmail.com
+- **Lo que falta de la versión 1 (puertas, dependen del usuario):** 2.8 fotos y 20 lugares · 3.5 cinco personas (necesita la fase 6) · 4 publicar la Barbería Adaria de prueba (cierra la puerta 4) · 5.2 datos legales · 5.5 dominio (= paso 6.3) · 5.6 secretos de copias · 1.2 ajustes de GitHub · repetir `npm test` de reglas, e2e y Lighthouse contra la base real
 - **Modo de trabajo (2026-10-05):** el usuario autorizó avanzar paso a paso según el plan sin pedir permiso entre pasos. Se sigue respetando: nada fuera del plan, nada de librerías nuevas sin permiso y verificar y guardar cada paso
-- **Entorno de prueba (solo en la nube de Claude, no en el repo):** Postgres 16 + PostgREST 12 + Supabase Auth 2.180 + Supabase Storage (desde su código) + buzón SMTP, armados en el scratchpad de la sesión con `arrancar.sh` y `dev.sh`. Si la sesión es nueva hay que volver a armarlo; sirve para probar antes de tener el Supabase real
-- **Siguiente paso:** seguir `docs/PUESTA-EN-MARCHA.md` con el usuario: Turnstile → Supabase (3 migraciones + seed) → Vercel → admin → `npm run test:e2e`, Lighthouse y securityheaders.com contra la página real → cerrar puertas con la aprobación del usuario. Luego 2.8, 3.5, 5.2 (datos legales) y 5.5 (dominio)
-- **Estado real (2026-10-06):** Turnstile creado (hostname milindoecuador.vercel.app; secret rotada tras verse en una captura). Supabase: Site URL y Redirect URL puestas, captcha Turnstile activado. Probado: entrar con enlace mágico funciona de punta a punta con deepcoreec@gmail.com; se le dio rol admin por SQL. Siguiente: confirmar /admin, plantilla de correo en español, SMTP propio (el correo de Supabase solo envía a miembros de la organización), `npm run test:e2e` y Lighthouse contra la página real, publicar los 4 lugares del seed
-- **Bloqueos / esperando al usuario:** ajustes de seguridad en GitHub (1.2); crear el proyecto en Supabase y pasar URL y clave pública (1.3); variables de entorno en Vercel (1.7, la cuenta y el primer despliegue ya están)
+- **Entorno de prueba (solo en la nube de Claude, no en el repo):** Postgres 16 + PostgREST 12 + Supabase Auth 2.180 + Supabase Storage + buzón SMTP, en el scratchpad de la sesión (`supa/levantar.sh`, `dev.sh`). Si la sesión es nueva hay que volver a armarlo. Desde la nube de Claude no se llega al Supabase real (la red lo bloquea)
+- **Historia del 2026-10-06:** Vercel publicado con las 6 variables; Supabase real con 0001–0003 y seed; Turnstile (secret rotada tras verse en una captura); Site URL, Redirect URL y captcha en Supabase; enlace mágico probado de punta a punta; admin dado por SQL; prueba de solicitud de negocio aprobada
 
 ## Fase 0 · Plan y diseño
 
@@ -108,7 +112,45 @@
 
 ## Versión 2
 
-- 2026-10-06: el usuario pidió panel para dueños, "Cómo llegar" con Google Maps (sin API de pago) y publicación directa con filtro automático. Propuesta escrita en `docs/PLAN-V2.md` (fases 6 a 9). **Falta su aprobación** y decidir si el admin aprueba el alta de cada negocio. No programar nada de la v2 antes de eso
+> Plan: `docs/PLAN-V2.md` (aprobado 2026-10-06). "(usuario)" = lo hace el usuario en sus cuentas con guía de Claude.
+
+### Fase 6 · Entrar y correo
+- [ ] 6.1 Esconder "Entrar con Google" hasta que Google esté configurado (`NEXT_PUBLIC_GOOGLE_ACTIVO=si`)
+- [ ] 6.2 Entrar con correo y contraseña: crear cuenta (confirmación por correo), entrar, "Olvidé mi contraseña", cambiarla en "Mi cuenta"; con captcha y Zod. El enlace mágico se quita
+- [ ] 6.3 (usuario) Comprar el dominio y conectarlo en Vercel (= paso 5.5 de la v1)
+- [ ] 6.4 (usuario) Cuenta en Resend, verificar el dominio y poner su SMTP en Supabase
+- [ ] 6.5 Correos en español (confirmar cuenta, recuperar contraseña): plantillas en `docs/PUESTA-EN-MARCHA.md`; (usuario) pegarlas en Supabase
+- [ ] 6.6 (usuario) Configurar Google en Google Cloud y Supabase; poner `NEXT_PUBLIC_GOOGLE_ACTIVO=si` en Vercel
+- **Puerta:** una persona que no es el admin crea su cuenta y entra
+
+### Fase 7 · Cómo llegar
+- [ ] 7.1 Migración 0004: latitud y longitud en `places` (con límites de Ecuador)
+- [ ] 7.2 Formulario de lugar: campos de ubicación, "Usar mi ubicación actual" y pegar coordenadas de Google Maps
+- [ ] 7.3 Ficha: botones "Cómo llegar" con ruta en Google Maps y en Waze (si no hay coordenadas, se busca por dirección como hoy)
+- **Puerta:** desde el celular, "Cómo llegar" abre la ruta correcta en 3 lugares reales
+
+### Fase 8 · Cuentas de dueño
+- [ ] 8.1 Migración 0005: dueño de cada lugar y de cada solicitud, con reglas de seguridad
+- [ ] 8.2 La solicitud de negocio pide iniciar sesión; al aprobarla, la cuenta queda como dueña
+- [ ] 8.3 Pruebas de reglas: un dueño no puede tocar un negocio ajeno ni hacerse admin
+- **Puerta:** las pruebas de seguridad pasan
+
+### Fase 9 · Mi negocio y moderación
+- [ ] 9.1 Filtro automático de textos (palabras prohibidas editables por el admin, enlaces y teléfonos) en servidor y base
+- [ ] 9.2 Página "Mi negocio": editar datos, horario, precio, sector, WhatsApp y ubicación (sale al instante)
+- [ ] 9.3 Fotos del dueño: hasta 15, ordenar y borrar
+- [ ] 9.4 El dueño responde las reseñas de su negocio
+- [ ] 9.5 Límites diarios por cuenta (cambios y fotos)
+- [ ] 9.6 Panel: "Cambios recientes" y ocultar ficha o foto con un clic
+- [ ] 9.7 "Reportar este lugar"; con 3 reportes se oculta sola
+- [ ] 9.8 Pruebas de punta a punta del flujo del dueño
+- **Puerta:** 3 negocios reales llenan su ficha solos y el filtro bloquea las palabras de prueba
+
+### Fase 10 · Extras
+- [ ] 10.1 "Abierto ahora / Cerrado" según el horario
+- [ ] 10.2 Estadísticas para el dueño (vistas, toques a WhatsApp y "Cómo llegar")
+- [ ] 10.3 Favoritos
+- **Puerta:** el usuario los prueba y los aprueba
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
@@ -118,11 +160,10 @@
 - **Armar un plan**: elegir lugar, fecha y hora y compartir un enlace con tarjeta por WhatsApp con amigos (primer paso hacia los grupos)
 - Más categorías: playas cerca de Guayaquil, servicios útiles
 
-- Mapa interactivo
+- Mapa interactivo dibujado en la página (fuera de la v2: API de pago)
 - Chatbot que recomienda lugares con los datos de la página
 - Guías turísticos locales y rutas con GPS
 - Pagos automáticos (Payphone o Kushki)
-- Panel para que cada dueño edite su ficha
 - Apps en Google Play y App Store
 - Otras ciudades e inglés
 
