@@ -136,7 +136,7 @@
 - **Puerta:** las pruebas de seguridad pasan
 
 ### Fase 9 · Mi negocio y moderación
-- [ ] 9.1 Filtro automático de textos (palabras prohibidas editables por el admin, enlaces y teléfonos) en servidor y base
+- [x] 9.1 Filtro automático de textos (palabras prohibidas editables por el admin, enlaces y teléfonos) en servidor y base — 2026-10-07: migración 0006 (`banned_words`, `normalizar_texto`, `motivo_no_permitido` y disparadores en lugares, reseñas, solicitudes y nombres; solo revisa los campos que cambian). Compara palabras enteras sin tildes, mayúsculas, números-letra ni letras repetidas; "m.i.e.r.d.a" no se detecta (para eso, reportes). Enlaces y teléfonos se bloquean en descripción, dato, reseñas y respuestas. Página `/admin/palabras` para agregar y quitar. Mensajes claros en todas las acciones (`src/lib/moderacion.ts`). La misma migración trae el registro de cambios, los reportes de lugares y el límite de 15 fotos (pasos 9.3, 9.6 y 9.7). 26 pruebas de reglas nuevas (88) y 3 unitarias (71)
 - [ ] 9.2 Página "Mi negocio": editar datos, horario, precio, sector, WhatsApp y ubicación (sale al instante)
 - [ ] 9.3 Fotos del dueño: hasta 15, ordenar y borrar
 - [ ] 9.4 El dueño responde las reseñas de su negocio

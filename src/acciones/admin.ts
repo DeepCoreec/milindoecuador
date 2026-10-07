@@ -4,10 +4,21 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { DIAS_DESTACADO, nuevoVencimiento } from "@/lib/planes";
+import { mensajeModeracion } from "@/lib/moderacion";
 import { aSlug, slugLibre } from "@/lib/slug";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { crearClienteServidor } from "@/lib/supabase/server";
-import { esquemaDecision, esquemaFoto, esquemaIdFoto, esquemaLugar, esquemaModerar, esquemaMoverFoto, esquemaPlan, esquemaRespuesta } from "@/lib/validacion/admin";
+import {
+  esquemaDecision,
+  esquemaFoto,
+  esquemaIdFoto,
+  esquemaLugar,
+  esquemaModerar,
+  esquemaMoverFoto,
+  esquemaPalabra,
+  esquemaPlan,
+  esquemaRespuesta,
+} from "@/lib/validacion/admin";
 
 /*
  * Acciones del panel. Cada una vuelve a verificar el rol en el servidor (requireAdmin),
@@ -135,13 +146,13 @@ export async function guardarLugar(_previo: EstadoLugar, datos: FormData): Promi
     const { data: parecidos } = await db.from("places").select("slug").eq("city_id", ciudad.id).like("slug", `${base}%`);
     const slug = slugLibre(base, new Set((parecidos ?? []).map((p) => p.slug)));
     const { data, error } = await db.from("places").insert({ ...fila, city_id: ciudad.id, slug }).select("id").single();
-    if (error || !data) return { estado: "error", mensaje: "No se pudo crear la ficha. Inténtalo de nuevo.", valores, intento: Date.now() };
+    if (error || !data) return { estado: "error", mensaje: mensajeModeracion(error) ?? "No se pudo crear la ficha. Inténtalo de nuevo.", valores, intento: Date.now() };
     revalidatePath("/", "layout");
     redirect(`/admin/lugares/${data.id}?guardado=1`);
   }
 
   const { data, error } = await db.from("places").update(fila).eq("id", r.data.id).select("id");
-  if (error) return { estado: "error", mensaje: "No se pudo guardar. Inténtalo de nuevo.", valores, intento: Date.now() };
+  if (error) return { estado: "error", mensaje: mensajeModeracion(error) ?? "No se pudo guardar. Inténtalo de nuevo.", valores, intento: Date.now() };
   if (!data?.length) return { estado: "error", mensaje: "La ficha no existe", valores };
   revalidatePath("/", "layout");
   return { estado: "ok", mensaje: "Cambios guardados", intento: Date.now() };
@@ -163,7 +174,7 @@ export async function registrarFoto(_previo: EstadoAdmin, datos: FormData): Prom
     .insert({ place_id: r.data.lugar, storage_path: r.data.camino, alt_text: r.data.alt, sort_order: (ultima?.sort_order ?? -1) + 1 });
   if (error) {
     await db.storage.from("fotos-lugares").remove([r.data.camino]);
-    return { estado: "error", mensaje: "No se pudo guardar la foto. Inténtalo de nuevo." };
+    return { estado: "error", mensaje: mensajeModeracion(error) ?? "No se pudo guardar la foto. Inténtalo de nuevo." };
   }
   revalidatePath("/", "layout");
   return { estado: "ok", mensaje: "Foto agregada" };
@@ -233,7 +244,7 @@ export async function responderResena(_previo: EstadoAdmin, datos: FormData): Pr
   await requireAdmin();
   const db = await crearClienteServidor();
   const { error } = await db.from("reviews").update({ owner_reply: r.data.respuesta }).eq("id", r.data.resena);
-  if (error) return { estado: "error", mensaje: "No se pudo guardar la respuesta" };
+  if (error) return { estado: "error", mensaje: mensajeModeracion(error) ?? "No se pudo guardar la respuesta" };
   revalidatePath("/", "layout");
   return { estado: "ok", mensaje: r.data.respuesta ? "Respuesta publicada" : "Respuesta quitada" };
 }
@@ -258,4 +269,28 @@ export async function cambiarPlan(_previo: EstadoAdmin, datos: FormData): Promis
   if (error) return { estado: "error", mensaje: "No se pudo cambiar el plan" };
   revalidatePath("/", "layout");
   return { estado: "ok", mensaje: "Plan actualizado" };
+}
+
+/** Agrega una palabra o frase a la lista de prohibidas. Se bloquea al instante en fichas, reseñas y nombres. */
+export async function agregarPalabra(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaPalabra.safeParse({ palabra: datos.get("palabra") });
+  if (!r.success) return { estado: "error", mensaje: r.error.issues[0]?.message ?? "Datos inválidos" };
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  const { error } = await db.from("banned_words").insert({ word: r.data.palabra });
+  if (error) return { estado: "error", mensaje: error.code === "23505" ? "Esa palabra ya está en la lista" : "No se pudo agregar. Revisa que tenga solo letras." };
+  revalidatePath("/admin/palabras");
+  return { estado: "ok", mensaje: `Agregada: «${r.data.palabra}»` };
+}
+
+/** Quita una palabra de la lista. */
+export async function quitarPalabra(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaPalabra.safeParse({ palabra: datos.get("palabra") });
+  if (!r.success) return { estado: "error", mensaje: "Datos inválidos" };
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  const { error } = await db.from("banned_words").delete().eq("word", r.data.palabra);
+  if (error) return { estado: "error", mensaje: "No se pudo quitar" };
+  revalidatePath("/admin/palabras");
+  return { estado: "ok", mensaje: "Quitada" };
 }

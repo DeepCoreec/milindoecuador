@@ -68,3 +68,13 @@ export const esquemaPlan = z.object({
   lugar: z.uuid(),
   accion: z.enum(["destacar-semana", "destacar-seis-semanas", "quitar-destacado", "verificar", "quitar-verificado"]),
 });
+
+/** Palabra o frase para la lista de prohibidas (versión 2, paso 9.1). La base la guarda normalizada. */
+export const esquemaPalabra = z.object({
+  palabra: z
+    .string()
+    .trim()
+    .min(2, "Escribe al menos 2 letras")
+    .max(60, "Máximo 60 caracteres")
+    .regex(/^[\p{L} ]+$/u, "Solo letras y espacios"),
+});

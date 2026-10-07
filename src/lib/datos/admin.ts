@@ -240,3 +240,11 @@ export async function getResenasDeLugar(lugarId: string): Promise<ResenaAdmin[]>
   const { data } = await db.from("reviews").select(COLUMNAS_RESENA).eq("place_id", lugarId).order("created_at", { ascending: false }).returns<FilaResenaAdmin[]>();
   return (data ?? []).map((r) => aResenaAdmin(r));
 }
+
+/** Lista de palabras prohibidas de la moderación automática (migración 0006). */
+export async function getPalabras(): Promise<string[]> {
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  const { data } = await db.from("banned_words").select("word").order("word");
+  return (data ?? []).map((p) => p.word as string);
+}

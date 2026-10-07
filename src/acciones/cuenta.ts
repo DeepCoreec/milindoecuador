@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireUsuario } from "@/lib/auth";
+import { mensajeModeracion } from "@/lib/moderacion";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { esquemaBorrar, esquemaNombre } from "@/lib/validacion/cuenta";
@@ -17,7 +18,7 @@ export async function cambiarNombre(_previo: EstadoFormulario, datos: FormData):
 
   const supabase = await crearClienteServidor();
   const { error } = await supabase.from("profiles").update({ display_name: r.data.nombre }).eq("id", usuario.id);
-  if (error) return { estado: "error", mensaje: "No se pudo guardar. Inténtalo de nuevo." };
+  if (error) return { estado: "error", mensaje: mensajeModeracion(error) ?? "No se pudo guardar. Inténtalo de nuevo.", valor: r.data.nombre };
   revalidatePath("/cuenta");
   return { estado: "ok", mensaje: "Nombre guardado" };
 }

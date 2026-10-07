@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { obtenerUsuario } from "@/lib/auth";
 import { verificarCaptcha } from "@/lib/captcha";
+import { mensajeModeracion } from "@/lib/moderacion";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { configSupabase } from "@/lib/supabase/config";
 import { esquemaSolicitud, type CampoSolicitud } from "@/lib/validacion/negocios";
@@ -67,6 +68,6 @@ export async function solicitarRegistro(_previo: EstadoSolicitud, datos: FormDat
     description: r.data.descripcion || null,
     user_id: usuario.id,
   });
-  if (error) return { estado: "error", mensaje: "No se pudo enviar la solicitud. Inténtalo de nuevo.", valores, intento: Date.now() };
+  if (error) return { estado: "error", mensaje: mensajeModeracion(error) ?? "No se pudo enviar la solicitud. Inténtalo de nuevo.", valores, intento: Date.now() };
   return { estado: "ok", negocio: r.data.negocio };
 }

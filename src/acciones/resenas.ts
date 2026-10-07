@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { requireUsuario } from "@/lib/auth";
 import { verificarCaptcha } from "@/lib/captcha";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
+import { mensajeModeracion } from "@/lib/moderacion";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import { esquemaBorrarResena, esquemaResena } from "@/lib/validacion/resenas";
 
@@ -45,11 +46,11 @@ export async function guardarResena(_previo: EstadoResena, datos: FormData): Pro
     : await db.from("reviews").insert({ place_id: r.data.lugar, user_id: usuario.id, stars: r.data.estrellas, text: r.data.texto });
 
   if (error) {
-    const mensaje = /límite de 5 reseñas/.test(error.message)
+    const mensaje = mensajeModeracion(error) ?? (/límite de 5 reseñas/.test(error.message)
       ? "Llegaste al límite de 5 reseñas por día. Vuelve mañana."
       : /publicados/.test(error.message)
         ? "Este lugar no recibe reseñas por ahora."
-        : "No se pudo guardar tu reseña. Inténtalo de nuevo.";
+        : "No se pudo guardar tu reseña. Inténtalo de nuevo.");
     return { estado: "error", mensaje };
   }
   revalidatePath(r.data.ruta);
