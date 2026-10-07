@@ -41,6 +41,17 @@ export default async function PaginaCuenta({ searchParams }: PageProps<"/cuenta"
           </form>
         </div>
 
+        <Link
+          href="/mi-negocio"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-linea bg-papel-alto p-6 text-rio no-underline hover:border-linea-fuerte"
+        >
+          <span className="grid gap-1">
+            <b className="text-lg leading-6">Mi negocio</b>
+            <span className="text-sm leading-5 text-rio-suave">Fotos, horario, ubicación y respuestas a tus reseñas</span>
+          </span>
+          <span aria-hidden="true">→</span>
+        </Link>
+
         <section aria-labelledby="t-nombre" className="grid gap-4 rounded-xl border border-linea bg-papel-alto p-6">
           <h2 id="t-nombre" className={titulo}>
             Tu nombre

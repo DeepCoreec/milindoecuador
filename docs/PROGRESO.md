@@ -137,9 +137,9 @@
 
 ### Fase 9 · Mi negocio y moderación
 - [x] 9.1 Filtro automático de textos (palabras prohibidas editables por el admin, enlaces y teléfonos) en servidor y base — 2026-10-07: migración 0006 (`banned_words`, `normalizar_texto`, `motivo_no_permitido` y disparadores en lugares, reseñas, solicitudes y nombres; solo revisa los campos que cambian). Compara palabras enteras sin tildes, mayúsculas, números-letra ni letras repetidas; "m.i.e.r.d.a" no se detecta (para eso, reportes). Enlaces y teléfonos se bloquean en descripción, dato, reseñas y respuestas. Página `/admin/palabras` para agregar y quitar. Mensajes claros en todas las acciones (`src/lib/moderacion.ts`). La misma migración trae el registro de cambios, los reportes de lugares y el límite de 15 fotos (pasos 9.3, 9.6 y 9.7). 26 pruebas de reglas nuevas (88) y 3 unitarias (71)
-- [ ] 9.2 Página "Mi negocio": editar datos, horario, precio, sector, WhatsApp y ubicación (sale al instante)
-- [ ] 9.3 Fotos del dueño: hasta 15, ordenar y borrar
-- [ ] 9.4 El dueño responde las reseñas de su negocio
+- [x] 9.2 Página "Mi negocio": editar datos, horario, precio, sector, WhatsApp y ubicación (sale al instante) — 2026-10-07: `/mi-negocio` (lista) y `/mi-negocio/[id]` (solo su dueño; si no, 404). Mismo formulario del panel en modo dueño (sin categoría ni estado). Botón Publicar/Pausar con lista de lo que falta (descripción y 1 foto); una ficha oculta por el admin o por reportes no la puede volver a mostrar. Acciones en `src/acciones/dueno.ts`: Zod → sesión → dueño de ESE lugar → límite diario → admin.ts → la base revisa textos → se anota en `place_changes`. Enlace "Mi negocio" en /cuenta
+- [x] 9.3 Fotos del dueño: hasta 15, ordenar y borrar — 2026-10-07: el servidor da un permiso de subida firmado de un solo uso para un camino que elige él (el dueño no tiene permisos en el bucket); al registrar comprueba que el archivo existe y es de ese lugar. Máximo 15 en la base (0006) y 30 fotos nuevas por día
+- [x] 9.4 El dueño responde las reseñas de su negocio — 2026-10-07: respuesta debajo de cada reseña visible, pasa por el filtro (sin insultos, enlaces ni teléfonos), 50 por día. Prueba e2e nueva `dueno.spec.ts` (celular): otro usuario recibe 404, teléfono bloqueado, guardar, foto, publicar, se ve en la guía, respuesta con insulto bloqueada y respuesta normal publicada, cambios anotados
 - [ ] 9.5 Límites diarios por cuenta (cambios y fotos)
 - [ ] 9.6 Panel: "Cambios recientes" y ocultar ficha o foto con un clic
 - [ ] 9.7 "Reportar este lugar"; con 3 reportes se oculta sola
