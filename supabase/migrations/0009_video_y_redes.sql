@@ -72,7 +72,7 @@ $$;
 create table public.place_videos (
   place_id          uuid primary key references public.places (id) on delete cascade,
   storage_path      text not null unique check (storage_path ~ '^lugares/[0-9a-f-]{36}/[0-9a-f-]{36}\.(mp4|mov|webm)$'),
-  poster_path       text check (poster_path ~ '^lugares/[0-9a-f-]{36}/[0-9a-f-]{36}\.webp$'),
+  poster_path       text check (poster_path ~ '^lugares/[0-9a-f-]{36}/[0-9a-f-]{36}\.(webp|jpg)$'),
   duration_seconds  numeric(5, 1) not null check (duration_seconds > 0 and duration_seconds <= 90),
   size_bytes        integer not null check (size_bytes > 0 and size_bytes <= 52428800),
   hidden            boolean not null default false,
@@ -96,9 +96,9 @@ grant select (place_id, storage_path, poster_path, duration_seconds, hidden, cre
 -- Escribir: solo el servidor (service_role) después de comprobar dueño o admin. Ningún permiso para el navegador.
 
 -- Bucket: lectura pública (el reproductor usa la URL pública), 50 MB por archivo (máximo del plan gratis),
--- solo videos y la portada en WebP. Sin políticas de escritura: se sube con permiso firmado que da el servidor.
+-- solo videos y la portada (WebP; JPG en Safari, que no sabe guardar WebP). Sin políticas de escritura: se sube con permiso firmado que da el servidor.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('videos-lugares', 'videos-lugares', true, 52428800, array['video/mp4', 'video/quicktime', 'video/webm', 'image/webp']);
+values ('videos-lugares', 'videos-lugares', true, 52428800, array['video/mp4', 'video/quicktime', 'video/webm', 'image/webp', 'image/jpeg']);
 
 -- Registro de cambios: tipos nuevos para los videos
 alter table public.place_changes drop constraint place_changes_kind_check;

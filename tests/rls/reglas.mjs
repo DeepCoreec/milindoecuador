@@ -384,7 +384,7 @@ check("nadie borra un video desde el navegador", !!r.error || r.rows?.length ===
 r = await as("authenticated", A, `insert into storage.objects (bucket_id, name) values ('videos-lugares', 'x.mp4')`);
 check("nadie sube al bucket de videos sin el permiso firmado", !!r.error, r);
 r = await db.query(`select public, file_size_limit, allowed_mime_types from storage.buckets where id = 'videos-lugares'`);
-check("bucket de videos: público, 50 MB, solo videos y portada WebP", r.rows[0]?.public === true && Number(r.rows[0].file_size_limit) === 52428800 && r.rows[0].allowed_mime_types.length === 4, r.rows);
+check("bucket de videos: público, 50 MB, solo videos y portada", r.rows[0]?.public === true && Number(r.rows[0].file_size_limit) === 52428800 && r.rows[0].allowed_mime_types.length === 5, r.rows);
 
 await db.exec(`delete from public.place_reports; update public.places set status = 'publicado', is_verified = true where slug = 'lugar-1'`);
 const C2 = "00000000-0000-0000-0000-0000000000c2";

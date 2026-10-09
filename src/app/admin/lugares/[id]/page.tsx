@@ -2,11 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FormLugar, type DatosFormLugar } from "@/components/admin/FormLugar";
 import { FotosLugar } from "@/components/admin/FotosLugar";
+import { VideoNegocio } from "@/components/admin/VideoNegocio";
 import { PlanLugar } from "@/components/admin/PlanLugar";
 import { configSupabase } from "@/lib/supabase/config";
 import { ResenaAdmin } from "@/components/admin/ResenaAdmin";
 import { getFotosAdmin, getLugarAdmin, getResenasDeLugar, type FotoAdmin, type ResenaAdmin as DatosResena } from "@/lib/datos/admin";
 import { getCategorias } from "@/lib/datos/lugares";
+import { getVideoPrivado, type VideoLugar } from "@/lib/datos/video";
 import { destacadoVigente } from "@/lib/planes";
 import { leerHorario } from "@/lib/horario";
 import { textoUbicacion } from "@/lib/ubicacion";
@@ -23,6 +25,7 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
   let datos: DatosFormLugar;
   let enlace: string | null = null;
   let fotos: FotoAdmin[] = [];
+  let video: VideoLugar | null = null;
   let resenas: DatosResena[] = [];
   let plan = { vigente: false, destacadoHasta: null as string | null, verificado: false };
   if (id === "nuevo") {
@@ -53,7 +56,8 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
     };
     if (l.status === "publicado") enlace = `/guayaquil/${categoria}/${l.slug}`;
     plan = { vigente: destacadoVigente(l.is_featured, l.featured_until), destacadoHasta: l.featured_until, verificado: l.is_verified };
-    [fotos, resenas] = await Promise.all([getFotosAdmin(l.id, configSupabase()!.url), getResenasDeLugar(l.id)]);
+    // getLugarAdmin ya exigió admin (requireAdmin) antes de leer el video con admin.ts
+    [fotos, resenas, video] = await Promise.all([getFotosAdmin(l.id, configSupabase()!.url), getResenasDeLugar(l.id), getVideoPrivado(l.id)]);
   }
 
   return (
@@ -76,6 +80,7 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
       </div>
       <FormLugar lugar={datos} categorias={categorias} />
       {id !== "nuevo" && <FotosLugar lugar={id} fotos={fotos} />}
+      {id !== "nuevo" && <VideoNegocio lugar={id} video={video} modo="admin" />}
       {id !== "nuevo" && <PlanLugar lugar={id} {...plan} />}
       {id !== "nuevo" && (
         <section aria-labelledby="t-resenas" className="grid gap-4">

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FormLugar } from "@/components/admin/FormLugar";
 import { FotosLugar } from "@/components/admin/FotosLugar";
+import { VideoNegocio } from "@/components/admin/VideoNegocio";
 import { EstadoNegocio } from "@/components/dueno/EstadoNegocio";
 import { Estadisticas } from "@/components/dueno/Estadisticas";
 import { RespuestaDueno } from "@/components/dueno/RespuestaDueno";
@@ -9,6 +10,7 @@ import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
 import { Insignia } from "@/components/ui/Insignia";
 import { getEstadisticas, getMiNegocio, requireDueno } from "@/lib/datos/dueno";
+import { getVideoPrivado } from "@/lib/datos/video";
 import { fechaLarga } from "@/lib/enlaces";
 import { textoUbicacion } from "@/lib/ubicacion";
 import { DESCRIPCION_PENDIENTE } from "@/lib/validacion/dueno";
@@ -25,7 +27,8 @@ const titulo = "m-0 text-xl leading-[26px] font-semibold";
 export default async function PaginaMiNegocio({ params }: PageProps<"/mi-negocio/[id]">) {
   const { id } = await params;
   const usuario = await requireDueno(id, `/mi-negocio/${id}`);
-  const [n, numeros] = await Promise.all([getMiNegocio(usuario, id), getEstadisticas(usuario, id)]);
+  // getVideoPrivado lee con admin.ts: va después de requireDueno (ya comprobó que el negocio es de esta cuenta)
+  const [n, numeros, video] = await Promise.all([getMiNegocio(usuario, id), getEstadisticas(usuario, id), getVideoPrivado(id)]);
   const pendiente = n.descripcion.startsWith(DESCRIPCION_PENDIENTE);
 
   return (
@@ -74,6 +77,8 @@ export default async function PaginaMiNegocio({ params }: PageProps<"/mi-negocio
         </section>
 
         <FotosLugar lugar={n.id} fotos={n.fotos} modo="dueno" maximo={15} />
+
+        <VideoNegocio lugar={n.id} video={video} />
 
         <section aria-labelledby="t-resenas" className="grid gap-4">
           <h2 id="t-resenas" className={titulo}>

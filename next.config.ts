@@ -32,6 +32,8 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' blob: data: ${supabase.http}`,
   "font-src 'self'",
+  // Videos de los negocios (versión 3): el bucket de Supabase; blob: para revisar el video antes de subirlo
+  `media-src 'self' blob: ${supabase.http}`,
   `connect-src 'self' ${supabase.http} ${supabase.ws} https://challenges.cloudflare.com`,
   "frame-src https://challenges.cloudflare.com",
   "object-src 'none'",

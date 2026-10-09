@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
-import { crearLugar, crearUsuario, iniciarSesion, limpiar } from "./ayudas";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { admin, crearLugar, crearUsuario, iniciarSesion, limpiar } from "./ayudas";
+
+const archivo = (nombre: string) => readFileSync(join(__dirname, "archivos", nombre));
+const archivosEnCarpeta = async (lugar: string) => (await admin().storage.from("videos-lugares").list(`lugares/${lugar}`)).data?.map((o) => o.name) ?? [];
 
 test.afterAll(limpiar);
 
@@ -38,4 +43,47 @@ test("el dueño pone sus redes y su página web, y salen en la ficha", async ({ 
   await expect(redes.getByRole("link", { name: /Página web: milindo\.ec/ })).toHaveAttribute("rel", /nofollow/);
   await expect(redes.getByRole("link", { name: /YouTube/ })).toHaveCount(0);
   await visita.close();
+});
+
+test("el dueño sube, cambia y borra el video de su negocio", async ({ page, context, baseURL }, info) => {
+  test.skip(info.project.name !== "celular", "el dueño usa el celular");
+  const d = await crearUsuario("video");
+  const lugar = await crearLugar("restaurantes", { owner_id: d.id });
+  await iniciarSesion(context, d.correo, baseURL!);
+  await page.goto(`/mi-negocio/${lugar.id}`);
+  const seccion = page.getByRole("region", { name: "Video" });
+
+  // Lo que no es un video, o un video de más de 90 segundos, se rechaza ANTES de subir
+  await seccion.getByLabel("Elige tu video").setInputFiles({ name: "falso.mp4", mimeType: "video/mp4", buffer: Buffer.from("esto no es un video") });
+  await seccion.getByRole("button", { name: "Subir video" }).click();
+  await expect(seccion.getByText(/no puede abrir ese video/)).toBeVisible();
+  await seccion.getByLabel("Elige tu video").setInputFiles({ name: "largo.webm", mimeType: "video/webm", buffer: archivo("largo.webm") });
+  await seccion.getByRole("button", { name: "Subir video" }).click();
+  await expect(seccion.getByText(/dura 95 segundos/)).toBeVisible();
+  expect(await archivosEnCarpeta(lugar.id)).toEqual([]);
+
+  // Un video corto sube y sale al instante
+  await seccion.getByLabel("Elige tu video").setInputFiles({ name: "local.webm", mimeType: "video/webm", buffer: archivo("corto.webm") });
+  await seccion.getByRole("button", { name: "Subir video" }).click();
+  await expect(seccion.getByText("¡Listo! Tu video ya se ve en tu ficha.")).toBeVisible({ timeout: 30_000 });
+  await expect(seccion.locator("video")).toHaveAttribute("src", /videos-lugares\/lugares\/.+\.webm$/);
+  await expect(seccion.locator("video")).toHaveAttribute("poster", /\.(webp|jpg)$/);
+  const primero = await seccion.locator("video").getAttribute("src");
+  expect(await archivosEnCarpeta(lugar.id)).toHaveLength(2); // video + portada
+
+  // Cambiarlo reemplaza al anterior (y borra sus archivos)
+  await seccion.getByLabel("Cambiar por otro video").setInputFiles({ name: "otro.webm", mimeType: "video/webm", buffer: archivo("corto.webm") });
+  await seccion.getByRole("button", { name: "Subir y reemplazar" }).click();
+  await expect(seccion.getByText("¡Listo! Tu video ya se ve en tu ficha.")).toBeVisible({ timeout: 30_000 });
+  await expect(seccion.locator("video")).not.toHaveAttribute("src", primero!);
+  expect(await archivosEnCarpeta(lugar.id)).toHaveLength(2);
+  const { data: cambios } = await admin().from("place_changes").select("kind").eq("place_id", lugar.id).like("kind", "video-%");
+  expect(cambios?.filter((c) => c.kind === "video-nuevo")).toHaveLength(2);
+
+  // Borrarlo, en dos toques
+  await seccion.getByRole("button", { name: "Borrar video" }).click();
+  await seccion.getByRole("button", { name: "Sí, borrar el video" }).click();
+  await expect(seccion.getByText("Video borrado")).toBeVisible();
+  await expect(seccion.locator("video")).toHaveCount(0);
+  expect(await archivosEnCarpeta(lugar.id)).toEqual([]);
 });
