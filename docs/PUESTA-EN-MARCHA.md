@@ -120,14 +120,14 @@ después el código** (si se publica antes, la página falla).
 4. **Probar** en la página real: crear cuenta, registrar un negocio, aprobarlo, entrar a "Mi negocio", poner foto,
    ubicación y horario, publicar, reportar desde otra cuenta, "Cambios recientes" y "Palabras prohibidas" en el panel.
 
-## 9. Publicar las fases 11 y 12 de la versión 3 (video, redes, enlace corto de Maps y buscador)
+## 9. Publicar las fases 11 a 13 de la versión 3 (video, redes, enlace corto de Maps, buscador y seguridad)
 
 El código está en la rama `v3-video`. Lee columnas y tablas nuevas: **primero la base y después el código**.
 
 1. **Base de datos** — Supabase → SQL Editor → **+** (consulta nueva) → pega todo
    `supabase/migrations/0009_video_y_redes.sql` → **Run**. Avisará "destructive operation" (cambia una regla de los
    reportes): es normal, toca **Run query**. Debe decir "Success".
-   Después, otra consulta nueva con todo `supabase/migrations/0010_buscador.sql` → **Run** → "Success".
+   Después, una consulta nueva para cada uno, en orden: `0010_buscador.sql` y `0011_limite_eventos.sql` → **Run** → "Success".
 2. **Comprobar** (otra consulta nueva, pega y Run). Debe salir una fila con `videos-lugares | true | 52428800`:
    ```sql
    select id, public, file_size_limit from storage.buckets where id = 'videos-lugares';

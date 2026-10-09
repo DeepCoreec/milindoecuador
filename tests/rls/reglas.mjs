@@ -441,6 +441,22 @@ check("una búsqueda vacía no devuelve todo", r?.length === 0, r);
 r = await buscar("lugar", "authenticated");
 check("con sesión tampoco aparecen borradores", !r?.includes("Lugar Siete del Malecón"), r);
 
+console.log("\nLímite del contador de visitas (0011)");
+const H = "a".repeat(64);
+r = await as("anon", "", `select public.registrar_evento($1, $2, 'views')`, [H, P["lugar-1"]]);
+check("el navegador no puede registrar eventos", !!r.error, r);
+await db.exec(`delete from public.place_stats; delete from public.event_limits`);
+let contados = 0;
+for (let i = 0; i < 25; i++) if ((await as("service_role", "", `select public.registrar_evento($1, $2, 'whatsapp') as ok`, [H, P["lugar-1"]])).rows?.[0]?.ok) contados++;
+r = await db.query(`select whatsapp from public.place_stats where place_id = $1`, [P["lugar-1"]]);
+check("una misma huella cuenta como máximo 20 veces al día el mismo evento", contados === 20 && r.rows[0]?.whatsapp === 20, { contados, filas: r.rows });
+r = await as("service_role", "", `select public.registrar_evento($1, $2, 'whatsapp') as ok`, ["b".repeat(64), P["lugar-1"]]);
+check("otra huella sí cuenta", r.rows?.[0]?.ok === true, r);
+r = await as("service_role", "", `select public.registrar_evento('1.2.3.4', $1, 'views')`, [P["lugar-1"]]);
+check("no acepta una IP en lugar de la huella cifrada", !!r.error, r);
+r = await as("authenticated", A, `select * from public.event_limits`);
+check("las huellas no se leen desde el navegador", !!r.error, r);
+
 console.log("\nDatos iniciales (supabase/seed.sql)");
 const seed = readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8");
 await db.exec(seed);

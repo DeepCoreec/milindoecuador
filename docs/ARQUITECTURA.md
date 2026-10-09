@@ -221,7 +221,7 @@ lanzamiento se repasa entera** (además de la skill `shipping-and-launch`) y se 
 | 8 | Bloquear manipulación de campos | Permisos por columna: nadie cambia rol, dueño, verificado, destacado ni la marca de revisión de video | ✅ |
 | 9 | Proteger las cookies de sesión | `HttpOnly` (ningún script las lee), `SameSite=Lax` y `Secure` en producción (`src/lib/supabase/cookies.ts`); el navegador no usa la sesión: las subidas van con permiso firmado | ✅ (13.3) |
 | 10 | Hashear contraseñas | Supabase Auth con bcrypt | ✅ |
-| 11 | Rate limiting | Límites diarios en la base (reseñas, reportes, dueños, fotos, videos, solicitudes) y Supabase Auth; falta `/api/evento` (13.4) | 🟡 13.4 |
+| 11 | Rate limiting | Límites diarios en la base (reseñas, reportes, dueños, fotos, videos, solicitudes), Supabase Auth y `/api/evento` (huella cifrada por día, 0011) | ✅ (13.4) |
 | 12 | Protección contra bots | Turnstile al crear cuenta, entrar, reseñar y registrar negocio | ✅ |
 | 13 | Parametrizar queries | Nunca SQL armado con texto (regla de CLAUDE.md §4) | ✅ |
 | 14 | Validar inputs | Zod en el servidor en cada acción, más reglas en la base | ✅ |
