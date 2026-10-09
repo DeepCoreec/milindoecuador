@@ -87,7 +87,7 @@ export function VideoNegocio({ lugar, video, modo = "dueno" }: { lugar: string; 
           {video.oculto && (
             <p role="status" className="m-0 rounded-md bg-mango-suave px-4 py-3 text-sm leading-5">
               <b>Tu video está oculto.</b>{" "}
-              {modo === "admin" ? "Lo ocultaron los reportes o el panel." : "Lo ocultamos para revisarlo. Escríbenos por WhatsApp o sube otro video."}
+              {modo === "admin" ? "Lo ocultaron los reportes o el panel." : "Lo estamos revisando. Si subes otro, también quedará en revisión hasta que lo veamos. Si tienes dudas, escríbenos por WhatsApp."}
             </p>
           )}
           {modo === "admin" && video.reportes > 0 && (

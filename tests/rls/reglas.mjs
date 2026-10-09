@@ -348,6 +348,8 @@ for (const [campo, valor, nombre] of [
   ["website", "javascript:alert(1)", "un enlace que no es web"],
   ["tiktok", "https://user@tiktok.com/x", "un enlace con usuario escondido"],
   ["website", "https://ejemplo.com:8080/", "un enlace con puerto"],
+  ["facebook", "https://evil.com?.facebook.com", "un dominio falso escondido tras ?"],
+  ["facebook", "https://evil.com#.facebook.com", "un dominio falso escondido tras #"],
 ]) {
   r = await as("authenticated", ADM, `update public.places set ${campo} = $2 where id = $1`, [P["lugar-1"], valor]);
   check(`la base rechaza ${nombre}`, !!r.error, r);
@@ -404,6 +406,10 @@ r = await as("anon", "", `select place_id from public.place_videos`);
 check("el video oculto ya no se ve en público", r.rows?.length === 0, r);
 r = await db.query(`select count(*)::int n from public.place_changes where place_id = $1 and kind = 'video-oculto-por-reportes'`, [P["lugar-1"]]);
 check("y queda anotado para el admin", r.rows[0].n === 1, r.rows);
+r = await db.query(`select video_review from public.places where id = $1`, [P["lugar-1"]]);
+check("el próximo video de ese lugar quedará en revisión", r.rows[0].video_review === true, r.rows);
+r = await as("anon", "", `select video_review from public.places where id = $1`, [P["lugar-1"]]);
+check("la marca de revisión no se lee en público", !!r.error, r);
 r = await as("authenticated", ADM, `select place_id, hidden from public.place_videos`);
 check("el admin ve también los ocultos", r.rows?.length === 2, r);
 for (const t of ["video", "video"]) await as("service_role", "", `select public.contar_evento($1, $2)`, [P["lugar-2"], t]);

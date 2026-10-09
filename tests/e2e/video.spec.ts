@@ -102,7 +102,8 @@ test("el dueño sube, cambia y borra el video de su negocio", async ({ page, con
 
 test("3 reportes ocultan solo el video; el admin lo revisa en «Videos»", async ({ page, context, baseURL, browser }, info) => {
   test.skip(info.project.name !== "escritorio", "el admin usa la computadora");
-  const lugar = await crearLugar("restaurantes");
+  const dueno = await crearUsuario("dueno-reportado");
+  const lugar = await crearLugar("restaurantes", { owner_id: dueno.id });
   // Video subido como lo haría el servidor
   const db = admin();
   const camino = `lugares/${lugar.id}/${crypto.randomUUID()}.webm`;
@@ -128,6 +129,20 @@ test("3 reportes ocultan solo el video; el admin lo revisa en «Videos»", async
   const visita = await browser.newPage();
   await visita.goto(new URL(lugar.ruta, baseURL).toString());
   await expect(visita.getByRole("heading", { name: "La historia" })).toBeVisible();
+  await expect(visita.getByRole("region", { name: "Video" })).toHaveCount(0);
+
+  // Si el dueño sube otro video, queda en revisión (volver a subirlo no sirve para saltarse los reportes)
+  const ctxDueno = await browser.newContext();
+  await iniciarSesion(ctxDueno, dueno.correo, baseURL!);
+  const pd = await ctxDueno.newPage();
+  await pd.goto(new URL(`/mi-negocio/${lugar.id}`, baseURL).toString());
+  const sec = pd.getByRole("region", { name: "Video" });
+  await expect(sec.getByText("Tu video está oculto.")).toBeVisible();
+  await sec.getByLabel("Cambiar por otro video").setInputFiles({ name: "otra-vez.webm", mimeType: "video/webm", buffer: archivo("corto.webm") });
+  await sec.getByRole("button", { name: "Subir y reemplazar" }).click();
+  await expect(sec.getByText(/Quedó en revisión/)).toBeVisible({ timeout: 30_000 });
+  await ctxDueno.close();
+  await visita.reload();
   await expect(visita.getByRole("region", { name: "Video" })).toHaveCount(0);
 
   // El admin lo ve en «Videos» con sus reportes; lo muestra otra vez y luego lo borra

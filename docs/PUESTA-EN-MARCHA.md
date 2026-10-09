@@ -119,3 +119,20 @@ después el código** (si se publica antes, la página falla).
 3. **Código** — Claude une la rama `v2` a `main` y la sube (`git merge v2 && git push`); Vercel publica solo.
 4. **Probar** en la página real: crear cuenta, registrar un negocio, aprobarlo, entrar a "Mi negocio", poner foto,
    ubicación y horario, publicar, reportar desde otra cuenta, "Cambios recientes" y "Palabras prohibidas" en el panel.
+
+## 9. Publicar la fase 11 de la versión 3 (video y redes del negocio)
+
+El código está en la rama `v3-video`. Lee columnas y tablas nuevas: **primero la base y después el código**.
+
+1. **Base de datos** — Supabase → SQL Editor → **+** (consulta nueva) → pega todo
+   `supabase/migrations/0009_video_y_redes.sql` → **Run**. Avisará "destructive operation" (cambia una regla de los
+   reportes): es normal, toca **Run query**. Debe decir "Success".
+2. **Comprobar** (otra consulta nueva, pega y Run). Debe salir una fila con `videos-lugares | true | 52428800`:
+   ```sql
+   select id, public, file_size_limit from storage.buckets where id = 'videos-lugares';
+   ```
+3. **Código** — Claude une la rama `v3-video` a `main` y la sube; Vercel publica solo.
+4. **Probar** en la página real, desde el celular: en "Mi negocio" poner Instagram con `@usuario`, subir un video
+   corto y verlo en la ficha; desde otra cuenta, "Reportar este video"; en el panel, "Videos".
+5. **Espacio:** el plan gratis de Supabase trae 1 GB para archivos (≈ 30 videos). Mirar el uso en Supabase →
+   Settings → Usage → Storage. Cuando se acerque, pasar a Supabase Pro (ver precios ese día).

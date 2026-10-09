@@ -7,6 +7,8 @@ import { z } from "zod";
 
 export const VIDEO_MAX_BYTES = 50 * 1024 * 1024;
 export const VIDEO_MAX_SEGUNDOS = 90;
+/** La portada (un cuadro del video, máximo 1280 px) pesa mucho menos; más que esto no es una portada. */
+export const PORTADA_MAX_BYTES = 1024 * 1024;
 export const TIPOS_VIDEO = { "video/mp4": "mp4", "video/quicktime": "mov", "video/webm": "webm" } as const;
 export type TipoVideo = keyof typeof TIPOS_VIDEO;
 

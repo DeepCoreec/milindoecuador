@@ -11,6 +11,7 @@ import {
   esquemaPedirVideo,
   esquemaRegistrarVideo,
   TIPOS_VIDEO,
+  PORTADA_MAX_BYTES,
   VIDEO_MAX_BYTES,
   VIDEOS_POR_DIA,
 } from "@/lib/validacion/video";
@@ -79,6 +80,10 @@ export async function pedirSubidaVideo(pedido: {
     });
     if (!anotado) return { error: `Llegaste al límite de ${VIDEOS_POR_DIA} videos por hoy. Vuelve mañana.` };
   }
+  // Subidas que quedaron a medias (permiso pedido pero nunca registrado): se borran antes de dar otro permiso,
+  // así en la carpeta nunca hay más que el video publicado y, como mucho, un intento pendiente.
+  const { data: actual } = await db.from("place_videos").select("storage_path, poster_path").eq("place_id", a.lugar).maybeSingle();
+  await limpiarCarpeta(a.lugar, actual ? [actual.storage_path as string, (actual.poster_path as string | null) ?? ""] : []);
   const video = `${carpetaVideo(a.lugar)}/${crypto.randomUUID()}.${TIPOS_VIDEO[r.data.tipo]}`;
   const portada = `${carpetaVideo(a.lugar)}/${crypto.randomUUID()}.${r.data.portada}`;
   const bucket = db.storage.from(BUCKET);
@@ -90,7 +95,9 @@ export async function pedirSubidaVideo(pedido: {
 /**
  * Paso 2: registra el video ya subido. Comprueba en el bucket que los dos archivos existen, que son de ESTE
  * lugar y que el video no pasa de 50 MB (el tamaño lo mide el bucket, no el navegador).
- * Reemplaza al anterior: borra sus archivos y cierra los reportes que tenía (eran del video viejo).
+ * Reemplaza al anterior y borra sus archivos. Los reportes NO se cierran (los cierra el admin).
+ * Si el video anterior se ocultó (reportes o admin), el nuevo sale oculto hasta que el admin lo revise
+ * (`places.video_review`, migración 0009): volver a subir el mismo video no sirve para saltarse la revisión.
  */
 export async function registrarVideo(_previo: EstadoVideo, datos: FormData): Promise<EstadoVideo> {
   const r = esquemaRegistrarVideo.safeParse({
@@ -111,12 +118,20 @@ export async function registrarVideo(_previo: EstadoVideo, datos: FormData): Pro
   const portada = buscar(r.data.portada);
   const tamano = Number(video?.metadata?.size ?? 0);
   const tipo = String(video?.metadata?.mimetype ?? "");
+  const tipoPortada = String(portada?.metadata?.mimetype ?? "");
   if (!video || !portada || !tamano) return { estado: "error", mensaje: "No encontramos el video subido. Vuelve a intentarlo." };
-  if (tamano > VIDEO_MAX_BYTES || !(tipo in TIPOS_VIDEO)) {
+  if (
+    tamano > VIDEO_MAX_BYTES ||
+    !Object.hasOwn(TIPOS_VIDEO, tipo) ||
+    !["image/webp", "image/jpeg"].includes(tipoPortada) ||
+    Number(portada.metadata?.size ?? Infinity) > PORTADA_MAX_BYTES
+  ) {
     await db.storage.from(BUCKET).remove([r.data.video, r.data.portada]);
     return { estado: "error", mensaje: "El video no cumple las reglas (MP4, MOV o WebM, hasta 50 MB)." };
   }
 
+  const { data: lugar } = await db.from("places").select("video_review").eq("id", a.lugar).single();
+  const enRevision = !a.esAdmin && lugar?.video_review === true;
   const { error } = await db.from("place_videos").upsert(
     {
       place_id: a.lugar,
@@ -124,7 +139,7 @@ export async function registrarVideo(_previo: EstadoVideo, datos: FormData): Pro
       poster_path: r.data.portada,
       duration_seconds: r.data.duracion,
       size_bytes: tamano,
-      hidden: false,
+      hidden: enRevision,
     },
     { onConflict: "place_id" },
   );
@@ -134,13 +149,26 @@ export async function registrarVideo(_previo: EstadoVideo, datos: FormData): Pro
   }
   await Promise.all([
     limpiarCarpeta(a.lugar, [r.data.video, r.data.portada]),
-    db.from("place_reports").update({ resolved: true }).eq("place_id", a.lugar).eq("target", "video").eq("resolved", false),
+    // Si lo sube el admin, queda revisado
+    a.esAdmin ? db.from("places").update({ video_review: false }).eq("id", a.lugar) : null,
     a.esAdmin
       ? null
-      : db.from("place_changes").insert({ place_id: a.lugar, user_id: a.usuario, kind: "video-nuevo", detail: `Subió un video de ${Math.round(r.data.duracion)} s` }),
+      : db.from("place_changes").insert({
+          place_id: a.lugar,
+          user_id: a.usuario,
+          kind: "video-nuevo",
+          detail: `Subió un video de ${Math.round(r.data.duracion)} s${enRevision ? " (en revisión: el anterior se había ocultado)" : ""}`,
+        }),
   ]);
   revalidatePath("/", "layout");
-  return { estado: "ok", mensaje: a.esAdmin ? "Video guardado" : "¡Listo! Tu video ya se ve en tu ficha." };
+  return {
+    estado: "ok",
+    mensaje: a.esAdmin
+      ? "Video guardado"
+      : enRevision
+        ? "Video subido. Quedó en revisión porque el anterior se ocultó: lo veremos pronto."
+        : "¡Listo! Tu video ya se ve en tu ficha.",
+  };
 }
 
 /** Borra el video del negocio (fila y archivos). */
@@ -175,8 +203,11 @@ export async function decidirVideo(_previo: EstadoVideo, datos: FormData): Promi
     if (error) return { estado: "error", mensaje: "No se pudo borrar" };
     await limpiarCarpeta(r.data.lugar);
   } else {
-    const { data, error } = await db.from("place_videos").update({ hidden: r.data.decision === "ocultar" }).eq("place_id", r.data.lugar).select("place_id");
+    const ocultar = r.data.decision === "ocultar";
+    const { data, error } = await db.from("place_videos").update({ hidden: ocultar }).eq("place_id", r.data.lugar).select("place_id");
     if (error || !data?.length) return { estado: "error", mensaje: "El video ya no existe" };
+    // Ocultar: el próximo video del lugar también espera revisión. Mostrar: revisado.
+    await db.from("places").update({ video_review: ocultar }).eq("id", r.data.lugar);
   }
   if (r.data.decision !== "ocultar")
     await db.from("place_reports").update({ resolved: true }).eq("place_id", r.data.lugar).eq("target", "video").eq("resolved", false);

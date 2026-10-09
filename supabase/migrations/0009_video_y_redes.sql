@@ -19,7 +19,7 @@ set search_path = ''
 as $$
   select enlace is null or (
     char_length(enlace) <= 300
-    and enlace ~ '^https://[^/@:\s]+(/[^\s]*)?$'
+    and enlace ~ '^https://[^/@:?#\\\s]+(/[^\s]*)?$'
     and (
       dominios is null
       or exists (
@@ -95,6 +95,11 @@ grant select (place_id, storage_path, poster_path, duration_seconds, hidden, cre
   on public.place_videos to anon, authenticated;
 -- Escribir: solo el servidor (service_role) después de comprobar dueño o admin. Ningún permiso para el navegador.
 
+-- Si un video se ocultó (por reportes o por el admin), el SIGUIENTE video de ese lugar también sale oculto
+-- hasta que el admin lo revise: así no basta con volver a subir (o borrar y subir) el mismo video.
+-- Solo lo lee y lo cambia el servidor (no se da permiso de columna al navegador).
+alter table public.places add column video_review boolean not null default false;
+
 -- Bucket: lectura pública (el reproductor usa la URL pública), 50 MB por archivo (máximo del plan gratis),
 -- solo videos y la portada (WebP; JPG en Safari, que no sabe guardar WebP). Sin políticas de escritura: se sube con permiso firmado que da el servidor.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -144,6 +149,7 @@ begin
     -- Solo el video (aunque la ficha esté verificada: lo que se reporta es el contenido)
     update public.place_videos set hidden = true where place_id = new.place_id and not hidden;
     if found then
+      update public.places set video_review = true where id = new.place_id;
       insert into public.place_changes (place_id, kind, detail)
       values (new.place_id, 'video-oculto-por-reportes', 'El video se ocultó solo al llegar a 3 reportes');
     end if;
