@@ -211,10 +211,10 @@ export async function cambiarEstadoMiNegocio(_previo: EstadoDueno, datos: FormDa
 
 /**
  * Fotos, paso 1: el servidor comprueba todo y da un permiso de subida de un solo uso para un camino
- * que elige él (lugares/<lugar>/<al azar>.webp). Así el dueño no necesita permisos en el bucket.
+ * que elige él (lugares/<lugar>/<al azar>.webp, o .jpg desde Safari). Así el dueño no necesita permisos en el bucket.
  */
-export async function pedirSubidaFoto(lugarId: string): Promise<{ camino: string; token: string } | { error: string }> {
-  const r = esquemaSubidaDueno.safeParse({ lugar: lugarId });
+export async function pedirSubidaFoto(lugarId: string, formato: "webp" | "jpg" = "webp"): Promise<{ camino: string; token: string } | { error: string }> {
+  const r = esquemaSubidaDueno.safeParse({ lugar: lugarId, formato });
   if (!r.success) return { error: "Datos inválidos" };
   const m = await miLugar(r.data.lugar);
   if ("error" in m) return m;
@@ -227,7 +227,7 @@ export async function pedirSubidaFoto(lugarId: string): Promise<{ camino: string
   // Cada permiso cuenta (aunque la foto no se registre): así nadie sube archivos sin fin. No sale en "Cambios recientes".
   if (!(await reservar(m.usuario.id, m.lugar.id, "foto-permiso", ["foto-permiso"], LIMITES.permisosFoto, "Pidió subir una foto", true)))
     return { error: "Llegaste al límite de fotos por hoy. Vuelve mañana." };
-  const camino = `lugares/${m.lugar.id}/${crypto.randomUUID()}.webp`;
+  const camino = `lugares/${m.lugar.id}/${crypto.randomUUID()}.${r.data.formato}`;
   const { data, error } = await db.storage.from("fotos-lugares").createSignedUploadUrl(camino);
   if (error || !data) return { error: "No se pudo preparar la subida. Inténtalo de nuevo." };
   return { camino, token: data.token };
@@ -256,7 +256,7 @@ export async function registrarFotoDueno(_previo: EstadoDueno, datos: FormData):
       estado: "error",
       mensaje: "No encontramos la foto subida. Vuelve a intentarlo.",
     };
-  if (!(await firmaValida(urlPublicaFoto(exigirConfigSupabase().url, r.data.camino), ["webp"]))) {
+  if (!(await firmaValida(urlPublicaFoto(exigirConfigSupabase().url, r.data.camino), ["webp", "jpeg"]))) {
     await db.storage.from("fotos-lugares").remove([r.data.camino]);
     return { estado: "error", mensaje: "Ese archivo no es una foto válida. Vuelve a elegirla." };
   }

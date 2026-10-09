@@ -7,7 +7,7 @@ import { borrarFotoDueno, moverFotoDueno, pedirSubidaFoto, registrarFotoDueno } 
 import { clasesBoton } from "@/components/ui/Boton";
 import { claseAyuda, claseEntrada, claseEtiqueta } from "@/components/ui/clasesFormulario";
 import type { FotoAdmin } from "@/lib/datos/admin";
-import { aWebp } from "@/lib/imagen";
+import { prepararFoto } from "@/lib/imagen";
 import { crearClienteSubidas } from "@/lib/supabase/client";
 
 const inicial: EstadoAdmin = { estado: "inicio" };
@@ -54,11 +54,11 @@ export function FotosLugar({ lugar, fotos, modo = "admin", maximo }: { lugar: st
     setSubiendo(true);
     setAviso(null);
     try {
-      const webp = await aWebp(archivo);
-      const permiso = await acciones.pedir(lugar);
+      const { foto, formato } = await prepararFoto(archivo);
+      const permiso = await acciones.pedir(lugar, formato);
       if ("error" in permiso) throw new Error(permiso.error);
       const camino = permiso.camino;
-      const { error } = await crearClienteSubidas().storage.from("fotos-lugares").uploadToSignedUrl(camino, permiso.token, webp, { contentType: "image/webp" });
+      const { error } = await crearClienteSubidas().storage.from("fotos-lugares").uploadToSignedUrl(camino, permiso.token, foto, { contentType: foto.type });
       if (error) throw new Error("No se pudo subir la foto. Revisa tu conexión e inténtalo de nuevo.");
       const datos = new FormData();
       datos.set("lugar", lugar);
@@ -163,7 +163,7 @@ export function FotosLugar({ lugar, fotos, modo = "admin", maximo }: { lugar: st
             <input id="f-alt" name="alt" maxLength={160} placeholder="Ej.: Plato de encebollado con chifles" className={claseEntrada} />
           </div>
         </div>
-        <p className={`m-0 ${claseAyuda}`}>Se convierte a WebP y se le quitan los datos de ubicación antes de subirla.</p>
+        <p className={`m-0 ${claseAyuda}`}>Se achica y se le quitan los datos de ubicación antes de subirla.</p>
         {resultado && resultado.texto && (
           <p
             role={resultado.tipo === "error" ? "alert" : "status"}

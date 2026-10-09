@@ -213,7 +213,7 @@
 
 - ~~Búsqueda en la base~~ → pasó a la versión 3 (12.2)
 - Videos: tarea programada que borre del bucket los archivos sin registrar con más de unas horas; medir la duración del video en el servidor (necesita una herramienta extra)
-- **Revisar con un iPhone real:** las fotos se convierten a WebP en el navegador; si Safari no sabe guardar WebP, subir fotos desde iPhone fallaría (el video ya usa JPG como respaldo para su portada). Probarlo y, si falla, aceptar JPG también en las fotos
+- ~~iPhone y WebP~~ → arreglado el 2026-10-09: si el navegador no guarda WebP (Safari), la foto se guarda en JPG (sin EXIF igual); prueba e2e que simula Safari. Falta confirmarlo con un iPhone real
 - Revisar en 5.4: `profiles.role` se puede leer en público (deja ver quién es admin); valorar una vista pública solo con `display_name`
 - **Grupos para salir juntos** (pedido del usuario, 2026-10-05): crear un grupo para ir a hacer algo en Guayaquil. Requiere reglas de seguridad: solo mayores de 18, puntos de encuentro públicos, reportar y bloquear
 - **Armar un plan**: elegir lugar, fecha y hora y compartir un enlace con tarjeta por WhatsApp con amigos (primer paso hacia los grupos)

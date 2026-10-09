@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { admin, crearLugar, crearUsuario, iniciarSesion, limpiar, marca } from "./ayudas";
+import { admin, crearLugar, crearUsuario, iniciarSesion, limpiar, marca, pngDePrueba } from "./ayudas";
 
 const archivo = (nombre: string) => readFileSync(join(__dirname, "archivos", nombre));
 const archivosEnCarpeta = async (lugar: string) => (await admin().storage.from("videos-lugares").list(`lugares/${lugar}`)).data?.map((o) => o.name) ?? [];
@@ -247,4 +247,25 @@ test("las sesiones de antes (cookies sin httpOnly) se pasan solas a httpOnly", a
   expect(sesion.every((c) => c.httpOnly)).toBe(true);
   await page.reload();
   await expect(page.getByRole("heading", { name: "Mi cuenta", exact: true, level: 1 })).toBeVisible(); // la sesión sigue funcionando
+});
+
+test("subir fotos desde un navegador que no guarda WebP (como Safari): se guardan en JPG", async ({ page, context, baseURL }, info) => {
+  test.skip(info.project.name !== "celular", "el dueño usa el celular");
+  // Simula Safari: pedir WebP al lienzo devuelve PNG
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.toBlob;
+    HTMLCanvasElement.prototype.toBlob = function (cb, tipo, calidad) {
+      return original.call(this, cb, tipo === "image/webp" ? "image/png" : tipo, calidad);
+    };
+  });
+  const d = await crearUsuario("safari");
+  const lugar = await crearLugar("restaurantes", { owner_id: d.id });
+  await iniciarSesion(context, d.correo, baseURL!);
+  await page.goto(`/mi-negocio/${lugar.id}`);
+  await page.getByLabel("Foto", { exact: true }).setInputFiles({ name: "plato.png", mimeType: "image/png", buffer: pngDePrueba() });
+  await page.getByLabel("¿Qué se ve en la foto?").fill("Plato del día");
+  await page.getByRole("button", { name: "Subir foto" }).click();
+  await expect(page.getByText("Foto agregada")).toBeVisible();
+  const { data } = await admin().from("place_photos").select("storage_path").eq("place_id", lugar.id);
+  expect(data?.[0]?.storage_path).toMatch(/\.jpg$/);
 });

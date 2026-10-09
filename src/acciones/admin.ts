@@ -273,7 +273,7 @@ export async function registrarFoto(_previo: EstadoAdmin, datos: FormData): Prom
   if (!r.data.camino.startsWith(`lugares/${r.data.lugar}/`)) return { estado: "error", mensaje: "La foto no es de este lugar" };
   await requireAdmin();
   const db = await crearClienteServidor();
-  if (!(await firmaValida(urlPublicaFoto(exigirConfigSupabase().url, r.data.camino), ["webp"]))) {
+  if (!(await firmaValida(urlPublicaFoto(exigirConfigSupabase().url, r.data.camino), ["webp", "jpeg"]))) {
     await crearClienteAdmin().storage.from("fotos-lugares").remove([r.data.camino]);
     return { estado: "error", mensaje: "Ese archivo no es una foto válida. Vuelve a elegirla." };
   }
@@ -305,11 +305,11 @@ export async function registrarFoto(_previo: EstadoAdmin, datos: FormData): Prom
  * Fotos del panel, paso 1 (versión 3, paso 13.3): igual que el dueño, el servidor da un permiso de subida firmado
  * de un solo uso para un camino que elige él. Así el navegador del admin ya no necesita su sesión para subir.
  */
-export async function pedirSubidaFotoAdmin(lugar: string): Promise<{ camino: string; token: string } | { error: string }> {
+export async function pedirSubidaFotoAdmin(lugar: string, formato: "webp" | "jpg" = "webp"): Promise<{ camino: string; token: string } | { error: string }> {
   const r = esquemaLugarAdmin.safeParse({ lugar });
-  if (!r.success) return { error: "Datos inválidos" };
+  if (!r.success || (formato !== "webp" && formato !== "jpg")) return { error: "Datos inválidos" };
   await requireAdmin();
-  const camino = `lugares/${r.data.lugar}/${crypto.randomUUID()}.webp`;
+  const camino = `lugares/${r.data.lugar}/${crypto.randomUUID()}.${formato}`;
   const { data, error } = await crearClienteAdmin().storage.from("fotos-lugares").createSignedUploadUrl(camino);
   if (error || !data) return { error: "No se pudo preparar la subida. Inténtalo de nuevo." };
   return { camino, token: data.token };

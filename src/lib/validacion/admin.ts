@@ -103,7 +103,7 @@ export const esquemaLugar = z.object({
 
 export const esquemaFoto = z.object({
   lugar: z.uuid(),
-  camino: z.string().regex(/^lugares\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.webp$/, "Camino de foto inválido"),
+  camino: z.string().regex(/^lugares\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(webp|jpg)$/, "Camino de foto inválido"),
   alt: texto(3, 160, "Descripción de la foto"),
 });
 export const esquemaIdFoto = z.object({ foto: z.uuid() });

@@ -13,6 +13,6 @@ export const esquemaNegocio = esquemaLugar
   .extend({ lugar: z.uuid() });
 
 export const esquemaEstadoDueno = z.object({ lugar: z.uuid(), estado: z.enum(["borrador", "publicado"]) });
-export const esquemaSubidaDueno = z.object({ lugar: z.uuid() });
+export const esquemaSubidaDueno = z.object({ lugar: z.uuid(), formato: z.enum(["webp", "jpg"]) });
 export const esquemaFotoDueno = esquemaFoto;
 export const esquemaRespuestaDueno = esquemaRespuesta;
