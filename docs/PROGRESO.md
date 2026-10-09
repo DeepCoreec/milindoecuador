@@ -5,12 +5,14 @@
 
 ## Estado actual
 
-> **Mapa rápido:** Versión 1 = construida y publicada (faltan sus puertas). Versión 2 = en marcha, fase 6.
-> Plan v1: `docs/PLAN.md` · Plan v2: `docs/PLAN-V2.md` · Puesta en marcha de cuentas: `docs/PUESTA-EN-MARCHA.md`
+> **Mapa rápido:** Versión 1 = construida y publicada (faltan sus puertas). Versión 2 = publicada (faltan sus puertas con la página real).
+> Versión 3 = planeada el 2026-10-09 (fases 11 a 16), sin empezar.
+> Plan v1: `docs/PLAN.md` · Plan v2: `docs/PLAN-V2.md` · Plan v3: `docs/PLAN-V3.md` · Puesta en marcha de cuentas: `docs/PUESTA-EN-MARCHA.md`
 
 - **Fase actual (2026-10-08):** versión 2 PUBLICADA y "Entrar con Google" funcionando (6.6). El usuario ejecutó 0004→0008 en el Supabase real (comprobado con consultas: dueño, columnas, tablas, funciones y permisos correctos) y la rama `v2` se unió a `main`. **Siguiente paso:** (usuario) ajustes de Auth de PUESTA-EN-MARCHA §8.2 (Confirm email, largo mínimo 8, Secure password change); probar en la página real §8.4; luego dominio + Resend (6.3–6.6) para que otras personas puedan crear cuenta, y cerrar las puertas 6 a 10 con la página real
-- **Último paso terminado:** ver el último `[x]` de la sección "Versión 2"
-- **Siguiente paso:** el primer `[ ]` de la sección "Versión 2" que no diga "(usuario)". Los pasos "(usuario)" son clics en cuentas del usuario (Claude no tiene acceso a ellas): se le guía paso a paso
+- **2026-10-09:** se planeó la versión 3 con el usuario (`docs/PLAN-V3.md`). **Siguiente paso de código: 11.1**, pero **solo cuando el usuario diga que empecemos** (pidió no construir todavía)
+- **Último paso terminado:** ver el último `[x]` de las secciones "Versión 2" y "Versión 3"
+- **Siguiente paso:** el primer `[ ]` de la sección "Versión 3" que no diga "(usuario)". Los pasos "(usuario)" son clics en cuentas del usuario (Claude no tiene acceso a ellas): se le guía paso a paso. Los pasos "(usuario)" pendientes de la versión 2 siguen abiertos
 - **Página real:** https://milindoecuador.vercel.app · Supabase `rlwcvrkyojcqgjigoyan` (São Paulo) · Turnstile "Mi Lindo Ecuador" · admin: deepcoreec@gmail.com
 - **Lo que falta de la versión 1 (puertas, dependen del usuario):** 2.8 fotos y 20 lugares · 3.5 cinco personas (necesita la fase 6) · 4 publicar la Barbería Adaria de prueba (cierra la puerta 4) · 5.2 datos legales · 5.5 dominio (= paso 6.3) · 5.6 secretos de copias · 1.2 ajustes de GitHub · repetir `npm test` de reglas, e2e y Lighthouse contra la base real
 - **Modo de trabajo (2026-10-05):** el usuario autorizó avanzar paso a paso según el plan sin pedir permiso entre pasos. Se sigue respetando: nada fuera del plan, nada de librerías nuevas sin permiso y verificar y guardar cada paso
@@ -155,18 +157,61 @@
 - [x] 10.3 Favoritos — 2026-10-07: tabla `favorites` (cada uno ve, agrega y quita solo los suyos, solo lugares publicados, máximo 500). Botón "Guardar" con corazón en la ficha (sin sesión lleva a entrar) y "Lugares guardados" en Mi cuenta. Prueba e2e `extras.spec.ts` (horario por día desde Mi negocio → "Abierto las 24 horas", vista y WhatsApp contados una vez, guardar/quitar, números en Mi negocio). 15 pruebas de reglas nuevas (103)
 - **Puerta:** el usuario los prueba y los aprueba
 
+## Versión 3
+
+> Plan: `docs/PLAN-V3.md` (aprobado 2026-10-09). Orden pedido por el usuario: todo lo demás primero, Paumi al final.
+
+### Fase 11 · Video y redes del negocio
+- [ ] 11.1 Migración 0009: enlaces de redes y web en `places`; tabla `place_videos` (1 por lugar, oculto/visible); bucket `videos-lugares` (50 MB, mp4/mov/webm + portada webp); reportes de video y ocultar solo el video con 3; tipos nuevos en `place_changes`; pruebas de reglas
+- [ ] 11.2 Enlaces en el formulario (panel y Mi negocio) con Zod (cada red con su dominio, solo https) y botones "Síguenos" en la ficha
+- [ ] 11.3 Subir el video desde Mi negocio y el panel: revisión en el navegador (formato, 50 MB, 90 s), portada, permiso firmado, registrar, cambiar y borrar; 5 al día
+- [ ] 11.4 Video en la ficha: portada, sin descargar hasta "play", accesible; contar reproducciones en las estadísticas del dueño
+- [ ] 11.5 "Reportar video" y panel "Videos" (nuevos, ocultar, mostrar, borrar)
+- [ ] 11.6 Pruebas de punta a punta, revisión de seguridad y guía para ejecutar 0009 en el Supabase real (PUESTA-EN-MARCHA)
+- **Puerta:** 3 negocios reales suben su video y sus redes; se ven bien en Android y en iPhone
+
+### Fase 12 · Mapas y buscador
+- [ ] 12.1 Aceptar el enlace corto `maps.app.goo.gl` (el servidor lo abre solo si es de ese dominio)
+- [ ] 12.2 Buscador dentro de la base (texto completo en español, sin tildes, tolerante a errores), mismos resultados que hoy
+- **Puerta:** ubicación con enlace corto; buscador rápido con 500 lugares de prueba
+
+### Fase 13 · Seguridad y herramientas
+- [ ] 13.1 Leer y agregar las 4 skills de Agent Skills a `.claude/skills/`
+- [ ] 13.2 Las 20 reglas de seguridad como lista en `docs/ARQUITECTURA.md` §7 y enlace en `CLAUDE.md`
+- [ ] 13.3 Subida de fotos del admin con permiso firmado y cookies de sesión `HttpOnly`
+- [ ] 13.4 Límite en `/api/evento` (sin guardar la IP)
+- [ ] 13.5 Avisos de errores en producción (observability) y revisión de seguridad independiente
+- **Puerta:** sin fallas altas; las 20 reglas marcadas
+
+### Fase 14 · Paumi · cerebro (texto)
+- [ ] 14.1 Personalidad, reglas y nombre en un solo archivo; interruptor `PAUMI_ACTIVO`; ruta del chat en el servidor con Vercel AI SDK + Claude Haiku; captcha y límites
+- [ ] 14.2 Herramientas: buscar lugares, ver ficha, armar plan, abrir página, buscar en fuentes confiables con enlace
+- [ ] 14.3 Ventana de chat básica con tarjetas de lugares (foto, abierto ahora, Cómo llegar, Ver ficha) y botón flotante
+- [ ] 14.4 Términos y privacidad; 20 preguntas de prueba (incluidas trampas); (usuario) clave de Anthropic y tope de gasto
+- **Puerta:** las 20 preguntas salen bien y el tope de gasto funciona
+
+### Fase 15 · Paumi · cara
+- [ ] 15.1 Guacamaya en pixel art con sus 5 estados (esperando, escuchando, pensando, hablando, encontró algo)
+- [ ] 15.2 Cuadro de diálogo retro: letra por letra, "blip", ▼, completar al tocar, se esconde solo, "Ver conversación", 🔊/🔇
+- **Puerta:** el usuario lo prueba en su celular y lo aprueba
+
+### Fase 16 · Paumi · voz
+- [ ] 16.1 Micrófono para hablarle y respuesta hablada con el pico sincronizado
+- [ ] 16.2 Manos libres diciendo "Paumi" (opcional) y privacidad del micrófono
+- **Puerta:** funciona en Android y iPhone; el usuario lo aprueba
+
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
 - **Entrar con Facebook** (pregunta del usuario, 2026-10-08): app en Meta for Developers, URL de borrado de datos y posible verificación del negocio (RUC); hay que programar el botón. X/Twitter descartado por ahora (poco uso en Ecuador y acceso restringido)
 
-- Búsqueda y filtros: hoy se cargan todos los lugares publicados de la ciudad y se filtra en el servidor (bien hasta unos cientos de lugares). Con más lugares, pasar la búsqueda a la base (texto completo en español)
+- ~~Búsqueda en la base~~ → pasó a la versión 3 (12.2)
 - Revisar en 5.4: `profiles.role` se puede leer en público (deja ver quién es admin); valorar una vista pública solo con `display_name`
 - **Grupos para salir juntos** (pedido del usuario, 2026-10-05): crear un grupo para ir a hacer algo en Guayaquil. Requiere reglas de seguridad: solo mayores de 18, puntos de encuentro públicos, reportar y bloquear
 - **Armar un plan**: elegir lugar, fecha y hora y compartir un enlace con tarjeta por WhatsApp con amigos (primer paso hacia los grupos)
 - Más categorías: playas cerca de Guayaquil, servicios útiles
 
 - Mapa interactivo dibujado en la página (fuera de la v2: API de pago)
-- Chatbot que recomienda lugares con los datos de la página
+- ~~Chatbot~~ → pasó a la versión 3 (Paumi, fases 14 a 16). Para después: voz natural de pago
 - Guías turísticos locales y rutas con GPS
 - Pagos automáticos (Payphone o Kushki)
 - Apps en Google Play y App Store
@@ -184,3 +229,4 @@
 | 2026-10-05 | 11 categorías con afiche y barra desplegable; grupos anotados para la versión 2 | 0.5 Maquetas |
 | 2026-10-05 | Maquetas pospuestas por el usuario; 1.1 proyecto Next.js | 1.2 |
 | 2026-10-05 | 1.2, 1.4, 1.5 y maquetas de las 5 pantallas | Aprobación de maquetas; datos de Supabase y Vercel |
+| 2026-10-09 | Lluvia de ideas y plan de la versión 3 (video, redes, mapas, buscador, seguridad, Paumi) | Que el usuario diga cuándo empezar 11.1 |
