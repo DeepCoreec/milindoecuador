@@ -193,3 +193,25 @@ test("el buscador de la base: sin tildes y con errores de escritura", async ({ p
   await page.goto(`/buscar?q=${encodeURIComponent("otro sitio urdesa")}`);
   await expect(page.getByText(`${marca} Otro sitio`)).toHaveCount(0); // los borradores no salen
 });
+
+test("la sesión vive en cookies httpOnly y el menú igual dice «Mi cuenta»", async ({ page, context }, info) => {
+  test.skip(info.project.name !== "escritorio", "basta en un tamaño");
+  const u = await crearUsuario("httponly", false, "una frase bien segura");
+  await page.goto("/entrar?siguiente=%2F");
+  await page.getByLabel("Tu correo").fill(u.correo);
+  await page.getByLabel("Contraseña", { exact: true }).fill("una frase bien segura");
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
+  await expect(page).toHaveURL(/\/$/);
+
+  const sesion = (await context.cookies()).filter((c) => c.name.startsWith("sb-") && c.name.includes("auth-token"));
+  expect(sesion.length).toBeGreaterThan(0);
+  expect(sesion.every((c) => c.httpOnly && c.sameSite === "Lax")).toBe(true);
+  // Ningún script de la página puede leer la sesión
+  expect(await page.evaluate(() => document.cookie)).not.toContain("auth-token");
+  await expect(page.getByRole("banner").getByRole("link", { name: "Mi cuenta" })).toBeVisible();
+
+  // Al salir, el menú vuelve a decir «Entrar»
+  await page.goto("/cuenta");
+  await page.getByRole("button", { name: "Salir" }).click();
+  await expect(page.getByRole("banner").getByRole("link", { name: "Entrar" })).toBeVisible();
+});

@@ -1,22 +1,23 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { configSupabase } from "@/lib/supabase/config";
-import { crearClienteNavegador } from "@/lib/supabase/client";
+import { COOKIE_CON_SESION } from "@/lib/supabase/cookies";
 
 /**
  * ¿Hay sesión en este navegador? Solo para cambiar "Entrar" por "Mi cuenta" en los menús:
  * lo que de verdad protege las páginas y acciones se verifica en el servidor.
- * Así la cabecera no obliga a que todas las páginas se generen en cada visita.
+ * Versión 3 (paso 13.3): la sesión está en cookies httpOnly que la página no puede leer; el servidor deja
+ * además una cookie sin secreto ("mle-con-sesion=1") que es la que se mira aquí.
  */
 export function useConSesion(): boolean {
   const [conSesion, setConSesion] = useState(false);
+  const ruta = usePathname(); // se vuelve a mirar al cambiar de página (por ejemplo, después de entrar o salir)
   useEffect(() => {
-    if (!configSupabase()) return;
-    const supabase = crearClienteNavegador();
-    supabase.auth.getSession().then(({ data }) => setConSesion(!!data.session));
-    const { data } = supabase.auth.onAuthStateChange((_e, sesion) => setConSesion(!!sesion));
-    return () => data.subscription.unsubscribe();
-  }, []);
+    const leer = () => setConSesion(document.cookie.split("; ").includes(`${COOKIE_CON_SESION}=1`));
+    leer();
+    window.addEventListener("focus", leer);
+    return () => window.removeEventListener("focus", leer);
+  }, [ruta]);
   return conSesion;
 }

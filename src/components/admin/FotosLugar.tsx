@@ -2,19 +2,20 @@
 
 import Image from "next/image";
 import { startTransition, useActionState, useState } from "react";
-import { borrarFoto, moverFoto, registrarFoto, type EstadoAdmin } from "@/acciones/admin";
+import { borrarFoto, moverFoto, pedirSubidaFotoAdmin, registrarFoto, type EstadoAdmin } from "@/acciones/admin";
 import { borrarFotoDueno, moverFotoDueno, pedirSubidaFoto, registrarFotoDueno } from "@/acciones/dueno";
 import { clasesBoton } from "@/components/ui/Boton";
 import { claseAyuda, claseEntrada, claseEtiqueta } from "@/components/ui/clasesFormulario";
 import type { FotoAdmin } from "@/lib/datos/admin";
 import { aWebp } from "@/lib/imagen";
-import { crearClienteNavegador } from "@/lib/supabase/client";
+import { crearClienteSubidas } from "@/lib/supabase/client";
 
 const inicial: EstadoAdmin = { estado: "inicio" };
 
 const ACCIONES = {
-  admin: { registrar: registrarFoto, borrar: borrarFoto, mover: moverFoto },
+  admin: { pedir: pedirSubidaFotoAdmin, registrar: registrarFoto, borrar: borrarFoto, mover: moverFoto },
   dueno: {
+    pedir: pedirSubidaFoto,
     registrar: registrarFotoDueno,
     borrar: borrarFotoDueno,
     mover: moverFotoDueno,
@@ -23,8 +24,8 @@ const ACCIONES = {
 
 /**
  * Fotos de una ficha: subir (WebP, sin EXIF), ordenar y borrar. La primera es la principal.
- * `modo="dueno"` (versión 2): el servidor da un permiso de subida de un solo uso, porque el dueño no tiene
- * permisos en el bucket; el admin sube directo (las reglas del bucket le dejan).
+ * El servidor da un permiso de subida de un solo uso (el dueño no tiene permisos en el bucket; desde la versión 3
+ * el admin tampoco sube con su sesión: las cookies de sesión son httpOnly).
  */
 export function FotosLugar({ lugar, fotos, modo = "admin", maximo }: { lugar: string; fotos: FotoAdmin[]; modo?: "admin" | "dueno"; maximo?: number }) {
   const acciones = ACCIONES[modo];
@@ -54,22 +55,11 @@ export function FotosLugar({ lugar, fotos, modo = "admin", maximo }: { lugar: st
     setAviso(null);
     try {
       const webp = await aWebp(archivo);
-      const bucket = crearClienteNavegador().storage.from("fotos-lugares");
-      let camino: string;
-      if (modo === "dueno") {
-        const permiso = await pedirSubidaFoto(lugar);
-        if ("error" in permiso) throw new Error(permiso.error);
-        camino = permiso.camino;
-        const { error } = await bucket.uploadToSignedUrl(camino, permiso.token, webp, { contentType: "image/webp" });
-        if (error) throw new Error("No se pudo subir la foto. Revisa tu conexión e inténtalo de nuevo.");
-      } else {
-        camino = `lugares/${lugar}/${crypto.randomUUID()}.webp`;
-        const { error } = await bucket.upload(camino, webp, {
-          contentType: "image/webp",
-          upsert: false,
-        });
-        if (error) throw new Error("No se pudo subir la foto. Revisa tu conexión e inténtalo de nuevo.");
-      }
+      const permiso = await acciones.pedir(lugar);
+      if ("error" in permiso) throw new Error(permiso.error);
+      const camino = permiso.camino;
+      const { error } = await crearClienteSubidas().storage.from("fotos-lugares").uploadToSignedUrl(camino, permiso.token, webp, { contentType: "image/webp" });
+      if (error) throw new Error("No se pudo subir la foto. Revisa tu conexión e inténtalo de nuevo.");
       const datos = new FormData();
       datos.set("lugar", lugar);
       datos.set("camino", camino);

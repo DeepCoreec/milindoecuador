@@ -1,13 +1,13 @@
 "use server";
 
-import { ubicacionSinEnlaceCorto } from "@/acciones/ubicacion";
-import { esEnlaceCorto } from "@/lib/ubicacion";
 import { revalidatePath } from "next/cache";
+import { ubicacionSinEnlaceCorto } from "@/acciones/ubicacion";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { DIAS_DESTACADO, nuevoVencimiento } from "@/lib/planes";
 import { mensajeModeracion } from "@/lib/moderacion";
 import { aSlug, slugLibre } from "@/lib/slug";
+import { esEnlaceCorto } from "@/lib/ubicacion";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import {
@@ -289,6 +289,20 @@ export async function registrarFoto(_previo: EstadoAdmin, datos: FormData): Prom
   }
   revalidatePath("/", "layout");
   return { estado: "ok", mensaje: "Foto agregada" };
+}
+
+/**
+ * Fotos del panel, paso 1 (versión 3, paso 13.3): igual que el dueño, el servidor da un permiso de subida firmado
+ * de un solo uso para un camino que elige él. Así el navegador del admin ya no necesita su sesión para subir.
+ */
+export async function pedirSubidaFotoAdmin(lugar: string): Promise<{ camino: string; token: string } | { error: string }> {
+  const r = esquemaLugarAdmin.safeParse({ lugar });
+  if (!r.success) return { error: "Datos inválidos" };
+  await requireAdmin();
+  const camino = `lugares/${r.data.lugar}/${crypto.randomUUID()}.webp`;
+  const { data, error } = await crearClienteAdmin().storage.from("fotos-lugares").createSignedUploadUrl(camino);
+  if (error || !data) return { error: "No se pudo preparar la subida. Inténtalo de nuevo." };
+  return { camino, token: data.token };
 }
 
 /** Borra una foto: la fila y el archivo del bucket. */

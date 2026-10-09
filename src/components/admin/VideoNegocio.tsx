@@ -5,7 +5,7 @@ import { borrarVideo, pedirSubidaVideo, registrarVideo, type EstadoVideo } from 
 import { clasesBoton } from "@/components/ui/Boton";
 import { claseAyuda, claseEtiqueta } from "@/components/ui/clasesFormulario";
 import type { VideoLugar } from "@/lib/datos/video";
-import { crearClienteNavegador } from "@/lib/supabase/client";
+import { crearClienteSubidas } from "@/lib/supabase/client";
 import { VIDEO_MAX_SEGUNDOS } from "@/lib/validacion/video";
 import { revisarVideo } from "@/lib/video";
 
@@ -37,7 +37,7 @@ export function VideoNegocio({ lugar, video, modo = "dueno" }: { lugar: string; 
       const permiso = await pedirSubidaVideo({ lugar, modo, tipo, tamano: archivo.size, portada: portada.type === "image/webp" ? "webp" : "jpg" });
       if ("error" in permiso) throw new Error(permiso.error);
       setPaso(`Subiendo el video (${(archivo.size / 1048576).toFixed(1)} MB). Con datos móviles puede tardar unos minutos: no cierres esta página…`);
-      const bucket = crearClienteNavegador().storage.from("videos-lugares");
+      const bucket = crearClienteSubidas().storage.from("videos-lugares");
       const [v, p] = await Promise.all([
         bucket.uploadToSignedUrl(permiso.video.camino, permiso.video.token, archivo, { contentType: tipo }),
         bucket.uploadToSignedUrl(permiso.portada.camino, permiso.portada.token, portada, { contentType: portada.type }),

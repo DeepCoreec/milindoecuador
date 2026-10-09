@@ -94,7 +94,8 @@ milindoecuador/
 │   │   ├── supabase/
 │   │   │   ├── config.ts         # lee URL y clave pública; sin ellas la página funciona sin sesión
 │   │   │   ├── server.ts         # cliente con la sesión del usuario (componentes de servidor y acciones)
-│   │   │   ├── client.ts         # cliente para el navegador (solo clave pública)
+│   │   │   ├── client.ts         # cliente del navegador SOLO para subir con permiso firmado (sin sesión)
+│   │   │   ├── cookies.ts        # cookies de sesión httpOnly + aviso "mle-con-sesion" para los menús
 │   │   │   ├── publico.ts        # cliente sin sesión para leer el catálogo público (no usa cookies)
 │   │   │   └── admin.ts          # cliente con service_role; importa 'server-only'
 │   │   ├── datos/                # funciones de lectura: getLugar, getLugaresPorCategoria…
@@ -218,7 +219,7 @@ lanzamiento se repasa entera** (además de la skill `shipping-and-launch`) y se 
 | 6 | Forzar la autenticación | `requireUsuario` / `requireDueno` / `requireAdmin` en el servidor, en cada acción | ✅ |
 | 7 | Restringir el acceso a registros | Dueño solo su negocio (si no, "no existe"); RLS por fila | ✅ |
 | 8 | Bloquear manipulación de campos | Permisos por columna: nadie cambia rol, dueño, verificado, destacado ni la marca de revisión de video | ✅ |
-| 9 | Proteger las cookies de sesión | `SameSite=Lax` y solo HTTPS; `HttpOnly` llega en el paso 13.3 | 🟡 13.3 |
+| 9 | Proteger las cookies de sesión | `HttpOnly` (ningún script las lee), `SameSite=Lax` y `Secure` en producción (`src/lib/supabase/cookies.ts`); el navegador no usa la sesión: las subidas van con permiso firmado | ✅ (13.3) |
 | 10 | Hashear contraseñas | Supabase Auth con bcrypt | ✅ |
 | 11 | Rate limiting | Límites diarios en la base (reseñas, reportes, dueños, fotos, videos, solicitudes) y Supabase Auth; falta `/api/evento` (13.4) | 🟡 13.4 |
 | 12 | Protección contra bots | Turnstile al crear cuenta, entrar, reseñar y registrar negocio | ✅ |
