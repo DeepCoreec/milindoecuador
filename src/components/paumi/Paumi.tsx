@@ -53,14 +53,14 @@ export function Paumi() {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          mensajes: historial.slice(-MAX_HISTORIAL).map(({ rol, texto }) => ({ rol, texto })),
+          mensajes: historial.slice(-MAX_HISTORIAL).map(({ rol, texto, firma }) => ({ rol, texto, firma })),
           captcha: typeof captcha === "string" && captcha ? captcha : undefined,
         }),
       });
       const datos = (await r.json().catch(() => ({}))) as Partial<RespuestaPaumi> & { error?: string; mensaje?: string };
       if (r.ok && typeof datos.texto === "string") {
         setPideCaptcha(false);
-        setMensajes((m) => [...m, { rol: "paumi", texto: datos.texto!, lugares: datos.lugares ?? [], navegar: datos.navegar ?? null, fuentes: datos.fuentes ?? [] }]);
+        setMensajes((m) => [...m, { rol: "paumi", texto: datos.texto!, firma: datos.firma, lugares: datos.lugares ?? [], navegar: datos.navegar ?? null, fuentes: datos.fuentes ?? [] }]);
       } else {
         if (datos.error === "captcha") setPideCaptcha(true);
         setMensajes((m) => [...m, { rol: "paumi", texto: datos.mensaje ?? "No pude responder. Intenta de nuevo en un ratito.", aviso: true }]);

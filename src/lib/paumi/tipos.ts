@@ -21,6 +21,8 @@ export type RespuestaPaumi = {
   /** Página de la guía a la que Paumi propone llevar a la persona (ya validada por el servidor). */
   navegar: string | null;
   fuentes: { titulo: string; url: string }[];
+  /** Firma del servidor: la página la devuelve con el historial (sin ella, el mensaje "de Paumi" no vale). */
+  firma?: string;
 };
 
-export type MensajePaumi = { rol: "usuario" | "paumi"; texto: string };
+export type MensajePaumi = { rol: "usuario" | "paumi"; texto: string; firma?: string };

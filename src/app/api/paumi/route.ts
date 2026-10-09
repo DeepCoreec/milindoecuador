@@ -4,8 +4,8 @@ import { verificarCaptcha } from "@/lib/captcha";
 import { huellaDelDia, leerCuerpoCorto } from "@/lib/huella";
 import { ErrorPaumi, conversar } from "@/lib/paumi/cerebro";
 import { configPaumi, paumiActivo } from "@/lib/paumi/config";
-import { COOKIE_PASE, DURACION_PASE, crearPase, paseValido } from "@/lib/paumi/pase";
-import { MAX_HISTORIAL, MAX_MENSAJE } from "@/lib/paumi/personaje";
+import { COOKIE_PASE, DURACION_PASE, crearPase, firmarRespuesta, paseValido, respuestaValida } from "@/lib/paumi/pase";
+import { MAX_HISTORIAL, MAX_MENSAJE, SALUDO } from "@/lib/paumi/personaje";
 import { urlSitio } from "@/lib/sitio";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
 
@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
 
 const esquema = z.object({
   mensajes: z
-    .array(z.object({ rol: z.enum(["usuario", "paumi"]), texto: z.string().trim().min(1).max(MAX_MENSAJE * 3) }))
+    .array(z.object({ rol: z.enum(["usuario", "paumi"]), texto: z.string().min(1).max(1200), firma: z.string().max(64).optional() }))
     .min(1)
     .max(MAX_HISTORIAL)
     .refine((m) => m.at(-1)!.rol === "usuario" && m.at(-1)!.texto.length <= MAX_MENSAJE, "Mensaje inválido"),
@@ -45,21 +45,28 @@ export async function POST(request: NextRequest) {
   }
   const r = esquema.safeParse(cuerpo);
   if (!r.success) return respuesta({ error: `Escribe un mensaje de hasta ${MAX_MENSAJE} letras.` }, 400);
+  // Solo valen las respuestas de Paumi que firmó este servidor (o el saludo): nadie inventa lo que "dijo" Paumi
+  if (r.data.mensajes.some((m) => m.rol === "paumi" && m.texto !== SALUDO && !respuestaValida(m.texto, m.firma)))
+    return respuesta({ error: "Conversación inválida. Toca «Empezar de nuevo»." }, 400);
+  if (r.data.mensajes.some((m) => m.rol === "usuario" && m.texto.trim().length > MAX_MENSAJE))
+    return respuesta({ error: `Escribe un mensaje de hasta ${MAX_MENSAJE} letras.` }, 400);
 
+  const huella = huellaDelDia(request, "paumi");
   let pase: string | null = null;
-  if (!paseValido(request.cookies.get(COOKIE_PASE)?.value)) {
+  if (!paseValido(request.cookies.get(COOKIE_PASE)?.value, huella)) {
     const ip = request.headers.get("x-real-ip") ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
     if (!(await verificarCaptcha(r.data.captcha, ip))) return respuesta({ error: "captcha", mensaje: "Confirma que no eres un robot para hablar con Paumi." }, 401);
-    pase = crearPase();
+    pase = crearPase(huella);
   }
 
   const c = configPaumi();
-  const { data: uso } = await crearClienteAdmin().rpc("usar_paumi", { huella: huellaDelDia(request, "paumi"), maximo_persona: c.maxPersona, maximo_total: c.maxDia });
+  const { data: uso } = await crearClienteAdmin().rpc("usar_paumi", { huella, maximo_persona: c.maxPersona, maximo_total: c.maxDia });
   if (uso === "persona") return respuesta({ error: "limite", mensaje: "¡Hablamos un montón hoy! Vuelve mañana y seguimos. Mientras tanto, explora la guía." }, 429);
   if (uso !== "ok") return respuesta({ error: "descanso", mensaje: "Paumi está descansando por hoy. Vuelve mañana. Mientras tanto, explora la guía." }, 503);
 
   try {
-    const salida = respuesta(await conversar(r.data.mensajes));
+    const resultado = await conversar(r.data.mensajes.map(({ rol, texto }) => ({ rol, texto: texto.trim() })));
+    const salida = respuesta({ ...resultado, firma: firmarRespuesta(resultado.texto) });
     if (pase) salida.cookies.set(COOKIE_PASE, pase, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict", path: "/api/paumi", maxAge: DURACION_PASE });
     return salida;
   } catch (e) {

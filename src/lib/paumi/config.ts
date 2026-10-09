@@ -16,6 +16,8 @@ export function paumiActivo(): boolean {
   return process.env.PAUMI_ACTIVO === "si" && !!process.env.ANTHROPIC_API_KEY && !!configSupabase();
 }
 
+const simulador = () => process.env.NODE_ENV !== "production" && !!process.env.PAUMI_API_URL;
+
 const entero = (v: string | undefined, porDefecto: number, max: number) => {
   const n = Number(v);
   return Number.isInteger(n) && n > 0 ? Math.min(n, max) : porDefecto;
@@ -23,9 +25,10 @@ const entero = (v: string | undefined, porDefecto: number, max: number) => {
 
 export function configPaumi() {
   return {
-    clave: process.env.ANTHROPIC_API_KEY ?? "",
+    // Con el simulador (solo fuera de producción) NUNCA se manda la clave real
+    clave: simulador() ? "clave-de-prueba" : (process.env.ANTHROPIC_API_KEY ?? ""),
     modelo: process.env.PAUMI_MODELO || "claude-haiku-4-5-20251001",
-    url: process.env.NODE_ENV !== "production" && process.env.PAUMI_API_URL ? process.env.PAUMI_API_URL : "https://api.anthropic.com",
+    url: simulador() ? process.env.PAUMI_API_URL! : "https://api.anthropic.com",
     busquedaWeb: process.env.PAUMI_BUSQUEDA_WEB === "si",
     maxPersona: entero(process.env.PAUMI_MAX_PERSONA, 25, 200),
     maxDia: entero(process.env.PAUMI_MAX_DIA, 400, 20000),
@@ -40,5 +43,4 @@ export const FUENTES_CONFIABLES = [
   "galapagos.gob.ec",
   "ambiente.gob.ec",
   "inec.gob.ec",
-  "es.wikipedia.org",
 ];

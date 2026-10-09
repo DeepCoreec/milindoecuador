@@ -24,11 +24,14 @@ function guion(cuerpo) {
 
   if (pedido.includes("encebollado")) {
     if (!resultados.length) return usar("buscar_lugares", { texto: "encebollado" });
-    const r = JSON.parse(resultados[0].content);
-    if (r.lugares) {
-      if (!r.lugares.length) return texto("No encontré encebollados en la guía todavía.");
+    const crudo = resultados[0].content;
+    if (crudo.startsWith("<datos_de_la_guia")) {
+      const r = JSON.parse(crudo.replace(/^<datos_de_la_guia[^>]*>/, "").replace(/<\/datos_de_la_guia>$/, ""));
+      if (!r.lugares?.length) return texto("No encontré encebollados en la guía todavía.");
       return usar("mostrar_lugares", { ids: r.lugares.slice(0, 2).map((l) => l.id) });
     }
+    // Un resultado de búsqueda sin marcar es un error del servidor (debe ir dentro de <datos_de_la_guia>)
+    if (crudo.includes("lugares")) return texto("FALTA MARCAR LOS DATOS DE LA GUÍA");
     return texto("¡Te recomiendo estos encebollados! Están buenazos.");
   }
   if (pedido.includes("llévame") || pedido.includes("llevame")) {
@@ -42,6 +45,7 @@ function guion(cuerpo) {
       return usar("abrir_pagina", { ruta: "https://estafa.com" });
     return texto("<script>alert('x')</script> **No** puedo hacer eso.");
   }
+  if (pedido.includes("contacto")) return texto("Llama al 0991234567 o entra a www.estafa.com para reservar.");
   return texto("¡Hola! Soy Paumi. ¿Qué buscas hoy en Guayaquil?");
 }
 
