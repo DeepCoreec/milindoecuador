@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { urlPublicaFoto } from "@/lib/fotos";
+import { urlPublicaFoto, urlPublicaVideo } from "@/lib/fotos";
 import { leerHorario } from "@/lib/horario";
 import { enlacesDeFila } from "@/lib/redes";
 import { datosDe, TEXTO_CATEGORIA } from "./textos";
@@ -37,6 +37,7 @@ type FilaDetalle = FilaLugar & {
   instagram: string | null;
   tiktok: string | null;
   youtube: string | null;
+  place_videos: { storage_path: string; poster_path: string | null; duration_seconds: number | string } | null;
   place_photos: { storage_path: string; alt_text: string; sort_order: number }[];
 };
 
@@ -127,7 +128,7 @@ export async function leerLugaresDeCiudad(db: SupabaseClient, ciudad: string): P
 export async function leerLugar(db: SupabaseClient, urlBase: string, ciudad: string, categoria: string, slug: string): Promise<LugarDetalle | null> {
   const { data, error } = await db
     .from("places")
-    .select(`${COLUMNAS}, description, hours, address, latitude, longitude, opening_hours, whatsapp, website, facebook, instagram, tiktok, youtube, place_photos(storage_path, alt_text, sort_order), cities!inner(slug)`)
+    .select(`${COLUMNAS}, description, hours, address, latitude, longitude, opening_hours, whatsapp, website, facebook, instagram, tiktok, youtube, place_videos(storage_path, poster_path, duration_seconds), place_photos(storage_path, alt_text, sort_order), cities!inner(slug)`)
     .eq("cities.slug", ciudad)
     .eq("categories.slug", categoria)
     .eq("slug", slug)
@@ -167,6 +168,14 @@ export async function leerLugar(db: SupabaseClient, urlBase: string, ciudad: str
     ubicacion: data.latitude != null && data.longitude != null ? { lat: Number(data.latitude), lng: Number(data.longitude) } : null,
     whatsapp: data.whatsapp,
     enlaces: enlacesDeFila(data),
+    // La regla de la base (0009) ya esconde los videos ocultos
+    video: data.place_videos
+      ? {
+          src: urlPublicaVideo(urlBase, data.place_videos.storage_path),
+          portada: data.place_videos.poster_path ? urlPublicaVideo(urlBase, data.place_videos.poster_path) : null,
+          duracion: Number(data.place_videos.duration_seconds),
+        }
+      : null,
     fotos,
     resenas: (resenas.data ?? []).map((r) => ({
       id: r.id,

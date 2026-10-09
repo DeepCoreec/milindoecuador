@@ -10,6 +10,7 @@ import { BotonCompartir } from "@/components/lugares/BotonCompartir";
 import { BotonGuardar } from "@/components/lugares/BotonGuardar";
 import { RedesLugar } from "@/components/lugares/RedesLugar";
 import { ReportarLugar } from "@/components/lugares/ReportarLugar";
+import { VideoFicha } from "@/components/lugares/VideoFicha";
 import { AbiertoAhora } from "@/components/lugares/AbiertoAhora";
 import { ContarVista, EnlaceContado } from "@/components/lugares/Estadisticas";
 import { Galeria } from "@/components/lugares/Galeria";
@@ -205,6 +206,14 @@ export default async function FichaLugar({ params }: Props) {
           </aside>
 
           <div className="grid min-w-0 gap-8 [grid-area:resto]">
+            {lugar.video && (
+              <section aria-labelledby="t-video" className="grid gap-3">
+                <h2 id="t-video" className="m-0 font-rotulo text-xl leading-[26px] font-normal md:text-2xl md:leading-[30px]">
+                  Video
+                </h2>
+                <VideoFicha lugar={lugar.id} nombre={lugar.nombre} {...lugar.video} />
+              </section>
+            )}
             <section aria-labelledby="t-hist" className="grid gap-3">
               <h2 id="t-hist" className="m-0 font-rotulo text-xl leading-[26px] font-normal md:text-2xl md:leading-[30px]">
                 La historia

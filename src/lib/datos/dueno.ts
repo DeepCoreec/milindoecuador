@@ -184,16 +184,16 @@ export async function getMiNegocio(usuario: Usuario, lugarId: string): Promise<M
   };
 }
 
-export type Totales = { vistas: number; whatsapp: number; ruta: number };
+export type Totales = { vistas: number; whatsapp: number; ruta: number; video: number };
 
 /** Estadísticas de un negocio de la cuenta (paso 10.2): últimos 7 y 30 días. Llamar después de requireDueno. */
 export async function getEstadisticas(usuario: Usuario, lugarId: string): Promise<{ semana: Totales; mes: Totales }> {
   const db = crearClienteAdmin();
   const { data: propio } = await db.from("places").select("id").eq("id", lugarId).eq("owner_id", usuario.id).maybeSingle();
-  const vacio = () => ({ vistas: 0, whatsapp: 0, ruta: 0 });
+  const vacio = () => ({ vistas: 0, whatsapp: 0, ruta: 0, video: 0 });
   if (!propio) return { semana: vacio(), mes: vacio() };
   const dia = (atras: number) => new Date(Date.now() - 5 * 3600_000 - atras * 86_400_000).toISOString().slice(0, 10); // hoy en Ecuador, menos N días
-  const { data } = await db.from("place_stats").select("day, views, whatsapp, route").eq("place_id", lugarId).gt("day", dia(30));
+  const { data } = await db.from("place_stats").select("day, views, whatsapp, route, video").eq("place_id", lugarId).gt("day", dia(30));
   const semana = vacio();
   const mes = vacio();
   for (const f of data ?? []) {
@@ -201,6 +201,7 @@ export async function getEstadisticas(usuario: Usuario, lugarId: string): Promis
       t.vistas += f.views;
       t.whatsapp += f.whatsapp;
       t.ruta += f.route;
+      t.video += f.video;
     }
   }
   return { semana, mes };

@@ -64,6 +64,8 @@ export type LugarDetalle = LugarResumen & {
   whatsapp: string | null;
   /** Redes y página web del negocio (versión 3). */
   enlaces?: Enlaces;
+  /** El video del negocio (versión 3), si tiene y no está oculto. */
+  video?: { src: string; portada: string | null; duracion: number } | null;
   fotos: Foto[];
   resenas: Resena[];
 };

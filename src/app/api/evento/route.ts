@@ -10,7 +10,7 @@ import { configSupabase } from "@/lib/supabase/config";
  * que ignora lugares no publicados. No guarda nada de la persona (ni IP, ni cuenta).
  * Son números orientativos: alguien con intención podría inflarlos; no deciden nada importante.
  */
-const esquema = z.object({ lugar: z.uuid(), tipo: z.enum(["views", "whatsapp", "route"]) });
+const esquema = z.object({ lugar: z.uuid(), tipo: z.enum(["views", "whatsapp", "route", "video"]) });
 
 /** Lee el cuerpo, como máximo `limite` bytes (aunque no venga content-length). */
 async function leerCorto(request: NextRequest, limite: number): Promise<string | null> {

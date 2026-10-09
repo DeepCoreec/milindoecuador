@@ -45,7 +45,7 @@ test("el dueño pone sus redes y su página web, y salen en la ficha", async ({ 
   await visita.close();
 });
 
-test("el dueño sube, cambia y borra el video de su negocio", async ({ page, context, baseURL }, info) => {
+test("el dueño sube, cambia y borra el video de su negocio", async ({ page, context, baseURL, browser }, info) => {
   test.skip(info.project.name !== "celular", "el dueño usa el celular");
   const d = await crearUsuario("video");
   const lugar = await crearLugar("restaurantes", { owner_id: d.id });
@@ -79,6 +79,18 @@ test("el dueño sube, cambia y borra el video de su negocio", async ({ page, con
   expect(await archivosEnCarpeta(lugar.id)).toHaveLength(2);
   const { data: cambios } = await admin().from("place_changes").select("kind").eq("place_id", lugar.id).like("kind", "video-%");
   expect(cambios?.filter((c) => c.kind === "video-nuevo")).toHaveLength(2);
+
+  // En la ficha: con portada, sin descargar hasta "play", y cuenta la reproducción para el dueño
+  const visita = await browser.newPage();
+  await visita.goto(new URL(lugar.ruta, baseURL).toString());
+  const enFicha = visita.getByRole("region", { name: "Video" }).locator("video");
+  await expect(enFicha).toHaveAttribute("preload", "none");
+  await expect(enFicha).toHaveAttribute("poster", /videos-lugares/);
+  await enFicha.evaluate((v: HTMLVideoElement) => v.play());
+  await expect.poll(async () => (await admin().from("place_stats").select("video").eq("place_id", lugar.id).maybeSingle()).data?.video, { timeout: 10_000 }).toBe(1);
+  await visita.close();
+  await page.reload();
+  await expect(page.getByText("Vieron tu video").first()).toBeVisible();
 
   // Borrarlo, en dos toques
   await seccion.getByRole("button", { name: "Borrar video" }).click();

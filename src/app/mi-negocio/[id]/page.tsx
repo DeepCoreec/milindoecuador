@@ -45,7 +45,7 @@ export default async function PaginaMiNegocio({ params }: PageProps<"/mi-negocio
 
         <EstadoNegocio lugar={n.id} estado={n.estado} listo={{ descripcion: !pendiente, fotos: n.fotos.length > 0 }} ruta={n.ruta} />
 
-        {n.estado !== "borrador" && <Estadisticas semana={numeros.semana} mes={numeros.mes} />}
+        {n.estado !== "borrador" && <Estadisticas semana={numeros.semana} mes={numeros.mes} conVideo={!!video} />}
 
         <section aria-labelledby="t-datos" className="grid gap-3">
           <h2 id="t-datos" className={titulo}>

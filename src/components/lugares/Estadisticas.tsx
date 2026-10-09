@@ -2,10 +2,10 @@
 
 import { useEffect, type ComponentProps } from "react";
 
-type Tipo = "views" | "whatsapp" | "route";
+type Tipo = "views" | "whatsapp" | "route" | "video";
 
 /** Avisa un evento para las estadísticas del dueño (paso 10.2). Si falla, no pasa nada. */
-function avisar(lugar: string, tipo: Tipo) {
+export function avisar(lugar: string, tipo: Tipo) {
   try {
     const cuerpo = JSON.stringify({ lugar, tipo });
     if (!navigator.sendBeacon?.("/api/evento", new Blob([cuerpo], { type: "application/json" }))) {
