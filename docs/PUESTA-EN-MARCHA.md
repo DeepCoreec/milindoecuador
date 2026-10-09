@@ -154,3 +154,23 @@ responder (por ejemplo, si Supabase se cae):
    cuando exista) → cada **5 minutos** → avisar a tu correo.
 3. Si llega un aviso: mirar el panel → Errores, y el estado de Supabase (https://status.supabase.com) y de Vercel
    (https://www.vercel-status.com). Pásale a Claude lo que veas.
+
+## 11. Encender a Paumi (cuando decidas pagar)
+
+Paumi viene **apagada**. Para encenderla:
+
+1. **Clave de Anthropic:** entra a https://platform.claude.com (Consola de Anthropic) con la cuenta que ya usaste para
+   DeepCore → **Billing**: carga créditos (con 5 $ alcanza para probar) → **Limits**: pon un **tope de gasto mensual**
+   (por ejemplo 5 $) → **API Keys** → **Create Key** con el nombre "Mi Lindo Ecuador". Copia la clave (empieza con
+   `sk-ant-`). **No la pegues en el chat ni en capturas.**
+2. **Vercel** → el proyecto → Settings → Environment Variables (solo **Production**, tipo **Sensitive**):
+   - `ANTHROPIC_API_KEY` = la clave del paso 1
+   - `PAUMI_ACTIVO` = `si`
+   - (opcional) `PAUMI_BUSQUEDA_WEB` = `si` para que busque en fuentes oficiales de internet (cuesta un poco más)
+   - (opcional) `PAUMI_MAX_PERSONA` (por defecto 25 mensajes por persona al día) y `PAUMI_MAX_DIA` (por defecto 400 en total)
+3. **Redeploy** (Deployments → los tres puntos del último → Redeploy).
+4. Haz las **20 preguntas de prueba** de `docs/PAUMI-PRUEBAS.md` y anota si alguna falla.
+5. Para apagarla en cualquier momento: borra `PAUMI_ACTIVO` (o ponle `no`) y Redeploy.
+
+Costo aproximado con Claude Haiku: 1 centavo por pregunta (más si busca en internet). Con el tope de la Consola nunca
+se pasa de lo que elijas; cuando se llega al tope, Paumi dice que está descansando y la guía sigue funcionando.
