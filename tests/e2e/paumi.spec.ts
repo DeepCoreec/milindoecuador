@@ -15,6 +15,10 @@ test("Paumi recomienda lugares de la guía con tarjetas, y no se deja engañar",
   await chat.getByLabel("Escríbele a Paumi").fill("Quiero un encebollado");
   await chat.getByRole("button", { name: "Enviar" }).click();
   await expect(chat.getByText("¡Te recomiendo estos encebollados!")).toBeVisible();
+  // La guacamaya reacciona: aletea porque encontró lugares (o ya está hablando) y luego vuelve a esperar
+  const ave = chat.locator("svg.mle-paumi");
+  await expect(ave).toHaveAttribute("data-estado", /contento|hablando/);
+  await expect(ave).toHaveAttribute("data-estado", "esperando", { timeout: 10_000 });
   const tarjetas = chat.getByRole("article");
   await expect(tarjetas.first()).toBeVisible();
   await expect(tarjetas.first().getByRole("link", { name: "Cómo llegar" })).toHaveAttribute("href", /google\.com\/maps/);

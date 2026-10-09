@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { Panorama } from "@/components/arte/Panorama";
+import { Guacamaya } from "@/components/paumi/Guacamaya";
 import { Buscador } from "@/components/busqueda/Buscador";
 import { BarraCategorias } from "@/components/categorias/BarraCategorias";
 import { Cabecera } from "@/components/layout/Cabecera";
@@ -45,6 +46,29 @@ export default async function PaginaComponentes() {
 
         <Seccion titulo="Panorama">
           <Panorama className="aspect-[12/5] w-full rounded-lg" />
+        </Seccion>
+
+        <Seccion titulo="Paumi, la guacamaya">
+          <div className="flex flex-wrap gap-6">
+            {(
+              [
+                ["esperando", "Esperando"],
+                ["escuchando", "Escuchando"],
+                ["pensando", "Pensando"],
+                ["hablando", "Hablando"],
+                ["contento", "Encontró algo"],
+              ] as const
+            ).map(([estado, nombre]) => (
+              <figure key={estado} className="m-0 grid justify-items-center gap-2" data-paumi={estado}>
+                <Guacamaya estado={estado} escala={3} />
+                <figcaption className="text-sm text-rio-suave">{nombre}</figcaption>
+              </figure>
+            ))}
+            <figure className="m-0 grid justify-items-center gap-2">
+              <Guacamaya recorte="cabeza" animada={false} escala={2} />
+              <figcaption className="text-sm text-rio-suave">En el botón (fija)</figcaption>
+            </figure>
+          </div>
         </Seccion>
 
         <Seccion titulo="Botones">

@@ -72,6 +72,11 @@ body {
 /* Panorama en pixel art: se amplía sin suavizar */
 .mle-panorama { display: block; width: 100%; height: auto; aspect-ratio: 240 / 100; image-rendering: pixelated; }
 
+/* Paumi en pixel art (src/components/paumi/sprite.ts): mismo blanco de cal que los afiches */
+.mle-paumi { --cal: var(--papel-alto); display: block; flex-shrink: 0; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mle-paumi { --cal: var(--rio); } }
+[data-theme="dark"] .mle-paumi { --cal: var(--rio); }
+
 /* Filas que se deslizan de lado sin barra visible */
 .sin-barra { scrollbar-width: none; }
 .sin-barra::-webkit-scrollbar { display: none; }

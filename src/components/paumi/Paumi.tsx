@@ -8,9 +8,11 @@ import { useEffect, useRef, useState } from "react";
 import { clasesBoton } from "@/components/ui/Boton";
 import { Captcha } from "@/components/ui/Captcha";
 import { claseEntrada } from "@/components/ui/clasesFormulario";
-import { IconoCerrar, IconoConversacion, IconoUbicacion } from "@/components/ui/iconos";
+import { IconoCerrar, IconoUbicacion } from "@/components/ui/iconos";
 import { AVISO, MAX_HISTORIAL, MAX_MENSAJE, NOMBRE, SALUDO } from "@/lib/paumi/personaje";
 import type { MensajePaumi, RespuestaPaumi, TarjetaPaumi } from "@/lib/paumi/tipos";
+import { Guacamaya } from "./Guacamaya";
+import type { EstadoPaumi } from "./sprite";
 
 type Entrada = MensajePaumi & { lugares?: TarjetaPaumi[]; navegar?: string | null; fuentes?: RespuestaPaumi["fuentes"]; aviso?: boolean };
 
@@ -19,8 +21,8 @@ const inicial: Entrada[] = [{ rol: "paumi", texto: SALUDO }];
 /**
  * Paumi, la guacamaya guía (versión 3, paso 14.3): botón flotante y ventana de conversación.
  * Lo que dice Paumi se muestra SIEMPRE como texto (nunca como HTML). Las tarjetas vienen armadas por el servidor.
- * La conversación vive solo en esta pestaña (no se guarda en ningún lado). En la fase 15 llega la guacamaya en
- * pixel art y el cuadro de diálogo retro; en la 16, la voz.
+ * La conversación vive solo en esta pestaña (no se guarda en ningún lado). La guacamaya (15.1) reacciona: escucha,
+ * piensa, aletea y habla. Falta el cuadro de diálogo retro (15.2) y la voz (fase 16).
  */
 export function Paumi() {
   const ruta = usePathname();
@@ -30,12 +32,28 @@ export function Paumi() {
   const [pensando, setPensando] = useState(false);
   const [pideCaptcha, setPideCaptcha] = useState(true);
   const [intento, setIntento] = useState(0);
+  const [enfocado, setEnfocado] = useState(false);
+  const [animo, setAnimo] = useState<EstadoPaumi | null>(null);
+  const relojes = useRef<ReturnType<typeof setTimeout>[]>([]);
   const lista = useRef<HTMLDivElement>(null);
   const campo = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     lista.current?.scrollTo({ top: lista.current.scrollHeight });
   }, [mensajes, pensando]);
+
+  useEffect(() => () => relojes.current.forEach(clearTimeout), []);
+
+  /** Cómo reacciona la guacamaya a una respuesta: aletea si encontró lugares y luego "habla" un rato según lo largo. */
+  function reaccionar(texto: string, encontro: boolean) {
+    relojes.current.forEach(clearTimeout);
+    const habla = Math.min(6000, Math.max(1200, texto.length * 45));
+    const aleteo = encontro ? 1600 : 0;
+    if (encontro) setAnimo("contento");
+    relojes.current = [setTimeout(() => setAnimo("hablando"), aleteo), setTimeout(() => setAnimo(null), aleteo + habla)];
+  }
+
+  const estado: EstadoPaumi = pensando ? "pensando" : (animo ?? (enfocado && texto.trim() ? "escuchando" : "esperando"));
 
   if (ruta.startsWith("/admin") || ruta.startsWith("/dev")) return null;
 
@@ -61,6 +79,7 @@ export function Paumi() {
       if (r.ok && typeof datos.texto === "string") {
         setPideCaptcha(false);
         setMensajes((m) => [...m, { rol: "paumi", texto: datos.texto!, firma: datos.firma, lugares: datos.lugares ?? [], navegar: datos.navegar ?? null, fuentes: datos.fuentes ?? [] }]);
+        reaccionar(datos.texto, !!datos.lugares?.length);
       } else {
         if (datos.error === "captcha") setPideCaptcha(true);
         setMensajes((m) => [...m, { rol: "paumi", texto: datos.mensaje ?? "No pude responder. Intenta de nuevo en un ratito.", aviso: true }]);
@@ -79,7 +98,7 @@ export function Paumi() {
       <Dialog.Trigger
         className={`${clasesBoton("secundario", "normal")} fixed right-4 bottom-[max(16px,env(safe-area-inset-bottom))] z-30 shadow-flotante sm:right-6 sm:bottom-6`}
       >
-        <IconoConversacion />
+        <Guacamaya recorte="cabeza" animada={false} className="h-8! w-12!" />
         <span>
           <span className="max-sm:hidden">Pregúntale a </span>
           {NOMBRE}
@@ -92,13 +111,22 @@ export function Paumi() {
           className="fixed inset-x-0 bottom-0 z-50 flex h-[88dvh] flex-col rounded-t-[20px] border border-linea bg-papel-alto text-rio shadow-flotante sm:inset-x-auto sm:right-6 sm:bottom-6 sm:h-[min(640px,calc(100dvh-48px))] sm:w-[400px] sm:rounded-[20px]"
         >
           <div className="flex items-start justify-between gap-3 border-b border-linea px-5 pt-4 pb-3">
-            <div className="grid gap-0.5">
-              <Dialog.Title className="m-0 font-rotulo text-[17px] leading-6 font-normal">{NOMBRE}</Dialog.Title>
-              <p className="m-0 text-sm leading-5 text-rio-suave">La guacamaya guía de Guayaquil</p>
+            <div className="flex items-center gap-3">
+              <Guacamaya estado={estado} escala={2} />
+              <div className="grid gap-0.5">
+                <Dialog.Title className="m-0 font-rotulo text-[17px] leading-6 font-normal">{NOMBRE}</Dialog.Title>
+                <p className="m-0 text-sm leading-5 text-rio-suave">La guacamaya guía de Guayaquil</p>
+              </div>
             </div>
             <div className="flex items-center gap-1">
               {mensajes.length > 1 && (
-                <button type="button" onClick={() => setMensajes(inicial)} className={clasesBoton("texto", "chico", "min-h-11")}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMensajes(inicial);
+                    relojes.current.forEach(clearTimeout);
+                    setAnimo(null);
+                  }} className={clasesBoton("texto", "chico", "min-h-11")}>
                   Empezar de nuevo
                 </button>
               )}
@@ -129,6 +157,8 @@ export function Paumi() {
                 ref={campo}
                 value={texto}
                 onChange={(e) => setTexto(e.target.value.slice(0, MAX_MENSAJE))}
+                onFocus={() => setEnfocado(true)}
+                onBlur={() => setEnfocado(false)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !e.shiftKey) {
                     e.preventDefault();
