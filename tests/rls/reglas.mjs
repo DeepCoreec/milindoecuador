@@ -495,6 +495,18 @@ check("las solicitudes rechazadas hace más de 180 días se borran solas", r.row
 r = await as("service_role", "", `insert into public.place_photos (place_id, storage_path, alt_text) values ($1, 'lugares/x/0.webp', 'Foto repetida')`, [P["lugar-5"]]);
 check("una misma foto no se registra dos veces", !!r.error, r);
 
+console.log("\nPaumi: tope de mensajes (0014)");
+r = await as("anon", "", `select public.usar_paumi($1, 3, 5)`, ["c".repeat(64)]);
+check("el navegador no puede gastar mensajes de Paumi", !!r.error, r);
+const usar = async (h) => (await as("service_role", "", `select public.usar_paumi($1, 3, 5) as r`, [h])).rows?.[0]?.r;
+const res = [];
+for (let i = 0; i < 4; i++) res.push(await usar("c".repeat(64)));
+check("cada huella tiene su máximo del día", JSON.stringify(res) === JSON.stringify(["ok", "ok", "ok", "persona"]), res);
+const otros = [await usar("d".repeat(64)), await usar("e".repeat(64)), await usar("f".repeat(64))];
+check("y nunca se pasa el tope diario total", JSON.stringify(otros) === JSON.stringify(["ok", "ok", "total"]), otros);
+r = await as("authenticated", A, `select * from public.paumi_usage`);
+check("el uso de Paumi no se lee desde el navegador", !!r.error, r);
+
 console.log("\nDatos iniciales (supabase/seed.sql)");
 const seed = readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8");
 await db.exec(seed);
