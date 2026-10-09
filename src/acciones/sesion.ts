@@ -126,6 +126,9 @@ export async function cambiarContrasena(_previo: EstadoSesion, datos: FormData):
   const { error } = await supabase.auth.updateUser({ password: r.data.contrasena });
   if (error) {
     if (error.code === "same_password") return { estado: "error", campo: "contrasena", mensaje: "La nueva contraseña debe ser distinta de la anterior." };
+    // "Secure password change" de Supabase: si entraste hace más de 24 horas, hay que volver a entrar antes de cambiarla
+    if (error.code === "reauthentication_needed" || /reauthenticat/i.test(error.message))
+      return { estado: "error", mensaje: "Por seguridad, sal y vuelve a entrar a tu cuenta; después cambia tu contraseña. Si la olvidaste, usa «Olvidé mi contraseña»." };
     const comun = errorComun(error);
     return { estado: "error", campo: error.code === "weak_password" ? "contrasena" : undefined, mensaje: comun ?? "No se pudo guardar. Inténtalo de nuevo." };
   }
