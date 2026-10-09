@@ -65,7 +65,7 @@ export default function Privacidad() {
         <h2>Con quién se comparten</h2>
         <p>Usamos servicios de otras empresas para que la guía funcione. Ellos guardan o procesan datos por nosotros, solo para eso:</p>
         <ul className="mt-2">
-          <li>Supabase: la base de datos, las cuentas y las fotos.</li>
+          <li>Supabase: la base de datos, las cuentas, las fotos y los videos.</li>
           <li>Vercel: el servidor donde vive la página.</li>
           <li>Cloudflare Turnstile: el captcha de los formularios.</li>
           <li>Google: solo si eliges entrar con Google.</li>

@@ -99,3 +99,57 @@ test("el dueño sube, cambia y borra el video de su negocio", async ({ page, con
   await expect(seccion.locator("video")).toHaveCount(0);
   expect(await archivosEnCarpeta(lugar.id)).toEqual([]);
 });
+
+test("3 reportes ocultan solo el video; el admin lo revisa en «Videos»", async ({ page, context, baseURL, browser }, info) => {
+  test.skip(info.project.name !== "escritorio", "el admin usa la computadora");
+  const lugar = await crearLugar("restaurantes");
+  // Video subido como lo haría el servidor
+  const db = admin();
+  const camino = `lugares/${lugar.id}/${crypto.randomUUID()}.webm`;
+  await db.storage.from("videos-lugares").upload(camino, archivo("corto.webm"), { contentType: "video/webm" });
+  await db.from("place_videos").insert({ place_id: lugar.id, storage_path: camino, duration_seconds: 3, size_bytes: 33765 });
+
+  // Tres personas con cuentas de más de 7 días lo reportan desde la ficha
+  for (const apodo of ["rep1", "rep2", "rep3"]) {
+    const u = await crearUsuario(apodo);
+    await db.from("profiles").update({ created_at: new Date(Date.now() - 30 * 86_400_000).toISOString() }).eq("id", u.id);
+    const ctx = await browser.newContext();
+    await iniciarSesion(ctx, u.correo, baseURL!);
+    const p = await ctx.newPage();
+    await p.goto(new URL(lugar.ruta, baseURL).toString());
+    await p.getByRole("button", { name: "Reportar este video" }).click();
+    await p.getByRole("radio", { name: "Contenido sexual o desnudos" }).check();
+    await p.getByRole("button", { name: "Enviar reporte" }).click();
+    await expect(p.getByText("Gracias. Lo revisaremos pronto.")).toBeVisible();
+    await ctx.close();
+  }
+
+  // El video ya no se ve, pero la ficha sí
+  const visita = await browser.newPage();
+  await visita.goto(new URL(lugar.ruta, baseURL).toString());
+  await expect(visita.getByRole("heading", { name: "La historia" })).toBeVisible();
+  await expect(visita.getByRole("region", { name: "Video" })).toHaveCount(0);
+
+  // El admin lo ve en «Videos» con sus reportes; lo muestra otra vez y luego lo borra
+  const adm = await crearUsuario("admin-video", true);
+  await iniciarSesion(context, adm.correo, baseURL!);
+  await page.goto("/admin/videos");
+  await expect(page.getByRole("navigation", { name: "Panel" }).getByRole("link", { name: /^Videos/ })).toContainText("3"); // reportes por revisar
+  const fila = page.locator("li", { has: page.getByRole("link", { name: new RegExp(lugar.slug.slice(-4)) }) }).first();
+  await expect(fila.getByText("Oculto")).toBeVisible();
+  await expect(fila.getByText("3 reportes")).toBeVisible();
+  await fila.getByRole("button", { name: /Mostrar otra vez el video/ }).click();
+  await expect(fila.getByText("Se ve otra vez")).toBeVisible();
+  await visita.reload();
+  await expect(visita.getByRole("region", { name: "Video" }).locator("video")).toBeVisible();
+  const { count } = await db.from("place_reports").select("id", { count: "exact", head: true }).eq("place_id", lugar.id).eq("resolved", false);
+  expect(count).toBe(0);
+
+  await page.reload();
+  const fila2 = page.locator("li", { has: page.getByRole("link", { name: new RegExp(lugar.slug.slice(-4)) }) }).first();
+  await fila2.getByRole("button", { name: /Borrar el video/ }).click();
+  // Al borrarlo, sale de la lista
+  await expect(page.getByRole("link", { name: new RegExp(lugar.slug.slice(-4)) })).toHaveCount(0);
+  expect(await archivosEnCarpeta(lugar.id)).toEqual([]);
+  await visita.close();
+});

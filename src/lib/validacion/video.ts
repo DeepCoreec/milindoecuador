@@ -48,3 +48,4 @@ export const esquemaRegistrarVideo = z
   });
 
 export const esquemaBorrarVideo = z.object({ lugar, modo });
+export const esquemaDecidirVideo = z.object({ lugar, decision: z.enum(["ocultar", "mostrar", "borrar"]) });

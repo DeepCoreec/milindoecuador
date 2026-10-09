@@ -13,6 +13,9 @@ const TIPOS: Record<string, string> = {
   "foto-orden": "Orden de fotos",
   respuesta: "Respuesta a reseña",
   "oculta-por-reportes": "Oculta por reportes",
+  "video-nuevo": "Video nuevo",
+  "video-borrado": "Video borrado",
+  "video-oculto-por-reportes": "Video oculto por reportes",
 };
 
 /**

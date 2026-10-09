@@ -7,6 +7,7 @@ import { configSupabase } from "@/lib/supabase/config";
 import {
   carpetaVideo,
   esquemaBorrarVideo,
+  esquemaDecidirVideo,
   esquemaPedirVideo,
   esquemaRegistrarVideo,
   TIPOS_VIDEO,
@@ -158,4 +159,27 @@ export async function borrarVideo(_previo: EstadoVideo, datos: FormData): Promis
   ]);
   revalidatePath("/", "layout");
   return { estado: "ok", mensaje: "Video borrado" };
+}
+
+/**
+ * Panel "Videos" (versión 3, paso 11.5): el admin oculta, vuelve a mostrar o borra un video.
+ * Mostrar o borrar cierra sus reportes. Verifica el rol en el servidor en cada llamada.
+ */
+export async function decidirVideo(_previo: EstadoVideo, datos: FormData): Promise<EstadoVideo> {
+  const r = esquemaDecidirVideo.safeParse({ lugar: datos.get("lugar"), decision: datos.get("decision") });
+  if (!r.success) return { estado: "error", mensaje: "Datos inválidos" };
+  await requireAdmin();
+  const db = crearClienteAdmin();
+  if (r.data.decision === "borrar") {
+    const { error } = await db.from("place_videos").delete().eq("place_id", r.data.lugar);
+    if (error) return { estado: "error", mensaje: "No se pudo borrar" };
+    await limpiarCarpeta(r.data.lugar);
+  } else {
+    const { data, error } = await db.from("place_videos").update({ hidden: r.data.decision === "ocultar" }).eq("place_id", r.data.lugar).select("place_id");
+    if (error || !data?.length) return { estado: "error", mensaje: "El video ya no existe" };
+  }
+  if (r.data.decision !== "ocultar")
+    await db.from("place_reports").update({ resolved: true }).eq("place_id", r.data.lugar).eq("target", "video").eq("resolved", false);
+  revalidatePath("/", "layout");
+  return { estado: "ok", mensaje: { ocultar: "Video oculto", mostrar: "Se ve otra vez", borrar: "Video borrado" }[r.data.decision] };
 }

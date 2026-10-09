@@ -212,6 +212,14 @@ export default async function FichaLugar({ params }: Props) {
                   Video
                 </h2>
                 <VideoFicha lugar={lugar.id} nombre={lugar.nombre} {...lugar.video} />
+                {lugar.id &&
+                  (usuario ? (
+                    <ReportarLugar lugar={lugar.id} ruta={ruta} nombre={lugar.nombre} objetivo="video" />
+                  ) : (
+                    <Link href={`/entrar?siguiente=${encodeURIComponent(ruta)}`} className="justify-self-start text-[13px] leading-5 text-rio-suave">
+                      ¿El video no es apropiado? Entra para reportarlo
+                    </Link>
+                  ))}
               </section>
             )}
             <section aria-labelledby="t-hist" className="grid gap-3">

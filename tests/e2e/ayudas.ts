@@ -90,6 +90,11 @@ export async function limpiar() {
   for (const id of creados.splice(0)) await db.auth.admin.deleteUser(id);
   const { data: fotos } = await db.from("place_photos").select("storage_path, places!inner(name)").like("places.name", "E2E %");
   if (fotos?.length) await db.storage.from("fotos-lugares").remove(fotos.map((f) => f.storage_path as string));
+  const { data: lugares } = await db.from("places").select("id").like("name", "E2E %");
+  for (const l of lugares ?? []) {
+    const { data: archivos } = await db.storage.from("videos-lugares").list(`lugares/${l.id}`);
+    if (archivos?.length) await db.storage.from("videos-lugares").remove(archivos.map((o) => `lugares/${l.id}/${o.name}`));
+  }
   await db.from("places").delete().like("name", "E2E %");
   await db.from("business_requests").delete().like("business_name", "E2E %");
 }

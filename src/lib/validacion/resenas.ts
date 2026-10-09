@@ -41,11 +41,23 @@ export const MOTIVOS_REPORTE_LUGAR = {
   otro: "Otro motivo",
 } as const;
 
+/** Motivos para reportar el video de un negocio (versión 3, paso 11.5). Con 3 reportes se oculta solo el video. */
+export const MOTIVOS_REPORTE_VIDEO = {
+  sexual: "Contenido sexual o desnudos",
+  violento: "Violencia o maltrato",
+  estafa: "Estafa o publicidad engañosa",
+  ajeno: "No es de este negocio",
+  ofensivo: "Insultos u odio",
+  otro: "Otro motivo",
+} as const;
+
 export const esquemaReporteLugar = z
   .object({
     lugar: z.uuid(),
     ruta: rutaFicha,
-    motivo: z.enum(Object.keys(MOTIVOS_REPORTE_LUGAR) as [keyof typeof MOTIVOS_REPORTE_LUGAR, ...(keyof typeof MOTIVOS_REPORTE_LUGAR)[]], { error: "Elige un motivo" }),
+    objetivo: z.enum(["lugar", "video"]).default("lugar"),
+    motivo: z.string({ error: "Elige un motivo" }),
     detalle: z.string().trim().max(400, "Máximo 400 caracteres").optional().default(""),
   })
+  .refine((r) => Object.hasOwn(r.objetivo === "video" ? MOTIVOS_REPORTE_VIDEO : MOTIVOS_REPORTE_LUGAR, r.motivo), { message: "Elige un motivo", path: ["motivo"] })
   .refine((r) => r.motivo !== "otro" || r.detalle.length >= 3, { message: "Cuéntanos el motivo en pocas palabras", path: ["detalle"] });

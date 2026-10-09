@@ -482,7 +482,7 @@ export async function decidirLugarReportado(_previo: EstadoAdmin, datos: FormDat
     .update({ status: r.data.decision === "mostrar" ? "publicado" : "oculto" })
     .eq("id", r.data.lugar);
   if (error) return { estado: "error", mensaje: "No se pudo cambiar la ficha" };
-  const { error: e2 } = await db.from("place_reports").update({ resolved: true }).eq("place_id", r.data.lugar).eq("resolved", false);
+  const { error: e2 } = await db.from("place_reports").update({ resolved: true }).eq("place_id", r.data.lugar).eq("target", "lugar").eq("resolved", false);
   if (e2) return { estado: "error", mensaje: "No se pudieron cerrar los reportes" };
   revalidatePath("/", "layout");
   return {

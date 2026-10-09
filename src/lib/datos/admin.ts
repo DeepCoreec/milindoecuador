@@ -1,5 +1,5 @@
 import { requireAdmin } from "@/lib/auth";
-import { urlPublicaFoto } from "@/lib/fotos";
+import { urlPublicaFoto, urlPublicaVideo } from "@/lib/fotos";
 import { crearClienteServidor } from "@/lib/supabase/server";
 
 /*
@@ -11,18 +11,20 @@ import { crearClienteServidor } from "@/lib/supabase/server";
 export async function getContadores() {
   await requireAdmin();
   const db = await crearClienteServidor();
-  const contar = async (tabla: string, columna: string, valor: string | boolean) => {
-    const { count } = await db.from(tabla).select("id", { count: "exact", head: true }).eq(columna, valor);
-    return count ?? 0;
+  const contar = async (tabla: string, columna: string, valor: string | boolean, extra?: [string, string]) => {
+    let q = db.from(tabla).select("id", { count: "exact", head: true }).eq(columna, valor);
+    if (extra) q = q.eq(extra[0], extra[1]);
+    return (await q).count ?? 0;
   };
-  const [pendientes, publicados, reportes, cambios, lugaresReportados] = await Promise.all([
+  const [pendientes, publicados, reportes, cambios, lugaresReportados, videosReportados] = await Promise.all([
     contar("business_requests", "status", "pendiente"),
     contar("places", "status", "publicado"),
     contar("review_reports", "resolved", false),
     contar("place_changes", "reviewed", false),
-    contar("place_reports", "resolved", false),
+    contar("place_reports", "resolved", false, ["target", "lugar"]),
+    contar("place_reports", "resolved", false, ["target", "video"]),
   ]);
-  return { pendientes, publicados, reportes, cambios, lugaresReportados };
+  return { pendientes, publicados, reportes, cambios, lugaresReportados, videosReportados };
 }
 
 export type Solicitud = {
@@ -287,7 +289,7 @@ export async function getCambios(): Promise<Cambio[]> {
   const { data } = await db
     .from("place_changes")
     .select("id, kind, detail, reviewed, created_at, places(id, name, slug, status, categories(slug)), profiles(display_name)")
-    .neq("kind", "foto-permiso")
+    .not("kind", "in", "(foto-permiso,video-permiso)")
     .order("reviewed")
     .order("created_at", { ascending: false })
     .limit(150)
@@ -314,7 +316,7 @@ export async function getCambios(): Promise<Cambio[]> {
     detalle: c.detail,
     revisado: c.reviewed,
     fecha: c.created_at,
-    autor: c.profiles?.display_name ?? (c.kind === "oculta-por-reportes" ? "La guía" : "Cuenta borrada"),
+    autor: c.profiles?.display_name ?? (c.kind.endsWith("por-reportes") ? "La guía" : "Cuenta borrada"),
     lugar: c.places
       ? {
           id: c.places.id,
@@ -342,6 +344,7 @@ export async function getLugaresReportados(): Promise<LugarReportado[]> {
     .from("place_reports")
     .select("reason, created_at, places(id, name, slug, status, categories(slug))")
     .eq("resolved", false)
+    .eq("target", "lugar") // los reportes de video van a "Videos" (versión 3)
     .order("created_at", { ascending: false })
     .returns<
       {
@@ -370,4 +373,53 @@ export async function getLugaresReportados(): Promise<LugarReportado[]> {
     porLugar.set(l.id, l);
   }
   return [...porLugar.values()];
+}
+
+export type VideoAdmin = {
+  lugar: { id: string; nombre: string; estado: string; ruta: string };
+  src: string;
+  portada: string | null;
+  duracion: number;
+  oculto: boolean;
+  fecha: string;
+  motivos: string[];
+};
+
+/** Videos de los negocios (versión 3, paso 11.5): los reportados primero, después los más nuevos. */
+export async function getVideosAdmin(urlSupabase: string): Promise<VideoAdmin[]> {
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  const [{ data: videos }, { data: reportes }] = await Promise.all([
+    db
+      .from("place_videos")
+      .select("place_id, storage_path, poster_path, duration_seconds, hidden, updated_at, places(id, name, slug, status, categories(slug))")
+      .order("updated_at", { ascending: false })
+      .limit(200)
+      .returns<
+        {
+          place_id: string;
+          storage_path: string;
+          poster_path: string | null;
+          duration_seconds: number | string;
+          hidden: boolean;
+          updated_at: string;
+          places: { id: string; name: string; slug: string; status: string; categories: { slug: string } | null } | null;
+        }[]
+      >(),
+    db.from("place_reports").select("place_id, reason").eq("target", "video").eq("resolved", false),
+  ]);
+  const motivos = new Map<string, string[]>();
+  for (const r of reportes ?? []) motivos.set(r.place_id as string, [...(motivos.get(r.place_id as string) ?? []), r.reason as string]);
+  return (videos ?? [])
+    .filter((v) => v.places)
+    .map((v) => ({
+      lugar: { id: v.places!.id, nombre: v.places!.name, estado: v.places!.status, ruta: rutaFicha(v.places!) },
+      src: urlPublicaVideo(urlSupabase, v.storage_path),
+      portada: v.poster_path ? urlPublicaVideo(urlSupabase, v.poster_path) : null,
+      duracion: Number(v.duration_seconds),
+      oculto: v.hidden,
+      fecha: v.updated_at,
+      motivos: motivos.get(v.place_id) ?? [],
+    }))
+    .sort((a, b) => b.motivos.length - a.motivos.length);
 }

@@ -2,7 +2,7 @@
 
 import { requireUsuario } from "@/lib/auth";
 import { crearClienteServidor } from "@/lib/supabase/server";
-import { esquemaReporte, esquemaReporteLugar, MOTIVOS_REPORTE, MOTIVOS_REPORTE_LUGAR } from "@/lib/validacion/resenas";
+import { esquemaReporte, esquemaReporteLugar, MOTIVOS_REPORTE, MOTIVOS_REPORTE_LUGAR, MOTIVOS_REPORTE_VIDEO } from "@/lib/validacion/resenas";
 
 export type EstadoReporte = {
   estado: "inicio" | "ok" | "error";
@@ -61,11 +61,13 @@ export async function reportarResena(_previo: EstadoReporte, datos: FormData): P
  * Reporta un lugar (versión 2, paso 9.7). Con 3 reportes sin resolver de personas distintas, la base lo oculta sola
  * hasta que el admin lo revise (migración 0006). Se escribe con la sesión: la base exige que sea un lugar publicado,
  * una vez por persona y máximo 10 reportes al día.
+ * Versión 3: `objetivo=video` reporta solo el video (con 3 reportes se oculta solo el video, migración 0009).
  */
 export async function reportarLugar(_previo: EstadoReporte, datos: FormData): Promise<EstadoReporte> {
   const r = esquemaReporteLugar.safeParse({
     lugar: datos.get("lugar"),
     ruta: datos.get("ruta"),
+    objetivo: datos.get("objetivo") ?? undefined,
     motivo: datos.get("motivo") ?? undefined,
     detalle: datos.get("detalle") ?? undefined,
   });
@@ -81,16 +83,19 @@ export async function reportarLugar(_previo: EstadoReporte, datos: FormData): Pr
     };
   await requireUsuario(r.data.ruta);
 
-  const motivo = MOTIVOS_REPORTE_LUGAR[r.data.motivo];
+  const video = r.data.objetivo === "video";
+  const motivo = video
+    ? MOTIVOS_REPORTE_VIDEO[r.data.motivo as keyof typeof MOTIVOS_REPORTE_VIDEO]
+    : MOTIVOS_REPORTE_LUGAR[r.data.motivo as keyof typeof MOTIVOS_REPORTE_LUGAR];
   const razon = r.data.detalle ? `${motivo}: ${r.data.detalle}` : motivo;
   const supabase = await crearClienteServidor();
   // Sin .select(): quien reporta no puede leer los reportes (ni el suyo)
-  const { error } = await supabase.from("place_reports").insert({ place_id: r.data.lugar, reason: razon.slice(0, 500) });
+  const { error } = await supabase.from("place_reports").insert({ place_id: r.data.lugar, reason: razon.slice(0, 500), target: r.data.objetivo });
   if (error) {
     if (error.code === "23505")
       return {
         estado: "ok",
-        mensaje: "Ya habías reportado este lugar. Lo revisaremos pronto.",
+        mensaje: video ? "Ya habías reportado este video. Lo revisaremos pronto." : "Ya habías reportado este lugar. Lo revisaremos pronto.",
       };
     if (/límite de reportes/.test(error.message))
       return {

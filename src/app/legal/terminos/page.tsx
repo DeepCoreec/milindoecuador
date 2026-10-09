@@ -66,10 +66,15 @@ export default function Terminos() {
       </section>
 
       <section>
-        <h2>Fotos y textos</h2>
+        <h2>Fotos, videos y textos</h2>
         <p>
-          Las fotos de la guía son propias o de los negocios que nos las enviaron. Al enviar fotos o textos nos das permiso para mostrarlos en la
-          guía y en los enlaces para compartirla. No copies ni uses las fotos de la guía para otros fines sin permiso.
+          Las fotos y videos de la guía son propios o de los negocios que los subieron. Al subir fotos, videos o textos nos das permiso para
+          mostrarlos en la guía y en los enlaces para compartirla. No copies ni uses las fotos o videos de la guía para otros fines sin permiso.
+        </p>
+        <p>
+          Cada negocio puede subir un video. Tiene que ser de su propio negocio y no puede tener contenido sexual, violento, engañoso ni música u
+          otro material de terceros sin permiso. Sale al instante; si varias personas lo reportan, se oculta hasta que lo revisemos, y podemos
+          borrarlo si no cumple estas reglas. Los enlaces a redes y páginas web son responsabilidad de cada negocio.
         </p>
       </section>
 
