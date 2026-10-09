@@ -8,7 +8,7 @@
 > **Mapa rápido:** Versión 1 = construida y publicada (faltan sus puertas). Versión 2 = en marcha, fase 6.
 > Plan v1: `docs/PLAN.md` · Plan v2: `docs/PLAN-V2.md` · Puesta en marcha de cuentas: `docs/PUESTA-EN-MARCHA.md`
 
-- **Fase actual (2026-10-08):** versión 2 PUBLICADA. El usuario ejecutó 0004→0008 en el Supabase real (comprobado con consultas: dueño, columnas, tablas, funciones y permisos correctos) y la rama `v2` se unió a `main`. **Siguiente paso:** (usuario) ajustes de Auth de PUESTA-EN-MARCHA §8.2 (Confirm email, largo mínimo 8, Secure password change); probar en la página real §8.4; luego dominio + Resend (6.3–6.6) para que otras personas puedan crear cuenta, y cerrar las puertas 6 a 10 con la página real
+- **Fase actual (2026-10-08):** versión 2 PUBLICADA y "Entrar con Google" funcionando (6.6). El usuario ejecutó 0004→0008 en el Supabase real (comprobado con consultas: dueño, columnas, tablas, funciones y permisos correctos) y la rama `v2` se unió a `main`. **Siguiente paso:** (usuario) ajustes de Auth de PUESTA-EN-MARCHA §8.2 (Confirm email, largo mínimo 8, Secure password change); probar en la página real §8.4; luego dominio + Resend (6.3–6.6) para que otras personas puedan crear cuenta, y cerrar las puertas 6 a 10 con la página real
 - **Último paso terminado:** ver el último `[x]` de la sección "Versión 2"
 - **Siguiente paso:** el primer `[ ]` de la sección "Versión 2" que no diga "(usuario)". Los pasos "(usuario)" son clics en cuentas del usuario (Claude no tiene acceso a ellas): se le guía paso a paso
 - **Página real:** https://milindoecuador.vercel.app · Supabase `rlwcvrkyojcqgjigoyan` (São Paulo) · Turnstile "Mi Lindo Ecuador" · admin: deepcoreec@gmail.com
@@ -120,8 +120,8 @@
 - [ ] 6.3 (usuario) Comprar el dominio y conectarlo en Vercel (= paso 5.5 de la v1)
 - [ ] 6.4 (usuario) Cuenta en Resend, verificar el dominio y poner su SMTP en Supabase
 - [ ] 6.5 Correos en español (confirmar cuenta, recuperar contraseña): plantillas en `docs/PUESTA-EN-MARCHA.md`; (usuario) pegarlas en Supabase
-- [ ] 6.6 (usuario) Configurar Google en Google Cloud y Supabase; poner `NEXT_PUBLIC_GOOGLE_ACTIVO=si` en Vercel
-- **Puerta:** una persona que no es el admin crea su cuenta y entra
+- [x] 6.6 (usuario) Configurar Google en Google Cloud y Supabase; poner `NEXT_PUBLIC_GOOGLE_ACTIVO=si` en Vercel — 2026-10-08: proyecto "Mi Lindo Ecuador" en Google Cloud, cliente web (origen milindoecuador.vercel.app, vuelta a rlwcvrkyojcqgjigoyan.supabase.co/auth/v1/callback), app EN PRODUCCIÓN sin logo (así no pide verificación), dominios autorizados y enlaces a privacidad y términos. El secreto se cambió porque se vio en una captura. Google activado en Supabase y botón encendido en Vercel. Probado: entrar con un Gmail distinto del admin funciona. Con Google, cualquier persona ya puede crear cuenta sin esperar el correo propio
+- **Puerta:** una persona que no es el admin crea su cuenta y entra — ✅ cumplida con Google el 2026-10-08 (falta que el usuario la apruebe). El correo propio (6.3–6.5) sigue pendiente para quien prefiera correo y contraseña. Facebook: anotado en "Ideas para después"
 
 ### Fase 7 · Cómo llegar
 - [x] 7.1 Migración 0004: latitud y longitud en `places` (con límites de Ecuador) — 2026-10-06: `latitude`/`longitude` juntas o ninguna, dentro de Ecuador con Galápagos (un signo cambiado se rechaza). 6 pruebas de reglas nuevas (53). Aplicada al Supabase de prueba. **(usuario) Ejecutar `0004_ubicacion.sql` en el SQL Editor del Supabase real ANTES de pasar a main el código de 7.2 y 7.3** (ese código lee las columnas nuevas)
@@ -156,6 +156,8 @@
 - **Puerta:** el usuario los prueba y los aprueba
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
+
+- **Entrar con Facebook** (pregunta del usuario, 2026-10-08): app en Meta for Developers, URL de borrado de datos y posible verificación del negocio (RUC); hay que programar el botón. X/Twitter descartado por ahora (poco uso en Ecuador y acceso restringido)
 
 - Búsqueda y filtros: hoy se cargan todos los lugares publicados de la ciudad y se filtra en el servidor (bien hasta unos cientos de lugares). Con más lugares, pasar la búsqueda a la base (texto completo en español)
 - Revisar en 5.4: `profiles.role` se puede leer en público (deja ver quién es admin); valorar una vista pública solo con `display_name`
