@@ -25,3 +25,11 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+
+  # Las acciones de GitHub (fijadas por SHA en los flujos): Dependabot propone las versiones nuevas
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      timezone: "America/Guayaquil"

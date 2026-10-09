@@ -2,8 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { obtenerUsuario, requireAdmin } from "@/lib/auth";
+import { firmaValida } from "@/lib/firmaArchivo";
+import { urlPublicaVideo } from "@/lib/fotos";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
-import { configSupabase } from "@/lib/supabase/config";
+import { configSupabase, exigirConfigSupabase } from "@/lib/supabase/config";
 import {
   carpetaVideo,
   esquemaBorrarVideo,
@@ -128,6 +130,17 @@ export async function registrarVideo(_previo: EstadoVideo, datos: FormData): Pro
   ) {
     await db.storage.from(BUCKET).remove([r.data.video, r.data.portada]);
     return { estado: "error", mensaje: "El video no cumple las reglas (MP4, MOV o WebM, hasta 50 MB)." };
+  }
+
+  // El contenido tiene que ser de verdad un video y una imagen (no basta con el tipo que declaró quien subió)
+  const base = exigirConfigSupabase().url;
+  const [videoOk, portadaOk] = await Promise.all([
+    firmaValida(urlPublicaVideo(base, r.data.video), tipo === "video/webm" ? ["webm"] : ["iso"]),
+    firmaValida(urlPublicaVideo(base, r.data.portada), ["webp", "jpeg"]),
+  ]);
+  if (!videoOk || !portadaOk) {
+    await db.storage.from(BUCKET).remove([r.data.video, r.data.portada]);
+    return { estado: "error", mensaje: "Ese archivo no es un video válido. Expórtalo en MP4 y vuelve a intentarlo." };
   }
 
   const { data: lugar } = await db.from("places").select("video_review").eq("id", a.lugar).single();

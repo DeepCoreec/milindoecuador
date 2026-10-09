@@ -10,7 +10,9 @@ export const esquemaCorreo = z.object({
  */
 export function rutaSegura(valor: unknown, porDefecto = "/cuenta"): string {
   if (typeof valor !== "string" || valor.length > 200) return porDefecto;
-  if (!valor.startsWith("/") || valor.startsWith("//") || valor.startsWith("/\\") || /[\r\n\t]/.test(valor)) return porDefecto;
+  if (!valor.startsWith("/") || valor.startsWith("//") || valor.startsWith("/\\")) return porDefecto;
+  // Solo caracteres normales de una ruta (auditoría 2026-10-09: un carácter raro rompía la redirección con error 500)
+  if (!/^\/[A-Za-z0-9\-._~/?=&%#+]*$/.test(valor) || /(^|\/)\.\.?(\/|$)/.test(valor)) return porDefecto;
   return valor;
 }
 

@@ -1,7 +1,7 @@
 import { createHmac } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
-import { crearClienteAdmin } from "@/lib/supabase/admin";
+import { claveDerivada, crearClienteAdmin } from "@/lib/supabase/admin";
 import { urlSitio } from "@/lib/sitio";
 import { configSupabase } from "@/lib/supabase/config";
 
@@ -11,7 +11,7 @@ import { configSupabase } from "@/lib/supabase/config";
  * que ignora lugares no publicados. No guarda nada de la persona (ni IP, ni cuenta).
  * Son números orientativos: alguien con intención podría inflarlos; no deciden nada importante.
  * Versión 3 (paso 13.4): con límite. Se calcula una "huella" cifrada de la conexión y el día (HMAC con una clave
- * del servidor) y la base cuenta como máximo 20 veces por día el mismo evento de un lugar por huella (migración 0011).
+ * del servidor, derivada en admin.ts) y la base cuenta como máximo 20 veces por día el mismo evento de un lugar por huella (migración 0011).
  * La IP no se guarda ni se puede recuperar de la huella, y la huella cambia cada día.
  */
 function huella(request: NextRequest): string {
@@ -19,8 +19,7 @@ function huella(request: NextRequest): string {
   // IPv6: se usa el bloque /64 (una misma conexión puede cambiar las últimas partes cuando quiera)
   const ip = crudo.includes(":") ? crudo.split(":").slice(0, 4).join(":") : crudo;
   const dia = new Date(Date.now() - 5 * 3600_000).toISOString().slice(0, 10); // día en Ecuador
-  const clave = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
-  return createHmac("sha256", clave).update(`evento:${dia}:${ip}`).digest("hex");
+  return createHmac("sha256", claveDerivada("huella-eventos")).update(`evento:${dia}:${ip}`).digest("hex");
 }
 const esquema = z.object({ lugar: z.uuid(), tipo: z.enum(["views", "whatsapp", "route", "video"]) });
 

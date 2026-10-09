@@ -38,7 +38,14 @@ export default function Privacidad() {
             <b>Tus reseñas:</b> las estrellas, el texto y la fecha. Son públicas y se muestran con tu nombre visible.
           </li>
           <li>
-            <b>Tus reportes:</b> el motivo por el que reportas una reseña. Solo lo ve el equipo que modera.
+            <b>Tus reportes:</b> el motivo por el que reportas una reseña, un lugar o un video. Solo lo ve el equipo que modera.
+          </li>
+          <li>
+            <b>Tus lugares guardados:</b> la lista de favoritos de tu cuenta. Solo la ves tú.
+          </li>
+          <li>
+            <b>Si tienes un negocio en la guía:</b> qué cuenta lo maneja (no se muestra en público), las fotos, el video, los enlaces a tus redes
+            y lo que cambias en tu ficha (lo revisa el equipo que modera).
           </li>
           <li>
             <b>Solicitudes de negocios:</b> el nombre del negocio, su categoría y sector, el nombre de quien la envía, el WhatsApp y la descripción. El
@@ -46,7 +53,10 @@ export default function Privacidad() {
           </li>
           <li>
             <b>Datos técnicos:</b> las cookies que mantienen tu sesión abierta y la dirección IP que usa el captcha para distinguir personas de robots.
-            No usamos cookies de publicidad ni de seguimiento.
+            Para que nadie infle las estadísticas de un negocio, guardamos una <b>huella cifrada</b> de tu conexión (no la IP: no se puede volver a
+            sacar de la huella) que cambia cada día y se borra a los 2 días. Si algo falla en la página, anotamos el error (la página y el
+            mensaje, tapando correos y teléfonos) y lo guardamos 30 días. Las estadísticas para los dueños son solo números por día, sin datos de
+            quién visitó. No usamos cookies de publicidad ni de seguimiento.
           </li>
         </ul>
       </section>
@@ -69,6 +79,7 @@ export default function Privacidad() {
           <li>Vercel: el servidor donde vive la página.</li>
           <li>Cloudflare Turnstile: el captcha de los formularios.</li>
           <li>Google: solo si eliges entrar con Google.</li>
+          <li>GitHub: guarda las copias de seguridad de la base, cifradas con una contraseña que solo tenemos nosotros.</li>
         </ul>
         <p className="mt-3">Estos servicios pueden guardar los datos fuera de Ecuador.</p>
       </section>
@@ -76,8 +87,10 @@ export default function Privacidad() {
       <section>
         <h2>Cuánto tiempo los guardamos</h2>
         <p>
-          Mientras tu cuenta exista. Si la borras, se eliminan al momento tu cuenta, tu nombre visible, tus reseñas y tus reportes. Las solicitudes
-          de negocios se guardan mientras el negocio esté en la guía o haga falta para responder a la solicitud.
+          Mientras tu cuenta exista. Si la borras, se eliminan al momento tu cuenta, tu nombre visible, tus reseñas, tus reportes y tus lugares
+          guardados. Los negocios que manejabas siguen en la guía, pero sin tu cuenta. Las copias de seguridad cifradas se guardan 90 días, así
+          que tus datos desaparecen de ellas a más tardar en ese plazo. Las solicitudes de negocios se guardan mientras el negocio esté en la guía
+          o haga falta para responder; las rechazadas se borran solas a los 180 días.
         </p>
       </section>
 

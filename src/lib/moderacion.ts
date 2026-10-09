@@ -25,6 +25,7 @@ const MOTIVOS: Record<string, string> = {
   palabra: "tiene palabras que no se permiten en la guía. Cámbialas y vuelve a guardar.",
   enlace: "no puede llevar enlaces a otras páginas.",
   telefono: "no puede llevar números de teléfono. El WhatsApp del negocio tiene su propio campo.",
+  reservado: "no puede parecer un nombre oficial de la guía (admin, soporte, Mi Lindo…). Elige otro.",
 };
 
 export function mensajeModeracion(error: { message?: string } | null | undefined): string | null {

@@ -54,7 +54,7 @@ export async function solicitarRegistro(_previo: EstadoSolicitud, datos: FormDat
   if (!categoria.data) return { estado: "error", mensaje: "Revisa los campos marcados", errores: { categoria: "Elige una categoría de la lista" }, valores, intento: Date.now() };
   if (!ciudad.data) return { estado: "error", mensaje: "No se pudo enviar. Inténtalo de nuevo.", valores, intento: Date.now() };
 
-  // Evita llenar la cola: como máximo 3 solicitudes pendientes por cuenta
+  // Evita llenar la cola: como máximo 3 solicitudes pendientes por cuenta (aviso rápido; la base lo exige con candado, 0013)
   const { count } = await db.from("business_requests").select("id", { count: "exact", head: true }).eq("user_id", usuario.id).eq("status", "pendiente");
   if ((count ?? 0) >= 3) return { estado: "error", mensaje: "Ya tienes 3 solicitudes esperando revisión. Espera a que las revisemos.", valores, intento: Date.now() };
 
@@ -68,6 +68,8 @@ export async function solicitarRegistro(_previo: EstadoSolicitud, datos: FormDat
     description: r.data.descripcion || null,
     user_id: usuario.id,
   });
+  if (error?.message?.includes("limite_solicitudes"))
+    return { estado: "error", mensaje: "Ya tienes 3 solicitudes esperando revisión. Espera a que las revisemos.", valores, intento: Date.now() };
   if (error) return { estado: "error", mensaje: mensajeModeracion(error) ?? "No se pudo enviar la solicitud. Inténtalo de nuevo.", valores, intento: Date.now() };
   return { estado: "ok", negocio: r.data.negocio };
 }

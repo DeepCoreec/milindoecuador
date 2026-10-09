@@ -1,7 +1,9 @@
 # Copia de seguridad semanal de la base de datos (paso 5.6).
 # - Corre cada lunes a las 03:17 de Guayaquil (08:17 UTC) y también a mano desde la pestaña Actions.
 # - La copia sale CIFRADA con contraseña (tiene correos de usuarios): sin la contraseña no se puede leer.
-# - Se guarda 90 días como "artifact" del flujo.
+# - Se guarda 90 días como "artifact" del flujo. OJO: si el repositorio es PÚBLICO, cualquiera con cuenta de GitHub
+#   puede bajar el archivo (cifrado). Por eso: repositorio privado y una CLAVE_COPIAS larga y al azar (25+ caracteres).
+# - No copia sesiones ni tokens de las cuentas (auditoría 2026-10-09): si la copia se filtrara, no sirve para entrar.
 # Necesita 2 secretos en GitHub → Settings → Secrets and variables → Actions:
 #   SUPABASE_DB_URL  cadena de conexión de Supabase (Project Settings → Database → Connection string, "Session pooler")
 #   CLAVE_COPIAS     contraseña larga para cifrar; guárdala también fuera de GitHub (sin ella la copia no sirve)
@@ -44,15 +46,17 @@ jobs:
           set -euo pipefail
           fecha=$(TZ=America/Guayaquil date +%Y-%m-%d)
           # pg_dump 17 sirve para servidores 15, 16 y 17. Solo datos de la guía (public) y cuentas (auth).
-          docker run --rm -e DB postgres:17 sh -c 'pg_dump "$DB" --format=custom --no-owner --no-privileges --schema=public --schema=auth' > copia.dump
+          docker run --rm -e DB postgres:17 sh -c 'pg_dump "$DB" --format=custom --no-owner --no-privileges --schema=public --schema=auth --exclude-table-data=auth.sessions --exclude-table-data=auth.refresh_tokens --exclude-table-data=auth.one_time_tokens --exclude-table-data=auth.flow_state --exclude-table-data=auth.mfa_challenges' > copia.dump
           test -s copia.dump
-          gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase "$CLAVE" -o "copia-$fecha.dump.gpg" copia.dump
+          # La contraseña entra por la entrada estándar (no queda visible en la lista de procesos)
+          if [ "${#CLAVE}" -lt 25 ]; then echo "::error::CLAVE_COPIAS es muy corta (mínimo 25 caracteres)"; exit 1; fi
+          printf '%s' "$CLAVE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --symmetric --cipher-algo AES256 -o "copia-$fecha.dump.gpg" copia.dump
           shred -u copia.dump
           ls -la "copia-$fecha.dump.gpg"
 
       - name: Guardar la copia cifrada (90 días)
         if: steps.revisar.outputs.listo == 'si'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2 (fijado por SHA; Dependabot lo actualiza)
         with:
           name: copia-base
           path: copia-*.dump.gpg

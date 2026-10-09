@@ -471,6 +471,30 @@ check("el admin los ve y los marca resueltos", r.rows?.length === 2, r);
 r = await as("authenticated", ADM, `update public.error_log set message = 'cambiado' returning id`);
 check("pero no cambia su contenido", !!r.error, r);
 
+console.log("\nArreglos de la auditoría (0013)");
+await db.exec(`insert into auth.users (id, email, raw_user_meta_data) values
+  ('00000000-0000-0000-0000-0000000000d1', 'd1@test.com', '{"full_name":"Mierda Puta"}'),
+  ('00000000-0000-0000-0000-0000000000d2', 'd2@test.com', '{"full_name":"Soporte MiLindo"}'),
+  ('00000000-0000-0000-0000-0000000000d3', 'd3@test.com', '{"name":"Ana\u200b María"}')`);
+r = await db.query(`select id, display_name from public.profiles where id::text like '%0000000000d%' order by id`);
+check("al crear la cuenta, un nombre con insultos queda como Visitante", r.rows[0]?.display_name === "Visitante", r.rows);
+check("y uno que imita a la guía también", r.rows[1]?.display_name === "Visitante", r.rows);
+check("las letras invisibles del nombre de Google se quitan (no cortan el registro)", r.rows[2]?.display_name === "Ana M.", r.rows);
+r = await as("authenticated", A, `update public.profiles set display_name = 'Admin Oficial' where id = $1`, [A]);
+check("al editar, un nombre reservado se rechaza", /texto_no_permitido:nombre:reservado/.test(r.error ?? ""), r);
+r = await as("authenticated", A, `update public.profiles set display_name = 'Ana Lucía' where id = $1 returning id`, [A]);
+check("un nombre normal se guarda", r.rows?.length === 1, r);
+const sol = (n) => as("service_role", "", `insert into public.business_requests (business_name, category_id, city_id, contact_name, whatsapp, user_id) values ($1, $2, $3, 'Ana', '593991234567', $4)`, [`Negocio ${n}`, cat, gye, B]);
+for (let i = 1; i <= 3; i++) await sol(i);
+r = await sol(4);
+check("máximo 3 solicitudes pendientes por cuenta, contado en la base", /limite_solicitudes/.test(r.error ?? ""), r);
+await db.exec(`set session_replication_role = replica; update public.business_requests set status = 'rechazada', updated_at = now() - interval '200 days' where business_name = 'Negocio 1'; set session_replication_role = origin;`); // sin el disparador de updated_at
+await sol(5);
+r = await db.query(`select count(*)::int n from public.business_requests where business_name = 'Negocio 1'`);
+check("las solicitudes rechazadas hace más de 180 días se borran solas", r.rows[0].n === 0, r.rows);
+r = await as("service_role", "", `insert into public.place_photos (place_id, storage_path, alt_text) values ($1, 'lugares/x/0.webp', 'Foto repetida')`, [P["lugar-5"]]);
+check("una misma foto no se registra dos veces", !!r.error, r);
+
 console.log("\nDatos iniciales (supabase/seed.sql)");
 const seed = readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8");
 await db.exec(seed);

@@ -8,7 +8,10 @@ import { DIAS_DESTACADO, nuevoVencimiento } from "@/lib/planes";
 import { mensajeModeracion } from "@/lib/moderacion";
 import { aSlug, slugLibre } from "@/lib/slug";
 import { esEnlaceCorto } from "@/lib/ubicacion";
+import { firmaValida } from "@/lib/firmaArchivo";
+import { urlPublicaFoto } from "@/lib/fotos";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
+import { exigirConfigSupabase } from "@/lib/supabase/config";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import {
   esquemaDecision,
@@ -270,6 +273,10 @@ export async function registrarFoto(_previo: EstadoAdmin, datos: FormData): Prom
   if (!r.data.camino.startsWith(`lugares/${r.data.lugar}/`)) return { estado: "error", mensaje: "La foto no es de este lugar" };
   await requireAdmin();
   const db = await crearClienteServidor();
+  if (!(await firmaValida(urlPublicaFoto(exigirConfigSupabase().url, r.data.camino), ["webp"]))) {
+    await crearClienteAdmin().storage.from("fotos-lugares").remove([r.data.camino]);
+    return { estado: "error", mensaje: "Ese archivo no es una foto válida. Vuelve a elegirla." };
+  }
   const { data: ultima } = await db
     .from("place_photos")
     .select("sort_order")

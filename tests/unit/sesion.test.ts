@@ -8,7 +8,7 @@ describe("rutaSegura", () => {
     expect(rutaSegura("/cuenta?tab=1")).toBe("/cuenta?tab=1");
   });
   it("rechaza todo lo que pueda mandar a otro sitio", () => {
-    for (const malo of ["https://malo.com", "//malo.com", "/\\malo.com", "malo.com", "javascript:alert(1)", "/a\r\nSet-Cookie: x", "", null, 5, "/" + "a".repeat(300)]) {
+    for (const malo of ["https://malo.com", "//malo.com", "/\\malo.com", "malo.com", "javascript:alert(1)", "/a\r\nSet-Cookie: x", "", null, 5, "/" + "a".repeat(300), "/\u3002evil", "/.//evil.example", "/a/../b", "/\t/evil.com"]) {
       expect(rutaSegura(malo)).toBe("/cuenta");
     }
   });

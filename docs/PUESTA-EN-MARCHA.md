@@ -127,8 +127,8 @@ El código está en la rama `v3-video`. Lee columnas y tablas nuevas: **primero 
 1. **Base de datos** — Supabase → SQL Editor → **+** (consulta nueva) → pega todo
    `supabase/migrations/0009_video_y_redes.sql` → **Run**. Avisará "destructive operation" (cambia una regla de los
    reportes): es normal, toca **Run query**. Debe decir "Success".
-   Después, una consulta nueva para cada uno, en orden: `0010_buscador.sql`, `0011_limite_eventos.sql` y
-   `0012_errores.sql` → **Run** → "Success".
+   Después, una consulta nueva para cada uno, en orden: `0010_buscador.sql`, `0011_limite_eventos.sql`,
+   `0012_errores.sql` y `0013_auditoria.sql` → **Run** → "Success".
 2. **Comprobar** (otra consulta nueva, pega y Run). Debe salir una fila con `videos-lugares | true | 52428800`:
    ```sql
    select id, public, file_size_limit from storage.buckets where id = 'videos-lugares';

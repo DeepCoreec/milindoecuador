@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import { limpiarError } from "@/lib/errores";
 
 describe("limpiarError", () => {
+  it("no guarda lo que va entre comillas (suele ser lo que mandó alguien)", () => {
+    expect(limpiarError(new Error('Unexpected token \'z\', "zAUDa visitá mi sitio" is not valid JSON'), "/", "action").mensaje).toBe('Unexpected token "…", "…" is not valid JSON');
+  });
+
   it("guarda solo la ruta, sin lo que buscó la persona", () => {
     expect(limpiarError(new Error("x"), "/buscar?q=mi+casa", "render").ruta).toBe("/buscar");
   });

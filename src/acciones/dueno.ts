@@ -5,8 +5,10 @@ import { ubicacionSinEnlaceCorto } from "@/acciones/ubicacion";
 import { obtenerUsuario } from "@/lib/auth";
 import { leerHorario } from "@/lib/horario";
 import { mensajeModeracion } from "@/lib/moderacion";
+import { firmaValida } from "@/lib/firmaArchivo";
+import { urlPublicaFoto } from "@/lib/fotos";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
-import { configSupabase } from "@/lib/supabase/config";
+import { configSupabase, exigirConfigSupabase } from "@/lib/supabase/config";
 import { esEnlaceCorto } from "@/lib/ubicacion";
 import { DESCRIPCION_PENDIENTE, esquemaEstadoDueno, esquemaFotoDueno, esquemaNegocio, esquemaRespuestaDueno, esquemaSubidaDueno } from "@/lib/validacion/dueno";
 import { esquemaIdFoto, esquemaMoverFoto } from "@/lib/validacion/admin";
@@ -254,6 +256,10 @@ export async function registrarFotoDueno(_previo: EstadoDueno, datos: FormData):
       estado: "error",
       mensaje: "No encontramos la foto subida. Vuelve a intentarlo.",
     };
+  if (!(await firmaValida(urlPublicaFoto(exigirConfigSupabase().url, r.data.camino), ["webp"]))) {
+    await db.storage.from("fotos-lugares").remove([r.data.camino]);
+    return { estado: "error", mensaje: "Ese archivo no es una foto válida. Vuelve a elegirla." };
+  }
   const { data: ultima } = await db
     .from("place_photos")
     .select("sort_order")
