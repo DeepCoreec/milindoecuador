@@ -41,5 +41,9 @@ describe("manos libres: llamar a Paumi por su nombre", () => {
     expect(despuesDelNombre("quiero un encebollado")).toBeNull();
     expect(despuesDelNombre("")).toBeNull();
     expect(despuesDelNombre("papá mira")).toBeNull();
+    // Nombrarla de pasada no la llama (y nada se envía)
+    expect(despuesDelNombre("le dije a Paumi que me preste plata")).toBeNull();
+    expect(despuesDelNombre("el pami no paga")).toBeNull();
+    expect(despuesDelNombre("gracias paumi")).toBeNull();
   });
 });

@@ -46,13 +46,19 @@ const normal = (palabra: string) =>
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9ñ]/g, "");
 
+/** Palabras con las que se puede empezar a llamarla ("Oye, Paumi…"). */
+const SALUDOS = ["oye", "hola", "ey", "hey", "ok", "okey", "okay", "buenas", "ya", "a", "ah", "eh"];
+
 /**
- * Manos libres (16.2): ¿en lo que se oyó llamaron a Paumi? Devuelve lo que dijeron DESPUÉS del nombre
- * ("Paumi, ¿dónde como encebollado?" → "¿dónde como encebollado?"), o null si no la llamaron.
+ * Manos libres (16.2): ¿llamaron a Paumi? Solo si la frase EMPIEZA con su nombre ("Paumi, …" u "Oye, Paumi, …"):
+ * así una conversación cerca del teléfono que la nombra de pasada ("le dije a Paumi que…") no se envía.
+ * Devuelve lo que dijeron después del nombre ("Paumi, ¿dónde como encebollado?" → "¿dónde como encebollado?"),
+ * o null si no la llamaron (y entonces lo que se oyó se descarta).
  */
 export function despuesDelNombre(oido: string): string | null {
   const palabras = oido.trim().split(/\s+/).filter(Boolean);
-  for (let i = 0; i < palabras.length; i++) {
+  const inicio = palabras.length > 1 && SALUDOS.includes(normal(palabras[0])) ? 1 : 0;
+  for (let i = 0; i <= inicio && i < palabras.length; i++) {
     const una = normal(palabras[i]);
     const dos = i + 1 < palabras.length ? una + normal(palabras[i + 1]) : "";
     let desde = -1;

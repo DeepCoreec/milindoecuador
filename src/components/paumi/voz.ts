@@ -164,7 +164,10 @@ export function escucharSiempre({
   rec.maxAlternatives = 1;
   let parado = false;
   rec.onresult = (e) => {
-    for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) alOir(e.results[i][0].transcript);
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (parado) return; // ya se apagó (por ejemplo, la llamaron en la frase anterior)
+      if (e.results[i].isFinal) alOir(e.results[i][0].transcript);
+    }
   };
   rec.onerror = (e) => {
     if (e.error !== "aborted" && e.error !== "no-speech") alError(e.error);

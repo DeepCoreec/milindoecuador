@@ -53,6 +53,7 @@ export function Paumi() {
       return true;
     }
   });
+  const sonidoAhora = useRef(sonido); // para la respuesta que llega después (si lo apagas mientras piensa)
   const [reducir, setReducir] = useState(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   const [cuadro, setCuadro] = useState(true);
   const [tocando, setTocando] = useState(false);
@@ -70,6 +71,9 @@ export function Paumi() {
   const pararMicrofono = useRef<() => void>(() => {});
   const cierraPico = useRef<ReturnType<typeof setTimeout>>(undefined);
   const formulario = useRef<HTMLFormElement>(null);
+  const enviando = useRef(false); // candado: una pregunta a la vez (aunque lleguen dos frases o dos Enter seguidos)
+  const [notaVoz, setNotaVoz] = useState<string | null>(null);
+  const textoDeVoz = useRef(""); // lo que quedó escrito desde la voz (si se envía tal cual, responde hablando)
   // Manos libres
   const [manosLibres, setManosLibres] = useState(false);
   const [visible, setVisible] = useState(true);
@@ -138,7 +142,13 @@ export function Paumi() {
     if (pedido === null) return; // no la llamaron: no se hace nada con lo que se oyó
     pararLibre.current();
     abrir();
-    if (pedido) {
+    setUltimaLlamada(Date.now());
+    if (pedido && pideCaptcha) {
+      // La primera vez hay que confirmar que no eres un robot: queda escrito para enviarlo con un toque
+      setTexto(pedido.slice(0, MAX_MENSAJE));
+      textoDeVoz.current = pedido.slice(0, MAX_MENSAJE);
+      setNotaVoz("Te escuché. Confirma que no eres un robot y toca «Enviar».");
+    } else if (pedido) {
       porVoz.current = true;
       void enviarTexto(pedido.slice(0, MAX_MENSAJE));
     } else usarMicrofono(); // solo dijeron "Paumi": te escucha
@@ -158,6 +168,18 @@ export function Paumi() {
       setAvisoMicrofono("Apagué el manos libres porque el micrófono se cortaba seguido. Puedes volver a activarlo.");
     } else setVuelta((n) => n + 1);
   });
+
+  // Se apaga solo si pasan 10 minutos sin que la llamen (para no dejar el micrófono encendido sin querer)
+  const [ultimaLlamada, setUltimaLlamada] = useState(0);
+  useEffect(() => {
+    if (!manosLibres) return;
+    const id = setTimeout(() => {
+      pararLibre.current();
+      setManosLibres(false);
+      setAvisoMicrofono("Apagué el manos libres porque pasaron 10 minutos sin que me llames.");
+    }, 10 * 60_000);
+    return () => clearTimeout(id);
+  }, [manosLibres, ultimaLlamada]);
 
   const escuchaLibre = manosLibres && visible && !oyendo && !voz && !pensando && !ruta.startsWith("/admin") && !ruta.startsWith("/dev");
   useEffect(() => {
@@ -205,12 +227,11 @@ export function Paumi() {
       callar();
       setVoz(false);
     }
-    setSonido((s) => {
-      try {
-        localStorage.setItem(CLAVE_SONIDO, s ? "no" : "si");
-      } catch {}
-      return !s;
-    });
+    sonidoAhora.current = !sonido;
+    setSonido(!sonido);
+    try {
+      localStorage.setItem(CLAVE_SONIDO, sonido ? "no" : "si");
+    } catch {}
   }
 
   function terminoDeHablar() {
@@ -227,7 +248,7 @@ export function Paumi() {
     setCuadro(true);
     setHablando(!reducir);
     // Si le preguntaste hablando, te responde hablando (el texto sale igual en el cuadro)
-    if (porVoz.current && sonido) {
+    if (porVoz.current && sonidoAhora.current) {
       setVoz(true);
       vozConPalabras.current = false;
       hablar(entrada.texto, {
@@ -284,13 +305,16 @@ export function Paumi() {
 
   function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    porVoz.current = false;
+    porVoz.current = !!textoDeVoz.current && texto === textoDeVoz.current;
+    textoDeVoz.current = "";
     void enviarTexto(texto);
   }
 
   async function enviarTexto(t: string) {
     const limpio = t.trim();
-    if (!limpio || pensando) return;
+    if (!limpio || pensando || enviando.current) return;
+    enviando.current = true;
+    setNotaVoz(null);
     callar();
     setVoz(false);
     const captcha = formulario.current ? new FormData(formulario.current).get("cf-turnstile-response") : null;
@@ -320,6 +344,7 @@ export function Paumi() {
     } catch {
       decir({ rol: "paumi", texto: "No hay conexión. Revisa tu internet e intenta de nuevo.", aviso: true });
     } finally {
+      enviando.current = false;
       setPensando(false);
       setIntento((n) => n + 1);
       campo.current?.focus();
@@ -405,7 +430,8 @@ export function Paumi() {
                     {manosLibres && (
                       <p className="m-0 text-[13px] leading-[18px] text-rio-suave">
                         Di «{NOMBRE}» y lo que buscas, por ejemplo: «{NOMBRE}, ¿dónde como un encebollado?». Solo te escucho mientras esta página está abierta y
-                        a la vista; mientras tanto, tu navegador (en Chrome, Google) procesa lo que oye el micrófono para encontrar mi nombre.
+                        a la vista; mientras tanto, tu navegador (en Chrome, Google) procesa lo que oye el micrófono para encontrar mi nombre. Me apago
+                        solo si pasan 10 minutos sin que me llames.
                       </p>
                     )}
                   </div>
@@ -509,6 +535,11 @@ export function Paumi() {
             {oyendo && (
               <p className="m-0 text-[13px] leading-[18px] text-celeste-tinta" role="status">
                 Te escucho. Habla y cuando termines, te respondo.
+              </p>
+            )}
+            {notaVoz && !oyendo && (
+              <p className="m-0 text-[13px] leading-[18px] text-celeste-tinta" role="status">
+                {notaVoz}
               </p>
             )}
             {avisoMicrofono && !oyendo && (

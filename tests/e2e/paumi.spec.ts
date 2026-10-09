@@ -1,9 +1,17 @@
 import { expect, test } from "@playwright/test";
+import { admin } from "./ayudas";
 
 /*
  * Versión 3, fases 14 y 15: Paumi. Estas pruebas usan el simulador de la API (tests/paumi/simulador.mjs) en lugar de la IA
  * real: la página de pruebas corre con PAUMI_ACTIVO=si y PAUMI_API_URL apuntando al simulador.
  */
+// Cada corrida manda muchos mensajes desde la misma conexión: se reinicia el tope diario (que sí funciona: la API
+// responde 429 al pasarlo) para que las pruebas no dependan de cuántas veces se corrieron hoy
+test.beforeAll(async () => {
+  const { error } = await admin().from("paumi_usage").delete().gte("n", 0);
+  if (error) throw error;
+});
+
 test("Paumi recomienda lugares de la guía con tarjetas, y no se deja engañar", async ({ page }, info) => {
   test.skip(info.project.name !== "celular", "Paumi se usa sobre todo en el celular");
   await page.goto("/");
@@ -141,6 +149,14 @@ test("manos libres: despierta al decir «Paumi» con la ventana cerrada (micróf
     const dicho: string[] = [];
     w.__dicho = dicho;
     const activos = new Set<object>();
+    const guion: [string, number][][] = [
+      [
+        ["me voy pa mi casa", 1500], // en Ecuador se dice así: no debe despertarla
+        ["le dije a Paumi que me preste plata", 2000], // nombrarla de pasada tampoco
+        ["Paumi dónde como un encebollado", 3000],
+      ],
+      [["oye Paumi llévame a los restaurantes", 500]],
+    ];
     w.__escuchando = () => activos.size;
     w.SpeechRecognition = class {
       lang = "";
@@ -151,12 +167,11 @@ test("manos libres: despierta al decir «Paumi» con la ventana cerrada (micróf
       start() {
         if (!this.continuous) return;
         activos.add(this);
-        if (w.__ya) return;
-        w.__ya = true;
-        const decir = (frase: string, ms: number) =>
-          setTimeout(() => this.onresult?.({ resultIndex: 0, results: [{ isFinal: true, 0: { transcript: frase } }] }), ms);
-        decir("me voy pa mi casa", 1500); // en Ecuador se dice así: no debe despertarla
-        decir("Paumi dónde como un encebollado", 3000);
+        // Cada vez que se enciende, "se oye" lo siguiente del guion
+        const tanda = guion.shift();
+        tanda?.forEach(([frase, ms]) =>
+          setTimeout(() => this.onresult?.({ resultIndex: 0, results: [{ isFinal: true, 0: { transcript: frase } }] }), ms),
+        );
       }
       stop() {}
       abort() {
@@ -187,14 +202,21 @@ test("manos libres: despierta al decir «Paumi» con la ventana cerrada (micróf
   // Mientras está encendido, el botón flotante lo dice
   await expect(page.getByRole("button", { name: /manos libres encendido/ })).toBeVisible();
 
-  // "pa mi casa" no la despierta
-  await page.waitForTimeout(2200);
+  // "pa mi casa" y nombrarla de pasada no la despiertan
+  await page.waitForTimeout(2600);
   await expect(chat).toBeHidden();
-  // "Paumi, …" abre la ventana, envía la pregunta y responde hablando
+  // "Paumi, …" abre la ventana. La primera vez falta el captcha: lo deja escrito para enviarlo con un toque
   await expect(chat).toBeVisible({ timeout: 5000 });
-  await expect(chat.getByText("dónde como un encebollado", { exact: true })).toBeVisible();
+  await expect(chat.getByText("Confirma que no eres un robot")).toBeVisible();
+  await expect(chat.getByLabel("Escríbele a Paumi")).toHaveValue("dónde como un encebollado");
+  await chat.getByRole("button", { name: "Enviar" }).click();
   await expect(chat.getByTestId("cuadro-paumi")).toContainText("¡Te recomiendo estos encebollados!");
+  // Como la pregunta vino por voz, responde hablando
   await expect.poll(() => page.evaluate(() => (window as unknown as { __dicho: string[] }).__dicho.length)).toBe(1);
+  // Ya con el captcha hecho, "Oye, Paumi, …" se envía solo
+  await expect(chat.getByText("llévame a los restaurantes", { exact: true })).toBeVisible({ timeout: 10_000 });
+  await expect(chat.getByRole("link", { name: "Ir a la página" })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __dicho: string[] }).__dicho.length)).toBe(2);
 
   // Apagarlo deja de escuchar y quita el aviso del botón
   await chat.getByRole("button", { name: "Apagar manos libres" }).click();
