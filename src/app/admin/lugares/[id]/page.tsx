@@ -26,7 +26,7 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
   let resenas: DatosResena[] = [];
   let plan = { vigente: false, destacadoHasta: null as string | null, verificado: false };
   if (id === "nuevo") {
-    datos = { id, nombre: "", categoria: categorias[0]?.slug ?? "", sector: "", descripcion: "", dato: "", horario: "", direccion: "", ubicacion: "", horarioDias: "", precio: "", whatsapp: "", estado: "borrador" };
+    datos = { id, nombre: "", categoria: categorias[0]?.slug ?? "", sector: "", descripcion: "", dato: "", horario: "", direccion: "", ubicacion: "", horarioDias: "", precio: "", whatsapp: "", web: "", facebook: "", instagram: "", tiktok: "", youtube: "", estado: "borrador" };
   } else {
     const l = await getLugarAdmin(id);
     if (!l) notFound();
@@ -44,6 +44,11 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
       horarioDias: leerHorario(l.opening_hours) ? JSON.stringify(leerHorario(l.opening_hours)) : "",
       precio: l.price_level ? String(l.price_level) : "",
       whatsapp: l.whatsapp ? l.whatsapp.replace(/^593/, "0") : "",
+      web: l.website ?? "",
+      facebook: l.facebook ?? "",
+      instagram: l.instagram ?? "",
+      tiktok: l.tiktok ?? "",
+      youtube: l.youtube ?? "",
       estado: l.status,
     };
     if (l.status === "publicado") enlace = `/guayaquil/${categoria}/${l.slug}`;

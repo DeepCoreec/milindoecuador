@@ -14,6 +14,11 @@ const CAMPOS: Record<string, string> = {
   respuesta: "La respuesta",
   negocio: "El nombre del negocio",
   contacto: "Tu nombre",
+  web: "La página web",
+  facebook: "El enlace de Facebook",
+  instagram: "El enlace de Instagram",
+  tiktok: "El enlace de TikTok",
+  youtube: "El enlace de YouTube",
 };
 
 const MOTIVOS: Record<string, string> = {

@@ -63,6 +63,11 @@ export default async function PaginaMiNegocio({ params }: PageProps<"/mi-negocio
               horarioDias: n.horarioDias ? JSON.stringify(n.horarioDias) : "",
               precio: n.precio ? String(n.precio) : "",
               whatsapp: n.whatsapp ? n.whatsapp.replace(/^593/, "0") : "",
+              web: n.enlaces.web ?? "",
+              facebook: n.enlaces.facebook ?? "",
+              instagram: n.enlaces.instagram ?? "",
+              tiktok: n.enlaces.tiktok ?? "",
+              youtube: n.enlaces.youtube ?? "",
               estado: n.estado,
             }}
           />

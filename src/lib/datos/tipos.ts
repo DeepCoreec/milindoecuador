@@ -1,4 +1,5 @@
 import type { Horario } from "@/lib/horario";
+import type { Enlaces } from "@/lib/redes";
 
 /** Formas de los datos que usan las páginas. Iguales con datos de muestra o con Supabase. */
 
@@ -61,6 +62,8 @@ export type LugarDetalle = LugarResumen & {
   horarioDias?: Horario | null;
   /** Solo números, con 593 delante (columna `whatsapp`). */
   whatsapp: string | null;
+  /** Redes y página web del negocio (versión 3). */
+  enlaces?: Enlaces;
   fotos: Foto[];
   resenas: Resena[];
 };

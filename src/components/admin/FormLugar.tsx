@@ -5,6 +5,7 @@ import { guardarLugar, type EstadoLugar } from "@/acciones/admin";
 import { guardarMiNegocio } from "@/acciones/dueno";
 import { clasesBoton } from "@/components/ui/Boton";
 import { claseAyuda, claseEntrada, claseEtiqueta } from "@/components/ui/clasesFormulario";
+import { LISTA_REDES, REDES } from "@/lib/redes";
 import { CampoHorario } from "./CampoHorario";
 import { CampoUbicacion } from "./CampoUbicacion";
 
@@ -25,6 +26,12 @@ export type DatosFormLugar = {
   horarioDias: string;
   precio: string;
   whatsapp: string;
+  /** Redes y página web (versión 3). */
+  web: string;
+  facebook: string;
+  instagram: string;
+  tiktok: string;
+  youtube: string;
   estado: "borrador" | "publicado" | "oculto";
 };
 
@@ -124,6 +131,28 @@ export function FormLugar({
           </Campo>
         )}
       </div>
+      <fieldset className="m-0 grid gap-4 border-0 p-0">
+        <legend className="mb-1 p-0 text-base leading-6 font-semibold">Redes y página web (opcional)</legend>
+        <p className={`m-0 ${claseAyuda}`}>Pega el enlace de tu perfil (en la app: «Compartir» → «Copiar enlace») o escribe tu usuario con @.</p>
+        <div className="grid gap-5 sm:grid-cols-2">
+          {LISTA_REDES.map((red) => (
+            <Campo key={red} id={`l-${red}`} etiqueta={REDES[red].etiqueta}>
+              <input
+                id={`l-${red}`}
+                name={red}
+                inputMode="url"
+                autoComplete="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                maxLength={300}
+                defaultValue={v[red]}
+                placeholder={red === "web" ? "www.minegocio.com" : red === "youtube" ? "youtube.com/@minegocio" : "@minegocio"}
+                className={claseEntrada}
+              />
+            </Campo>
+          ))}
+        </div>
+      </fieldset>
       {estado.estado === "error" && (
         <div role="alert" className="grid gap-1 text-sm leading-5 text-error">
           <b>{estado.mensaje}</b>

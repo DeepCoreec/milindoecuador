@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireUsuario, type Usuario } from "@/lib/auth";
 import { urlPublicaFoto } from "@/lib/fotos";
 import { leerHorario, type Horario } from "@/lib/horario";
+import { enlacesDeFila, type Enlaces } from "@/lib/redes";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { exigirConfigSupabase } from "@/lib/supabase/config";
 
@@ -77,6 +78,7 @@ export type MiNegocio = {
   horarioDias: Horario | null;
   precio: number | null;
   whatsapp: string | null;
+  enlaces: Enlaces;
   fotos: { id: string; src: string; alt: string }[];
   resenas: {
     id: string;
@@ -95,7 +97,7 @@ export async function getMiNegocio(usuario: Usuario, lugarId: string): Promise<M
   const { data: l } = await db
     .from("places")
     .select(
-      "id, slug, name, status, sector, description, short_fact, hours, address, latitude, longitude, opening_hours, price_level, whatsapp, categories(slug, name), cities(slug)",
+      "id, slug, name, status, sector, description, short_fact, hours, address, latitude, longitude, opening_hours, price_level, whatsapp, website, facebook, instagram, tiktok, youtube, categories(slug, name), cities(slug)",
     )
     .eq("id", lugarId)
     .eq("owner_id", usuario.id)
@@ -115,6 +117,11 @@ export async function getMiNegocio(usuario: Usuario, lugarId: string): Promise<M
         opening_hours: unknown;
         price_level: number | null;
         whatsapp: string | null;
+        website: string | null;
+        facebook: string | null;
+        instagram: string | null;
+        tiktok: string | null;
+        youtube: string | null;
         categories: { slug: string; name: string } | null;
         cities: { slug: string } | null;
       }[]
@@ -159,6 +166,7 @@ export async function getMiNegocio(usuario: Usuario, lugarId: string): Promise<M
     horarioDias: leerHorario(l.opening_hours),
     precio: l.price_level,
     whatsapp: l.whatsapp,
+    enlaces: enlacesDeFila(l),
     fotos: (fotos.data ?? []).map((f) => ({
       id: f.id as string,
       src: urlPublicaFoto(url, f.storage_path as string),

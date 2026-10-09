@@ -59,3 +59,11 @@ export const IconoCorazon = ({ lleno = false }: { lleno?: boolean }) => (
     <path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10Z" />
   </svg>
 );
+/** Enlace a otro sitio (redes y página web del negocio, versión 3). */
+export const IconoEnlaceExterno = () => (
+  <svg {...comun}>
+    <path d="M14 4h6v6" />
+    <path d="M20 4 11 13" />
+    <path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
+  </svg>
+);

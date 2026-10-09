@@ -156,6 +156,11 @@ const CAMPOS_LUGAR = [
   "horarioDias",
   "precio",
   "whatsapp",
+  "web",
+  "facebook",
+  "instagram",
+  "tiktok",
+  "youtube",
   "estado",
 ] as const;
 
@@ -200,6 +205,11 @@ export async function guardarLugar(_previo: EstadoLugar, datos: FormData): Promi
     opening_hours: r.data.horarioDias,
     price_level: r.data.precio,
     whatsapp: r.data.whatsapp,
+    website: r.data.web,
+    facebook: r.data.facebook,
+    instagram: r.data.instagram,
+    tiktok: r.data.tiktok,
+    youtube: r.data.youtube,
     status: r.data.estado,
   };
 

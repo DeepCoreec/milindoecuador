@@ -74,8 +74,13 @@ const ETIQUETAS: Record<string, string> = {
   latitude: "ubicación",
   price_level: "precio",
   whatsapp: "WhatsApp",
+  website: "página web",
+  facebook: "Facebook",
+  instagram: "Instagram",
+  tiktok: "TikTok",
+  youtube: "YouTube",
 };
-const CAMPOS = ["lugar", "nombre", "sector", "descripcion", "dato", "horario", "direccion", "ubicacion", "horarioDias", "precio", "whatsapp"] as const;
+const CAMPOS = ["lugar", "nombre", "sector", "descripcion", "dato", "horario", "direccion", "ubicacion", "horarioDias", "precio", "whatsapp", "web", "facebook", "instagram", "tiktok", "youtube"] as const;
 
 /** Guarda los datos de la ficha. Sale al instante (si está publicada). */
 export async function guardarMiNegocio(_previo: EstadoDueno, datos: FormData): Promise<EstadoDueno> {
@@ -95,7 +100,7 @@ export async function guardarMiNegocio(_previo: EstadoDueno, datos: FormData): P
   const db = crearClienteAdmin();
   const { data: antes } = await db
     .from("places")
-    .select("name, sector, description, short_fact, hours, address, latitude, longitude, opening_hours, price_level, whatsapp")
+    .select("name, sector, description, short_fact, hours, address, latitude, longitude, opening_hours, price_level, whatsapp, website, facebook, instagram, tiktok, youtube")
     .eq("id", m.lugar.id)
     .single();
   const fila = {
@@ -110,6 +115,11 @@ export async function guardarMiNegocio(_previo: EstadoDueno, datos: FormData): P
     opening_hours: r.data.horarioDias,
     price_level: r.data.precio,
     whatsapp: r.data.whatsapp,
+    website: r.data.web,
+    facebook: r.data.facebook,
+    instagram: r.data.instagram,
+    tiktok: r.data.tiktok,
+    youtube: r.data.youtube,
   };
   const cambiados = Object.keys(ETIQUETAS).filter((k) => {
     const a = antes?.[k as keyof typeof antes];

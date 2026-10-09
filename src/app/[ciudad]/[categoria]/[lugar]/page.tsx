@@ -8,6 +8,7 @@ import { Pie } from "@/components/layout/Pie";
 import { Estrellas } from "@/components/lugares/Estrellas";
 import { BotonCompartir } from "@/components/lugares/BotonCompartir";
 import { BotonGuardar } from "@/components/lugares/BotonGuardar";
+import { RedesLugar } from "@/components/lugares/RedesLugar";
 import { ReportarLugar } from "@/components/lugares/ReportarLugar";
 import { AbiertoAhora } from "@/components/lugares/AbiertoAhora";
 import { ContarVista, EnlaceContado } from "@/components/lugares/Estadisticas";
@@ -178,6 +179,7 @@ export default async function FichaLugar({ params }: Props) {
                 </>
               )}
             </dl>
+            {lugar.enlaces && <RedesLugar enlaces={lugar.enlaces} nombre={lugar.nombre} />}
             {whatsapp && (
               // En celular ya está arriba; aquí solo en escritorio (la envoltura evita el choque con inline-flex)
               <span className="hidden min-[900px]:contents">

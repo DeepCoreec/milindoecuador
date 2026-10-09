@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { DIAS, HORA, type Horario } from "@/lib/horario";
+import { leerEnlace, REDES, type Red } from "@/lib/redes";
 import { enEcuador, leerUbicacion, type Ubicacion } from "@/lib/ubicacion";
 
 export const esquemaDecision = z.object({
@@ -16,6 +17,26 @@ const texto = (min: number, max: number, nombre: string) =>
     .max(max, `${nombre}: máximo ${max} caracteres`)
     .refine(sinInvisibles, `${nombre}: usa solo letras, números y signos comunes`);
 const opcional = (max: number, nombre: string) => texto(0, max, nombre).transform((v) => v || null);
+
+/** Enlace de una red o de la página web (versión 3, paso 11.2): se guarda normalizado o null. */
+const enlace = (red: Red) =>
+  z
+    .string()
+    .max(400, `${REDES[red].etiqueta}: el enlace es demasiado largo`)
+    .optional()
+    .transform((v, ctx): string | null => {
+      const r = leerEnlace(red, v ?? "");
+      const { etiqueta } = REDES[red];
+      if (r === "invalido") {
+        ctx.addIssue({ code: "custom", message: `${etiqueta}: pega el enlace completo (por ejemplo, el que sale en «Compartir» → «Copiar enlace»)` });
+        return null;
+      }
+      if (r === "otra-red") {
+        ctx.addIssue({ code: "custom", message: `${etiqueta}: ese enlace no es de ${etiqueta}` });
+        return null;
+      }
+      return r;
+    });
 
 /** Datos de una ficha, con las mismas reglas que la tabla `places`. */
 export const esquemaLugar = z.object({
@@ -72,6 +93,11 @@ export const esquemaLugar = z.object({
     if (!/^9\d{8}$/.test(local)) ctx.addIssue({ code: "custom", message: "WhatsApp: escribe un celular de Ecuador, por ejemplo 099 123 4567" });
     return `593${local}`;
   }),
+  web: enlace("web"),
+  facebook: enlace("facebook"),
+  instagram: enlace("instagram"),
+  tiktok: enlace("tiktok"),
+  youtube: enlace("youtube"),
   estado: z.enum(["borrador", "publicado", "oculto"]),
 });
 

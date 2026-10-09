@@ -140,7 +140,7 @@ export async function getLugarAdmin(id: string) {
   const { data } = await db
     .from("places")
     .select(
-      "id, slug, name, sector, description, short_fact, hours, address, latitude, longitude, opening_hours, price_level, whatsapp, status, is_featured, featured_until, is_verified, categories(slug)",
+      "id, slug, name, sector, description, short_fact, hours, address, latitude, longitude, opening_hours, price_level, whatsapp, website, facebook, instagram, tiktok, youtube, status, is_featured, featured_until, is_verified, categories(slug)",
     )
     .eq("id", id)
     .returns<
@@ -158,6 +158,11 @@ export async function getLugarAdmin(id: string) {
         opening_hours: unknown;
         price_level: number | null;
         whatsapp: string | null;
+        website: string | null;
+        facebook: string | null;
+        instagram: string | null;
+        tiktok: string | null;
+        youtube: string | null;
         status: LugarAdmin["estado"];
         is_featured: boolean;
         featured_until: string | null;
