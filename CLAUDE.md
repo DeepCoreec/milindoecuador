@@ -47,6 +47,8 @@ Si una tarea es larga, divídela en sub-pasos en `docs/PROGRESO.md` y haz commit
 - Prohibido `dangerouslySetInnerHTML` con contenido de usuarios. Prohibido armar SQL concatenando texto.
 - Las acciones de admin verifican el rol en el servidor en cada llamada, no solo en la página.
 - Si el usuario pega una clave secreta en el chat, avísale que debe regenerarla.
+- Antes de cada lanzamiento, repasa **las 20 reglas** de `docs/ARQUITECTURA.md` §7 (y la skill `shipping-and-launch`)
+  y actualiza su estado. Para revisar seguridad usa la skill `security-and-hardening` y un revisor independiente.
 
 ## 5. Diseño
 

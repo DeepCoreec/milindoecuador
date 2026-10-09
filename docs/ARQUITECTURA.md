@@ -203,6 +203,34 @@ Revisión hecha el 2026-10-05 (paso 5.4), con un revisor independiente además d
 - [x] Política de privacidad publicada (borrador) y opción de borrar la cuenta funcionando
 - [ ] HSTS `preload`: dejarlo solo cuando el dominio propio esté listo; probarlo antes de enviarlo a hstspreload.org
 
+### Las 20 reglas antes de cada lanzamiento (versión 3, paso 13.2)
+
+Lista que trajo el usuario el 2026-10-09 ("20 cosas para pedirle a Claude antes de lanzar tu app"). **Antes de cada
+lanzamiento se repasa entera** (además de la skill `shipping-and-launch`) y se actualiza el estado. Cómo se cumple aquí:
+
+| # | Regla | Cómo se cumple | Estado |
+| --- | --- | --- | --- |
+| 1 | Ocultar API keys | Solo en `.env.local` y Vercel; el navegador solo recibe la clave pública | ✅ |
+| 2 | Secretos fuera de Git | `.env*` ignorado; revisar el historial con `git log -p` buscando claves antes de lanzar | ✅ (revisado 2026-10-09) |
+| 3 | Clave pública para la base | El navegador usa la anon key; la de servicio solo en `src/lib/supabase/admin.ts` (`server-only`) | ✅ |
+| 4 | Row Level Security | En todas las tablas; `npm test` lo comprueba (ninguna tabla sin RLS) | ✅ |
+| 5 | Encriptar datos sensibles | Supabase cifra la base; copias con AES-256; no guardamos tarjetas ni cédulas | ✅ |
+| 6 | Forzar la autenticación | `requireUsuario` / `requireDueno` / `requireAdmin` en el servidor, en cada acción | ✅ |
+| 7 | Restringir el acceso a registros | Dueño solo su negocio (si no, "no existe"); RLS por fila | ✅ |
+| 8 | Bloquear manipulación de campos | Permisos por columna: nadie cambia rol, dueño, verificado, destacado ni la marca de revisión de video | ✅ |
+| 9 | Proteger las cookies de sesión | `SameSite=Lax` y solo HTTPS; `HttpOnly` llega en el paso 13.3 | 🟡 13.3 |
+| 10 | Hashear contraseñas | Supabase Auth con bcrypt | ✅ |
+| 11 | Rate limiting | Límites diarios en la base (reseñas, reportes, dueños, fotos, videos, solicitudes) y Supabase Auth; falta `/api/evento` (13.4) | 🟡 13.4 |
+| 12 | Protección contra bots | Turnstile al crear cuenta, entrar, reseñar y registrar negocio | ✅ |
+| 13 | Parametrizar queries | Nunca SQL armado con texto (regla de CLAUDE.md §4) | ✅ |
+| 14 | Validar inputs | Zod en el servidor en cada acción, más reglas en la base | ✅ |
+| 15 | Sanitizar contenido | React escapa todo, `dangerouslySetInnerHTML` prohibido, filtro de palabras, enlaces y teléfonos | ✅ |
+| 16 | Restringir archivos | Fotos: WebP ≤ 5 MB; videos: mp4/mov/webm ≤ 50 MB; permisos firmados de un solo uso; tamaño medido en el bucket | ✅ |
+| 17 | Devolver solo lo necesario | Lectura por columnas: el público no ve correos, dueños, roles ni tamaños de archivo | ✅ |
+| 18 | Security headers | CSP, HSTS, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy, COOP | ✅ |
+| 19 | Forzar HTTPS | Vercel lo obliga y HSTS lo fija | ✅ |
+| 20 | Escanear dependencias | Dependabot semanal y `npm audit`; falta que el usuario active las alertas en GitHub (paso 1.2) | 🟡 usuario |
+
 Regla para migraciones futuras: Supabase da todos los permisos a `anon` y `authenticated` en cada tabla nueva.
 Cada migración que cree una tabla debe hacer `revoke all` y dar solo lo necesario, además de RLS.
 

@@ -10,7 +10,7 @@
 > Plan v1: `docs/PLAN.md` · Plan v2: `docs/PLAN-V2.md` · Plan v3: `docs/PLAN-V3.md` · Puesta en marcha de cuentas: `docs/PUESTA-EN-MARCHA.md`
 
 - **Fase actual (2026-10-08):** versión 2 PUBLICADA y "Entrar con Google" funcionando (6.6). El usuario ejecutó 0004→0008 en el Supabase real (comprobado con consultas: dueño, columnas, tablas, funciones y permisos correctos) y la rama `v2` se unió a `main`. **Siguiente paso:** (usuario) ajustes de Auth de PUESTA-EN-MARCHA §8.2 (Confirm email, largo mínimo 8, Secure password change); probar en la página real §8.4; luego dominio + Resend (6.3–6.6) para que otras personas puedan crear cuenta, y cerrar las puertas 6 a 10 con la página real
-- **2026-10-09:** versión 3 en marcha (el usuario dio el ok). Fase 11 se construye en la rama `v3-video` (lee columnas de 0009: no pasar a main hasta que el usuario ejecute 0009 en el Supabase real). Fase 11 construida (11.1–11.6). **Siguiente paso: (usuario) ejecutar 0009 y 0010 en el Supabase real (PUESTA-EN-MARCHA §9); después Claude une `v3-video` a `main`; mientras tanto se avanza la fase 12 en la misma rama. **Siguiente paso: 13.2**
+- **2026-10-09:** versión 3 en marcha (el usuario dio el ok). Fase 11 se construye en la rama `v3-video` (lee columnas de 0009: no pasar a main hasta que el usuario ejecute 0009 en el Supabase real). Fase 11 construida (11.1–11.6). **Siguiente paso: (usuario) ejecutar 0009 y 0010 en el Supabase real (PUESTA-EN-MARCHA §9); después Claude une `v3-video` a `main`; mientras tanto se avanza la fase 12 en la misma rama. **Siguiente paso: 13.3**
 - **Último paso terminado:** ver el último `[x]` de las secciones "Versión 2" y "Versión 3"
 - **Siguiente paso:** el primer `[ ]` de la sección "Versión 3" que no diga "(usuario)". Los pasos "(usuario)" son clics en cuentas del usuario (Claude no tiene acceso a ellas): se le guía paso a paso. Los pasos "(usuario)" pendientes de la versión 2 siguen abiertos
 - **Página real:** https://milindoecuador.vercel.app · Supabase `rlwcvrkyojcqgjigoyan` (São Paulo) · Turnstile "Mi Lindo Ecuador" · admin: deepcoreec@gmail.com
@@ -178,7 +178,7 @@
 
 ### Fase 13 · Seguridad y herramientas
 - [x] 13.1 Leer y agregar las 4 skills de Agent Skills a `.claude/skills/` — 2026-10-09: leídas completas (sin nada raro: solo guías de buenas prácticas) y copiadas sin cambios del commit 1401c8b (2026-10-03) con su licencia MIT: `security-and-hardening` (+ `hardening-patterns.md`), `code-review-and-quality`, `shipping-and-launch`, `observability-and-instrumentation`. `.claude/skills/README.md` explica de dónde vienen y que las reglas de CLAUDE.md mandan (nada de librerías nuevas sin permiso aunque una skill las sugiera)
-- [ ] 13.2 Las 20 reglas de seguridad como lista en `docs/ARQUITECTURA.md` §7 y enlace en `CLAUDE.md`
+- [x] 13.2 Las 20 reglas de seguridad como lista en `docs/ARQUITECTURA.md` §7 y enlace en `CLAUDE.md` — 2026-10-09: tabla con cómo se cumple cada regla en este proyecto y su estado (17 ✅; pendientes: 9 cookies → 13.3, 11 límite de visitas → 13.4, 20 alertas de GitHub → usuario). CLAUDE.md §4 pide repasarla antes de cada lanzamiento
 - [ ] 13.3 Subida de fotos del admin con permiso firmado y cookies de sesión `HttpOnly`
 - [ ] 13.4 Límite en `/api/evento` (sin guardar la IP)
 - [ ] 13.5 Avisos de errores en producción (observability) y revisión de seguridad independiente
