@@ -507,3 +507,16 @@ export async function decidirLugarReportado(_previo: EstadoAdmin, datos: FormDat
     mensaje: r.data.decision === "mostrar" ? "Se ve otra vez" : "Queda oculta",
   };
 }
+
+/** Marca un error del servidor como resuelto (versión 3, paso 13.5). Si vuelve a pasar, aparece otra vez. */
+export async function resolverError(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaRevisado.safeParse({ cambio: datos.get("error") });
+  if (!r.success) return { estado: "error", mensaje: "Datos inválidos" };
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  const q = db.from("error_log").update({ resolved: true }).eq("resolved", false);
+  const { error } = r.data.cambio === "todos" ? await q : await q.eq("id", r.data.cambio);
+  if (error) return { estado: "error", mensaje: "No se pudo marcar" };
+  revalidatePath("/admin", "layout");
+  return { estado: "ok", mensaje: "Resuelto" };
+}

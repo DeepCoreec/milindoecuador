@@ -16,15 +16,16 @@ export async function getContadores() {
     if (extra) q = q.eq(extra[0], extra[1]);
     return (await q).count ?? 0;
   };
-  const [pendientes, publicados, reportes, cambios, lugaresReportados, videosReportados] = await Promise.all([
+  const [pendientes, publicados, reportes, cambios, lugaresReportados, videosReportados, errores] = await Promise.all([
     contar("business_requests", "status", "pendiente"),
     contar("places", "status", "publicado"),
     contar("review_reports", "resolved", false),
     contar("place_changes", "reviewed", false),
     contar("place_reports", "resolved", false, ["target", "lugar"]),
     contar("place_reports", "resolved", false, ["target", "video"]),
+    contar("error_log", "resolved", false),
   ]);
-  return { pendientes, publicados, reportes, cambios, lugaresReportados, videosReportados };
+  return { pendientes, publicados, reportes, cambios, lugaresReportados, videosReportados, errores };
 }
 
 export type Solicitud = {
@@ -422,4 +423,29 @@ export async function getVideosAdmin(urlSupabase: string): Promise<VideoAdmin[]>
       motivos: motivos.get(v.place_id) ?? [],
     }))
     .sort((a, b) => b.motivos.length - a.motivos.length);
+}
+
+export type ErrorRegistrado = { id: number; ruta: string; tipo: string; mensaje: string; codigo: string | null; veces: number; primera: string; ultima: string; resuelto: boolean };
+
+/** Errores del servidor en producción (versión 3, paso 13.5): los sin resolver primero. */
+export async function getErrores(): Promise<ErrorRegistrado[]> {
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  const { data } = await db
+    .from("error_log")
+    .select("id, route, kind, message, digest, times, first_seen, last_seen, resolved")
+    .order("resolved")
+    .order("last_seen", { ascending: false })
+    .limit(100);
+  return (data ?? []).map((e) => ({
+    id: e.id as number,
+    ruta: e.route as string,
+    tipo: e.kind as string,
+    mensaje: e.message as string,
+    codigo: (e.digest as string | null) ?? null,
+    veces: e.times as number,
+    primera: e.first_seen as string,
+    ultima: e.last_seen as string,
+    resuelto: e.resolved as boolean,
+  }));
 }

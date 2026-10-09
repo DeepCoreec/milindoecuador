@@ -29,6 +29,7 @@ export default async function LayoutAdmin({ children }: LayoutProps<"/admin">) {
             { href: "/admin/lugares-reportados", texto: "Lugares reportados", contador: c.lugaresReportados },
             { href: "/admin/videos", texto: "Videos", contador: c.videosReportados },
             { href: "/admin/palabras", texto: "Palabras prohibidas" },
+            { href: "/admin/errores", texto: "Errores", contador: c.errores },
           ]}
         />
         <form action={salir} className="mt-1">

@@ -16,6 +16,7 @@
 | Captcha | Cloudflare Turnstile | Gratis y sin rompecabezas molestos |
 | Pruebas | Vitest (unidades) y Playwright (flujos completos) | Comprobar cada puerta de fase |
 | Hosting | Vercel | Publica solo con cada `git push` |
+| Errores en producción (13.5) | `src/instrumentation.ts` de Next.js + tabla `error_log` (sin librerías) | Ver en el panel lo que falla en la página real |
 | Chatbot Paumi (fases 14–16) | Vercel AI SDK (`ai`, `@ai-sdk/anthropic`), aprobado 2026-10-09 | Conversación, herramientas y respuestas en vivo con Claude; solo para Paumi |
 
 Cualquier otra librería necesita aprobación del usuario.

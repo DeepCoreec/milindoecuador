@@ -215,3 +215,22 @@ test("la sesión vive en cookies httpOnly y el menú igual dice «Mi cuenta»", 
   await page.getByRole("button", { name: "Salir" }).click();
   await expect(page.getByRole("banner").getByRole("link", { name: "Entrar" })).toBeVisible();
 });
+
+test("el admin ve los errores del servidor y los marca resueltos", async ({ page, context, baseURL }, info) => {
+  test.skip(info.project.name !== "escritorio", "el admin usa la computadora");
+  const db = admin();
+  await db.rpc("anotar_error", { ruta: "/e2e-prueba", tipo: "render", mensaje: `${marca} algo falló` });
+  await db.rpc("anotar_error", { ruta: "/e2e-prueba", tipo: "render", mensaje: `${marca} algo falló` });
+  const adm = await crearUsuario("admin-errores", true);
+  await iniciarSesion(context, adm.correo, baseURL!);
+  await page.goto("/admin/errores");
+  const fila = page.locator("li", { hasText: `${marca} algo falló` });
+  await expect(fila.getByText("2 veces")).toBeVisible();
+  await fila.getByRole("button", { name: /Marcar como resuelto/ }).click();
+  await expect(fila.getByText("Resuelto").first()).toBeVisible();
+  await db.from("error_log").delete().like("message", `${marca}%`);
+  // La página de salud responde
+  const salud = await page.request.get("/api/salud");
+  expect(salud.status()).toBe(200);
+  expect((await salud.json()).ok).toBe(true);
+});

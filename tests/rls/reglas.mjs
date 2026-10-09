@@ -457,6 +457,20 @@ check("no acepta una IP en lugar de la huella cifrada", !!r.error, r);
 r = await as("authenticated", A, `select * from public.event_limits`);
 check("las huellas no se leen desde el navegador", !!r.error, r);
 
+console.log("\nErrores del servidor (0012)");
+r = await as("anon", "", `select public.anotar_error('/x', 'render', 'falla')`);
+check("el navegador no puede anotar errores", !!r.error, r);
+for (let i = 0; i < 3; i++) await as("service_role", "", `select public.anotar_error('/buscar', 'render', 'falla igual')`);
+await as("service_role", "", `select public.anotar_error('/buscar', 'render', 'otra falla')`);
+r = await db.query(`select message, times from public.error_log order by message`);
+check("los errores iguales se agrupan", r.rows.length === 2 && r.rows.find((x) => x.message === "falla igual")?.times === 3, r.rows);
+r = await as("authenticated", A, `select * from public.error_log`);
+check("un usuario normal no ve los errores", r.rows?.length === 0 || !!r.error, r);
+r = await as("authenticated", ADM, `update public.error_log set resolved = true returning id`);
+check("el admin los ve y los marca resueltos", r.rows?.length === 2, r);
+r = await as("authenticated", ADM, `update public.error_log set message = 'cambiado' returning id`);
+check("pero no cambia su contenido", !!r.error, r);
+
 console.log("\nDatos iniciales (supabase/seed.sql)");
 const seed = readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8");
 await db.exec(seed);

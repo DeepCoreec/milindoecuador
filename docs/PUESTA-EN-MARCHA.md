@@ -127,7 +127,8 @@ El código está en la rama `v3-video`. Lee columnas y tablas nuevas: **primero 
 1. **Base de datos** — Supabase → SQL Editor → **+** (consulta nueva) → pega todo
    `supabase/migrations/0009_video_y_redes.sql` → **Run**. Avisará "destructive operation" (cambia una regla de los
    reportes): es normal, toca **Run query**. Debe decir "Success".
-   Después, una consulta nueva para cada uno, en orden: `0010_buscador.sql` y `0011_limite_eventos.sql` → **Run** → "Success".
+   Después, una consulta nueva para cada uno, en orden: `0010_buscador.sql`, `0011_limite_eventos.sql` y
+   `0012_errores.sql` → **Run** → "Success".
 2. **Comprobar** (otra consulta nueva, pega y Run). Debe salir una fila con `videos-lugares | true | 52428800`:
    ```sql
    select id, public, file_size_limit from storage.buckets where id = 'videos-lugares';
@@ -142,3 +143,14 @@ El código está en la rama `v3-video`. Lee columnas y tablas nuevas: **primero 
    el enlace de «Compartir» de Google Maps (`maps.app.goo.gl/…`). Buscar con un error a propósito ("encebolado").
 5. **Espacio:** el plan gratis de Supabase trae 1 GB para archivos (≈ 30 videos). Mirar el uso en Supabase →
    Settings → Usage → Storage. Cuando se acerque, pasar a Supabase Pro (ver precios ese día).
+
+## 10. Aviso por correo si la página se cae (opcional, gratis)
+
+La página anota sola sus errores en el panel → **Errores**. Para además recibir un correo si la página deja de
+responder (por ejemplo, si Supabase se cae):
+
+1. Crear cuenta gratis en https://uptimerobot.com
+2. **Add New Monitor** → tipo **HTTP(s)** → URL: `https://milindoecuador.vercel.app/api/salud` (o el dominio propio
+   cuando exista) → cada **5 minutos** → avisar a tu correo.
+3. Si llega un aviso: mirar el panel → Errores, y el estado de Supabase (https://status.supabase.com) y de Vercel
+   (https://www.vercel-status.com). Pásale a Claude lo que veas.
