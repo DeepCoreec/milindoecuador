@@ -336,6 +336,80 @@ const anotados = [];
 for (let i = 0; i < 3; i++) anotados.push((await as("service_role", "", `select public.anotar_con_limite($1, $2, 'ficha', array['ficha'], 2, 'cambio') as id`, ["00000000-0000-0000-0000-0000000000c3", P["lugar-4"]])).rows?.[0]?.id);
 check("el límite atómico corta al llegar al máximo", anotados[0] != null && anotados[1] != null && anotados[2] == null, anotados);
 
+console.log("\nVideo y redes (0009)");
+r = await as("authenticated", ADM, `update public.places set instagram = 'https://www.instagram.com/milindo', website = 'https://milindo.ec/' where id = $1 returning id`, [P["lugar-1"]]);
+check("el admin guarda redes y página web", r.rows?.length === 1, r);
+r = await as("anon", "", `select instagram, website from public.places where id = $1`, [P["lugar-1"]]);
+check("las redes se leen en público", r.rows?.[0]?.instagram === "https://www.instagram.com/milindo", r);
+for (const [campo, valor, nombre] of [
+  ["facebook", "https://instagram.com/x", "un enlace de otra red en Facebook"],
+  ["instagram", "https://instagram.com.estafa.ru/x", "un dominio que imita a la red"],
+  ["youtube", "http://youtube.com/x", "un enlace sin https"],
+  ["website", "javascript:alert(1)", "un enlace que no es web"],
+  ["tiktok", "https://user@tiktok.com/x", "un enlace con usuario escondido"],
+  ["website", "https://ejemplo.com:8080/", "un enlace con puerto"],
+]) {
+  r = await as("authenticated", ADM, `update public.places set ${campo} = $2 where id = $1`, [P["lugar-1"], valor]);
+  check(`la base rechaza ${nombre}`, !!r.error, r);
+}
+r = await as("authenticated", ADM, `update public.places set youtube = 'https://youtu.be/abc', tiktok = 'https://www.tiktok.com/@milindo', facebook = 'https://m.facebook.com/milindo' where id = $1 returning id`, [P["lugar-1"]]);
+check("acepta subdominios de la red (m.facebook.com, www.tiktok.com) y youtu.be", r.rows?.length === 1, r);
+r = await as("authenticated", ADM, `update public.places set website = 'https://putas.com/' where id = $1`, [P["lugar-1"]]);
+check("los enlaces pasan por el filtro de palabras", /texto_no_permitido:web/.test(r.error ?? ""), r);
+
+const vid = (lugar, n = "11111111-1111-1111-1111-111111111111") => `lugares/${lugar}/${n}.mp4`;
+r = await as("authenticated", A, `insert into public.place_videos (place_id, storage_path, duration_seconds, size_bytes) values ($1, $2, 30, 1000)`, [P["lugar-1"], vid(P["lugar-1"])]);
+check("nadie sube un video desde el navegador (ni siendo dueño)", !!r.error, r);
+r = await as("authenticated", ADM, `insert into public.place_videos (place_id, storage_path, duration_seconds, size_bytes) values ($1, $2, 30, 1000)`, [P["lugar-1"], vid(P["lugar-1"])]);
+check("ni el admin desde el navegador (lo hace el servidor)", !!r.error, r);
+r = await as("service_role", "", `insert into public.place_videos (place_id, storage_path, duration_seconds, size_bytes) values ($1, $2, 30, 1000)`, [P["lugar-1"], vid(P["lugar-2"])]);
+check("el archivo tiene que estar en la carpeta de su lugar", !!r.error, r);
+r = await as("service_role", "", `insert into public.place_videos (place_id, storage_path, duration_seconds, size_bytes) values ($1, $2, 120, 1000)`, [P["lugar-1"], vid(P["lugar-1"])]);
+check("máximo 90 segundos", !!r.error, r);
+r = await as("service_role", "", `insert into public.place_videos (place_id, storage_path, duration_seconds, size_bytes) values ($1, $2, 30, 60000000)`, [P["lugar-1"], vid(P["lugar-1"])]);
+check("máximo 50 MB", !!r.error, r);
+r = await as("service_role", "", `insert into public.place_videos (place_id, storage_path, poster_path, duration_seconds, size_bytes) values ($1, $2, $3, 30, 1000)`, [P["lugar-1"], vid(P["lugar-1"]), `lugares/${P["lugar-1"]}/22222222-2222-2222-2222-222222222222.webp`]);
+check("el servidor guarda el video", !r.error, r);
+r = await as("service_role", "", `insert into public.place_videos (place_id, storage_path, duration_seconds, size_bytes) values ($1, $2, 30, 1000)`, [P["lugar-1"], vid(P["lugar-1"], "33333333-3333-3333-3333-333333333333")]);
+check("un solo video por negocio", !!r.error, r);
+await as("service_role", "", `insert into public.place_videos (place_id, storage_path, duration_seconds, size_bytes) values ($1, $2, 30, 1000)`, [P["lugar-7"], vid(P["lugar-7"])]);
+r = await as("anon", "", `select place_id, storage_path from public.place_videos`);
+check("en público se ve el video de un lugar publicado y no el de un borrador", r.rows?.length === 1 && r.rows[0].place_id === P["lugar-1"], r);
+r = await as("anon", "", `select size_bytes from public.place_videos`);
+check("el tamaño del archivo no se lee en público", !!r.error, r);
+r = await as("authenticated", A, `update public.place_videos set hidden = false where place_id = $1 returning place_id`, [P["lugar-1"]]);
+check("nadie cambia un video desde el navegador", !!r.error || r.rows?.length === 0, r);
+r = await as("authenticated", A, `delete from public.place_videos where place_id = $1 returning place_id`, [P["lugar-1"]]);
+check("nadie borra un video desde el navegador", !!r.error || r.rows?.length === 0, r);
+r = await as("authenticated", A, `insert into storage.objects (bucket_id, name) values ('videos-lugares', 'x.mp4')`);
+check("nadie sube al bucket de videos sin el permiso firmado", !!r.error, r);
+r = await db.query(`select public, file_size_limit, allowed_mime_types from storage.buckets where id = 'videos-lugares'`);
+check("bucket de videos: público, 50 MB, solo videos y portada WebP", r.rows[0]?.public === true && Number(r.rows[0].file_size_limit) === 52428800 && r.rows[0].allowed_mime_types.length === 4, r.rows);
+
+await db.exec(`delete from public.place_reports; update public.places set status = 'publicado', is_verified = true where slug = 'lugar-1'`);
+const C2 = "00000000-0000-0000-0000-0000000000c2";
+r = await as("authenticated", A, `insert into public.place_reports (place_id, reason, target) values ($1, 'Video inapropiado', 'video')`, [P["lugar-2"]]);
+check("no se reporta un video que no existe", !!r.error, r);
+for (const u of [A, B]) await as("authenticated", u, `insert into public.place_reports (place_id, reason, target) values ($1, 'Video inapropiado', 'video')`, [P["lugar-1"]]);
+r = await as("authenticated", A, `insert into public.place_reports (place_id, reason) values ($1, 'Estafa')`, [P["lugar-1"]]);
+check("la misma persona puede reportar el video y también la ficha", !r.error, r);
+r = await as("authenticated", A, `insert into public.place_reports (place_id, reason, target) values ($1, 'Otra vez', 'video')`, [P["lugar-1"]]);
+check("pero el video una sola vez", !!r.error, r);
+r = await db.query(`select hidden from public.place_videos where place_id = $1`, [P["lugar-1"]]);
+check("con 2 reportes el video sigue visible", r.rows[0].hidden === false, r.rows);
+await as("authenticated", C2, `insert into public.place_reports (place_id, reason, target) values ($1, 'Video inapropiado', 'video')`, [P["lugar-1"]]);
+r = await db.query(`select v.hidden, p.status from public.place_videos v join public.places p on p.id = v.place_id where v.place_id = $1`, [P["lugar-1"]]);
+check("con 3 reportes se oculta SOLO el video (aunque la ficha sea verificada)", r.rows[0].hidden === true && r.rows[0].status === "publicado", r.rows);
+r = await as("anon", "", `select place_id from public.place_videos`);
+check("el video oculto ya no se ve en público", r.rows?.length === 0, r);
+r = await db.query(`select count(*)::int n from public.place_changes where place_id = $1 and kind = 'video-oculto-por-reportes'`, [P["lugar-1"]]);
+check("y queda anotado para el admin", r.rows[0].n === 1, r.rows);
+r = await as("authenticated", ADM, `select place_id, hidden from public.place_videos`);
+check("el admin ve también los ocultos", r.rows?.length === 2, r);
+for (const t of ["video", "video"]) await as("service_role", "", `select public.contar_evento($1, $2)`, [P["lugar-2"], t]);
+r = await db.query(`select video from public.place_stats where place_id = $1`, [P["lugar-2"]]);
+check("se cuentan las reproducciones del video", r.rows[0]?.video === 2, r.rows);
+
 console.log("\nDatos iniciales (supabase/seed.sql)");
 const seed = readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8");
 await db.exec(seed);

@@ -10,7 +10,7 @@
 > Plan v1: `docs/PLAN.md` · Plan v2: `docs/PLAN-V2.md` · Plan v3: `docs/PLAN-V3.md` · Puesta en marcha de cuentas: `docs/PUESTA-EN-MARCHA.md`
 
 - **Fase actual (2026-10-08):** versión 2 PUBLICADA y "Entrar con Google" funcionando (6.6). El usuario ejecutó 0004→0008 en el Supabase real (comprobado con consultas: dueño, columnas, tablas, funciones y permisos correctos) y la rama `v2` se unió a `main`. **Siguiente paso:** (usuario) ajustes de Auth de PUESTA-EN-MARCHA §8.2 (Confirm email, largo mínimo 8, Secure password change); probar en la página real §8.4; luego dominio + Resend (6.3–6.6) para que otras personas puedan crear cuenta, y cerrar las puertas 6 a 10 con la página real
-- **2026-10-09:** se planeó la versión 3 con el usuario (`docs/PLAN-V3.md`). **Siguiente paso de código: 11.1**, pero **solo cuando el usuario diga que empecemos** (pidió no construir todavía)
+- **2026-10-09:** versión 3 en marcha (el usuario dio el ok). Fase 11 se construye en la rama `v3-video` (lee columnas de 0009: no pasar a main hasta que el usuario ejecute 0009 en el Supabase real). **Siguiente paso: 11.2**
 - **Último paso terminado:** ver el último `[x]` de las secciones "Versión 2" y "Versión 3"
 - **Siguiente paso:** el primer `[ ]` de la sección "Versión 3" que no diga "(usuario)". Los pasos "(usuario)" son clics en cuentas del usuario (Claude no tiene acceso a ellas): se le guía paso a paso. Los pasos "(usuario)" pendientes de la versión 2 siguen abiertos
 - **Página real:** https://milindoecuador.vercel.app · Supabase `rlwcvrkyojcqgjigoyan` (São Paulo) · Turnstile "Mi Lindo Ecuador" · admin: deepcoreec@gmail.com
@@ -162,7 +162,7 @@
 > Plan: `docs/PLAN-V3.md` (aprobado 2026-10-09). Orden pedido por el usuario: todo lo demás primero, Paumi al final.
 
 ### Fase 11 · Video y redes del negocio
-- [ ] 11.1 Migración 0009: enlaces de redes y web en `places`; tabla `place_videos` (1 por lugar, oculto/visible); bucket `videos-lugares` (50 MB, mp4/mov/webm + portada webp); reportes de video y ocultar solo el video con 3; tipos nuevos en `place_changes`; pruebas de reglas
+- [x] 11.1 Migración 0009: enlaces de redes y web en `places`; tabla `place_videos` (1 por lugar, oculto/visible); bucket `videos-lugares` (50 MB, mp4/mov/webm + portada webp); reportes de video y ocultar solo el video con 3; tipos nuevos en `place_changes`; pruebas de reglas — 2026-10-09: la base exige https y el dominio de cada red (`enlace_valido`: rechaza imitaciones como instagram.com.estafa.ru, usuario escondido, puertos) y pasa los enlaces por el filtro de palabras. `place_videos`: solo el servidor escribe; en público solo videos no ocultos de lugares publicados, sin el tamaño. `place_reports.target` ('lugar'/'video'): una persona puede reportar la ficha y el video, cada uno una vez; con 3 reportes de video (cuentas de 7+ días) se oculta solo el video, aunque la ficha sea verificada. `place_stats.video`. 32 pruebas de reglas nuevas (142). Aplicada al Supabase de prueba. **(usuario) Ejecutar 0009 en el Supabase real antes de pasar a main el código de 11.2 en adelante**
 - [ ] 11.2 Enlaces en el formulario (panel y Mi negocio) con Zod (cada red con su dominio, solo https) y botones "Síguenos" en la ficha
 - [ ] 11.3 Subir el video desde Mi negocio y el panel: revisión en el navegador (formato, 50 MB, 90 s), portada, permiso firmado, registrar, cambiar y borrar; 5 al día
 - [ ] 11.4 Video en la ficha: portada, sin descargar hasta "play", accesible; contar reproducciones en las estadísticas del dueño
