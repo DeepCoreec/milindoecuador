@@ -37,6 +37,7 @@ export function limpiarTexto(t: string): string {
   return t
     .replace(/\*\*?|__|`|#{1,6} /g, "")
     .replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, "$1")
+    .replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}]/gu, "") // sin emojis (regla del sistema de diseño)
     .replace(/\n{3,}/g, "\n\n")
     .trim()
     .slice(0, 1200);
@@ -97,7 +98,7 @@ export async function conversar(historial: MensajePaumi[]): Promise<RespuestaPau
 
   const final = limpiarTexto(texto);
   return {
-    texto: final || "Uy, me enredé las plumas 🦜. ¿Me lo preguntas de otra forma?",
+    texto: final || "Uy, me enredé las plumas. ¿Me lo preguntas de otra forma?",
     lugares: estado.tarjetas,
     navegar: estado.navegar,
     fuentes: [...fuentes].slice(0, 3).map(([url, titulo]) => ({ url, titulo })),

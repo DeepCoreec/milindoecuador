@@ -55,8 +55,8 @@ export async function POST(request: NextRequest) {
 
   const c = configPaumi();
   const { data: uso } = await crearClienteAdmin().rpc("usar_paumi", { huella: huellaDelDia(request, "paumi"), maximo_persona: c.maxPersona, maximo_total: c.maxDia });
-  if (uso === "persona") return respuesta({ error: "limite", mensaje: "¡Hablamos un montón hoy! 🦜 Vuelve mañana y seguimos. Mientras tanto, explora la guía." }, 429);
-  if (uso !== "ok") return respuesta({ error: "descanso", mensaje: "Paumi está descansando por hoy 😴. Vuelve mañana. Mientras tanto, explora la guía." }, 503);
+  if (uso === "persona") return respuesta({ error: "limite", mensaje: "¡Hablamos un montón hoy! Vuelve mañana y seguimos. Mientras tanto, explora la guía." }, 429);
+  if (uso !== "ok") return respuesta({ error: "descanso", mensaje: "Paumi está descansando por hoy. Vuelve mañana. Mientras tanto, explora la guía." }, 503);
 
   try {
     const salida = respuesta(await conversar(r.data.mensajes));
@@ -64,6 +64,6 @@ export async function POST(request: NextRequest) {
     return salida;
   } catch (e) {
     console.error(JSON.stringify({ evento: "paumi_error", mensaje: e instanceof ErrorPaumi ? e.message : "error inesperado" }));
-    return respuesta({ error: "falla", mensaje: "Uy, se me cruzaron los cables 🦜. Intenta de nuevo en un ratito." }, 502);
+    return respuesta({ error: "falla", mensaje: "Uy, se me cruzaron los cables. Intenta de nuevo en un ratito." }, 502);
   }
 }
