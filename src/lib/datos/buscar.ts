@@ -4,7 +4,8 @@ import type { LugarResumen } from "./tipos";
 /**
  * Busca palabra por palabra en nombre, datos, sector y categoría: un lugar aparece si contiene
  * todas las palabras. Los que coinciden en el nombre van primero.
- * Con Supabase esto lo hará la base (búsqueda de texto completo en español).
+ * Se usa con los datos de muestra. Con Supabase busca la base (función buscar_lugares, migración 0010),
+ * con las mismas reglas y además tolerando errores de escritura.
  */
 export function buscarEn(lugares: (LugarResumen & { textoCategoria: string })[], q: string): LugarResumen[] {
   const palabras = normalizar(q).split(/\s+/).filter(Boolean);

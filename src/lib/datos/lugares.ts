@@ -3,7 +3,7 @@ import type { CategoriaBarra } from "@/components/categorias/BarraCategorias";
 import { configSupabase } from "@/lib/supabase/config";
 import { crearClientePublico } from "@/lib/supabase/publico";
 import type { Filtros } from "@/lib/validacion/filtros";
-import { leerCategorias, leerCiudades, leerLugar, leerLugaresDeCiudad } from "./base";
+import { buscarEnBase, leerCategorias, leerCiudades, leerLugar, leerLugaresDeCiudad } from "./base";
 import { buscarEn } from "./buscar";
 import { filtrarLugares, sectoresDe } from "./filtrar";
 import * as muestra from "./muestra";
@@ -68,6 +68,9 @@ export const getLugar = cache(async (ciudad: string, categoria: string, slug: st
 
 /** Búsqueda de lugares de una ciudad por texto libre (ya validado). */
 export async function buscarLugares(ciudad: string, q: string) {
+  const c = db();
+  if (c) return buscarEnBase(c, ciudad, q); // versión 3: busca la base
+  // Sin claves (datos de muestra): la misma búsqueda, en memoria
   const [lugares, categorias] = await Promise.all([getLugaresDeCiudad(ciudad), getCategorias()]);
   const nombres = new Map(categorias.map((c) => [c.slug, c.nombre]));
   return buscarEn(

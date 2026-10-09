@@ -1,9 +1,10 @@
 // Pruebas de las reglas de seguridad (RLS) en un Postgres en memoria (PGlite).
 // Ejecutar: npm run test:rls (también corre dentro de npm test).
 import { PGlite } from "@electric-sql/pglite";
+import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { readdirSync, readFileSync } from "node:fs";
 
-const db = new PGlite();
+const db = new PGlite({ extensions: { pg_trgm } }); // pg_trgm: el buscador (0010), como en Supabase
 
 // --- Imitación mínima de lo que Supabase ya trae ---
 await db.exec(`
@@ -415,6 +416,30 @@ check("el admin ve también los ocultos", r.rows?.length === 2, r);
 for (const t of ["video", "video"]) await as("service_role", "", `select public.contar_evento($1, $2)`, [P["lugar-2"], t]);
 r = await db.query(`select video from public.place_stats where place_id = $1`, [P["lugar-2"]]);
 check("se cuentan las reproducciones del video", r.rows[0]?.video === 2, r.rows);
+
+console.log("\nBuscador en la base (0010)");
+await db.exec(`update public.places set name = 'Malecón 2000', sector = 'Centro' where slug = 'lugar-4';
+  update public.places set name = 'Encebollados Doña Peta', sector = 'Alborada', short_fact = 'Desde 1985' where slug = 'lugar-5';
+  update public.places set name = 'Lugar Siete del Malecón', status = 'borrador' where slug = 'lugar-7';`);
+const buscar = async (q, rol = "anon") => (await as(rol, rol === "anon" ? "" : A, `select p.name from public.buscar_lugares($1, 'guayaquil') b join public.places p on p.id = b.id`, [q])).rows?.map((x) => x.name);
+r = await buscar("malecon");
+check("sin tildes ni mayúsculas, y sin borradores", JSON.stringify(r) === JSON.stringify(["Malecón 2000"]), r);
+r = await buscar("MALECÓN centro");
+check("todas las palabras tienen que estar (nombre o sector)", JSON.stringify(r) === JSON.stringify(["Malecón 2000"]), r);
+r = await buscar("encebolado");
+check("tolera errores de escritura (encebolado)", r?.[0] === "Encebollados Doña Peta", r);
+r = await buscar("dona peta alborada");
+check("la ñ se busca como n", r?.[0] === "Encebollados Doña Peta", r);
+r = await buscar("1985");
+check("busca también en el dato corto", r?.[0] === "Encebollados Doña Peta", r);
+r = await buscar("centro");
+check("primero los que lo tienen en el nombre... y si no, todos los del sector", r?.length >= 2 && r.includes("Malecón 2000"), r);
+r = await buscar("xyzw qqq");
+check("sin coincidencias devuelve vacío", r?.length === 0, r);
+r = await buscar("   ");
+check("una búsqueda vacía no devuelve todo", r?.length === 0, r);
+r = await buscar("lugar", "authenticated");
+check("con sesión tampoco aparecen borradores", !r?.includes("Lugar Siete del Malecón"), r);
 
 console.log("\nDatos iniciales (supabase/seed.sql)");
 const seed = readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8");

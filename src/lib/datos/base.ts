@@ -124,6 +124,24 @@ export async function leerLugaresDeCiudad(db: SupabaseClient, ciudad: string): P
   return filas.map((f) => aResumen(f, nota, ahora));
 }
 
+/**
+ * Búsqueda (versión 3, paso 12.2): la base busca (función buscar_lugares, migración 0010) y devuelve solo los ids
+ * que coinciden, en orden; aquí se leen esos lugares con su calificación. Ya no se traen todos los de la ciudad.
+ */
+export async function buscarEnBase(db: SupabaseClient, ciudad: string, q: string): Promise<LugarResumen[]> {
+  const { data: ids, error } = await db.rpc("buscar_lugares", { q, ciudad });
+  if (error) fallo("la búsqueda", error);
+  const orden = ((ids ?? []) as { id: string }[]).map((f) => f.id);
+  if (!orden.length) return [];
+  const { data, error: e2 } = await db.from("places").select(COLUMNAS).in("id", orden).eq("status", "publicado").returns<FilaLugar[]>();
+  if (e2) fallo("los lugares", e2);
+  const filas = data ?? [];
+  const nota = await notas(db, filas.map((f) => f.id));
+  const ahora = Date.now();
+  const posicion = new Map(orden.map((id, i) => [id, i]));
+  return filas.sort((a, b) => posicion.get(a.id)! - posicion.get(b.id)!).map((f) => aResumen(f, nota, ahora));
+}
+
 /** Un lugar con sus fotos y sus últimas reseñas visibles. */
 export async function leerLugar(db: SupabaseClient, urlBase: string, ciudad: string, categoria: string, slug: string): Promise<LugarDetalle | null> {
   const { data, error } = await db

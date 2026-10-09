@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { admin, crearLugar, crearUsuario, iniciarSesion, limpiar } from "./ayudas";
+import { admin, crearLugar, crearUsuario, iniciarSesion, limpiar, marca } from "./ayudas";
 
 const archivo = (nombre: string) => readFileSync(join(__dirname, "archivos", nombre));
 const archivosEnCarpeta = async (lugar: string) => (await admin().storage.from("videos-lugares").list(`lugares/${lugar}`)).data?.map((o) => o.name) ?? [];
@@ -181,4 +181,15 @@ test("pegar el enlace corto de Google Maps en la ubicación", async ({ page, con
   await expect(page.getByText(/Listo: sacamos el punto|No pudimos sacar el punto/)).toBeVisible({ timeout: 15_000 });
   await page.getByRole("button", { name: "Guardar datos" }).click();
   await expect(page.getByText(/Cambios guardados|Ubicación: no la pudimos leer/)).toBeVisible();
+});
+
+test("el buscador de la base: sin tildes y con errores de escritura", async ({ page }) => {
+  await crearLugar("restaurantes", { name: `${marca} Cevichería La Ría`, sector: "Urdesa" });
+  await crearLugar("restaurantes", { name: `${marca} Otro sitio`, sector: "Urdesa", status: "borrador" });
+  for (const q of ["cevicheria ria urdesa", "cebicheria urdesa"]) {
+    await page.goto(`/buscar?q=${encodeURIComponent(q)}`);
+    await expect(page.getByRole("heading", { name: `${marca} Cevichería La Ría` })).toBeVisible();
+  }
+  await page.goto(`/buscar?q=${encodeURIComponent("otro sitio urdesa")}`);
+  await expect(page.getByText(`${marca} Otro sitio`)).toHaveCount(0); // los borradores no salen
 });
