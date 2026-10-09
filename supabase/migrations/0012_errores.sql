@@ -2,7 +2,7 @@
 -- 0012 · Errores de la página en producción (versión 3, paso 13.5)
 -- Cuando algo falla en el servidor (una página, una acción, una ruta), se anota aquí para que el admin lo vea
 -- en el panel ("Errores") sin depender de servicios de pago. Los repetidos se agrupan (mismo lugar y mensaje).
--- No se guarda nada de la persona: ni IP, ni cuenta, ni cabeceras, ni lo que buscó (solo la ruta, sin "?…").
+-- No se guarda nada de la persona: ni IP, ni cuenta, ni cabeceras, ni lo que buscó (solo la plantilla de la ruta).
 -- =====================================================================
 
 create table public.error_log (
@@ -37,7 +37,8 @@ begin
   perform pg_advisory_xact_lock(hashtext('error' || r || m));
   update public.error_log set times = times + 1, last_seen = now(), digest = coalesce(left(codigo, 64), digest)
   where route = r and message = m and not resolved and last_seen > now() - interval '24 hours';
-  if not found then
+  -- Tope: como mucho 200 errores distintos nuevos por hora (si algo se rompe en cadena, no se llena la base)
+  if not found and (select count(*) from public.error_log where first_seen > now() - interval '1 hour') < 200 then
     insert into public.error_log (route, kind, message, digest) values (r, left(coalesce(tipo, '?'), 40), m, left(codigo, 64));
   end if;
   -- Se guardan 30 días

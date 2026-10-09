@@ -234,3 +234,17 @@ test("el admin ve los errores del servidor y los marca resueltos", async ({ page
   expect(salud.status()).toBe(200);
   expect((await salud.json()).ok).toBe(true);
 });
+
+test("las sesiones de antes (cookies sin httpOnly) se pasan solas a httpOnly", async ({ page, context, baseURL }, info) => {
+  test.skip(info.project.name !== "escritorio", "basta en un tamaño");
+  const u = await crearUsuario("sesion-vieja");
+  await iniciarSesion(context, u.correo, baseURL!); // pone las cookies como antes, legibles por la página
+  expect((await context.cookies()).some((c) => c.name.includes("auth-token") && !c.httpOnly)).toBe(true);
+  await page.goto("/cuenta");
+  await expect(page.getByRole("heading", { name: "Mi cuenta", exact: true, level: 1 })).toBeVisible();
+  const sesion = (await context.cookies()).filter((c) => c.name.includes("auth-token"));
+  expect(sesion.length).toBeGreaterThan(0);
+  expect(sesion.every((c) => c.httpOnly)).toBe(true);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Mi cuenta", exact: true, level: 1 })).toBeVisible(); // la sesión sigue funcionando
+});

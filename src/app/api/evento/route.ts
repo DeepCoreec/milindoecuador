@@ -15,7 +15,9 @@ import { configSupabase } from "@/lib/supabase/config";
  * La IP no se guarda ni se puede recuperar de la huella, y la huella cambia cada día.
  */
 function huella(request: NextRequest): string {
-  const ip = request.headers.get("x-real-ip") ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "sin-ip";
+  const crudo = request.headers.get("x-real-ip") ?? request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "sin-ip";
+  // IPv6: se usa el bloque /64 (una misma conexión puede cambiar las últimas partes cuando quiera)
+  const ip = crudo.includes(":") ? crudo.split(":").slice(0, 4).join(":") : crudo;
   const dia = new Date(Date.now() - 5 * 3600_000).toISOString().slice(0, 10); // día en Ecuador
   const clave = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
   return createHmac("sha256", clave).update(`evento:${dia}:${ip}`).digest("hex");

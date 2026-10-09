@@ -1,16 +1,25 @@
 "use server";
 
 import { obtenerUsuario } from "@/lib/auth";
+import { crearClienteAdmin } from "@/lib/supabase/admin";
+import { crearClienteServidor } from "@/lib/supabase/server";
 import { expandirEnlaceMaps } from "@/lib/enlaceCorto";
 import { enEcuador, leerUbicacion, textoUbicacion } from "@/lib/ubicacion";
 
 /**
  * Convierte el enlace corto de "Compartir" de Google Maps en coordenadas (versión 3, paso 12.1).
- * Solo con sesión (lo usan Mi negocio y el panel): así nadie usa nuestro servidor para abrir enlaces.
+ * Solo para dueños de un negocio o el admin (los únicos que ponen ubicaciones): así una cuenta cualquiera no puede
+ * usar nuestro servidor para abrir enlaces sin fin.
  */
 export async function convertirEnlaceMaps(texto: string): Promise<{ ubicacion: string } | { error: string }> {
   if (typeof texto !== "string" || texto.length > 300) return { error: "Enlace inválido" };
-  if (!(await obtenerUsuario())) return { error: "Tu sesión se cerró. Entra otra vez a tu cuenta." };
+  const usuario = await obtenerUsuario();
+  if (!usuario) return { error: "Tu sesión se cerró. Entra otra vez a tu cuenta." };
+  const [{ count }, { data: esAdmin }] = await Promise.all([
+    crearClienteAdmin().from("places").select("id", { count: "exact", head: true }).eq("owner_id", usuario.id),
+    (await crearClienteServidor()).rpc("is_admin"),
+  ]);
+  if (!count && esAdmin !== true) return { error: "Solo los dueños de un negocio pueden usar esto." };
   const largo = await expandirEnlaceMaps(texto);
   const u = largo ? leerUbicacion(largo) : null;
   if (!u || u === "invalida")

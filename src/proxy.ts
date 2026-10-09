@@ -29,6 +29,12 @@ export async function proxy(request: NextRequest) {
   // Valida el token con Supabase y lo renueva si venció. No poner código entre crear el cliente y esta línea.
   const { data } = await supabase.auth.getClaims();
 
+  // Sesiones de antes del paso 13.3: sus cookies se vuelven a escribir una vez como httpOnly (marca "mle-cookies-v2")
+  if (conMarcaVieja(request)) {
+    for (const c of request.cookies.getAll()) if (/^sb-.*-auth-token/.test(c.name) && !respuesta.cookies.get(c.name)) respuesta.cookies.set(c.name, c.value, { ...opcionesCookieSesion, maxAge: 60 * 60 * 24 * 400 });
+    respuesta.cookies.set("mle-cookies-v2", "1", { sameSite: "lax", secure: opcionesCookieSesion.secure, path: "/", maxAge: 60 * 60 * 24 * 400, httpOnly: true });
+  }
+
   // Aviso sin secreto para los menús ("Mi cuenta"): la sesión de verdad está en cookies httpOnly
   const conSesion = !!data?.claims?.sub;
   if (conSesion && request.cookies.get(COOKIE_CON_SESION)?.value !== "1")
@@ -36,6 +42,11 @@ export async function proxy(request: NextRequest) {
   if (!conSesion && request.cookies.has(COOKIE_CON_SESION)) respuesta.cookies.delete(COOKIE_CON_SESION);
 
   return respuesta;
+}
+
+/** ¿Tiene cookies de sesión y todavía no se reescribieron como httpOnly? */
+function conMarcaVieja(request: NextRequest): boolean {
+  return !request.cookies.has("mle-cookies-v2") && request.cookies.getAll().some((c) => /^sb-.*-auth-token/.test(c.name));
 }
 
 export const config = {
