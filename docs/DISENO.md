@@ -57,6 +57,7 @@ Las tres tienen licencia OFL; en la fase 1 sus archivos `.woff2` se sirven desde
 ## Componentes definidos
 
 Botón (principal, secundario, WhatsApp, texto) · Categoría (11 afiches ilustrados, barra con 5 principales y panel "Todas las categorías") · Panorama (ilustración) · Buscador · Estrellas · Insignia (Destacado, Verificado, neutra) · Tarjeta de lugar · Reseña · Historia.
+**Paumi** (versión 3, fase 15): la guacamaya en pixel art de 32 x 32 (`src/components/paumi/sprite.ts`, colores = tokens o mezclas de tokens, con "cal" como los afiches) y el **cuadro de diálogo retro** (`.mle-cuadro`: borde de 3 px en `rio` con línea interior `linea` y esquinas escalonadas; nombre en `rotulo` `celeste-tinta`; ▼ en `celeste-tinta`). La guacamaya solo se anima dentro de la ventana de Paumi (en el botón flotante va quieta) y queda quieta con "reducir movimiento".
 Las reglas de uso de cada uno están en el artefacto.
 
 ## Ilustración

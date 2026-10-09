@@ -61,7 +61,7 @@ export default function Privacidad() {
             Para que nadie infle las estadísticas de un negocio, guardamos una <b>huella cifrada</b> de tu conexión (no la IP: no se puede volver a
             sacar de la huella) que cambia cada día y se borra a los 2 días. Si algo falla en la página, anotamos el error (la página y el
             mensaje, tapando correos y teléfonos) y lo guardamos 30 días. Las estadísticas para los dueños son solo números por día, sin datos de
-            quién visitó. No usamos cookies de publicidad ni de seguimiento.
+            quién visitó. Si apagas el sonido de Paumi, eso se recuerda solo en tu navegador. No usamos cookies de publicidad ni de seguimiento.
           </li>
         </ul>
       </section>

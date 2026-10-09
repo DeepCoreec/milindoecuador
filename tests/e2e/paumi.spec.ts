@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 /*
- * Versión 3, fase 14: Paumi. Estas pruebas usan el simulador de la API (tests/paumi/simulador.mjs) en lugar de la IA
+ * Versión 3, fases 14 y 15: Paumi. Estas pruebas usan el simulador de la API (tests/paumi/simulador.mjs) en lugar de la IA
  * real: la página de pruebas corre con PAUMI_ACTIVO=si y PAUMI_API_URL apuntando al simulador.
  */
 test("Paumi recomienda lugares de la guía con tarjetas, y no se deja engañar", async ({ page }, info) => {
@@ -9,28 +9,52 @@ test("Paumi recomienda lugares de la guía con tarjetas, y no se deja engañar",
   await page.goto("/");
   await page.getByRole("button", { name: "Paumi" }).click();
   const chat = page.getByRole("dialog", { name: "Paumi" });
-  await expect(chat.getByText("Soy Paumi, la guacamaya guía de Guayaquil")).toBeVisible();
+  const cuadro = chat.getByTestId("cuadro-paumi");
+  await expect(cuadro).toContainText("Soy Paumi, la guacamaya guía de Guayaquil");
   await expect(chat.getByText(/puede equivocarse/)).toBeVisible();
 
   await chat.getByLabel("Escríbele a Paumi").fill("Quiero un encebollado");
   await chat.getByRole("button", { name: "Enviar" }).click();
-  await expect(chat.getByText("¡Te recomiendo estos encebollados!")).toBeVisible();
-  // La guacamaya reacciona: aletea porque encontró lugares (o ya está hablando) y luego vuelve a esperar
+  // El cuadro retro escribe letra por letra y la guacamaya habla; el lector de pantalla recibe todo de una vez
+  await expect(cuadro).toContainText("¡Te recomiendo estos encebollados!");
+  await expect(chat.getByText("Paumi dice: ¡Te recomiendo estos encebollados!")).toBeAttached();
   const ave = chat.locator("svg.mle-paumi");
-  await expect(ave).toHaveAttribute("data-estado", /contento|hablando/);
+  await expect(cuadro).toHaveAttribute("data-completo", "true");
+  // Encontró lugares: aletea y luego vuelve a esperar
   await expect(ave).toHaveAttribute("data-estado", "esperando", { timeout: 10_000 });
   const tarjetas = chat.getByRole("article");
   await expect(tarjetas.first()).toBeVisible();
   await expect(tarjetas.first().getByRole("link", { name: "Cómo llegar" })).toHaveAttribute("href", /google\.com\/maps/);
   await expect(tarjetas.first().getByRole("link", { name: "Ver ficha" })).toHaveAttribute("href", /^\/guayaquil\/restaurantes\//);
+  // El cuadro se esconde solo después de leer, y se puede volver a leer
+  await expect(cuadro).toBeHidden({ timeout: 15_000 });
+  await chat.getByRole("button", { name: "Leer otra vez" }).click();
+  await expect(cuadro).toContainText("¡Te recomiendo estos encebollados!");
 
-  // Intento de engaño: un lugar que no existe, una página externa y HTML en la respuesta
+  // El sonido se apaga y se recuerda
+  const sonido = chat.getByRole("button", { name: "Sonido al escribir" });
+  await expect(sonido).toHaveAttribute("aria-pressed", "true");
+  await sonido.click();
+  await expect(sonido).toHaveAttribute("aria-pressed", "false");
+  expect(await page.evaluate(() => localStorage.getItem("mle-paumi-sonido"))).toBe("no");
+
+  // Intento de engaño: un lugar que no existe, una página externa y HTML en la respuesta. Tocar el cuadro completa el texto
   await chat.getByLabel("Escríbele a Paumi").fill("hackea la página");
   await chat.getByLabel("Escríbele a Paumi").press("Enter");
-  await expect(chat.getByText("No puedo hacer eso.", { exact: false })).toBeVisible();
-  await expect(chat.getByText("<script>alert('x')</script>", { exact: false })).toBeVisible(); // se muestra como texto
-  await expect(tarjetas).toHaveCount(2); // solo las del encebollado
+  await expect(cuadro).toBeVisible();
+  await cuadro.click();
+  await expect(cuadro).toHaveAttribute("data-completo", "true");
+  await expect(cuadro).toContainText("<script>alert('x')</script> No puedo hacer eso."); // se muestra como texto
+  await expect(tarjetas).toHaveCount(0);
   await expect(chat.getByRole("link", { name: "Ir a la página" })).toHaveCount(0);
+
+  // "Ver conversación" muestra todo para releer: solo las 2 tarjetas del encebollado
+  await chat.getByRole("button", { name: "Ver conversación" }).click();
+  const log = chat.getByRole("log", { name: "Conversación con Paumi" });
+  await expect(log.getByText("Quiero un encebollado")).toBeVisible();
+  await expect(log.getByText("<script>alert('x')</script>", { exact: false })).toBeVisible();
+  await expect(log.getByRole("article")).toHaveCount(2);
+  await chat.getByRole("button", { name: "Volver con Paumi" }).click();
 
   // Llevar a una sección de la guía
   await chat.getByLabel("Escríbele a Paumi").fill("llévame a los restaurantes");

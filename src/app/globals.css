@@ -109,3 +109,13 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Cuadro de diálogo retro de Paumi: borde de pixel art con esquinas escalonadas, como en los juegos de antes */
+.mle-cuadro {
+  background: var(--papel-alto);
+  border: 3px solid var(--rio);
+  box-shadow: inset 0 0 0 3px var(--papel-alto), inset 0 0 0 5px var(--linea);
+  clip-path: polygon(3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px), 0 3px, 3px 3px);
+}
+@keyframes mle-parpadeo { 50% { opacity: 0; } }
+.mle-parpadeo { animation: mle-parpadeo 1s steps(1) infinite; }
