@@ -55,7 +55,7 @@ export const esquemaLugar = z.object({
     .transform((v, ctx): Ubicacion | null => {
       const u = leerUbicacion(v ?? "");
       if (u === "invalida") {
-        ctx.addIssue({ code: "custom", message: "Ubicación: pega las coordenadas que da Google Maps, por ejemplo -2.189400, -79.880800" });
+        ctx.addIssue({ code: "custom", message: "Ubicación: no la pudimos leer. Pega las coordenadas que da Google Maps (por ejemplo -2.189400, -79.880800) o el enlace de «Compartir»" });
         return null;
       }
       if (u && !enEcuador(u)) {

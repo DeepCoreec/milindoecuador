@@ -1,5 +1,7 @@
 "use server";
 
+import { ubicacionSinEnlaceCorto } from "@/acciones/ubicacion";
+import { esEnlaceCorto } from "@/lib/ubicacion";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
@@ -167,6 +169,7 @@ const CAMPOS_LUGAR = [
 /** Crea o edita una ficha. Al crear, el slug sale del nombre; al editar, el slug no cambia (no se rompen enlaces). */
 export async function guardarLugar(_previo: EstadoLugar, datos: FormData): Promise<EstadoLugar> {
   const valores = Object.fromEntries(CAMPOS_LUGAR.map((c) => [c, String(datos.get(c) ?? "").slice(0, 2100)]));
+  if (esEnlaceCorto(valores.ubicacion ?? "")) valores.ubicacion = await ubicacionSinEnlaceCorto(valores.ubicacion!);
   const r = esquemaLugar.safeParse(valores);
   if (!r.success)
     return {

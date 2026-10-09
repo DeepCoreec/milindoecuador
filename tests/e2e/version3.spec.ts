@@ -9,7 +9,7 @@ const archivosEnCarpeta = async (lugar: string) => (await admin().storage.from("
 test.afterAll(limpiar);
 
 /*
- * Versión 3, fase 11: redes del negocio y un video por negocio.
+ * Versión 3: redes del negocio y un video por negocio (fase 11), enlace corto de Google Maps (fase 12).
  */
 test("el dueño pone sus redes y su página web, y salen en la ficha", async ({ page, context, baseURL, browser }, info) => {
   test.skip(info.project.name !== "celular", "el dueño usa el celular");
@@ -167,4 +167,18 @@ test("3 reportes ocultan solo el video; el admin lo revisa en «Videos»", async
   await expect(page.getByRole("link", { name: new RegExp(lugar.slug.slice(-4)) })).toHaveCount(0);
   expect(await archivosEnCarpeta(lugar.id)).toEqual([]);
   await visita.close();
+});
+
+test("pegar el enlace corto de Google Maps en la ubicación", async ({ page, context, baseURL }, info) => {
+  test.skip(info.project.name !== "celular", "el dueño usa el celular");
+  const d = await crearUsuario("enlace-corto");
+  const lugar = await crearLugar("restaurantes", { owner_id: d.id });
+  await iniciarSesion(context, d.correo, baseURL!);
+  await page.goto(`/mi-negocio/${lugar.id}`);
+  await page.getByLabel("Ubicación exacta (opcional)").fill("https://maps.app.goo.gl/AbCdEf12345");
+  // Con internet, el servidor lo convierte en coordenadas. Donde Google no responde (como en estas pruebas),
+  // avisa con claridad qué hacer y no guarda nada raro.
+  await expect(page.getByText(/Listo: sacamos el punto|No pudimos sacar el punto/)).toBeVisible({ timeout: 15_000 });
+  await page.getByRole("button", { name: "Guardar datos" }).click();
+  await expect(page.getByText(/Cambios guardados|Ubicación: no la pudimos leer/)).toBeVisible();
 });

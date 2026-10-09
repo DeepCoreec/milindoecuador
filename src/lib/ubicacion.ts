@@ -16,8 +16,8 @@ const NUM = String.raw`(-?\d{1,3}(?:\.\d+)?)`;
  * Lee una ubicación de lo que pegue la persona:
  * - coordenadas, como las copia Google Maps al dejar presionado un punto: "-2.189400, -79.880800";
  * - un enlace largo de Google Maps (con "!3d…!4d…", "@lat,lng", "q=lat,lng", "query=…" o "destination=…").
- * Devuelve null si está vacío y "invalida" si no se entiende (por ejemplo, un enlace corto maps.app.goo.gl,
- * que no trae las coordenadas escritas).
+ * Devuelve null si está vacío y "invalida" si no se entiende. Un enlace corto maps.app.goo.gl no trae las
+ * coordenadas escritas: primero lo abre el servidor (`expandirEnlaceMaps`, versión 3) y después se lee aquí.
  */
 export function leerUbicacion(texto: string): Ubicacion | null | "invalida" {
   const t = texto.trim();
@@ -41,6 +41,11 @@ export function leerUbicacion(texto: string): Ubicacion | null | "invalida" {
     }
   }
   return "invalida";
+}
+
+/** El enlace corto que da "Compartir" en Google Maps (versión 3, paso 12.1): maps.app.goo.gl/… o goo.gl/maps/… */
+export function esEnlaceCorto(texto: string): boolean {
+  return /^(?:https?:\/\/)?(?:maps\.app\.goo\.gl|goo\.gl\/maps)\/[A-Za-z0-9_-]{4,40}\/?(?:\?[\w=&%.-]{0,200})?$/.test(texto.trim());
 }
 
 /** 6 decimales ≈ 10 cm: lo que guarda la base. */

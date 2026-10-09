@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { convertirEnlaceMaps } from "@/acciones/ubicacion";
 import { claseAyuda, claseEntrada, claseEtiqueta } from "@/components/ui/clasesFormulario";
-import { enEcuador, enlaceVerEnMapa, leerUbicacion, textoUbicacion } from "@/lib/ubicacion";
+import { enEcuador, enlaceVerEnMapa, esEnlaceCorto, leerUbicacion, textoUbicacion } from "@/lib/ubicacion";
 
 /**
  * Ubicación exacta para "Cómo llegar" (versión 2, paso 7.2), sin API de pago:
  * pegar las coordenadas de Google Maps o tocar "Usar mi ubicación actual" estando en el lugar.
+ * Versión 3: también el enlace corto de "Compartir" (maps.app.goo.gl): el servidor lo convierte en coordenadas.
  * El servidor vuelve a validar todo (Zod y la base).
  */
 export function CampoUbicacion({ id, valor }: { id: string; valor: string }) {
@@ -15,6 +17,20 @@ export function CampoUbicacion({ id, valor }: { id: string; valor: string }) {
   const [buscando, setBuscando] = useState(false);
   const leida = leerUbicacion(texto);
   const valida = leida && leida !== "invalida" && enEcuador(leida) ? leida : null;
+
+  async function cambiar(nuevo: string) {
+    setTexto(nuevo);
+    if (!esEnlaceCorto(nuevo)) return;
+    setBuscando(true);
+    setAviso("Leyendo el enlace de Google Maps…");
+    const r = await convertirEnlaceMaps(nuevo.trim());
+    setBuscando(false);
+    if ("ubicacion" in r) {
+      // Si mientras tanto la persona cambió el texto, se respeta lo que escribió
+      setTexto((actual) => (actual === nuevo ? r.ubicacion : actual));
+      setAviso("Listo: sacamos el punto del enlace. Revísalo en el mapa antes de guardar.");
+    } else setAviso(r.error);
+  }
 
   function usarMiUbicacion() {
     if (!("geolocation" in navigator)) {
@@ -46,8 +62,7 @@ export function CampoUbicacion({ id, valor }: { id: string; valor: string }) {
         id={id}
         name="ubicacion"
         value={texto}
-        onChange={(e) => setTexto(e.target.value)}
-        inputMode="decimal"
+        onChange={(e) => void cambiar(e.target.value)}
         maxLength={2000}
         placeholder="-2.189400, -79.880800"
         aria-describedby={`${id}-ayuda`}
@@ -65,7 +80,7 @@ export function CampoUbicacion({ id, valor }: { id: string; valor: string }) {
       </div>
       <p id={`${id}-ayuda`} className={`m-0 ${claseAyuda}`} role={aviso ? "status" : undefined}>
         {aviso ??
-          "Para que «Cómo llegar» abra la ruta exacta. En Google Maps deja presionado el lugar, copia los números que salen arriba y pégalos aquí. O toca «Usar mi ubicación actual» estando en el lugar."}
+          "Para que «Cómo llegar» abra la ruta exacta. En Google Maps busca tu negocio, toca «Compartir» → «Copiar enlace» y pégalo aquí (o deja presionado el lugar y copia los números). También puedes tocar «Usar mi ubicación actual» estando en el lugar."}
       </p>
     </div>
   );

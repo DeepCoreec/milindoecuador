@@ -1,5 +1,7 @@
 "use server";
 
+import { ubicacionSinEnlaceCorto } from "@/acciones/ubicacion";
+import { esEnlaceCorto } from "@/lib/ubicacion";
 import { revalidatePath } from "next/cache";
 import { obtenerUsuario } from "@/lib/auth";
 import { leerHorario } from "@/lib/horario";
@@ -85,6 +87,7 @@ const CAMPOS = ["lugar", "nombre", "sector", "descripcion", "dato", "horario", "
 /** Guarda los datos de la ficha. Sale al instante (si está publicada). */
 export async function guardarMiNegocio(_previo: EstadoDueno, datos: FormData): Promise<EstadoDueno> {
   const valores = Object.fromEntries(CAMPOS.map((c) => [c, String(datos.get(c) ?? "").slice(0, 2100)]));
+  if (esEnlaceCorto(valores.ubicacion ?? "")) valores.ubicacion = await ubicacionSinEnlaceCorto(valores.ubicacion!);
   const r = esquemaNegocio.safeParse(valores);
   if (!r.success)
     return {
