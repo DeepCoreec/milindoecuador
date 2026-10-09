@@ -45,6 +45,7 @@ test("horario, estadísticas y favoritos", async ({ page, context, baseURL, brow
   await iniciarSesion(ctxFan, fan.correo, baseURL!);
   const pf = await ctxFan.newPage();
   await pf.goto(new URL(lugar.ruta, baseURL).toString());
+  await pf.waitForLoadState("networkidle"); // que la página termine de cargar antes de tocar (en desarrollo tarda más)
   await pf.getByRole("button", { name: "Guardar" }).click();
   await expect(pf.getByRole("button", { name: "Guardado" })).toHaveAttribute("aria-pressed", "true");
   await pf.goto(new URL("/cuenta", baseURL).toString());

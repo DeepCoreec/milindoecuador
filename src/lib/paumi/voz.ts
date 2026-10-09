@@ -3,6 +3,8 @@
  * El micrófono y la voz son del navegador (gratis, sin librerías): ver src/components/paumi/voz.ts.
  */
 
+import { LLAMADAS } from "./personaje";
+
 type VozSimple = { lang: string; name: string; localService?: boolean };
 
 /** Orden de preferencia: español de Ecuador primero, luego de América y al final de España. */
@@ -35,4 +37,34 @@ export function textoParaVoz(texto: string): string {
     .replace(/\$/g, " dólares ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+const normal = (palabra: string) =>
+  palabra
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9ñ]/g, "");
+
+/**
+ * Manos libres (16.2): ¿en lo que se oyó llamaron a Paumi? Devuelve lo que dijeron DESPUÉS del nombre
+ * ("Paumi, ¿dónde como encebollado?" → "¿dónde como encebollado?"), o null si no la llamaron.
+ */
+export function despuesDelNombre(oido: string): string | null {
+  const palabras = oido.trim().split(/\s+/).filter(Boolean);
+  for (let i = 0; i < palabras.length; i++) {
+    const una = normal(palabras[i]);
+    const dos = i + 1 < palabras.length ? una + normal(palabras[i + 1]) : "";
+    let desde = -1;
+    if (LLAMADAS.includes(una)) desde = i + 1;
+    // En dos palabras solo si la primera es "pau"/"pao" (así "pa mi" no la despierta)
+    else if (una.length >= 3 && LLAMADAS.includes(dos)) desde = i + 2;
+    if (desde >= 0)
+      return palabras
+        .slice(desde)
+        .join(" ")
+        .replace(/^[\s,.;:!¡-]+/, "")
+        .trim();
+  }
+  return null;
 }

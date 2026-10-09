@@ -138,3 +138,48 @@ export function prepararVoz() {
   window.speechSynthesis.speak(vacia);
   window.speechSynthesis.getVoices(); // Chrome carga las voces la primera vez que se piden
 }
+
+/**
+ * Manos libres (16.2): escucha seguido (solo mientras la página está abierta y a la vista) y entrega cada frase
+ * terminada. El navegador corta solo cada cierto tiempo: quien lo usa lo vuelve a encender en `alTerminar`.
+ */
+export function escucharSiempre({
+  alOir,
+  alError,
+  alTerminar,
+}: {
+  alOir: (frase: string) => void;
+  alError: (error: string) => void;
+  alTerminar: () => void;
+}): () => void {
+  const Rec = constructor();
+  if (!Rec) {
+    alError("not-supported");
+    return () => {};
+  }
+  const rec = new Rec();
+  rec.lang = idiomaMicrofono(navigator.language);
+  rec.interimResults = false;
+  rec.continuous = true;
+  rec.maxAlternatives = 1;
+  let parado = false;
+  rec.onresult = (e) => {
+    for (let i = e.resultIndex; i < e.results.length; i++) if (e.results[i].isFinal) alOir(e.results[i][0].transcript);
+  };
+  rec.onerror = (e) => {
+    if (e.error !== "aborted" && e.error !== "no-speech") alError(e.error);
+  };
+  rec.onend = () => {
+    if (!parado) alTerminar();
+  };
+  try {
+    rec.start();
+  } catch {
+    alError("start");
+  }
+  return () => {
+    parado = true;
+    rec.onresult = null;
+    rec.abort();
+  };
+}

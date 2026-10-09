@@ -134,6 +134,75 @@ test("hablarle con el micrófono y que responda hablando (micrófono y voz simul
   expect(await page.evaluate(() => (window as unknown as { __dicho: unknown[] }).__dicho.length)).toBe(1);
 });
 
+test("manos libres: despierta al decir «Paumi» con la ventana cerrada (micrófono simulado)", async ({ page }, info) => {
+  test.skip(info.project.name !== "celular", "Paumi se usa sobre todo en el celular");
+  await page.addInitScript(() => {
+    const w = window as unknown as Record<string, unknown>;
+    const dicho: string[] = [];
+    w.__dicho = dicho;
+    const activos = new Set<object>();
+    w.__escuchando = () => activos.size;
+    w.SpeechRecognition = class {
+      lang = "";
+      continuous = false;
+      onresult: ((e: unknown) => void) | null = null;
+      onend: (() => void) | null = null;
+      onerror = null;
+      start() {
+        if (!this.continuous) return;
+        activos.add(this);
+        if (w.__ya) return;
+        w.__ya = true;
+        const decir = (frase: string, ms: number) =>
+          setTimeout(() => this.onresult?.({ resultIndex: 0, results: [{ isFinal: true, 0: { transcript: frase } }] }), ms);
+        decir("me voy pa mi casa", 1500); // en Ecuador se dice así: no debe despertarla
+        decir("Paumi dónde como un encebollado", 3000);
+      }
+      stop() {}
+      abort() {
+        activos.delete(this);
+      }
+    };
+    Object.defineProperty(window, "speechSynthesis", {
+      configurable: true,
+      value: {
+        speak(u: SpeechSynthesisUtterance) {
+          if (!u.text) return;
+          dicho.push(u.text);
+          setTimeout(() => u.onend?.({} as SpeechSynthesisEvent), 300);
+        },
+        cancel() {},
+        getVoices: () => [],
+      },
+    });
+  });
+  await page.goto("/");
+  const boton = page.getByRole("button", { name: /Paumi/ }).first();
+  await boton.click();
+  const chat = page.getByRole("dialog", { name: "Paumi" });
+  await chat.getByRole("button", { name: "Activar manos libres" }).click();
+  await expect(chat.getByRole("button", { name: "Apagar manos libres" })).toHaveAttribute("aria-pressed", "true");
+  await page.keyboard.press("Escape");
+  await expect(chat).toBeHidden();
+  // Mientras está encendido, el botón flotante lo dice
+  await expect(page.getByRole("button", { name: /manos libres encendido/ })).toBeVisible();
+
+  // "pa mi casa" no la despierta
+  await page.waitForTimeout(2200);
+  await expect(chat).toBeHidden();
+  // "Paumi, …" abre la ventana, envía la pregunta y responde hablando
+  await expect(chat).toBeVisible({ timeout: 5000 });
+  await expect(chat.getByText("dónde como un encebollado", { exact: true })).toBeVisible();
+  await expect(chat.getByTestId("cuadro-paumi")).toContainText("¡Te recomiendo estos encebollados!");
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __dicho: string[] }).__dicho.length)).toBe(1);
+
+  // Apagarlo deja de escuchar y quita el aviso del botón
+  await chat.getByRole("button", { name: "Apagar manos libres" }).click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __escuchando: () => number }).__escuchando())).toBe(0);
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: /manos libres encendido/ })).toHaveCount(0);
+});
+
 test("la API de Paumi rechaza otros sitios, mensajes enormes y conversaciones mal armadas", async ({ request, baseURL }) => {
   const enviar = (cuerpo: unknown, origen = baseURL!) =>
     request.post("/api/paumi", { data: cuerpo, headers: { origin: origen } });

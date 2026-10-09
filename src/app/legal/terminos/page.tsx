@@ -89,7 +89,8 @@ export default function Terminos() {
         <p>
           Para hablarle, ábrela con el botón de la esquina y escríbele, o toca el <b>micrófono</b> y habla (tu navegador te pedirá permiso; solo
           escucha mientras el micrófono está encendido). Si le preguntas hablando, te responde con la voz de tu teléfono; puedes apagar el sonido
-          cuando quieras.
+          cuando quieras. Con <b>manos libres</b> (lo activas tú dentro de la ventana de Paumi) basta con decir «Paumi» y lo que buscas, mientras la
+          página está abierta y a la vista; el botón de Paumi muestra un micrófono mientras está encendido.
         </p>
       </section>
 
