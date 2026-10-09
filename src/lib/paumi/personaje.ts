@@ -11,6 +11,9 @@ export const SALUDO = `¡Hola! Soy ${NOMBRE}, la guacamaya guía de Guayaquil. �
 /** Lo que se le cuenta a la gente sobre Paumi (Términos, Privacidad y la ventana del chat). */
 export const AVISO = `${NOMBRE} es una inteligencia artificial: puede equivocarse. Revisa los datos importantes (horarios, precios) en la ficha de cada lugar. No escribas datos personales: lo que escribes se envía a Anthropic, que hace funcionar a ${NOMBRE}, y no lo guardamos.`;
 
+/** Lo que se cuenta del micrófono (se muestra solo si el navegador puede escuchar). */
+export const AVISO_VOZ = "Si usas el micrófono, tu navegador convierte tu voz en texto (en Chrome lo hace Google; en Safari, Apple) y a nosotros solo nos llega el texto.";
+
 export const MAX_MENSAJE = 400;
 export const MAX_HISTORIAL = 12;
 

@@ -8,13 +8,14 @@ import { useEffect, useRef, useState } from "react";
 import { clasesBoton } from "@/components/ui/Boton";
 import { Captcha } from "@/components/ui/Captcha";
 import { claseEntrada } from "@/components/ui/clasesFormulario";
-import { IconoCerrar, IconoSilencio, IconoSonido, IconoUbicacion } from "@/components/ui/iconos";
+import { IconoCerrar, IconoMicrofono, IconoSilencio, IconoSonido, IconoUbicacion } from "@/components/ui/iconos";
 import { tiempoDeLectura } from "@/lib/paumi/pantallas";
-import { AVISO, MAX_HISTORIAL, MAX_MENSAJE, NOMBRE, SALUDO } from "@/lib/paumi/personaje";
+import { AVISO, AVISO_VOZ, MAX_HISTORIAL, MAX_MENSAJE, NOMBRE, SALUDO } from "@/lib/paumi/personaje";
 import type { MensajePaumi, RespuestaPaumi, TarjetaPaumi } from "@/lib/paumi/tipos";
 import { CuadroRetro } from "./CuadroRetro";
 import { Guacamaya } from "./Guacamaya";
 import type { EstadoPaumi } from "./sprite";
+import { callar, escuchar, hablar, mensajeErrorMicrofono, prepararVoz, puedeEscuchar } from "./voz";
 
 type Entrada = MensajePaumi & { lugares?: TarjetaPaumi[]; navegar?: string | null; fuentes?: RespuestaPaumi["fuentes"]; aviso?: boolean };
 
@@ -27,6 +28,7 @@ const CLAVE_SONIDO = "mle-paumi-sonido";
  *    el cuadro se esconde solo según lo largo (no mientras lo tocas). Las tarjetas de lugares quedan arriba.
  *  - Conversación: todo lo que se dijo, para releer.
  * Lo que dice Paumi se muestra SIEMPRE como texto (nunca como HTML). Las tarjetas vienen armadas por el servidor.
+ * Voz (16.1): con el micrófono le hablas y te responde con la voz del teléfono (el texto sale igual en el cuadro).
  * El lector de pantalla recibe cada respuesta completa de una vez. La conversación vive solo en esta pestaña.
  */
 export function Paumi() {
@@ -55,6 +57,16 @@ export function Paumi() {
   const [pico, setPico] = useState(false);
   const [contento, setContento] = useState(false);
   const [leidos, setLeidos] = useState<ReadonlySet<number>>(new Set());
+  // Voz
+  const [microfono] = useState(() => puedeEscuchar());
+  const [oyendo, setOyendo] = useState(false);
+  const [avisoMicrofono, setAvisoMicrofono] = useState<string | null>(null);
+  const [voz, setVoz] = useState(false);
+  const porVoz = useRef(false);
+  const vozConPalabras = useRef(false);
+  const pararMicrofono = useRef<() => void>(() => {});
+  const cierraPico = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const formulario = useRef<HTMLFormElement>(null);
   const lista = useRef<HTMLDivElement>(null);
   const escena = useRef<HTMLDivElement>(null);
   const pregunta = useRef<HTMLParagraphElement>(null);
@@ -85,10 +97,19 @@ export function Paumi() {
 
   // El cuadro se esconde solo cuando terminó de hablar y pasó el tiempo de lectura (nunca mientras lo tocas)
   useEffect(() => {
-    if (!abierto || !cuadro || !leido || tocando || !actual) return;
+    if (!abierto || !cuadro || !leido || tocando || voz || !actual) return;
     const id = setTimeout(() => setCuadro(false), tiempoDeLectura(actual.texto));
     return () => clearTimeout(id);
-  }, [abierto, cuadro, leido, tocando, actual]);
+  }, [abierto, cuadro, leido, tocando, voz, actual]);
+
+  // Al salir, nada sigue escuchando ni hablando
+  useEffect(
+    () => () => {
+      pararMicrofono.current();
+      callar();
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!contento) return;
@@ -98,9 +119,23 @@ export function Paumi() {
 
   if (ruta.startsWith("/admin") || ruta.startsWith("/dev")) return null;
 
-  const estado: EstadoPaumi = pensando ? "pensando" : contento ? "contento" : hablando ? "hablando" : enfocado && texto.trim() ? "escuchando" : "esperando";
+  const estado: EstadoPaumi = pensando
+    ? "pensando"
+    : oyendo
+      ? "escuchando"
+      : contento
+        ? "contento"
+        : hablando || voz
+          ? "hablando"
+          : enfocado && texto.trim()
+            ? "escuchando"
+            : "esperando";
 
   function cambiarSonido() {
+    if (sonido) {
+      callar();
+      setVoz(false);
+    }
     setSonido((s) => {
       try {
         localStorage.setItem(CLAVE_SONIDO, s ? "no" : "si");
@@ -122,9 +157,55 @@ export function Paumi() {
     setMensajes((m) => [...m, entrada]);
     setCuadro(true);
     setHablando(!reducir);
+    // Si le preguntaste hablando, te responde hablando (el texto sale igual en el cuadro)
+    if (porVoz.current && sonido) {
+      setVoz(true);
+      vozConPalabras.current = false;
+      hablar(entrada.texto, {
+        alPalabra: () => {
+          vozConPalabras.current = true;
+          setPico(true);
+          clearTimeout(cierraPico.current);
+          cierraPico.current = setTimeout(() => setPico(false), 160);
+        },
+        alTerminar: () => {
+          setVoz(false);
+          setPico(false);
+        },
+      });
+    }
+    porVoz.current = false;
+  }
+
+  /** Mientras habla con voz, el pico lo mueve la voz (si la voz avisa cada palabra); si no, el texto. */
+  function picoDelTexto(abierto: boolean) {
+    if (!(voz && vozConPalabras.current)) setPico(abierto);
+  }
+
+  function usarMicrofono() {
+    if (oyendo) {
+      pararMicrofono.current();
+      return;
+    }
+    prepararVoz();
+    callar();
+    setVoz(false);
+    setAvisoMicrofono(null);
+    setOyendo(true);
+    pararMicrofono.current = escuchar({
+      alParcial: (t) => setTexto(t.slice(0, MAX_MENSAJE)),
+      alFinal: (t) => {
+        porVoz.current = true;
+        void enviarTexto(t.slice(0, MAX_MENSAJE));
+      },
+      alError: (e) => setAvisoMicrofono(mensajeErrorMicrofono(e)),
+      alTerminar: () => setOyendo(false),
+    });
   }
 
   function empezarDeNuevo() {
+    callar();
+    setVoz(false);
     setMensajes(inicial);
     setLeidos(new Set());
     setCuadro(true);
@@ -132,11 +213,18 @@ export function Paumi() {
     setVista("escena");
   }
 
-  async function enviar(e: React.FormEvent<HTMLFormElement>) {
+  function enviar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const limpio = texto.trim();
+    porVoz.current = false;
+    void enviarTexto(texto);
+  }
+
+  async function enviarTexto(t: string) {
+    const limpio = t.trim();
     if (!limpio || pensando) return;
-    const captcha = new FormData(e.currentTarget).get("cf-turnstile-response");
+    callar();
+    setVoz(false);
+    const captcha = formulario.current ? new FormData(formulario.current).get("cf-turnstile-response") : null;
     const historial = [...mensajes.filter((m) => !m.aviso), { rol: "usuario" as const, texto: limpio }];
     setMensajes((m) => [...m, { rol: "usuario", texto: limpio }]);
     setTexto("");
@@ -176,6 +264,11 @@ export function Paumi() {
       open={abierto}
       onOpenChange={(a) => {
         setAbierto(a);
+        if (!a) {
+          pararMicrofono.current();
+          callar();
+          setVoz(false);
+        }
         // Al volver a abrir, lo ya leído se muestra entero (no se vuelve a escribir)
         if (a) {
           setCuadro(true);
@@ -231,12 +324,13 @@ export function Paumi() {
                 <p id="paumi-aviso" className="m-0 text-[13px] leading-[18px] text-rio-suave">
                   {AVISO}
                 </p>
+                {microfono && <p className="m-0 text-[13px] leading-[18px] text-rio-suave">{AVISO_VOZ}</p>}
                 {ultimaPregunta && <Burbuja ref={pregunta} texto={ultimaPregunta.texto} />}
                 {conExtras && <Extras m={actual} alNavegar={cerrar} />}
               </div>
               <div className="grid gap-2 px-5 pb-3">
                 <div className="flex items-end justify-between gap-2">
-                  <Guacamaya estado={estado} pico={hablando ? pico : undefined} escala={3} className="-mb-2" />
+                  <Guacamaya estado={estado} pico={hablando || voz ? pico : undefined} escala={3} className="-mb-2" />
                   <div className="flex flex-wrap justify-end gap-1">
                     {!cuadro && actual && !pensando && (
                       <button type="button" onClick={() => setCuadro(true)} className={clasesBoton("texto", "chico", "min-h-11")}>
@@ -255,9 +349,9 @@ export function Paumi() {
                     key={indice}
                     data-testid="cuadro-paumi"
                     texto={actual.texto}
-                    sonido={sonido}
+                    sonido={sonido && !voz}
                     quieto={reducir || leido}
-                    alPico={setPico}
+                    alPico={picoDelTexto}
                     alTerminar={terminoDeHablar}
                     onPointerEnter={() => setTocando(true)}
                     onPointerLeave={() => setTocando(false)}
@@ -287,7 +381,7 @@ export function Paumi() {
             </div>
           )}
 
-          <form onSubmit={enviar} className="grid gap-2 border-t border-linea px-5 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
+          <form ref={formulario} onSubmit={enviar} className="grid gap-2 border-t border-linea px-5 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
             {pideCaptcha && <Captcha reiniciar={intento} />}
             <div className="flex items-end gap-2">
               <label htmlFor="paumi-texto" className="sr-only">
@@ -308,13 +402,35 @@ export function Paumi() {
                 }}
                 rows={1}
                 maxLength={MAX_MENSAJE}
-                placeholder="Ej.: encebollado barato"
+                placeholder={oyendo ? "Te escucho…" : "Ej.: encebollado barato"}
                 className={`${claseEntrada} max-h-32 min-h-12 resize-none`}
               />
+              {microfono && (
+                <button
+                  type="button"
+                  onClick={usarMicrofono}
+                  disabled={pensando}
+                  aria-pressed={oyendo}
+                  aria-label={oyendo ? "Dejar de escuchar" : `Hablarle a ${NOMBRE}`}
+                  className={clasesBoton("secundario", "normal", `w-12 shrink-0 px-0 ${oyendo ? "border-celeste-tinta! bg-celeste-suave! text-celeste-tinta!" : ""}`)}
+                >
+                  <IconoMicrofono />
+                </button>
+              )}
               <button type="submit" disabled={pensando || !texto.trim()} className={clasesBoton("principal", "normal", "shrink-0")}>
                 Enviar
               </button>
             </div>
+            {oyendo && (
+              <p className="m-0 text-[13px] leading-[18px] text-celeste-tinta" role="status">
+                Te escucho. Habla y cuando termines, te respondo.
+              </p>
+            )}
+            {avisoMicrofono && !oyendo && (
+              <p className="m-0 text-[13px] leading-[18px] text-error" role="alert">
+                {avisoMicrofono}
+              </p>
+            )}
           </form>
         </Dialog.Content>
       </Dialog.Portal>

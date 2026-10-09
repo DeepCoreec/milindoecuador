@@ -53,8 +53,9 @@ const cabecerasDeSeguridad = [
   { key: "X-Frame-Options", value: "DENY" },
   // Al ir a otro sitio, solo se envía el dominio, no la ruta completa.
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  // La página no usa cámara, micrófono, ubicación ni pagos del navegador.
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self), payment=(), usb=()" },
+  // Sin cámara ni pagos del navegador. Micrófono y ubicación solo para esta página (el micrófono, para hablarle a
+  // Paumi; el navegador igual pide permiso a la persona) y nunca para sitios metidos dentro.
+  { key: "Permissions-Policy", value: "camera=(), microphone=(self), geolocation=(self), payment=(), usb=()" },
   // Aísla la ventana de otras pestañas abiertas desde otros sitios.
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
 ];

@@ -63,6 +63,77 @@ test("Paumi recomienda lugares de la guía con tarjetas, y no se deja engañar",
   await expect(page).toHaveURL(/\/guayaquil\/restaurantes$/);
 });
 
+test("hablarle con el micrófono y que responda hablando (micrófono y voz simulados)", async ({ page }, info) => {
+  test.skip(info.project.name !== "celular", "Paumi se usa sobre todo en el celular");
+  // El navegador de pruebas no tiene micrófono: se simulan el reconocimiento de voz y la voz del teléfono
+  await page.addInitScript(() => {
+    const w = window as unknown as Record<string, unknown>;
+    const dicho: { texto: string; idioma: string }[] = [];
+    w.__dicho = dicho;
+    w.SpeechRecognition = class {
+      lang = "";
+      onresult: ((e: unknown) => void) | null = null;
+      onend: (() => void) | null = null;
+      onerror = null;
+      start() {
+        w.__idioma = this.lang;
+        setTimeout(() => this.onresult?.({ resultIndex: 0, results: [{ isFinal: false, 0: { transcript: "Quiero un" } }] }), 100);
+        setTimeout(() => {
+          this.onresult?.({ resultIndex: 0, results: [{ isFinal: true, 0: { transcript: "Quiero un encebollado" } }] });
+          this.onend?.();
+        }, 400);
+      }
+      stop() {}
+      abort() {}
+    };
+    Object.defineProperty(window, "speechSynthesis", {
+      configurable: true,
+      value: {
+        speak(u: SpeechSynthesisUtterance) {
+          if (!u.text) return;
+          dicho.push({ texto: u.text, idioma: u.lang });
+          let n = 0;
+          const id = setInterval(() => {
+            u.onboundary?.({ name: "word" } as SpeechSynthesisEvent);
+            if (++n > 5) {
+              clearInterval(id);
+              u.onend?.({} as SpeechSynthesisEvent);
+            }
+          }, 100);
+        },
+        cancel() {},
+        getVoices: () => [
+          { lang: "en-US", name: "Inglés" },
+          { lang: "es-ES", name: "España" },
+          { lang: "es-US", name: "Latino", localService: true },
+        ],
+      },
+    });
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Paumi" }).click();
+  const chat = page.getByRole("dialog", { name: "Paumi" });
+  await expect(chat.getByText(/en Chrome lo hace Google/)).toBeVisible(); // aviso del micrófono
+
+  await chat.getByRole("button", { name: "Hablarle a Paumi" }).click();
+  await expect(chat.getByText("Quiero un encebollado")).toBeVisible();
+  await expect(chat.getByTestId("cuadro-paumi")).toContainText("¡Te recomiendo estos encebollados!");
+  // Respondió hablando, en español de América (la mejor voz del teléfono), y el micrófono se apagó
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __dicho: { texto: string }[] }).__dicho.length)).toBe(1);
+  const [dicho] = await page.evaluate(() => (window as unknown as { __dicho: { texto: string; idioma: string }[] }).__dicho);
+  expect(dicho.texto).toContain("Te recomiendo estos encebollados");
+  expect(dicho.idioma).toBe("es-US");
+  expect(await page.evaluate(() => (window as unknown as { __idioma: string }).__idioma)).toBe("es-EC");
+  await expect(chat.getByRole("button", { name: "Hablarle a Paumi" })).toHaveAttribute("aria-pressed", "false");
+
+  // Con el sonido apagado responde solo con texto
+  await chat.getByRole("button", { name: "Sonido al escribir" }).click();
+  await chat.getByRole("button", { name: "Hablarle a Paumi" }).click();
+  await expect(chat.getByTestId("cuadro-paumi")).toHaveAttribute("data-completo", "true");
+  await page.waitForTimeout(800);
+  expect(await page.evaluate(() => (window as unknown as { __dicho: unknown[] }).__dicho.length)).toBe(1);
+});
+
 test("la API de Paumi rechaza otros sitios, mensajes enormes y conversaciones mal armadas", async ({ request, baseURL }) => {
   const enviar = (cuerpo: unknown, origen = baseURL!) =>
     request.post("/api/paumi", { data: cuerpo, headers: { origin: origen } });

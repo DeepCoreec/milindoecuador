@@ -86,6 +86,11 @@ export default function Terminos() {
           antes de ir. Sus respuestas no son consejos profesionales. Úsala con respeto: tiene un límite de mensajes por día y puede dejar de responder
           si se abusa de ella.
         </p>
+        <p>
+          Para hablarle, ábrela con el botón de la esquina y escríbele, o toca el <b>micrófono</b> y habla (tu navegador te pedirá permiso; solo
+          escucha mientras el micrófono está encendido). Si le preguntas hablando, te responde con la voz de tu teléfono; puedes apagar el sonido
+          cuando quieras.
+        </p>
       </section>
 
       <section>

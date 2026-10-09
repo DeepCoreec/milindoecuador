@@ -43,7 +43,9 @@ export default function Privacidad() {
           <li>
             <b>Si hablas con Paumi:</b> lo que le escribes se envía a Anthropic (la empresa que hace funcionar a Paumi) para que pueda responder.
             Nosotros <b>no guardamos tus conversaciones</b>; solo contamos cuántos mensajes se envían por día (con la misma huella cifrada de abajo)
-            para que nadie abuse. No le escribas datos personales.
+            para que nadie abuse. No le escribas datos personales. <b>Si le hablas con el micrófono</b> (solo cuando tú lo tocas y das permiso),
+            tu navegador convierte tu voz en texto: en Chrome lo hace Google y en Safari, Apple. A nosotros solo nos llega el texto, igual que si lo
+            escribieras; no grabamos ni guardamos tu voz. Paumi te responde con la voz que ya trae tu teléfono.
           </li>
           <li>
             <b>Tus lugares guardados:</b> la lista de favoritos de tu cuenta. Solo la ves tú.
