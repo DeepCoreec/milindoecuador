@@ -518,6 +518,59 @@ check("y nunca se pasa el tope diario total", JSON.stringify(otros) === JSON.str
 r = await as("authenticated", A, `select * from public.paumi_usage`);
 check("el uso de Paumi no se lee desde el navegador", !!r.error, r);
 
+console.log("\nEventos (0016)");
+const ev = (sub, slug, inicio = "now() + interval '1 day'", fin = "now() + interval '2 days'", extra = "") =>
+  as("service_role", "", `insert into public.city_events (city_id, user_id, slug, title, kind, description, starts_at, ends_at, venue, organizer${extra ? ", " + extra.split("=")[0] : ""})
+    values ($1, $2, $3, 'Feria del libro', 'feria', 'Una feria con libros nuevos y usados para toda la familia', ${inicio}, ${fin}, 'Malecón', 'Biblioteca'${extra ? ", " + extra.split("=")[1] : ""}) returning id`, [gye, sub, slug]);
+r = await ev(A, "feria-1");
+const E1 = r.rows?.[0]?.id;
+check("el servidor publica un evento", !!E1, r);
+r = await as("anon", "", `select id from public.city_events where id = $1`, [E1]);
+check("cualquiera ve un evento vigente", r.rows?.length === 1, r);
+r = await as("authenticated", A, `insert into public.city_events (city_id, user_id, slug, title, kind, description, starts_at, ends_at, venue, organizer) values ($1, $2, 'x-1', 'Hola mundo', 'otro', 'Descripción larga de prueba para el evento', now(), now(), 'Aquí', 'Yo')`, [gye, A]);
+check("el navegador no puede crear eventos", !!r.error, r);
+r = await as("authenticated", A, `update public.city_events set title = 'Cambiado' where id = $1 returning id`, [E1]);
+check("ni cambiarlos (ni siendo suyos)", !!r.error || r.rows?.length === 0, r);
+r = await as("authenticated", B, `delete from public.city_events where id = $1 returning id`, [E1]);
+check("otra cuenta no lo borra", !!r.error || r.rows?.length === 0, r);
+await ev(A, "feria-2");
+await ev(A, "feria-3");
+r = await ev(A, "feria-4");
+check("máximo 3 eventos por cuenta a la semana", /limite_eventos_semana/.test(r.error ?? ""), r);
+r = await ev(B, "lejos", "now() + interval '7 months'", "now() + interval '7 months 1 day'");
+check("la fecha de inicio, como mucho 6 meses adelante", /evento_muy_lejos/.test(r.error ?? ""), r);
+r = await ev(B, "largo", "now() + interval '1 day'", "now() + interval '40 days'");
+check("y como mucho 30 días de duración", !!r.error, r);
+r = await ev(B, "vencido", "now() - interval '3 days'", "now() - interval '2 days'");
+check("no se publica un evento que ya pasó", /evento_vencido/.test(r.error ?? ""), r);
+r = await ev(B, "grosero", "now() + interval '1 day'", "now() + interval '2 days'", "website='http://inseguro.com'");
+check("las páginas tienen que ser https", !!r.error, r);
+r = await as("service_role", "", `update public.city_events set description = 'Escríbenos al 0991234567 para más información' where id = $1`, [E1]);
+check("la descripción no lleva teléfonos (filtro de palabras)", /texto_no_permitido:descripcion:telefono/.test(r.error ?? ""), r);
+r = await as("service_role", "", `update public.city_events set poster_path = 'eventos/${B}/00000000-0000-0000-0000-000000000001.webp', poster_alt = 'Afiche' where id = $1`, [E1]);
+check("el afiche tiene que estar en la carpeta de quien publica", !!r.error, r);
+// Vencido: termina ayer (se cambia la fecha sin pasar por los disparadores)
+await db.exec(`set session_replication_role = replica; update public.city_events set starts_at = now() - interval '3 days', ends_at = now() - interval '1 day 1 hour', poster_path = 'eventos/${A}/00000000-0000-0000-0000-000000000001.webp', poster_alt = 'Afiche de la feria' where slug = 'feria-2'; set session_replication_role = origin;`);
+r = await as("anon", "", `select slug from public.city_events where slug = 'feria-2'`);
+check("un evento vencido ya no se ve aunque la tarea no haya corrido", r.rows?.length === 0, r);
+r = await as("authenticated", A, `select public.borrar_eventos_vencidos()`);
+check("el navegador no puede llamar al borrado", !!r.error, r);
+r = await as("service_role", "", `select * from public.borrar_eventos_vencidos()`);
+check("el borrado diario quita los vencidos y devuelve sus afiches", r.rows?.length === 1 && r.rows[0].poster_path?.startsWith(`eventos/${A}/`), r);
+r = await db.query(`select slug from public.city_events order by slug`);
+check("y deja los vigentes", r.rows.map((x) => x.slug).join() === "feria-1,feria-3", r.rows);
+const C = "00000000-0000-0000-0000-00000000000c";
+await db.exec(`insert into auth.users (id, email) values ('${C}', 'c@test.com') on conflict do nothing`);
+for (const quien of [B, C, ADM]) await as("authenticated", quien, `insert into public.city_event_reports (event_id, reason) values ($1, 'Es falso')`, [E1]);
+r = await as("anon", "", `select id from public.city_events where id = $1`, [E1]);
+check("con 3 reportes el evento se oculta solo", r.rows?.length === 0, r);
+r = await as("authenticated", A, `select status from public.city_events where id = $1`, [E1]);
+check("quien lo publicó lo sigue viendo (oculto)", r.rows?.[0]?.status === "oculto", r);
+r = await as("authenticated", B, `select * from public.city_event_reports`);
+check("quien reporta no ve los reportes", r.rows?.length === 0 || !!r.error, r);
+r = await as("authenticated", ADM, `update public.city_events set status = 'publicado' where id = $1 returning id`, [E1]);
+check("el admin lo vuelve a mostrar", r.rows?.length === 1, r);
+
 console.log("\nDatos iniciales (supabase/seed.sql)");
 const seed = readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8");
 await db.exec(seed);

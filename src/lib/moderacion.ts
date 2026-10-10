@@ -19,6 +19,10 @@ const CAMPOS: Record<string, string> = {
   instagram: "El enlace de Instagram",
   tiktok: "El enlace de TikTok",
   youtube: "El enlace de YouTube",
+  titulo: "El título",
+  lugar: "El lugar",
+  organizador: "El organizador",
+  afiche: "La descripción del afiche",
 };
 
 const MOTIVOS: Record<string, string> = {
