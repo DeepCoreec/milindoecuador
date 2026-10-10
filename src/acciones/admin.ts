@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { DIAS_DESTACADO, nuevoVencimiento } from "@/lib/planes";
 import { mensajeModeracion } from "@/lib/moderacion";
+import { crearFichaBorrador } from "@/lib/fichas";
 import { aSlug, slugLibre } from "@/lib/slug";
 import { esEnlaceCorto } from "@/lib/ubicacion";
 import { firmaValida } from "@/lib/firmaArchivo";
@@ -39,7 +40,6 @@ export type EstadoAdmin = {
   mensaje?: string;
 };
 
-const DESCRIPCION_PENDIENTE = "Descripción pendiente: escríbela desde «Mi negocio» o desde el panel antes de publicar.";
 
 /**
  * Aprueba una solicitud: crea la ficha como BORRADOR (no se ve en público) y marca la solicitud.
@@ -75,25 +75,8 @@ export async function aprobarSolicitud(_previo: EstadoAdmin, datos: FormData): P
     .select("id");
   if (!marcada?.length) return { estado: "error", mensaje: "Esta solicitud ya fue revisada" };
 
-  const base = aSlug(s.business_name) || "lugar";
-  const { data: parecidos } = await db.from("places").select("slug").eq("city_id", s.city_id).like("slug", `${base}%`);
-  const slug = slugLibre(base, new Set((parecidos ?? []).map((p) => p.slug)));
-  const descripcion = s.description && s.description.trim().length >= 20 ? s.description.trim() : DESCRIPCION_PENDIENTE;
-
-  const { error: errorLugar } = await crearClienteAdmin()
-    .from("places")
-    .insert({
-      owner_id: s.user_id ?? null,
-      city_id: s.city_id,
-      category_id: s.category_id,
-      slug,
-      name: s.business_name,
-      sector: s.sector && s.sector.trim().length >= 2 ? s.sector.trim() : "Por definir",
-      description: descripcion,
-      whatsapp: s.whatsapp,
-      status: "borrador",
-    });
-  if (errorLugar) {
+  const ficha = await crearFichaBorrador(s);
+  if (!ficha) {
     await db.from("business_requests").update({ status: "pendiente", admin_notes: null }).eq("id", s.id);
     return {
       estado: "error",

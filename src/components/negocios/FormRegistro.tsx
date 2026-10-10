@@ -39,6 +39,21 @@ export function FormRegistro({ categorias, avisoWhatsApp }: { categorias: { slug
   const v = estado.valores ?? {};
   const a11y = (campo: keyof typeof e) => ({ "aria-invalid": e[campo] ? true : undefined, "aria-describedby": `r-${campo}-aviso` });
 
+  if (estado.estado === "ok" && estado.ficha) {
+    return (
+      <div role="status" className="grid gap-4 rounded-xl border border-linea bg-papel-alto p-6">
+        <h2 className="m-0 text-xl leading-[26px] font-semibold">¡Tu negocio ya está registrado!</h2>
+        <p className="m-0 text-rio-suave">
+          Creamos la ficha de <b className="text-rio">{estado.negocio}</b>. Complétala con fotos, horario y ubicación, y publícala cuando quieras: se ve
+          en la guía al instante.
+        </p>
+        <Link href={`/mi-negocio/${estado.ficha}`} className={clasesBoton("principal", "normal", "justify-self-start")}>
+          Completar mi ficha
+        </Link>
+      </div>
+    );
+  }
+
   if (estado.estado === "ok") {
     const texto = `Hola, acabo de enviar la solicitud de mi negocio "${estado.negocio}" en Mi Lindo Ecuador.`;
     return (
@@ -137,7 +152,7 @@ export function FormRegistro({ categorias, avisoWhatsApp }: { categorias: { slug
         </p>
       )}
       <button type="submit" disabled={enviando} className={clasesBoton("principal")}>
-        {enviando ? "Enviando…" : "Enviar solicitud"}
+        {enviando ? "Registrando…" : "Registrar mi negocio"}
       </button>
     </form>
   );

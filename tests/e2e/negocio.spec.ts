@@ -7,7 +7,7 @@ test("puerta de la fase 4: un negocio de punta a punta", async ({ page, context,
   test.skip(info.project.name !== "escritorio", "un flujo completo basta en un tamaño");
   const negocio = `${marca} Encebollados`;
 
-  // 1. Sin cuenta se pide entrar; con cuenta, el dueño envía la solicitud (versión 2)
+  // 1. Sin cuenta se pide entrar; con cuenta, el negocio se registra al instante (versión 4: sin esperar al admin)
   const anonimo = await browser.newPage();
   await anonimo.goto(new URL("/negocios/registro", baseURL).toString());
   await expect(anonimo.getByRole("heading", { name: "Primero, tu cuenta" })).toBeVisible();
@@ -23,8 +23,9 @@ test("puerta de la fase 4: un negocio de punta a punta", async ({ page, context,
   await dueno.getByLabel("Tu nombre").fill("Luis Andrade");
   await dueno.getByLabel("WhatsApp del negocio").fill("098 765 4321");
   await dueno.getByLabel(/Acepto los/).check();
-  await dueno.getByRole("button", { name: "Enviar solicitud" }).click();
-  await expect(dueno.getByText("¡Solicitud enviada!")).toBeVisible();
+  await dueno.getByRole("button", { name: "Registrar mi negocio" }).click();
+  await expect(dueno.getByText("¡Tu negocio ya está registrado!")).toBeVisible();
+  await expect(dueno.getByRole("link", { name: "Completar mi ficha" })).toHaveAttribute("href", /^\/mi-negocio\/[0-9a-f-]{36}$/);
   await ctxDueno.close();
 
   // 2. Un usuario normal no ve el panel
@@ -35,13 +36,9 @@ test("puerta de la fase 4: un negocio de punta a punta", async ({ page, context,
   expect((await pn.goto(new URL("/admin/solicitudes", baseURL).toString()))?.status()).toBe(404);
   await normal.close();
 
-  // 3. El admin aprueba, completa la ficha, sube una foto, la destaca y la publica
+  // 3. La ficha ya existe (borrador del dueño); el admin igual puede completarla, subir una foto, destacarla y publicarla
   const jefe = await crearUsuario("admin", true);
   await iniciarSesion(context, jefe.correo, baseURL!);
-  await page.goto("/admin/solicitudes");
-  await page.getByRole("button", { name: `Aprobar ${negocio}` }).click();
-  await expect(page.locator("tr", { hasText: negocio }).getByText("Aprobada")).toBeVisible();
-
   const { data: lugar } = await admin().from("places").select("id, slug, status, owner_id").eq("name", negocio).single();
   expect(lugar?.status).toBe("borrador");
   expect(lugar?.owner_id).toBe(d.id); // la cuenta que pidió queda como dueña

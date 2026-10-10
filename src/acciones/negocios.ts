@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { obtenerUsuario } from "@/lib/auth";
 import { verificarCaptcha } from "@/lib/captcha";
 import { mensajeModeracion } from "@/lib/moderacion";
+import { crearFichaBorrador } from "@/lib/fichas";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { configSupabase } from "@/lib/supabase/config";
 import { esquemaSolicitud, type CampoSolicitud } from "@/lib/validacion/negocios";
@@ -15,6 +16,8 @@ export type EstadoSolicitud = {
   /** Lo escrito, para no borrar el formulario cuando hay un error. */
   valores?: Record<string, string>;
   negocio?: string;
+  /** Ficha creada al instante (borrador del dueño); si no se pudo, la solicitud queda para revisión. */
+  ficha?: string;
   /** Cambia en cada error para volver a dibujar el formulario con lo escrito. */
   intento?: number;
 };
@@ -22,9 +25,11 @@ export type EstadoSolicitud = {
 const CAMPOS = ["negocio", "categoria", "sector", "contacto", "whatsapp", "descripcion", "terminos"] as const;
 
 /**
- * Guarda la solicitud de un negocio para que el admin la revise.
- * Orden: Zod → captcha → sesión → escribir con admin.ts (la tabla no acepta escrituras desde el navegador).
- * Versión 2: hace falta cuenta. Al aprobarla, esa cuenta queda como dueña de la ficha.
+ * Registra un negocio. Orden: Zod → captcha → sesión → límites → escribir con admin.ts (la tabla no acepta
+ * escrituras desde el navegador; el filtro de palabras de la base revisa los textos).
+ * Desde el 2026-10-10 (pedido del usuario) se aprueba SOLO: la cuenta queda como dueña de una ficha en borrador y la
+ * completa y publica desde «Mi negocio». El admin la ve después en "Cambios recientes" y la gente puede reportarla.
+ * Si algo falla al crear la ficha, la solicitud queda pendiente para que el admin la apruebe a mano.
  */
 export async function solicitarRegistro(_previo: EstadoSolicitud, datos: FormData): Promise<EstadoSolicitud> {
   const valores = Object.fromEntries(CAMPOS.map((c) => [c, String(datos.get(c) ?? "").slice(0, 1200)]));
@@ -58,7 +63,16 @@ export async function solicitarRegistro(_previo: EstadoSolicitud, datos: FormDat
   const { count } = await db.from("business_requests").select("id", { count: "exact", head: true }).eq("user_id", usuario.id).eq("status", "pendiente");
   if ((count ?? 0) >= 3) return { estado: "error", mensaje: "Ya tienes 3 solicitudes esperando revisión. Espera a que las revisemos.", valores, intento: Date.now() };
 
-  const { error } = await db.from("business_requests").insert({
+  // Contra el abuso: como máximo 3 negocios nuevos por cuenta al día y 10 en total
+  const ayer = new Date(Date.now() - 24 * 3600_000).toISOString();
+  const [hoy, total] = await Promise.all([
+    db.from("places").select("id", { count: "exact", head: true }).eq("owner_id", usuario.id).gte("created_at", ayer),
+    db.from("places").select("id", { count: "exact", head: true }).eq("owner_id", usuario.id),
+  ]);
+  if ((hoy.count ?? 0) >= 3) return { estado: "error", mensaje: "Ya registraste 3 negocios hoy. Vuelve mañana para registrar otro.", valores, intento: Date.now() };
+  if ((total.count ?? 0) >= 10) return { estado: "error", mensaje: "Tu cuenta ya tiene 10 negocios. Escríbenos por WhatsApp si necesitas más.", valores, intento: Date.now() };
+
+  const { data: solicitud, error } = await db.from("business_requests").insert({
     business_name: r.data.negocio,
     category_id: categoria.data.id,
     city_id: ciudad.data.id,
@@ -67,9 +81,26 @@ export async function solicitarRegistro(_previo: EstadoSolicitud, datos: FormDat
     whatsapp: r.data.whatsapp,
     description: r.data.descripcion || null,
     user_id: usuario.id,
-  });
+    status: "aprobada",
+    admin_notes: "Aprobada automáticamente al registrarse",
+  }).select("id").single();
   if (error?.message?.includes("limite_solicitudes"))
     return { estado: "error", mensaje: "Ya tienes 3 solicitudes esperando revisión. Espera a que las revisemos.", valores, intento: Date.now() };
-  if (error) return { estado: "error", mensaje: mensajeModeracion(error) ?? "No se pudo enviar la solicitud. Inténtalo de nuevo.", valores, intento: Date.now() };
-  return { estado: "ok", negocio: r.data.negocio };
+  if (error || !solicitud) return { estado: "error", mensaje: mensajeModeracion(error) ?? "No se pudo enviar la solicitud. Inténtalo de nuevo.", valores, intento: Date.now() };
+
+  const ficha = await crearFichaBorrador({
+    business_name: r.data.negocio,
+    category_id: categoria.data.id,
+    city_id: ciudad.data.id,
+    sector: r.data.sector || null,
+    whatsapp: r.data.whatsapp,
+    description: r.data.descripcion || null,
+    user_id: usuario.id,
+  });
+  if (!ficha) {
+    // Respaldo: queda pendiente y el admin la aprueba a mano
+    await db.from("business_requests").update({ status: "pendiente", admin_notes: null }).eq("id", solicitud.id);
+    return { estado: "ok", negocio: r.data.negocio };
+  }
+  return { estado: "ok", negocio: r.data.negocio, ficha: ficha.id };
 }

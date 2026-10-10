@@ -23,6 +23,13 @@ Lo que hace que se vea "apagada":
 6. **Ficha**: buena base, pero la acción principal (WhatsApp) y los datos útiles (abierto ahora, cómo llegar,
    precio) podrían leerse más rápido; el pie de página es muy débil.
 
+## Cambio de regla pedido por el usuario (2026-10-10)
+
+**El registro de negocios ya no espera la aprobación del admin** (antes: versión 1, punto 6 y versión 2, punto 3).
+Al registrarse con su cuenta, el negocio queda con su ficha en borrador al instante; el dueño la completa y la
+publica desde «Mi negocio». Siguen el filtro de palabras, el captcha, la cuenta obligatoria, los reportes (que ocultan)
+y un límite de 3 negocios nuevos por cuenta al día (10 en total). Si falla la creación, queda pendiente para el admin.
+
 ## Fases
 
 ### Fase 17 · Dirección visual (antes de programar)

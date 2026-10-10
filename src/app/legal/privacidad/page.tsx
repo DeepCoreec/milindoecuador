@@ -75,7 +75,7 @@ export default function Privacidad() {
         <h2>Para qué los usamos</h2>
         <ul>
           <li>Para que puedas entrar a tu cuenta y publicar, editar o borrar tus reseñas.</li>
-          <li>Para revisar las solicitudes de negocios y escribirles por WhatsApp.</li>
+          <li>Para crear la ficha de cada negocio, revisarla y escribirles por WhatsApp si hace falta.</li>
           <li>Para cuidar la guía: frenar el spam, revisar reportes y ocultar lo que no cumple las reglas.</li>
         </ul>
         <p className="mt-3">No vendemos ni alquilamos tus datos, y no los usamos para publicidad.</p>

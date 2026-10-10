@@ -216,6 +216,8 @@
 
 - [x] 2026-10-10: skill `frontend-ui-engineering` agregada a `.claude/skills/` (leída completa); diagnóstico con capturas a 390 y 1440 px (en el plan)
 
+- [x] 2026-10-10 (pedido del usuario): **registro sin aprobación**: `solicitarRegistro` crea al instante la ficha en borrador del dueño (`src/lib/fichas.ts`, compartido con "Aprobar" del panel), la solicitud queda "aprobada automáticamente" y si falla queda pendiente para el admin. Límite: 3 negocios nuevos por cuenta al día y 10 en total. Pantalla de éxito con "Completar mi ficha"; botón "Registrar mi negocio"; Términos y Privacidad actualizados; regla anotada en `PLAN-V4.md`. 114 unitarias y 33 e2e pasan
+
 ### Fase 17 · Dirección visual
 - [x] 17.1 Referencias y decisiones anotadas — 2026-10-10: decisiones en el diagnóstico de `PLAN-V4.md` (para gastar poco, sin investigación aparte)
 - [x] 17.2 Dos propuestas de portada (celular y computadora) — 2026-10-10: página solo de desarrollo `/dev/propuestas?p=a` (pulida: título grande + buscador grande al lado del Panorama, afiches grandes, franja mango-suave, franja celeste-tinta para negocios) y `?p=b` (atrevida: entrada oscura con título enorme y Panorama a todo lo ancho, afiches en tarjetas, franjas mango y faro a todo lo ancho, cierre oscuro). Los cuadros de color son el lugar de las fotos. Capturas enviadas al usuario. **Siguiente: 17.3, el usuario elige**

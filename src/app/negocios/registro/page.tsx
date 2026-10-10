@@ -38,7 +38,7 @@ export default async function PaginaRegistro() {
             <h1 className="m-0 font-rotulo text-[30px] leading-[34px] font-normal tracking-[-0.01em] text-balance md:text-[40px] md:leading-[44px]">
               Registra tu negocio gratis
             </h1>
-            <p className="m-0 max-w-[60ch] text-rio-suave">Llena tus datos y revisamos tu solicitud. Cuando la aprobemos, completas tu ficha tú mismo desde «Mi negocio»: fotos, horario y ubicación.</p>
+            <p className="m-0 max-w-[60ch] text-rio-suave">Llena tus datos y tu ficha se crea al instante. La completas tú mismo desde «Mi negocio» (fotos, horario y ubicación) y la publicas cuando quieras.</p>
             <ul className="m-0 mt-2 grid list-none gap-3 p-0">
               {VENTAJAS.map((v) => (
                 <li key={v} className="flex gap-3 [&_svg]:size-[22px] [&_svg]:flex-none [&_svg]:text-exito">

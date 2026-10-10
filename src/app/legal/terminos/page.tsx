@@ -55,7 +55,7 @@ export default function Terminos() {
         <h2>Negocios</h2>
         <ul>
           <li>Aparecer en la guía es gratis. Los datos que envías deben ser reales y estar a tu nombre o al de tu negocio.</li>
-          <li>Revisamos cada solicitud y podemos rechazarla o pedir más datos.</li>
+          <li>Tu ficha se crea al instante y tú decides cuándo publicarla. Podemos revisarla después y ocultarla o borrarla si rompe estas reglas o si la gente la reporta.</li>
           <li>
             Los planes Destacado y Verificado se pagan por transferencia o DeUna y se activan cuando confirmamos el pago. Destacado hace que tu
             ficha salga primero en su categoría durante el tiempo pagado; no cambia tus reseñas ni tu calificación. Ver{" "}
