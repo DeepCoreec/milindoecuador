@@ -166,7 +166,7 @@ Paumi viene **apagada**. Para encenderla:
 2. **Vercel** → el proyecto → Settings → Environment Variables (solo **Production**, tipo **Sensitive**):
    - `ANTHROPIC_API_KEY` = la clave del paso 1
    - `PAUMI_ACTIVO` = `si`
-   - (opcional) `PAUMI_BUSQUEDA_WEB` = `si` para que busque en fuentes oficiales de internet (cuesta un poco más)
+   - La búsqueda en internet (fuentes confiables) viene **encendida**: necesita que en la Consola de Anthropic esté permitida (Settings → Privacy → Web search). Para apagarla: `PAUMI_BUSQUEDA_WEB` = `no`
    - (opcional) `PAUMI_MAX_PERSONA` (por defecto 25 mensajes por persona al día) y `PAUMI_MAX_DIA` (por defecto 400 en total)
 3. **Redeploy** (Deployments → los tres puntos del último → Redeploy).
 4. Haz las **20 preguntas de prueba** de `docs/PAUMI-PRUEBAS.md` y anota si alguna falla.

@@ -66,10 +66,17 @@ export async function conversar(historial: MensajePaumi[]): Promise<RespuestaPau
     const r = await fetch(`${c.url}/v1/messages`, {
       method: "POST",
       headers: { "x-api-key": c.clave, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model: c.modelo, max_tokens: 700, system: instrucciones(categorias, c.busquedaWeb), messages: mensajes, tools: herramientas }),
+      body: JSON.stringify({ model: c.modelo, max_tokens: 700, system: instrucciones(categorias, herramientas.includes(busqueda)), messages: mensajes, tools: herramientas }),
       signal: AbortSignal.timeout(30_000),
       cache: "no-store",
     });
+    if (!r.ok && r.status === 400 && herramientas.includes(busqueda)) {
+      // La búsqueda web no está habilitada en la Consola: se reintenta sin ella para responder igual
+      console.warn(JSON.stringify({ nivel: "aviso", donde: "paumi", mensaje: "web_search rechazada (400): se sigue sin internet" }));
+      herramientas.splice(herramientas.indexOf(busqueda), 1);
+      vuelta--;
+      continue;
+    }
     if (!r.ok) throw new ErrorPaumi(`La API respondió ${r.status}`);
     const datos = (await r.json()) as { content?: Bloque[]; stop_reason?: string };
     const bloques = Array.isArray(datos.content) ? datos.content : [];

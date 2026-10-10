@@ -242,6 +242,15 @@ test("en el celular no se ofrece manos libres, pero sí el micrófono", async ({
   await expect(chat.getByRole("button", { name: "Activar manos libres" })).toHaveCount(0);
 });
 
+test("si la cuenta de Anthropic no tiene la búsqueda web habilitada, Paumi responde igual (sin internet)", async ({ request, baseURL }) => {
+  const r = await request.post("/api/paumi", {
+    data: { mensajes: [{ rol: "usuario", texto: "pregunta sin internet" }] },
+    headers: { origin: baseURL! },
+  });
+  expect(r.status()).toBe(200); // en vez de fallar, reintenta sin la búsqueda web
+  expect((await r.json()).texto).toContain("sin buscar en internet");
+});
+
 test("la API de Paumi rechaza otros sitios, mensajes enormes y conversaciones mal armadas", async ({ request, baseURL }) => {
   const enviar = (cuerpo: unknown, origen = baseURL!) =>
     request.post("/api/paumi", { data: cuerpo, headers: { origin: origen } });

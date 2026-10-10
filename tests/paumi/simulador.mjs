@@ -45,6 +45,11 @@ function guion(cuerpo) {
       return usar("abrir_pagina", { ruta: "https://estafa.com" });
     return texto("<script>alert('x')</script> **No** puedo hacer eso.");
   }
+  // Una cuenta sin la búsqueda web habilitada: la API rechaza la herramienta (Paumi debe seguir sin internet)
+  if (pedido.includes("sin internet")) {
+    if (cuerpo.tools?.some((t) => t.type?.startsWith("web_search"))) return { error: 400 };
+    return texto("Te respondo sin buscar en internet.");
+  }
   if (pedido.includes("contacto")) return texto("Llama al 0991234567 o entra a www.estafa.com para reservar.");
   return texto("¡Hola! Soy Paumi. ¿Qué buscas hoy en Guayaquil?");
 }
@@ -62,6 +67,10 @@ createServer((req, res) => {
       return;
     }
     const salida = guion(JSON.parse(datos));
+    if (salida.error) {
+      res.writeHead(salida.error, { "content-type": "application/json" }).end(JSON.stringify({ type: "error", error: { type: "invalid_request_error" } }));
+      return;
+    }
     res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify(salida));
   });
 }).listen(PUERTO, "127.0.0.1", () => console.log(`Simulador de Anthropic en http://127.0.0.1:${PUERTO}`));
