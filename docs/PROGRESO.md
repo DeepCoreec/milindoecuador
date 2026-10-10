@@ -244,6 +244,8 @@
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
+- **Guía útil de la ciudad (idea del usuario, 2026-10-10, para una versión 5):** (1) lugares turísticos públicos sin registrarse, cargados desde **OpenStreetMap** (licencia ODbL: hay que citar "© colaboradores de OpenStreetMap" y los datos se revisan a mano antes de publicar; muchos vienen sin foto ni horario); (2) "¿Se te dañó algo?": categorías de servicios (talleres, electrónica, cerrajerías, celulares) que se registran como cualquier negocio; (3) página de información útil: ECU 911, hospitales, farmacias, transporte (Metrovía, Aerovía). No usar datos copiados de Google Maps (sus términos lo prohíben); textos de Wikipedia solo citando la fuente (CC BY-SA)
+
 - **Entrar con Facebook** (pregunta del usuario, 2026-10-08): app en Meta for Developers, URL de borrado de datos y posible verificación del negocio (RUC); hay que programar el botón. X/Twitter descartado por ahora (poco uso en Ecuador y acceso restringido)
 
 - ~~Búsqueda en la base~~ → pasó a la versión 3 (12.2)
