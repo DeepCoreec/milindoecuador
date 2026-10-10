@@ -179,3 +179,18 @@ se pasa de lo que elijas; cuando se llega al tope, Paumi dice que está descansa
 
 Supabase → SQL Editor → **+** → pega todo `supabase/migrations/0015_registro_directo.sql` → **Run** → "Success".
 Hace que el límite de 3 negocios al día y 10 en total por cuenta valga aunque alguien envíe muchos a la vez.
+
+## 13. Versión 5: eventos (migración 0016 y borrado diario)
+
+Primero la base y después el código:
+
+1. Supabase → SQL Editor → **+** → pega todo `supabase/migrations/0016_eventos.sql` → **Run** → "Success".
+   Crea la tabla de eventos, sus reportes y el lugar para los afiches.
+2. Vercel → tu proyecto → **Settings → Environment Variables** → **Add**:
+   - Key: `CRON_SECRET`
+   - Value: una clave larga inventada (por ejemplo, 40 letras y números al azar). Márcala como **Sensitive**.
+   - Environment: Production → **Save**.
+3. Claude sube el código. El archivo `vercel.json` le pide a Vercel que llame todos los días a las 00:05 de Guayaquil
+   (05:05 UTC) a `/api/tareas/eventos`, que borra los eventos vencidos con sus afiches. Se ve en Vercel →
+   **Settings → Cron Jobs**. Aunque la tarea se atrase, la página nunca muestra un evento vencido.
+4. **Probar:** publica un evento de prueba que termine hoy, míralo en `/guayaquil/eventos` y mañana comprueba que ya no está.

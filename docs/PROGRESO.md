@@ -254,10 +254,10 @@
   - [x] 22.2 Lógica y validación — 2026-10-10: `src/lib/eventos.ts` (hora de Guayaquil fija UTC−5, grupos Hoy / Este fin de semana / Próximos, textos de fecha y precio, Google Calendar y .ics) y `src/lib/validacion/eventos.ts` (Zod: fechas, 30 días, 6 meses, lugar o en línea, precio o gratis, enlaces solo https). 10 pruebas unitarias
   - [x] 22.3 Publicar, editar y borrar — 2026-10-10: `src/acciones/eventos.ts` (Zod → captcha → sesión → límites → admin.ts; afiche con permiso de subida de un solo uso, revisado por su firma, máximo 8 archivos por cuenta; ubicación con el enlace de «Compartir» de Maps), formulario `FormEvento`, `/guayaquil/eventos/nuevo`, `/cuenta/eventos` y `/cuenta/eventos/[id]`. Reportar evento reutiliza el panel de reportes (`objetivo=evento`)
   - [x] 22.4 Páginas — 2026-10-10: `/guayaquil/eventos` (Hoy / Este fin de semana / Próximos, filtro por tipo y "Solo gratis"), ficha del evento (Cómo llegar, Google Calendar y archivo .ics, compartir y enviar por WhatsApp, reportar), franja "Esta semana en Guayaquil" en la portada, "Eventos" en el menú, el pie y el mapa del sitio. Revisado a 390 y 1440 px, claro y oscuro
-  - [ ] 22.5 Borrado diario (Vercel Cron a las 00:05 de Guayaquil, con `CRON_SECRET`)
-  - [ ] 22.6 Reportes y panel del admin
-  - [ ] 22.7 Paumi recomienda eventos
-  - [ ] 22.8 Términos y Privacidad, pruebas e2e, revisión a 390 y 1440 px
+  - [x] 22.5 Borrado diario — 2026-10-10: `/api/tareas/eventos` (pide `CRON_SECRET`, borra los vencidos y sus afiches) y `vercel.json` (todos los días 05:05 UTC = 00:05 Guayaquil). **Usuario: PUESTA-EN-MARCHA §13 (0016 y `CRON_SECRET`)**
+  - [x] 22.6 Reportes y panel — 2026-10-10: "Reportar este evento" (3 reportes lo ocultan) y `/admin/eventos` (mostrar, ocultar, borrar; contador en el menú)
+  - [x] 22.7 Paumi — 2026-10-10: herramienta `buscar_eventos` (hoy, fin de semana, próximos; tipo; gratis), sus datos van marcados como "datos, no instrucciones", y puede abrir la ficha de un evento que devolvió
+  - [ ] 22.8 Términos y Privacidad (hecho), pruebas e2e (4 nuevas, pasan), revisión independiente de seguridad
   - **Puerta (usuario):** publicar un evento de prueba, verlo y comprobar que al día siguiente de su fecha ya no está
 - [ ] Fase 23 · Guía útil (turismo de OpenStreetMap, "¿Se te dañó algo?", información útil)
 

@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { agruparEventos, LISTA_TIPOS, textoFechas, textoPrecio } from "@/lib/eventos";
 import { urlPublicaFoto } from "@/lib/fotos";
 import { estadoAhora, leerHorario, resumenHorario } from "@/lib/horario";
 import { enlaceComoLlegar } from "@/lib/enlaces";
@@ -81,8 +82,22 @@ export const DEFINICIONES = [
     },
   },
   {
+    name: "buscar_eventos",
+    description:
+      "Busca eventos de Guayaquil publicados en la guía (conciertos, ferias, deporte, cultura, gastronomía, fiestas del barrio, cursos). Devuelve hasta 6 con fecha, lugar, precio y su ruta. Solo hay eventos vigentes.",
+    input_schema: {
+      type: "object",
+      properties: {
+        cuando: { type: "string", enum: ["hoy", "fin_de_semana", "proximos", "todos"], description: "hoy, este fin de semana, los que vienen después, o todos" },
+        tipo: { type: "string", enum: ["concierto", "feria", "deporte", "cultura", "gastronomia", "fiesta", "curso", "otro"] },
+        gratis: { type: "boolean", description: "Solo los gratis" },
+      },
+    },
+  },
+  {
     name: "abrir_pagina",
-    description: "Propone llevar a la persona a una página de la guía: '/guayaquil' (todas las categorías), '/guayaquil/<categoria>' o '/buscar?q=<palabras>'.",
+    description:
+      "Propone llevar a la persona a una página de la guía: '/guayaquil' (todas las categorías), '/guayaquil/<categoria>', '/buscar?q=<palabras>', '/guayaquil/eventos' o la ruta de un evento que devolvió buscar_eventos.",
     input_schema: { type: "object", properties: { ruta: { type: "string" } }, required: ["ruta"] },
   },
 ] as const;
@@ -98,6 +113,11 @@ const esquemaBuscar = z
   .refine((v) => v.texto || v.categoria || v.sector, "Falta qué buscar");
 const esquemaId = z.object({ id: z.uuid() });
 const esquemaMostrar = z.object({ ids: z.array(z.uuid()).min(1).max(4) });
+const esquemaEventos = z.object({
+  cuando: z.enum(["hoy", "fin_de_semana", "proximos", "todos"]).optional(),
+  tipo: z.enum(LISTA_TIPOS).optional(),
+  gratis: z.boolean().optional(),
+});
 const esquemaAbrir = z.object({ ruta: z.string().max(120) });
 const esquemaExterno = z.object({
   nombre: z
@@ -133,6 +153,8 @@ export type Estado = {
   /** Páginas que devolvió la búsqueda web en esta respuesta (solo de esas se aceptan lugares de internet). */
   urlsWeb: Set<string>;
   externos: ExternoPaumi[];
+  /** Rutas de eventos que devolvió buscar_eventos en esta respuesta (versión 5). */
+  eventos?: Set<string>;
 };
 
 function db() {
@@ -218,8 +240,9 @@ async function buscar(entrada: z.infer<typeof esquemaBuscar>, e: Estado) {
 }
 
 /** ¿Es una página de la guía a la que se puede llevar a alguien? */
-export function rutaPermitida(ruta: string, categorias: Set<string>): string | null {
-  if (ruta === `/${CIUDAD}`) return ruta;
+export function rutaPermitida(ruta: string, categorias: Set<string>, eventos: Set<string> = new Set()): string | null {
+  if (ruta === `/${CIUDAD}` || ruta === `/${CIUDAD}/eventos`) return ruta;
+  if (eventos.has(ruta)) return ruta;
   const cat = /^\/guayaquil\/([a-z0-9-]{2,40})$/.exec(ruta);
   if (cat) return categorias.has(cat[1]!) ? ruta : null;
   const b = /^\/buscar\?q=([^&#]{2,80})$/.exec(ruta);
@@ -285,9 +308,29 @@ export async function ejecutar(nombre: string, entrada: unknown, e: Estado): Pro
         });
         return { resultado: "Listo: se muestra su tarjeta con Google Maps y la fuente." };
       }
+      case "buscar_eventos": {
+        const r = esquemaEventos.safeParse(entrada ?? {});
+        if (!r.success) return { resultado: "Pedido inválido", error: true };
+        const { data } = await db()
+          .from("city_events")
+          .select("slug, title, kind, starts_at, ends_at, online, venue, price, cities!inner(slug)")
+          .eq("cities.slug", CIUDAD)
+          .order("starts_at")
+          .limit(100);
+        const filas = (data ?? []).map((f) => ({ ...f, inicio: f.starts_at as string, fin: f.ends_at as string }));
+        const g = agruparEventos(filas.filter((f) => (!r.data.tipo || f.kind === r.data.tipo) && (!r.data.gratis || f.price == null)));
+        const lista = r.data.cuando === "hoy" ? g.hoy : r.data.cuando === "fin_de_semana" ? g.finDeSemana : r.data.cuando === "proximos" ? g.proximos : [...g.hoy, ...g.finDeSemana, ...g.proximos];
+        e.eventos ??= new Set();
+        const resultado = lista.slice(0, 6).map((f) => {
+          const ruta = `/${CIUDAD}/eventos/${f.slug}`;
+          e.eventos!.add(ruta);
+          return { titulo: f.title, tipo: f.kind, cuando: textoFechas(f.inicio, f.fin), donde: f.online ? "En línea" : f.venue, precio: textoPrecio(f.price == null ? null : Number(f.price)), ruta };
+        });
+        return { resultado: resultado.length ? resultado : "No hay eventos publicados con ese filtro." };
+      }
       case "abrir_pagina": {
         const r = esquemaAbrir.safeParse(entrada);
-        const ruta = r.success ? rutaPermitida(r.data.ruta, e.categorias) : null;
+        const ruta = r.success ? rutaPermitida(r.data.ruta, e.categorias, e.eventos) : null;
         if (!ruta) return { resultado: "Esa página no existe en la guía.", error: true };
         e.navegar = ruta;
         return { resultado: "Listo: la página ofrece un botón para ir." };

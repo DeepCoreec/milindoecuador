@@ -527,6 +527,8 @@ const E1 = r.rows?.[0]?.id;
 check("el servidor publica un evento", !!E1, r);
 r = await as("anon", "", `select id from public.city_events where id = $1`, [E1]);
 check("cualquiera ve un evento vigente", r.rows?.length === 1, r);
+r = await as("anon", "", `select user_id from public.city_events where id = $1`, [E1]);
+check("pero no quién lo publicó", !!r.error, r);
 r = await as("authenticated", A, `insert into public.city_events (city_id, user_id, slug, title, kind, description, starts_at, ends_at, venue, organizer) values ($1, $2, 'x-1', 'Hola mundo', 'otro', 'Descripción larga de prueba para el evento', now(), now(), 'Aquí', 'Yo')`, [gye, A]);
 check("el navegador no puede crear eventos", !!r.error, r);
 r = await as("authenticated", A, `update public.city_events set title = 'Cambiado' where id = $1 returning id`, [E1]);

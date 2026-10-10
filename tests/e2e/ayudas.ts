@@ -87,6 +87,10 @@ export async function crearLugar(categoria = "restaurantes", extra: Record<strin
 /** Borra todo lo que crearon las pruebas: usuarios (con sus reseñas), lugares y solicitudes "E2E …". */
 export async function limpiar() {
   const db = admin();
+  // Versión 5: afiches de los eventos de prueba (los eventos se borran con su cuenta)
+  const { data: eventos } = await db.from("city_events").select("poster_path").like("title", "E2E %").not("poster_path", "is", null);
+  if (eventos?.length) await db.storage.from("afiches-eventos").remove(eventos.map((e) => e.poster_path as string));
+  await db.from("city_events").delete().like("title", "E2E %");
   for (const id of creados.splice(0)) await db.auth.admin.deleteUser(id);
   const { data: fotos } = await db.from("place_photos").select("storage_path, places!inner(name)").like("places.name", "E2E %");
   if (fotos?.length) await db.storage.from("fotos-lugares").remove(fotos.map((f) => f.storage_path as string));

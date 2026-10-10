@@ -34,6 +34,18 @@ function guion(cuerpo) {
     if (crudo.includes("lugares")) return texto("FALTA MARCAR LOS DATOS DE LA GUÍA");
     return texto("¡Te recomiendo estos encebollados! Están buenazos.");
   }
+  // Versión 5: eventos. Busca, abre la ficha del primero y lo nombra (solo lo que devolvió la herramienta)
+  if (pedido.includes("evento")) {
+    const usadas = mensajes.filter((m) => Array.isArray(m.content) && m.content.some((b) => b.type === "tool_use")).length;
+    if (usadas === 0) return usar("buscar_eventos", { cuando: "todos" });
+    if (usadas === 1) {
+      const crudo = resultados[0]?.content ?? "";
+      const lista = JSON.parse(crudo.replace(/^<datos_de_la_guia[^>]*>/, "").replace(/<\/datos_de_la_guia>$/, ""));
+      if (!Array.isArray(lista) || !lista.length) return texto("No hay eventos publicados todavía.");
+      return usar("abrir_pagina", { ruta: lista[0].ruta });
+    }
+    return texto("Mira este evento: toca el botón para ver la fecha y cómo llegar.");
+  }
   if (pedido.includes("llévame") || pedido.includes("llevame")) {
     if (!resultados.length) return usar("abrir_pagina", { ruta: "/guayaquil/restaurantes" });
     return texto("¡Vamos! Toca el botón para ver todos los restaurantes.");

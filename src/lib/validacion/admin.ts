@@ -131,3 +131,6 @@ export const esquemaPalabra = z.object({
 export const esquemaRevisado = z.object({ cambio: z.union([z.literal("todos"), z.coerce.number().int().positive()]) });
 export const esquemaLugarAdmin = z.object({ lugar: z.uuid() });
 export const esquemaDecisionLugar = z.object({ lugar: z.uuid(), decision: z.enum(["mostrar", "ocultar"]) });
+
+/** Decisión del admin sobre un evento (versión 5). */
+export const esquemaDecisionEvento = z.object({ evento: z.uuid(), decision: z.enum(["mostrar", "ocultar", "borrar"]) });

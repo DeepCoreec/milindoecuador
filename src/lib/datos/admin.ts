@@ -16,7 +16,7 @@ export async function getContadores() {
     if (extra) q = q.eq(extra[0], extra[1]);
     return (await q).count ?? 0;
   };
-  const [pendientes, publicados, reportes, cambios, lugaresReportados, videosReportados, errores] = await Promise.all([
+  const [pendientes, publicados, reportes, cambios, lugaresReportados, videosReportados, errores, eventosReportados] = await Promise.all([
     contar("business_requests", "status", "pendiente"),
     contar("places", "status", "publicado"),
     contar("review_reports", "resolved", false),
@@ -24,8 +24,9 @@ export async function getContadores() {
     contar("place_reports", "resolved", false, ["target", "lugar"]),
     contar("place_reports", "resolved", false, ["target", "video"]),
     contar("error_log", "resolved", false),
+    contar("city_event_reports", "resolved", false),
   ]);
-  return { pendientes, publicados, reportes, cambios, lugaresReportados, videosReportados, errores };
+  return { pendientes, publicados, reportes, cambios, lugaresReportados, videosReportados, errores, eventosReportados };
 }
 
 export type Solicitud = {
@@ -447,5 +448,30 @@ export async function getErrores(): Promise<ErrorRegistrado[]> {
     primera: e.first_seen as string,
     ultima: e.last_seen as string,
     resuelto: e.resolved as boolean,
+  }));
+}
+
+export type EventoAdmin = { id: string; slug: string; titulo: string; inicio: string; fin: string; estado: "publicado" | "oculto"; organizador: string; creado: string; motivos: string[] };
+
+/** Eventos para el panel (versión 5): los más nuevos primero, con los reportes sin resolver. */
+export async function getEventosAdmin(): Promise<EventoAdmin[]> {
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  const { data, error } = await db
+    .from("city_events")
+    .select("id, slug, title, starts_at, ends_at, status, organizer, created_at, city_event_reports(reason, resolved)")
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) throw new Error(`No se pudieron leer los eventos: ${error.message}`);
+  return (data ?? []).map((e) => ({
+    id: e.id,
+    slug: e.slug,
+    titulo: e.title,
+    inicio: e.starts_at,
+    fin: e.ends_at,
+    estado: e.status as EventoAdmin["estado"],
+    organizador: e.organizer,
+    creado: e.created_at,
+    motivos: ((e.city_event_reports ?? []) as { reason: string; resolved: boolean }[]).filter((r) => !r.resolved).map((r) => r.reason),
   }));
 }

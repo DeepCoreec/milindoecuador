@@ -15,6 +15,7 @@ import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { exigirConfigSupabase } from "@/lib/supabase/config";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import {
+  esquemaDecisionEvento,
   esquemaDecision,
   esquemaDecisionLugar,
   esquemaLugarAdmin,
@@ -512,4 +513,25 @@ export async function resolverError(_previo: EstadoAdmin, datos: FormData): Prom
   if (error) return { estado: "error", mensaje: "No se pudo marcar" };
   revalidatePath("/admin", "layout");
   return { estado: "ok", mensaje: "Resuelto" };
+}
+
+
+/** Eventos (versión 5): mostrar otra vez, ocultar o borrar (con su afiche). Cierra sus reportes. */
+export async function decidirEvento(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaDecisionEvento.safeParse({ evento: datos.get("evento"), decision: datos.get("decision") });
+  if (!r.success) return { estado: "error", mensaje: "Datos inválidos" };
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  if (r.data.decision === "borrar") {
+    const { data, error } = await db.from("city_events").delete().eq("id", r.data.evento).select("poster_path").maybeSingle();
+    if (error || !data) return { estado: "error", mensaje: "No se pudo borrar" };
+    if (data.poster_path) await crearClienteAdmin().storage.from("afiches-eventos").remove([data.poster_path]);
+    revalidatePath("/", "layout");
+    return { estado: "ok", mensaje: "Evento borrado" };
+  }
+  const { error } = await db.from("city_events").update({ status: r.data.decision === "mostrar" ? "publicado" : "oculto" }).eq("id", r.data.evento);
+  if (error) return { estado: "error", mensaje: "No se pudo cambiar el evento" };
+  await db.from("city_event_reports").update({ resolved: true }).eq("event_id", r.data.evento).eq("resolved", false);
+  revalidatePath("/", "layout");
+  return { estado: "ok", mensaje: r.data.decision === "mostrar" ? "Se ve otra vez" : "Queda oculto" };
 }

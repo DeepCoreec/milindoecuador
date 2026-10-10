@@ -66,6 +66,22 @@ export default function Terminos() {
       </section>
 
       <section>
+        <h2>Eventos</h2>
+        <ul>
+          <li>Cualquier persona con cuenta puede publicar gratis hasta 3 eventos por semana, de los próximos 6 meses y de hasta 30 días de duración.</li>
+          <li>
+            El evento tiene que ser real y tienes que tener permiso para publicarlo (y su afiche). No se permiten eventos falsos, engañosos, con
+            contenido sexual o violento, ni ventas ilegales.
+          </li>
+          <li>Se publica al instante. Si varias personas lo reportan se oculta hasta que lo revisemos, y podemos borrarlo si no cumple estas reglas.</li>
+          <li>
+            Cada evento, con su afiche, se borra solo al día siguiente de su fecha de fin. No vendemos entradas: los precios, cambios y
+            cancelaciones son responsabilidad de quien organiza.
+          </li>
+        </ul>
+      </section>
+
+      <section>
         <h2>Fotos, videos y textos</h2>
         <p>
           Las fotos y videos de la guía son propios o de los negocios que los subieron. Al subir fotos, videos o textos nos das permiso para

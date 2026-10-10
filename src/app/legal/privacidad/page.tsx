@@ -38,7 +38,7 @@ export default function Privacidad() {
             <b>Tus reseñas:</b> las estrellas, el texto y la fecha. Son públicas y se muestran con tu nombre visible.
           </li>
           <li>
-            <b>Tus reportes:</b> el motivo por el que reportas una reseña, un lugar o un video. Solo lo ve el equipo que modera.
+            <b>Tus reportes:</b> el motivo por el que reportas una reseña, un lugar, un video o un evento. Solo lo ve el equipo que modera.
           </li>
           <li>
             <b>Si hablas con Paumi:</b> lo que le escribes se envía a Anthropic (la empresa que hace funcionar a Paumi) para que pueda responder.
@@ -49,6 +49,11 @@ export default function Privacidad() {
             activas), el navegador escucha mientras la página está abierta y a la vista para saber si la llamaste: solo te atiende si empiezas por
             su nombre («Paumi, …» u «Oye, Paumi, …») y entonces le envía lo que dijiste después. Lo demás se descarta en tu teléfono y no se envía
             a nadie más que al servicio de voz de tu navegador. Se apaga al cerrar la página o después de 10 minutos sin oír su nombre.
+          </li>
+          <li>
+            <b>Si publicas un evento:</b> los datos del evento (todo es público, incluido el WhatsApp de contacto si lo pones) y su afiche. Qué
+            cuenta lo publicó no se muestra. Al subir el afiche, tu navegador lo achica y le quita la ubicación GPS de la foto. El evento y su
+            afiche se borran solos al día siguiente de su fecha de fin, o antes si tú lo borras.
           </li>
           <li>
             <b>Tus lugares guardados:</b> la lista de favoritos de tu cuenta. Solo la ves tú.
@@ -85,7 +90,7 @@ export default function Privacidad() {
         <h2>Con quién se comparten</h2>
         <p>Usamos servicios de otras empresas para que la guía funcione. Ellos guardan o procesan datos por nosotros, solo para eso:</p>
         <ul className="mt-2">
-          <li>Supabase: la base de datos, las cuentas, las fotos y los videos.</li>
+          <li>Supabase: la base de datos, las cuentas, las fotos, los videos y los afiches de eventos.</li>
           <li>Vercel: el servidor donde vive la página.</li>
           <li>Cloudflare Turnstile: el captcha de los formularios.</li>
           <li>Google: solo si eliges entrar con Google.</li>
@@ -99,7 +104,7 @@ export default function Privacidad() {
         <h2>Cuánto tiempo los guardamos</h2>
         <p>
           Mientras tu cuenta exista. Si la borras, se eliminan al momento tu cuenta, tu nombre visible, tus reseñas, tus reportes y tus lugares
-          guardados. Los negocios que manejabas siguen en la guía, pero sin tu cuenta. Las copias de seguridad cifradas se guardan 90 días, así
+          guardados y tus eventos. Los negocios que manejabas siguen en la guía, pero sin tu cuenta. Las copias de seguridad cifradas se guardan 90 días, así
           que tus datos desaparecen de ellas a más tardar en ese plazo. Las solicitudes de negocios se guardan mientras el negocio esté en la guía
           o haga falta para responder; las rechazadas se borran solas a los 180 días.
         </p>

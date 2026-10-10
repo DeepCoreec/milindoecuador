@@ -14,4 +14,4 @@ export const RESPONSABLE = {
   whatsapp: WHATSAPP_GUIA,
 };
 
-export const ACTUALIZADO = "9 de octubre de 2026";
+export const ACTUALIZADO = "10 de octubre de 2026";

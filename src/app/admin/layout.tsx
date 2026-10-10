@@ -28,6 +28,7 @@ export default async function LayoutAdmin({ children }: LayoutProps<"/admin">) {
             { href: "/admin/cambios", texto: "Cambios recientes", contador: c.cambios },
             { href: "/admin/lugares-reportados", texto: "Lugares reportados", contador: c.lugaresReportados },
             { href: "/admin/videos", texto: "Videos", contador: c.videosReportados },
+            { href: "/admin/eventos", texto: "Eventos", contador: c.eventosReportados },
             { href: "/admin/palabras", texto: "Palabras prohibidas" },
             { href: "/admin/errores", texto: "Errores", contador: c.errores },
           ]}
