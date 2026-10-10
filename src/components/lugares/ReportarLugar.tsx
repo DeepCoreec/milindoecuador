@@ -6,7 +6,7 @@ import { reportarLugar, type EstadoReporte } from "@/acciones/reportes";
 import { clasesBoton } from "@/components/ui/Boton";
 import { claseEntrada, claseEtiqueta } from "@/components/ui/clasesFormulario";
 import { IconoCerrar } from "@/components/ui/iconos";
-import { MOTIVOS_REPORTE_LUGAR, MOTIVOS_REPORTE_VIDEO } from "@/lib/validacion/resenas";
+import { motivosDe } from "@/lib/validacion/resenas";
 
 const inicial: EstadoReporte = { estado: "inicio" };
 const botonChico = "cursor-pointer border-0 bg-transparent p-0 text-[13px] leading-5 font-medium text-rio-suave underline underline-offset-2";
@@ -15,13 +15,14 @@ const botonChico = "cursor-pointer border-0 bg-transparent p-0 text-[13px] leadi
  * "Reportar este lugar" (versión 2, paso 9.7): abre un panel con el motivo. Con 3 reportes se oculta solo.
  * `objetivo="video"` (versión 3): reporta solo el video del negocio.
  */
-export function ReportarLugar({ lugar, ruta, nombre, objetivo = "lugar" }: { lugar: string; ruta: string; nombre: string; objetivo?: "lugar" | "video" }) {
+export function ReportarLugar({ lugar, ruta, nombre, objetivo = "lugar" }: { lugar: string; ruta: string; nombre: string; objetivo?: "lugar" | "video" | "evento" }) {
   const [estado, accion, enviando] = useActionState(reportarLugar, inicial);
   const video = objetivo === "video";
-  const motivos = video ? MOTIVOS_REPORTE_VIDEO : MOTIVOS_REPORTE_LUGAR;
+  const cosa = video ? "video" : objetivo === "evento" ? "evento" : "lugar";
+  const motivos = motivosDe(objetivo);
   return (
     <Dialog.Root>
-      <Dialog.Trigger className={`${botonChico} justify-self-start`}>{video ? "Reportar este video" : "Reportar este lugar"}</Dialog.Trigger>
+      <Dialog.Trigger className={`${botonChico} justify-self-start`}>{`Reportar este ${cosa}`}</Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="mle-velo fixed inset-0 z-40 bg-[#0b1d28]/55" />
         <Dialog.Content className="fixed top-1/2 left-1/2 z-50 grid max-h-[90vh] w-[min(440px,calc(100vw-32px))] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-xl border border-linea bg-papel-alto p-6 text-rio shadow-flotante">
@@ -53,7 +54,7 @@ export function ReportarLugar({ lugar, ruta, nombre, objetivo = "lugar" }: { lug
                 <input type="hidden" name="ruta" value={ruta} />
                 <input type="hidden" name="objetivo" value={objetivo} />
                 <fieldset className="m-0 grid gap-2 border-0 p-0">
-                  <legend className={`${claseEtiqueta} mb-2 p-0`}>{video ? "¿Qué pasa con este video?" : "¿Qué pasa con este lugar?"}</legend>
+                  <legend className={`${claseEtiqueta} mb-2 p-0`}>{`¿Qué pasa con este ${cosa}?`}</legend>
                   {Object.entries(motivos).map(([valor, texto]) => (
                     <label key={valor} className="flex cursor-pointer items-start gap-3 text-[15px] leading-[22px]">
                       <input

@@ -10,3 +10,8 @@ export const CAMINO_FOTO = /^lugares\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(webp|jpg)$/
 export function urlPublicaVideo(urlSupabase: string, camino: string): string {
   return `${urlSupabase}/storage/v1/object/public/videos-lugares/${camino.split("/").map(encodeURIComponent).join("/")}`;
 }
+
+/** Dirección pública de un afiche de evento (bucket `afiches-eventos`, versión 5). */
+export function urlPublicaAfiche(urlSupabase: string, camino: string): string {
+  return `${urlSupabase}/storage/v1/object/public/afiches-eventos/${camino.split("/").map(encodeURIComponent).join("/")}`;
+}

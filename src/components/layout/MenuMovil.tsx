@@ -9,6 +9,7 @@ import { IconoCerrar, IconoMenu } from "@/components/ui/iconos";
 const ENLACES = [
   { href: "/guayaquil", texto: "Explorar Guayaquil" },
   { href: "/buscar", texto: "Buscar" },
+  { href: "/guayaquil/eventos", texto: "Eventos" },
   { href: "/negocios/planes", texto: "Planes para negocios" },
 ];
 
@@ -40,7 +41,7 @@ export function MenuMovil() {
           </div>
           <Dialog.Description className="sr-only">Enlaces principales de Mi Lindo Ecuador</Dialog.Description>
           <nav aria-label="Menú del celular" className="grid">
-            {[...ENLACES.slice(0, 2), conSesion ? { href: "/cuenta", texto: "Mi cuenta" } : { href: "/entrar", texto: "Entrar" }, ...ENLACES.slice(2)].map((e) => (
+            {[...ENLACES.slice(0, 3), conSesion ? { href: "/cuenta", texto: "Mi cuenta" } : { href: "/entrar", texto: "Entrar" }, ...ENLACES.slice(3)].map((e) => (
               <Dialog.Close asChild key={e.href}>
                 <Link href={e.href} className="flex min-h-12 items-center border-b border-linea px-1 text-base font-medium text-rio no-underline">
                   {e.texto}

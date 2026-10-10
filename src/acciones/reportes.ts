@@ -2,7 +2,7 @@
 
 import { requireUsuario } from "@/lib/auth";
 import { crearClienteServidor } from "@/lib/supabase/server";
-import { esquemaReporte, esquemaReporteLugar, MOTIVOS_REPORTE, MOTIVOS_REPORTE_LUGAR, MOTIVOS_REPORTE_VIDEO } from "@/lib/validacion/resenas";
+import { esquemaReporte, esquemaReporteLugar, motivosDe, MOTIVOS_REPORTE } from "@/lib/validacion/resenas";
 
 export type EstadoReporte = {
   estado: "inicio" | "ok" | "error";
@@ -84,18 +84,20 @@ export async function reportarLugar(_previo: EstadoReporte, datos: FormData): Pr
   await requireUsuario(r.data.ruta);
 
   const video = r.data.objetivo === "video";
-  const motivo = video
-    ? MOTIVOS_REPORTE_VIDEO[r.data.motivo as keyof typeof MOTIVOS_REPORTE_VIDEO]
-    : MOTIVOS_REPORTE_LUGAR[r.data.motivo as keyof typeof MOTIVOS_REPORTE_LUGAR];
+  const evento = r.data.objetivo === "evento";
+  const motivo = motivosDe(r.data.objetivo)[r.data.motivo]!;
   const razon = r.data.detalle ? `${motivo}: ${r.data.detalle}` : motivo;
   const supabase = await crearClienteServidor();
-  // Sin .select(): quien reporta no puede leer los reportes (ni el suyo)
-  const { error } = await supabase.from("place_reports").insert({ place_id: r.data.lugar, reason: razon.slice(0, 500), target: r.data.objetivo });
+  // Sin .select(): quien reporta no puede leer los reportes (ni el suyo).
+  // Versión 5: `objetivo=evento` reporta un evento (el campo "lugar" lleva el id del evento; 0016).
+  const { error } = evento
+    ? await supabase.from("city_event_reports").insert({ event_id: r.data.lugar, reason: razon.slice(0, 500) })
+    : await supabase.from("place_reports").insert({ place_id: r.data.lugar, reason: razon.slice(0, 500), target: r.data.objetivo });
   if (error) {
     if (error.code === "23505")
       return {
         estado: "ok",
-        mensaje: video ? "Ya habías reportado este video. Lo revisaremos pronto." : "Ya habías reportado este lugar. Lo revisaremos pronto.",
+        mensaje: `Ya habías reportado este ${video ? "video" : evento ? "evento" : "lugar"}. Lo revisaremos pronto.`,
       };
     if (/límite de reportes/.test(error.message))
       return {

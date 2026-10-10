@@ -5,7 +5,10 @@ import { Buscador } from "@/components/busqueda/Buscador";
 import { BarraCategorias } from "@/components/categorias/BarraCategorias";
 import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
+import { TarjetaEvento } from "@/components/eventos/TarjetaEvento";
 import { TarjetaResumen } from "@/components/lugares/TarjetaResumen";
+import { getEventos } from "@/lib/datos/eventos";
+import { deEstaSemana } from "@/lib/eventos";
 import { getCategoriasBarra, getSeccionesInicio } from "@/lib/datos/lugares";
 import type { LugarResumen } from "@/lib/datos/tipos";
 
@@ -47,7 +50,13 @@ const ancho = "mx-auto w-full max-w-[1280px] px-4 md:px-8";
 const seccion = "py-12 min-[900px]:py-16";
 
 export default async function Inicio() {
-  const [categorias, { encebollados, imperdibles, tituloComer }] = await Promise.all([getCategoriasBarra("guayaquil"), getSeccionesInicio()]);
+  const [categorias, { encebollados, imperdibles, tituloComer }, eventos] = await Promise.all([
+    getCategoriasBarra("guayaquil"),
+    getSeccionesInicio(),
+    getEventos().catch(() => []),
+  ]);
+  // Versión 5: lo que pasa en los próximos 7 días
+  const estaSemana = deEstaSemana(eventos);
 
   return (
     <>
@@ -104,6 +113,32 @@ export default async function Inicio() {
             </div>
           </section>
         )}
+
+        <section className={`${ancho} ${seccion}`} aria-labelledby="t-eventos">
+          <div className="mb-6 flex flex-wrap items-end justify-between gap-x-4 gap-y-2 md:mb-8">
+            <h2 id="t-eventos" className="m-0 font-rotulo text-[26px] leading-8 font-normal text-balance md:text-4xl md:leading-[44px]">
+              Esta semana en Guayaquil
+            </h2>
+            <Link href="/guayaquil/eventos" className="inline-flex min-h-11 items-center font-semibold">
+              Ver todos los eventos
+            </Link>
+          </div>
+          {estaSemana.length > 0 ? (
+            <div className="sin-barra grid auto-cols-[minmax(240px,72%)] grid-flow-col gap-4 overflow-x-auto pb-1 min-[1000px]:grid-flow-row min-[1000px]:grid-cols-4 min-[1000px]:gap-6 min-[1000px]:overflow-visible">
+              {estaSemana.map((e) => (
+                <TarjetaEvento key={e.id} e={e} />
+              ))}
+            </div>
+          ) : (
+            <p className="m-0 max-w-[60ch] rounded-[20px] bg-mango-suave p-6 text-[17px] leading-7">
+              Todavía no hay eventos esta semana. ¿Organizas un concierto, una feria o la fiesta del barrio?{" "}
+              <Link href="/guayaquil/eventos/nuevo" className="font-semibold">
+                Publícalo gratis
+              </Link>
+              .
+            </p>
+          )}
+        </section>
 
         <section data-theme="dark" className="bg-papel text-rio" aria-labelledby="t-neg">
           <div className={`${ancho} ${seccion} grid items-center gap-6 min-[900px]:grid-cols-[minmax(0,1fr)_auto]`}>

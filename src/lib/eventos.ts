@@ -15,6 +15,17 @@ export const TIPOS_EVENTO = {
   otro: "Otros",
 } as const;
 export type TipoEvento = keyof typeof TIPOS_EVENTO;
+/** Nombre de un solo evento, para tarjetas y fichas. */
+export const TIPO_SINGULAR: Record<TipoEvento, string> = {
+  concierto: "Concierto",
+  feria: "Feria",
+  deporte: "Deporte",
+  cultura: "Cultura",
+  gastronomia: "Gastronomía",
+  fiesta: "Fiesta del barrio",
+  curso: "Curso o taller",
+  otro: "Evento",
+};
 export const LISTA_TIPOS = Object.keys(TIPOS_EVENTO) as TipoEvento[];
 
 const CORRIMIENTO = 5 * 3600_000;
@@ -70,6 +81,12 @@ export function agruparEventos<T extends ConFechas>(eventos: T[], ahora = new Da
     else grupos.proximos.push(e);
   }
   return grupos;
+}
+
+/** Los que empiezan en los próximos 7 días (o ya empezaron y siguen), para la franja de la portada. */
+export function deEstaSemana<T extends ConFechas>(eventos: T[], ahora = new Date(), maximo = 4): T[] {
+  const tope = diaGye(new Date(ahora.getTime() + 7 * DIA));
+  return eventos.filter((e) => vigente(e, ahora) && diaGye(e.inicio) <= tope).slice(0, maximo);
 }
 
 const fmtDia = new Intl.DateTimeFormat("es-EC", { timeZone: "America/Guayaquil", weekday: "long", day: "numeric", month: "long" });

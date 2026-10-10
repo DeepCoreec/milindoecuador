@@ -64,7 +64,10 @@ create policy "ve los suyos" on public.city_events for select to authenticated
 create policy "admin gestiona" on public.city_events for all to authenticated
   using ((select public.is_admin())) with check ((select public.is_admin()));
 revoke all on public.city_events from anon, authenticated;
-grant select on public.city_events to anon, authenticated;
+-- Todas las columnas menos quién lo publicó (eso solo lo usa el servidor)
+grant select (id, city_id, slug, title, kind, description, starts_at, ends_at, online, venue, address, latitude, longitude,
+  price, organizer, whatsapp, website, tickets_url, min_age, poster_path, poster_alt, status, created_at, updated_at)
+  on public.city_events to anon, authenticated;
 grant update (status), delete on public.city_events to authenticated; -- solo pasa la política del admin
 
 -- Límites (valen aunque lleguen varios a la vez) y fechas razonables

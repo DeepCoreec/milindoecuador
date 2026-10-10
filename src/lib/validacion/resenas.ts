@@ -51,13 +51,28 @@ export const MOTIVOS_REPORTE_VIDEO = {
   otro: "Otro motivo",
 } as const;
 
+/** Motivos para reportar un evento (versión 5, fase 22). Con 3 reportes el evento se oculta solo. */
+export const MOTIVOS_REPORTE_EVENTO = {
+  falso: "No existe o es falso",
+  estafa: "Estafa o publicidad engañosa",
+  ofensivo: "Tiene insultos u ofensas",
+  sexual: "Contenido sexual o violento",
+  datos: "La fecha o los datos están mal",
+  otro: "Otro motivo",
+} as const;
+
+const MOTIVOS_POR_OBJETIVO = { lugar: MOTIVOS_REPORTE_LUGAR, video: MOTIVOS_REPORTE_VIDEO, evento: MOTIVOS_REPORTE_EVENTO } as const;
+export function motivosDe(objetivo: keyof typeof MOTIVOS_POR_OBJETIVO): Record<string, string> {
+  return MOTIVOS_POR_OBJETIVO[objetivo];
+}
+
 export const esquemaReporteLugar = z
   .object({
     lugar: z.uuid(),
     ruta: rutaFicha,
-    objetivo: z.enum(["lugar", "video"]).default("lugar"),
+    objetivo: z.enum(["lugar", "video", "evento"]).default("lugar"),
     motivo: z.string({ error: "Elige un motivo" }),
     detalle: z.string().trim().max(400, "Máximo 400 caracteres").optional().default(""),
   })
-  .refine((r) => Object.hasOwn(r.objetivo === "video" ? MOTIVOS_REPORTE_VIDEO : MOTIVOS_REPORTE_LUGAR, r.motivo), { message: "Elige un motivo", path: ["motivo"] })
+  .refine((r) => Object.hasOwn(MOTIVOS_POR_OBJETIVO[r.objetivo], r.motivo), { message: "Elige un motivo", path: ["motivo"] })
   .refine((r) => r.motivo !== "otro" || r.detalle.length >= 3, { message: "Cuéntanos el motivo en pocas palabras", path: ["detalle"] });

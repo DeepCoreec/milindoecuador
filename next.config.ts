@@ -67,8 +67,12 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       // Solo NUESTRO proyecto de Supabase (no cualquier *.supabase.co: evita que otros usen el optimizador de imágenes)
       { protocol: "https", hostname: hostSupabase(), pathname: "/storage/v1/object/public/fotos-lugares/**" },
+      // Versión 5: afiches de eventos
+      { protocol: "https", hostname: hostSupabase(), pathname: "/storage/v1/object/public/afiches-eventos/**" },
       // Solo en desarrollo: el Supabase de prueba local
-      ...(desarrollo ? [{ protocol: "http" as const, hostname: "127.0.0.1", port: "54321", pathname: "/storage/v1/object/public/fotos-lugares/**" }] : []),
+      ...(desarrollo
+        ? (["fotos-lugares", "afiches-eventos"] as const).map((b) => ({ protocol: "http" as const, hostname: "127.0.0.1", port: "54321", pathname: `/storage/v1/object/public/${b}/**` }))
+        : []),
     ],
     dangerouslyAllowLocalIP: desarrollo,
   },
