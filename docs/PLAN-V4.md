@@ -54,6 +54,11 @@ y un límite de 3 negocios nuevos por cuenta al día (10 en total). Si falla la 
 - Buscador con la misma tarjeta.
 - **Puerta:** el usuario la aprueba.
 
+### Pedidos del usuario del 2026-10-10 (hechos antes de su fase)
+- Las tarjetas de las listas no mostraban la foto del lugar (las listas no la pedían a la base): **arreglado**.
+- En la ficha, tocar una foto la abre **en grande** (visor a pantalla completa con anterior/siguiente), y la galería
+  se acomoda a cuántas fotos hay (sin cuadros vacíos de relleno): **hecho**.
+
 ### Fase 20 · Ficha del lugar
 - Encabezado con galería a lo ancho, barra de acciones (WhatsApp, Cómo llegar, Guardar, Compartir) siempre a mano
   en el celular, datos útiles arriba (abierto ahora, precio, sector), video y reseñas con mejor jerarquía.

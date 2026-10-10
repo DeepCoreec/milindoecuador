@@ -32,6 +32,8 @@ export type LugarResumen = {
   extra?: string;
   /** Negocio inventado para mostrar el diseño: lleva la insignia "Ejemplo". */
   ejemplo: boolean;
+  /** Primera foto del lugar, si tiene. */
+  foto?: Foto | null;
 };
 
 export type Foto = { src: string; alt: string };

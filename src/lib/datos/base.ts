@@ -22,6 +22,7 @@ type FilaLugar = {
   featured_until: string | null;
   is_verified: boolean;
   categories: { slug: string } | null;
+  place_photos?: { storage_path: string; alt_text: string; sort_order: number }[];
 };
 
 type FilaDetalle = FilaLugar & {
@@ -51,7 +52,8 @@ type FilaResena = {
   profiles: { display_name: string } | null;
 };
 
-const COLUMNAS = "id, slug, name, sector, price_level, short_fact, is_featured, featured_until, is_verified, categories!inner(slug)";
+const COLUMNAS =
+  "id, slug, name, sector, price_level, short_fact, is_featured, featured_until, is_verified, categories!inner(slug), place_photos(storage_path, alt_text, sort_order)";
 
 function fallo(que: string, error: { message: string }): never {
   throw new Error(`No se pudo leer ${que} desde la base: ${error.message}`);
@@ -60,6 +62,13 @@ function fallo(que: string, error: { message: string }): never {
 /** El destacado vale mientras no haya vencido su fecha. */
 function destacadoVigente(f: FilaLugar, ahora: number) {
   return f.is_featured && (!f.featured_until || new Date(f.featured_until).getTime() > ahora);
+}
+
+/** La primera foto del lugar (la que el dueño o el admin puso primero), para las tarjetas de las listas. */
+function portada(f: FilaLugar) {
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const p = [...(f.place_photos ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0];
+  return p && base ? { src: urlPublicaFoto(base, p.storage_path), alt: p.alt_text } : null;
 }
 
 function aResumen(f: FilaLugar, nota: Map<string, { promedio: number; cantidad: number }>, ahora: number): LugarResumen {
@@ -79,6 +88,7 @@ function aResumen(f: FilaLugar, nota: Map<string, { promedio: number; cantidad: 
     verificado: f.is_verified,
     extra: f.short_fact ?? undefined,
     ejemplo: false,
+    foto: portada(f),
   };
 }
 
@@ -146,7 +156,7 @@ export async function buscarEnBase(db: SupabaseClient, ciudad: string, q: string
 export async function leerLugar(db: SupabaseClient, urlBase: string, ciudad: string, categoria: string, slug: string): Promise<LugarDetalle | null> {
   const { data, error } = await db
     .from("places")
-    .select(`${COLUMNAS}, description, hours, address, latitude, longitude, opening_hours, whatsapp, website, facebook, instagram, tiktok, youtube, place_videos(storage_path, poster_path, duration_seconds), place_photos(storage_path, alt_text, sort_order), cities!inner(slug)`)
+    .select(`${COLUMNAS}, description, hours, address, latitude, longitude, opening_hours, whatsapp, website, facebook, instagram, tiktok, youtube, place_videos(storage_path, poster_path, duration_seconds), cities!inner(slug)`)
     .eq("cities.slug", ciudad)
     .eq("categories.slug", categoria)
     .eq("slug", slug)
