@@ -10,7 +10,7 @@
 > Plan v1: `docs/PLAN.md` · Plan v2: `docs/PLAN-V2.md` · Plan v3: `docs/PLAN-V3.md` · Puesta en marcha de cuentas: `docs/PUESTA-EN-MARCHA.md`
 
 - **Fase actual (2026-10-08):** versión 2 PUBLICADA y "Entrar con Google" funcionando (6.6). El usuario ejecutó 0004→0008 en el Supabase real (comprobado con consultas: dueño, columnas, tablas, funciones y permisos correctos) y la rama `v2` se unió a `main`. **Siguiente paso:** (usuario) ajustes de Auth de PUESTA-EN-MARCHA §8.2 (Confirm email, largo mínimo 8, Secure password change); probar en la página real §8.4; luego dominio + Resend (6.3–6.6) para que otras personas puedan crear cuenta, y cerrar las puertas 6 a 10 con la página real
-- **2026-10-09:** versión 3 en marcha (el usuario dio el ok). Fase 11 se construye en la rama `v3-video` (lee columnas de 0009: no pasar a main hasta que el usuario ejecute 0009 en el Supabase real). Fases 11, 12 y 13 construidas en la rama `v3-video`. Fase 14 (Paumi) en marcha en la misma rama. Revisión de seguridad de Paumi hecha y arreglada. Fase 15 construida: **falta la puerta (usuario):** probar a Paumi en su celular y aprobarla (necesita la clave de Anthropic de §11 o verlo en una vista previa). Fases 11 a 16 construidas y revisadas (versión 3 completa en código). **Ya no quedan pasos de código del plan:** versión 3 **publicada** el 2026-10-09 (migraciones y clave de Anthropic listas). Faltan: probar en la página real, las 20 preguntas de Paumi y aprobar las puertas 11 a 16. **Usuario:** ejecutar 0009 a 0014 en el Supabase real (PUESTA-EN-MARCHA §9) y avisar; Claude une `v3-video` a `main` (Paumi queda apagada hasta poner `PAUMI_ACTIVO=si`)
+- **2026-10-09:** versión 3 en marcha (el usuario dio el ok). Fase 11 se construye en la rama `v3-video` (lee columnas de 0009: no pasar a main hasta que el usuario ejecute 0009 en el Supabase real). Fases 11, 12 y 13 construidas en la rama `v3-video`. Fase 14 (Paumi) en marcha en la misma rama. Revisión de seguridad de Paumi hecha y arreglada. Fase 15 construida: **falta la puerta (usuario):** probar a Paumi en su celular y aprobarla (necesita la clave de Anthropic de §11 o verlo en una vista previa). Fases 11 a 16 construidas y revisadas (versión 3 completa en código). **Versión 4 (diseño) en plan:** esperando que el usuario apruebe `docs/PLAN-V4.md`; luego empieza 17.1. **Ya no quedan pasos de código del plan:** versión 3 **publicada** el 2026-10-09 (migraciones y clave de Anthropic listas). Faltan: probar en la página real, las 20 preguntas de Paumi y aprobar las puertas 11 a 16. **Usuario:** ejecutar 0009 a 0014 en el Supabase real (PUESTA-EN-MARCHA §9) y avisar; Claude une `v3-video` a `main` (Paumi queda apagada hasta poner `PAUMI_ACTIVO=si`)
 - **Último paso terminado:** ver el último `[x]` de las secciones "Versión 2" y "Versión 3"
 - **Siguiente paso:** el primer `[ ]` de la sección "Versión 3" que no diga "(usuario)". Los pasos "(usuario)" son clics en cuentas del usuario (Claude no tiene acceso a ellas): se le guía paso a paso. Los pasos "(usuario)" pendientes de la versión 2 siguen abiertos
 - **Página real:** https://milindoecuador.vercel.app · Supabase `rlwcvrkyojcqgjigoyan` (São Paulo) · Turnstile "Mi Lindo Ecuador" · admin: la cuenta de Google de DeepCore (no se escribe aquí: el repositorio puede ser público)
@@ -209,6 +209,34 @@
 - [x] Revisión de seguridad y privacidad de las fases 15 y 16 (otro agente) — 2026-10-09: sin fallas críticas ni altas; todo lo que dice Paumi se muestra como texto, los enlaces siguen limitados por el servidor y el micrófono no queda encendido al cerrar o esconder la página. Arreglado: (M1) manos libres solo atiende si la frase **empieza** con su nombre ("Paumi, …" u "Oye, Paumi, …"): nombrarla de pasada ("le dije a Paumi que…", "el pami no paga") no envía nada, como dice la Privacidad; (M2) candado para no enviar dos veces la misma pregunta (dos frases seguidas o dos Enter); (B1) la primera vez con manos libres, si falta el captcha, deja la pregunta escrita para enviarla con un toque (y responde hablando); (B2) apagar el sonido mientras piensa también calla la respuesta que viene; (B3) manos libres se apaga solo tras 10 minutos sin oír su nombre (dicho en la ventana y en Privacidad). Aceptado: el pico re-dibuja la ventana en cada letra (liviano; revisar en un celular lento). Las pruebas de Paumi reinician el tope diario antes de correr (el tope funcionó: se llenó con las pruebas del día). 113 unitarias, 177 de reglas, 28 e2e
 - [x] Arreglos tras la prueba del usuario en su celular — 2026-10-09: (1) en Android la frase se duplicaba y se iba de largo (Chrome manda cada pedazo con todo lo anterior): ahora se arma sin repetir (`unirPedazos`, 1 prueba) y el micrófono se cierra al dejar de hablar o a los 12 s; (2) manos libres en el celular pitaba cada vez que se volvía a encender el micrófono y molestaba: ahora **manos libres es solo para computadora** (en el celular queda el botón del micrófono); (3) si la guía no tiene lo que piden, Paumi busca opciones en internet en fuentes confiables (turismo de Guayaquil, Tripadvisor, prensa del país), ofrece hasta 3 aclarando que no están en la guía y muestra la fuente (Términos actualizados). Después (2026-10-10, el usuario dijo que se quedaba corta): la búsqueda en internet viene **encendida por defecto** (`PAUMI_BUSQUEDA_WEB=no` la apaga), Paumi la usa siempre que la guía traiga menos de 2 lugares y solo menciona lo que respalda una fuente; más fuentes confiables (Tripadvisor, Booking, Restaurant Guru, Foursquare, minube, Lonely Planet y prensa del Ecuador); si la cuenta de Anthropic no tiene la búsqueda web permitida, responde igual sin internet (prueba e2e con el simulador). **Usuario:** permitir Web search en la Consola de Anthropic. Y (pedido del usuario) los lugares de internet salen como **tarjeta** con nombre, sector, "Ver en Google Maps" (búsqueda de Maps con nombre + sector + Guayaquil: la dirección real la da Google, gratis y sin clave) y "Ver la fuente": herramienta `sugerir_externo`, que solo acepta una fuente confiable que salió de una búsqueda real en esa misma respuesta (la IA no puede inventarla), máximo 3, sin enlaces ni teléfonos en el nombre. Prueba e2e con el simulador (una real se muestra; una URL no buscada y un sitio no confiable se rechazan)
 - **Puerta:** funciona en Android y iPhone; el usuario lo aprueba
+
+## Versión 4
+
+> Plan: `docs/PLAN-V4.md` (borrador del 2026-10-10, **falta la aprobación del usuario**). Pedido: diseño más llamativo y profesional.
+
+- [x] 2026-10-10: skill `frontend-ui-engineering` agregada a `.claude/skills/` (leída completa); diagnóstico con capturas a 390 y 1440 px (en el plan)
+
+### Fase 17 · Dirección visual
+- [ ] 17.1 Referencias y decisiones anotadas
+- [ ] 17.2 Dos propuestas de portada (celular y computadora) en el lienzo de diseño
+- [ ] 17.3 El usuario elige; se anota en DISENO.md
+- **Puerta:** el usuario aprueba una dirección
+
+### Fase 18 · Portada
+- [ ] 18.1 Programar la portada aprobada
+- **Puerta:** aprobada en celular y computadora
+
+### Fase 19 · Tarjeta de lugar, categorías y buscador
+- [ ] 19.1 Tarjeta nueva · [ ] 19.2 Categoría con filtros compactos · [ ] 19.3 Buscador
+- **Puerta:** el usuario la aprueba
+
+### Fase 20 · Ficha del lugar
+- [ ] 20.1 Ficha nueva con barra de acciones en el celular
+- **Puerta:** el usuario la aprueba
+
+### Fase 21 · Resto y revisión final
+- [ ] 21.1 Resto de pantallas · [ ] 21.2 Revisión final e independiente
+- **Puerta:** sin fallas altas y aprobada
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
