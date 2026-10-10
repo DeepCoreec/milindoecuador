@@ -237,7 +237,7 @@
 - **Puerta:** el usuario la aprueba
 
 ### Fase 20 · Ficha del lugar
-- [ ] 20.1 Ficha nueva con barra de acciones en el celular
+- [x] 20.1 Ficha nueva con barra de acciones en el celular — 2026-10-10: título grande en `rotulo`, contenedor de 1280 px, **barra fija abajo en el celular** con WhatsApp y Cómo llegar (`.mle-barra-acciones`; el botón de Paumi sube para no taparla), galería con visor (hecha antes). Revisado a 390 y 1440 px, claro y oscuro. 114 unitarias y 35 e2e pasan. **Falta (usuario): aprobar la fase 20.** Siguiente: fase 21
 - **Puerta:** el usuario la aprueba
 
 ### Fase 21 · Resto y revisión final

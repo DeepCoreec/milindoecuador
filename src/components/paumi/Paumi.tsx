@@ -368,7 +368,7 @@ export function Paumi() {
       }}
     >
       <Dialog.Trigger
-        className={`${clasesBoton("secundario", "normal")} fixed right-4 bottom-[max(16px,env(safe-area-inset-bottom))] z-30 shadow-flotante sm:right-6 sm:bottom-6`}
+        className={`${clasesBoton("secundario", "normal")} mle-boton-paumi fixed right-4 bottom-[max(16px,env(safe-area-inset-bottom))] z-30 shadow-flotante sm:right-6 sm:bottom-6`}
       >
         <Guacamaya recorte="cabeza" animada={false} className="h-8! w-12!" />
         <span>

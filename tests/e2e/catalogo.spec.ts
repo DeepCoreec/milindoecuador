@@ -23,7 +23,8 @@ test("inicio, categoría, ficha y buscador se ven bien y sin errores", async ({ 
 
   await page.goto(lugar.ruta);
   await expect(page.getByRole("heading", { level: 1 })).toContainText("E2E");
-  await expect(page.getByRole("link", { name: "Cómo llegar" })).toHaveAttribute("href", /google\.com\/maps/);
+  // En el celular "Cómo llegar" está dos veces: en la ficha y en la barra fija de abajo (versión 4)
+  for (const enlace of await page.getByRole("link", { name: "Cómo llegar" }).all()) await expect(enlace).toHaveAttribute("href", /google\.com\/maps/);
   await sinDesborde(page);
 
   await page.goto("/buscar?q=" + encodeURIComponent("<script>alert(1)</script>"));

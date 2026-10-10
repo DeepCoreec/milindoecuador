@@ -71,7 +71,7 @@ export default async function FichaLugar({ params }: Props) {
   return (
     <>
       <Cabecera />
-      <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 pt-6 text-rio md:px-8">
+      <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 pt-6 text-rio max-[899px]:pb-24 md:px-8">
         <Migas
           pasos={[
             { texto: ciudad.nombre, href: `/${ciudad.slug}` },
@@ -85,7 +85,7 @@ export default async function FichaLugar({ params }: Props) {
         <div className="grid grid-cols-[minmax(0,1fr)] gap-8 pt-8 pb-16 [grid-template-areas:'cab'_'info'_'resto'] min-[900px]:grid-cols-[minmax(0,1fr)_360px] min-[900px]:items-start min-[900px]:gap-x-16 min-[900px]:gap-y-10 min-[900px]:[grid-template-areas:'cab_info'_'resto_info']">
           <div className="grid min-w-0 gap-3 [grid-area:cab]">
             <InsigniasLugar lugar={lugar} className="flex flex-wrap gap-2" />
-            <h1 className="m-0 text-[28px] leading-[34px] font-bold tracking-[-0.01em] text-balance">{lugar.nombre}</h1>
+            <h1 className="m-0 font-rotulo text-[32px] leading-[38px] font-normal tracking-[-0.01em] text-balance md:text-[48px] md:leading-[54px]">{lugar.nombre}</h1>
             <p className="m-0 text-base leading-6 text-rio-suave">
               {lugar.datos}
               {precio && `, precio ${precio[1]} (${precio[0]})`}
@@ -114,6 +114,20 @@ export default async function FichaLugar({ params }: Props) {
                 ))}
               <BotonCompartir titulo={`${lugar.nombre} · Mi Lindo Ecuador`} texto={`Mira ${lugar.nombre} en Mi Lindo Ecuador`} />
             </div>
+          </div>
+
+          {/* Versión 4: en el celular, WhatsApp y Cómo llegar siempre a mano en una barra fija abajo */}
+          <div className="mle-barra-acciones fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-linea bg-papel-alto px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] shadow-flotante min-[900px]:hidden">
+            {whatsapp && (
+              <EnlaceContado lugar={lugar.id} tipo="whatsapp" href={whatsapp} target="_blank" rel="noopener noreferrer" className={clasesBoton("whatsapp", "normal", "flex-1")}>
+                <IconoConversacion />
+                WhatsApp
+              </EnlaceContado>
+            )}
+            <EnlaceContado lugar={lugar.id} tipo="route" href={comoLlegar} target="_blank" rel="noopener noreferrer" className={clasesBoton("secundario", "normal", "flex-1")}>
+              <IconoUbicacion />
+              Cómo llegar
+            </EnlaceContado>
           </div>
 
           <aside aria-labelledby="t-info" className="grid gap-4 rounded-xl border border-linea bg-papel-alto p-6 [grid-area:info]">

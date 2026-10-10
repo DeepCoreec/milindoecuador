@@ -119,3 +119,8 @@ body {
 }
 @keyframes mle-parpadeo { 50% { opacity: 0; } }
 .mle-parpadeo { animation: mle-parpadeo 1s steps(1) infinite; }
+
+/* Versión 4: en la ficha del celular hay una barra de acciones fija abajo; el botón de Paumi sube para no taparla */
+@media (max-width: 899px) {
+  body:has(.mle-barra-acciones) .mle-boton-paumi { bottom: calc(84px + env(safe-area-inset-bottom)); }
+}
