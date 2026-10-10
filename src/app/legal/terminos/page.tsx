@@ -83,7 +83,8 @@ export default function Terminos() {
         <p>
           Paumi es una guacamaya guía hecha con inteligencia artificial (Claude, de la empresa Anthropic). Recomienda lugares de la guía y responde
           preguntas sobre Ecuador. <b>Puede equivocarse:</b> revisa los datos importantes (horarios, precios, direcciones) en la ficha de cada lugar
-          antes de ir. Sus respuestas no son consejos profesionales. Úsala con respeto: tiene un límite de mensajes por día y puede dejar de responder
+          antes de ir. Si un lugar no está en la guía, puede sugerir opciones que encuentra en sitios confiables de internet (te lo dice y
+          muestra la fuente); esas no las revisamos nosotros. Sus respuestas no son consejos profesionales. Úsala con respeto: tiene un límite de mensajes por día y puede dejar de responder
           si se abusa de ella.
         </p>
         <p>

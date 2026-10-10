@@ -143,7 +143,8 @@ test("hablarle con el micrófono y que responda hablando (micrófono y voz simul
 });
 
 test("manos libres: despierta al decir «Paumi» con la ventana cerrada (micrófono simulado)", async ({ page }, info) => {
-  test.skip(info.project.name !== "celular", "Paumi se usa sobre todo en el celular");
+  // En celulares no se ofrece (Android pita cada vez que se enciende el micrófono): solo en computadora
+  test.skip(info.project.name !== "escritorio", "manos libres es solo para computadora");
   await page.addInitScript(() => {
     const w = window as unknown as Record<string, unknown>;
     const dicho: string[] = [];
@@ -223,6 +224,22 @@ test("manos libres: despierta al decir «Paumi» con la ventana cerrada (micróf
   await expect.poll(() => page.evaluate(() => (window as unknown as { __escuchando: () => number }).__escuchando())).toBe(0);
   await page.keyboard.press("Escape");
   await expect(page.getByRole("button", { name: /manos libres encendido/ })).toHaveCount(0);
+});
+
+test("en el celular no se ofrece manos libres, pero sí el micrófono", async ({ page }, info) => {
+  test.skip(info.project.name !== "celular", "solo celular");
+  await page.addInitScript(() => {
+    (window as unknown as Record<string, unknown>).SpeechRecognition = class {
+      start() {}
+      stop() {}
+      abort() {}
+    };
+  });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Paumi" }).click();
+  const chat = page.getByRole("dialog", { name: "Paumi" });
+  await expect(chat.getByRole("button", { name: "Hablarle a Paumi" })).toBeVisible();
+  await expect(chat.getByRole("button", { name: "Activar manos libres" })).toHaveCount(0);
 });
 
 test("la API de Paumi rechaza otros sitios, mensajes enormes y conversaciones mal armadas", async ({ request, baseURL }) => {

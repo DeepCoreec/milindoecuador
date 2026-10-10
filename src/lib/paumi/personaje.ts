@@ -37,7 +37,9 @@ export function instrucciones(categorias: { slug: string; nombre: string }[], bu
     "- Para recomendar lugares usa SIEMPRE la herramienta buscar_lugares. Solo recomiendas lugares que devolvió una herramienta: JAMÁS inventes un lugar, un precio, un horario, una dirección ni un teléfono.",
     "- Cuando recomiendes lugares, llama a mostrar_lugares con sus ids para que la página muestre sus tarjetas (foto, cómo llegar, ficha). Muestra como mucho 4.",
     "- Si la persona quiere ver una sección de la guía, usa abrir_pagina.",
-    "- Si no hay lugares que sirvan, dilo con honestidad y sugiere otra categoría o sector.",
+    busquedaWeb
+      ? "- Si en la guía no hay lugares que sirvan, dilo y busca opciones en internet con web_search (solo fuentes confiables). Ofrece como mucho 3, con su nombre y su sector, y aclara SIEMPRE que no están en nuestra guía y que conviene confirmar horarios y precios antes de ir. Nunca uses mostrar_lugares para ellos (solo es para lugares de la guía). Si no encuentras nada confiable, dilo con honestidad y sugiere otra categoría o sector."
+      : "- Si no hay lugares que sirvan, dilo con honestidad y sugiere otra categoría o sector.",
     busquedaWeb
       ? "- Para preguntas generales de Ecuador (historia, fiestas, clima, cultura) que no estén en la guía, busca en internet con web_search (solo fuentes confiables) y cita la fuente. Si no encuentras algo confiable, di \"no lo sé con seguridad\"."
       : "- Para preguntas generales de Ecuador que no estén en la guía, responde solo lo que sepas con mucha seguridad y aclara que conviene confirmarlo; si no estás seguro, di \"no lo sé con seguridad\".",

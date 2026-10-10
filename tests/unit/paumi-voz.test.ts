@@ -47,3 +47,13 @@ describe("manos libres: llamar a Paumi por su nombre", () => {
     expect(despuesDelNombre("gracias paumi")).toBeNull();
   });
 });
+
+describe("micrófono en Android", () => {
+  it("une los pedazos sin repetir aunque cada uno traiga todo lo anterior", async () => {
+    const { unirPedazos } = await import("@/components/paumi/voz");
+    expect(unirPedazos(["dónde", "dónde como", "dónde como encebollado"])).toBe("dónde como encebollado");
+    expect(unirPedazos(["quiero un", "encebollado"])).toBe("quiero un encebollado");
+    expect(unirPedazos(["hola", "hola"])).toBe("hola");
+    expect(unirPedazos(["", " "])).toBe("");
+  });
+});

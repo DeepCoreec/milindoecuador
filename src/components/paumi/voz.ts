@@ -17,6 +17,7 @@ type Reconocimiento = {
   onresult: ((e: EventoVoz) => void) | null;
   onerror: ((e: { error: string }) => void) | null;
   onend: (() => void) | null;
+  onspeechend?: (() => void) | null;
   start: () => void;
   stop: () => void;
   abort: () => void;
@@ -33,6 +34,27 @@ function constructor(): ConstructorReconocimiento | null {
 export const puedeEscuchar = () => !!constructor();
 /** ¿Este navegador puede hablar? */
 export const puedeHablar = () => typeof window !== "undefined" && "speechSynthesis" in window && typeof SpeechSynthesisUtterance !== "undefined";
+
+/**
+ * Une los pedazos que entendió el navegador sin repetir. Chrome en Android a veces manda cada pedazo con todo lo
+ * anterior ("dónde" → "dónde como" → "dónde como encebollado"): sin esto la frase se duplica y se va de largo.
+ */
+export function unirPedazos(pedazos: string[]): string {
+  let total = "";
+  for (const crudo of pedazos) {
+    const p = crudo.trim();
+    if (!p) continue;
+    const a = total.toLowerCase();
+    const b = p.toLowerCase();
+    if (b.startsWith(a)) total = p; // el pedazo nuevo ya trae todo lo anterior
+    else if (a.endsWith(b) || a.includes(b)) continue; // repetido
+    else total = `${total} ${p}`.trim();
+  }
+  return total;
+}
+
+/** Una frase se escucha como mucho este tiempo (si el teléfono no corta solo, se corta aquí). */
+const MAXIMO_ESCUCHA = 12_000;
 
 /** Mensajes claros para cuando el micrófono falla. */
 export function mensajeErrorMicrofono(error: string): string {
@@ -71,18 +93,21 @@ export function escuchar({
   rec.maxAlternatives = 1;
   let final = "";
   rec.onresult = (e) => {
-    let parcial = "";
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      const r = e.results[i];
-      if (r.isFinal) final += r[0].transcript;
-      else parcial += r[0].transcript;
-    }
-    alParcial((final + parcial).trim());
+    // Siempre se arma desde cero con todos los pedazos (así no se acumulan repetidos)
+    const finales: string[] = [];
+    const parciales: string[] = [];
+    for (let i = 0; i < e.results.length; i++) (e.results[i].isFinal ? finales : parciales).push(e.results[i][0].transcript);
+    final = unirPedazos(finales);
+    alParcial(unirPedazos([...finales, ...parciales]));
   };
+  // Al dejar de hablar se cierra el micrófono (y nunca queda abierto más de 12 segundos)
+  rec.onspeechend = () => rec.stop();
+  const corte = setTimeout(() => rec.stop(), MAXIMO_ESCUCHA);
   rec.onerror = (e) => {
     if (e.error !== "aborted") alError(e.error);
   };
   rec.onend = () => {
+    clearTimeout(corte);
     if (final.trim()) alFinal(final.trim());
     alTerminar();
   };
@@ -93,10 +118,17 @@ export function escuchar({
     alTerminar();
   }
   return () => {
+    clearTimeout(corte);
     rec.onresult = null;
     rec.abort();
   };
 }
+
+/**
+ * ¿Manos libres funciona bien aquí? En celulares no: Android pita cada vez que el micrófono se vuelve a encender y
+ * gasta batería, y iPhone lo corta. Se ofrece solo en computadoras (en el celular está el botón del micrófono).
+ */
+export const puedeManosLibres = () => puedeEscuchar() && !window.matchMedia("(pointer: coarse)").matches;
 
 /**
  * Lee el texto en voz alta con la mejor voz en español del teléfono.

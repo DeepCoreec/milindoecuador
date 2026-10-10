@@ -16,7 +16,7 @@ import { CuadroRetro } from "./CuadroRetro";
 import { Guacamaya } from "./Guacamaya";
 import type { EstadoPaumi } from "./sprite";
 import { despuesDelNombre } from "@/lib/paumi/voz";
-import { callar, escuchar, escucharSiempre, hablar, mensajeErrorMicrofono, prepararVoz, puedeEscuchar } from "./voz";
+import { callar, escuchar, escucharSiempre, hablar, mensajeErrorMicrofono, prepararVoz, puedeEscuchar, puedeManosLibres } from "./voz";
 
 type Entrada = MensajePaumi & { lugares?: TarjetaPaumi[]; navegar?: string | null; fuentes?: RespuestaPaumi["fuentes"]; aviso?: boolean };
 
@@ -63,6 +63,7 @@ export function Paumi() {
   const [leidos, setLeidos] = useState<ReadonlySet<number>>(new Set());
   // Voz
   const [microfono] = useState(() => puedeEscuchar());
+  const [libreDisponible] = useState(() => typeof window !== "undefined" && puedeManosLibres());
   const [oyendo, setOyendo] = useState(false);
   const [avisoMicrofono, setAvisoMicrofono] = useState<string | null>(null);
   const [voz, setVoz] = useState(false);
@@ -421,7 +422,7 @@ export function Paumi() {
                   {AVISO}
                 </p>
                 {microfono && <p className="m-0 text-[13px] leading-[18px] text-rio-suave">{AVISO_VOZ}</p>}
-                {microfono && (
+                {libreDisponible && (
                   <div className="grid justify-items-start gap-1">
                     <button type="button" onClick={cambiarManosLibres} aria-pressed={manosLibres} className={clasesBoton("secundario", "chico", "min-h-11 [&_svg]:size-4")}>
                       <IconoMicrofono />

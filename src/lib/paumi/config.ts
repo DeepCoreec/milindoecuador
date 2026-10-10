@@ -35,7 +35,7 @@ export function configPaumi() {
   };
 }
 
-/** Fuentes en las que Paumi puede buscar en internet (si la búsqueda está activa). */
+/** Fuentes en las que Paumi puede buscar en internet (si la búsqueda está activa); solo de estas se muestran enlaces. */
 export const FUENTES_CONFIABLES = [
   "turismo.gob.ec",
   "ecuador.travel",
@@ -43,4 +43,11 @@ export const FUENTES_CONFIABLES = [
   "galapagos.gob.ec",
   "ambiente.gob.ec",
   "inec.gob.ec",
+  // Para ofrecer lugares que todavía no están en la guía: turismo oficial de Guayaquil, reseñas y prensa del país
+  "guayaquilesmidestino.com",
+  "tripadvisor.com",
+  "eluniverso.com",
+  "expreso.ec",
+  "primicias.ec",
+  "elcomercio.com",
 ];
