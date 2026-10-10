@@ -242,9 +242,16 @@
 - [ ] 21.1 Resto de pantallas · [ ] 21.2 Revisión final e independiente
 - **Puerta:** sin fallas altas y aprobada
 
+## Versión 5 (borrador)
+
+> Plan: `docs/PLAN-V5.md`. Se empieza cuando termine la versión 4 y el usuario lo apruebe.
+
+- [ ] Fase 22 · Eventos gratis que se borran solos al día siguiente de su fecha de fin
+- [ ] Fase 23 · Guía útil (turismo de OpenStreetMap, "¿Se te dañó algo?", información útil)
+
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
-- **Guía útil de la ciudad (idea del usuario, 2026-10-10, para una versión 5):** (1) lugares turísticos públicos sin registrarse, cargados desde **OpenStreetMap** (licencia ODbL: hay que citar "© colaboradores de OpenStreetMap" y los datos se revisan a mano antes de publicar; muchos vienen sin foto ni horario); (2) "¿Se te dañó algo?": categorías de servicios (talleres, electrónica, cerrajerías, celulares) que se registran como cualquier negocio; (3) página de información útil: ECU 911, hospitales, farmacias, transporte (Metrovía, Aerovía). No usar datos copiados de Google Maps (sus términos lo prohíben); textos de Wikipedia solo citando la fuente (CC BY-SA)
+- ~~Guía útil de la ciudad~~ → pasó a `docs/PLAN-V5.md` (fase 23), junto con **Eventos** (fase 22, idea del usuario del 2026-10-10). Detalle original: (1) lugares turísticos públicos sin registrarse, cargados desde **OpenStreetMap** (licencia ODbL: hay que citar "© colaboradores de OpenStreetMap" y los datos se revisan a mano antes de publicar; muchos vienen sin foto ni horario); (2) "¿Se te dañó algo?": categorías de servicios (talleres, electrónica, cerrajerías, celulares) que se registran como cualquier negocio; (3) página de información útil: ECU 911, hospitales, farmacias, transporte (Metrovía, Aerovía). No usar datos copiados de Google Maps (sus términos lo prohíben); textos de Wikipedia solo citando la fuente (CC BY-SA)
 
 - **Entrar con Facebook** (pregunta del usuario, 2026-10-08): app en Meta for Developers, URL de borrado de datos y posible verificación del negocio (RUC); hay que programar el botón. X/Twitter descartado por ahora (poco uso en Ecuador y acceso restringido)
 
