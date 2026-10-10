@@ -251,7 +251,7 @@
 
 - Fase 22 · Eventos gratis que se borran solos al día siguiente de su fecha de fin (el usuario dio el ok: "continúa con todo lo planificado")
   - [x] 22.1 Base de datos — 2026-10-10: `0016_eventos.sql`: tabla `city_events` (todos los datos del plan; escribe solo el servidor), `evento_vigente()` (hasta el fin del día de su fecha de fin, hora de Guayaquil: la página nunca muestra uno vencido), límites en la base (3 por semana, inicio hasta 6 meses, máximo 30 días, no se publica uno vencido), filtro de palabras, reportes (`city_event_reports`, 3 lo ocultan), `borrar_eventos_vencidos()` (solo el servidor) y bucket `afiches-eventos`. 20 reglas nuevas (200)
-  - [ ] 22.2 Lógica y validación: Zod del formulario, fechas en hora de Guayaquil, grupos Hoy / Este fin de semana / Próximos, enlace de calendario (pruebas unitarias)
+  - [x] 22.2 Lógica y validación — 2026-10-10: `src/lib/eventos.ts` (hora de Guayaquil fija UTC−5, grupos Hoy / Este fin de semana / Próximos, textos de fecha y precio, Google Calendar y .ics) y `src/lib/validacion/eventos.ts` (Zod: fechas, 30 días, 6 meses, lugar o en línea, precio o gratis, enlaces solo https). 10 pruebas unitarias
   - [ ] 22.3 Publicar, editar y borrar (acciones con captcha y afiche) y "Mis eventos" en Mi cuenta
   - [ ] 22.4 Páginas `/guayaquil/eventos` y ficha del evento; franja "Esta semana en Guayaquil" en la portada; menú, pie y mapa del sitio
   - [ ] 22.5 Borrado diario (Vercel Cron a las 00:05 de Guayaquil, con `CRON_SECRET`)
