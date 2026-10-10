@@ -26,7 +26,7 @@ test("el dueño completa, publica y maneja su negocio", async ({ page, context, 
 
   await iniciarSesion(context, d.correo, baseURL!);
   await page.goto("/cuenta");
-  await page.getByRole("link", { name: /Mi negocio/ }).click();
+  await page.getByRole("link", { name: /Mi negocio/ }).first().click(); // el pie también tiene "Mi negocio" (versión 4)
   await page.getByRole("link", { name: new RegExp(`${marca}`) }).click();
   await expect(page.getByRole("button", { name: "Publicar mi ficha" })).toBeDisabled();
 

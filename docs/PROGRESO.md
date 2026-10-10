@@ -241,7 +241,8 @@
 - **Puerta:** el usuario la aprueba
 
 ### Fase 21 · Resto y revisión final
-- [ ] 21.1 Resto de pantallas · [ ] 21.2 Revisión final e independiente
+- [x] 21.1 Resto de pantallas — 2026-10-10: pie de página nuevo (franja de noche con Explora, Negocios y La guía), 404 con Paumi pensando sobre fondo de noche, títulos grandes y contenedor de 1280 px en registro, planes, buscador y "Explora Guayaquil". Revisado: 6 páginas a 390, 768, 1024 y 1440 px en claro y oscuro, sin desbordes ni errores. 114 unitarias y 35 e2e pasan
+- [ ] 21.2 Revisión final e independiente
 - **Puerta:** sin fallas altas y aprobada
 
 ## Versión 5 (borrador)

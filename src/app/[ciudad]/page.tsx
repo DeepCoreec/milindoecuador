@@ -27,8 +27,8 @@ export default async function PaginaCiudad({ params }: PageProps<"/[ciudad]">) {
   return (
     <>
       <Cabecera />
-      <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 pt-10 pb-16 text-rio md:px-8">
-        <h1 className="m-0 font-rotulo text-[30px] leading-[34px] font-normal tracking-[-0.01em] text-balance md:text-[40px] md:leading-[44px]">
+      <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 pt-10 pb-16 text-rio md:px-8">
+        <h1 className="m-0 font-rotulo text-[34px] leading-10 font-normal tracking-[-0.01em] text-balance md:text-[56px] md:leading-[62px]">
           Explora {ciudad.nombre}
         </h1>
         <p className="mt-3 mb-0 max-w-[60ch] text-rio-suave">Elige qué quieres hacer hoy. Cada lugar tiene reseñas de la gente y el WhatsApp del negocio.</p>

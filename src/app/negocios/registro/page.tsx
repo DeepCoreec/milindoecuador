@@ -31,14 +31,14 @@ export default async function PaginaRegistro() {
   return (
     <>
       <Cabecera />
-      <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 pt-8 pb-16 text-rio md:px-8">
+      <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 pt-8 pb-16 text-rio md:px-8">
         <div className="grid items-start gap-10 min-[900px]:grid-cols-[minmax(0,1fr)_minmax(0,560px)]">
           <div className="grid max-w-[520px] gap-4">
             <Migas pasos={[{ texto: "Negocios", href: "/negocios/planes" }, { texto: "Registro" }]} />
-            <h1 className="m-0 font-rotulo text-[30px] leading-[34px] font-normal tracking-[-0.01em] text-balance md:text-[40px] md:leading-[44px]">
+            <h1 className="m-0 font-rotulo text-[34px] leading-10 font-normal tracking-[-0.01em] text-balance md:text-[56px] md:leading-[62px]">
               Registra tu negocio gratis
             </h1>
-            <p className="m-0 max-w-[60ch] text-rio-suave">Llena tus datos y tu ficha se crea al instante. La completas tú mismo desde «Mi negocio» (fotos, horario y ubicación) y la publicas cuando quieras.</p>
+            <p className="m-0 max-w-[60ch] text-lg leading-7 text-rio-suave">Llena tus datos y tu ficha se crea al instante. La completas tú mismo desde «Mi negocio» (fotos, horario y ubicación) y la publicas cuando quieras.</p>
             <ul className="m-0 mt-2 grid list-none gap-3 p-0">
               {VENTAJAS.map((v) => (
                 <li key={v} className="flex gap-3 [&_svg]:size-[22px] [&_svg]:flex-none [&_svg]:text-exito">
