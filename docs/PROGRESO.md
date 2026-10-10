@@ -217,8 +217,8 @@
 - [x] 2026-10-10: skill `frontend-ui-engineering` agregada a `.claude/skills/` (leída completa); diagnóstico con capturas a 390 y 1440 px (en el plan)
 
 ### Fase 17 · Dirección visual
-- [ ] 17.1 Referencias y decisiones anotadas
-- [ ] 17.2 Dos propuestas de portada (celular y computadora) en el lienzo de diseño
+- [x] 17.1 Referencias y decisiones anotadas — 2026-10-10: decisiones en el diagnóstico de `PLAN-V4.md` (para gastar poco, sin investigación aparte)
+- [x] 17.2 Dos propuestas de portada (celular y computadora) — 2026-10-10: página solo de desarrollo `/dev/propuestas?p=a` (pulida: título grande + buscador grande al lado del Panorama, afiches grandes, franja mango-suave, franja celeste-tinta para negocios) y `?p=b` (atrevida: entrada oscura con título enorme y Panorama a todo lo ancho, afiches en tarjetas, franjas mango y faro a todo lo ancho, cierre oscuro). Los cuadros de color son el lugar de las fotos. Capturas enviadas al usuario. **Siguiente: 17.3, el usuario elige**
 - [ ] 17.3 El usuario elige; se anota en DISENO.md
 - **Puerta:** el usuario aprueba una dirección
 
