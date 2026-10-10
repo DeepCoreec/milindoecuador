@@ -1,7 +1,7 @@
 import "server-only";
 import { getCategorias } from "@/lib/datos/lugares";
 import { configPaumi, FUENTES_CONFIABLES } from "./config";
-import { DEFINICIONES, ejecutar, type Estado } from "./herramientas";
+import { DEFINICIONES, ejecutar, urlComparable, type Estado } from "./herramientas";
 import { instrucciones } from "./personaje";
 import type { MensajePaumi, RespuestaPaumi } from "./tipos";
 
@@ -51,7 +51,14 @@ export function limpiarTexto(t: string): string {
 export async function conversar(historial: MensajePaumi[]): Promise<RespuestaPaumi> {
   const c = configPaumi();
   const categorias = (await getCategorias()).map(({ slug, nombre }) => ({ slug, nombre }));
-  const estado: Estado = { vistos: new Set(), tarjetas: [], navegar: null, categorias: new Set(categorias.map((x) => x.slug)) };
+  const estado: Estado = {
+    vistos: new Set(),
+    tarjetas: [],
+    navegar: null,
+    categorias: new Set(categorias.map((x) => x.slug)),
+    urlsWeb: new Set(),
+    externos: [],
+  };
   const herramientas: unknown[] = [...DEFINICIONES];
   const busqueda = { type: "web_search_20250305", name: "web_search", max_uses: 2, allowed_domains: FUENTES_CONFIABLES };
   if (c.busquedaWeb) herramientas.push(busqueda);
@@ -89,6 +96,14 @@ export async function conversar(historial: MensajePaumi[]): Promise<RespuestaPau
       .filter((b) => b.type === "text" && typeof b.text === "string")
       .map((b) => b.text as string)
       .join("");
+    // Lo que trajo la búsqueda web: solo de estas páginas se aceptan lugares de internet
+    for (const b of bloques) {
+      if (b.type !== "web_search_tool_result" || !Array.isArray(b.content)) continue;
+      for (const res of b.content as { url?: unknown }[]) {
+        const u = typeof res.url === "string" ? urlComparable(res.url) : null;
+        if (u) estado.urlsWeb.add(u);
+      }
+    }
     for (const b of bloques) {
       if (b.type !== "text" || !Array.isArray(b.citations)) continue;
       for (const cita of b.citations as { url?: unknown; title?: unknown }[]) {
@@ -126,6 +141,7 @@ export async function conversar(historial: MensajePaumi[]): Promise<RespuestaPau
   return {
     texto: final || "Uy, me enredé las plumas. ¿Me lo preguntas de otra forma?",
     lugares: estado.tarjetas,
+    externos: estado.externos,
     navegar: estado.navegar,
     fuentes: [...fuentes].slice(0, 3).map(([url, titulo]) => ({ url, titulo })),
   };

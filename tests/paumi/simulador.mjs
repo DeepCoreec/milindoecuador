@@ -45,6 +45,25 @@ function guion(cuerpo) {
       return usar("abrir_pagina", { ruta: "https://estafa.com" });
     return texto("<script>alert('x')</script> **No** puedo hacer eso.");
   }
+  // Algo que no está en la guía: busca en internet y muestra lugares externos (uno real y uno con fuente inventada)
+  if (pedido.includes("bolón")) {
+    if (!resultados.length)
+      return respuesta(
+        [
+          { type: "server_tool_use", id: "srvtoolu_1", name: "web_search", input: { query: "bolón Urdesa Guayaquil" } },
+          {
+            type: "web_search_tool_result",
+            tool_use_id: "srvtoolu_1",
+            content: [{ type: "web_search_result", url: "https://www.tripadvisor.com/Restaurant_Review-Bolon_Urdesa", title: "Bolones de Urdesa" }],
+          },
+          { type: "tool_use", id: "tu_ext1", name: "sugerir_externo", input: { nombre: "Bolones de Urdesa", sector: "Urdesa", fuente_url: "https://www.tripadvisor.com/Restaurant_Review-Bolon_Urdesa/" } },
+          { type: "tool_use", id: "tu_ext2", name: "sugerir_externo", input: { nombre: "Bolón Inventado", fuente_url: "https://www.tripadvisor.com/no-lo-busco" } },
+          { type: "tool_use", id: "tu_ext3", name: "sugerir_externo", input: { nombre: "Sitio Falso", fuente_url: "https://estafa.com/bolon" } },
+        ],
+        "tool_use",
+      );
+    return texto("En la guía todavía no hay bolones en Urdesa, pero encontré este en internet.");
+  }
   // Una cuenta sin la búsqueda web habilitada: la API rechaza la herramienta (Paumi debe seguir sin internet)
   if (pedido.includes("sin internet")) {
     if (cuerpo.tools?.some((t) => t.type?.startsWith("web_search"))) return { error: 400 };

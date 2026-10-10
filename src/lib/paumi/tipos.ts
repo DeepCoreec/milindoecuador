@@ -15,9 +15,23 @@ export type TarjetaPaumi = {
   comoLlegar: string;
 };
 
+/**
+ * Un lugar que NO está en la guía y que Paumi encontró en internet (paso 16, a pedido del usuario). Solo se acepta si
+ * la fuente salió de una búsqueda real en esa misma respuesta; la dirección la da Google Maps (Paumi no la escribe).
+ */
+export type ExternoPaumi = {
+  nombre: string;
+  sector: string | null;
+  /** Búsqueda en Google Maps con el nombre, el sector y la ciudad: abre el lugar con su dirección real. */
+  mapa: string;
+  fuente: { url: string; sitio: string };
+};
+
 export type RespuestaPaumi = {
   texto: string;
   lugares: TarjetaPaumi[];
+  /** Lugares de internet (fuera de la guía), con su fuente y su enlace a Google Maps. */
+  externos: ExternoPaumi[];
   /** Página de la guía a la que Paumi propone llevar a la persona (ya validada por el servidor). */
   navegar: string | null;
   fuentes: { titulo: string; url: string }[];

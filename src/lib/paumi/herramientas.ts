@@ -7,7 +7,8 @@ import { crearClientePublico } from "@/lib/supabase/publico";
 import { exigirConfigSupabase } from "@/lib/supabase/config";
 import { enlaceRutaGoogle } from "@/lib/ubicacion";
 import { normalizar } from "@/lib/validacion/busqueda";
-import type { TarjetaPaumi } from "./tipos";
+import { FUENTES_CONFIABLES } from "./config";
+import type { ExternoPaumi, TarjetaPaumi } from "./tipos";
 
 /*
  * Herramientas de Paumi (versión 3, paso 14.2). Lo que la IA pide hacer pasa por aquí, y aquí manda el código:
@@ -66,6 +67,20 @@ export const DEFINICIONES = [
     input_schema: { type: "object", properties: { ids: { type: "array", items: { type: "string" }, maxItems: 4 } }, required: ["ids"] },
   },
   {
+    name: "sugerir_externo",
+    description:
+      "Muestra la tarjeta de un lugar que NO está en la guía y que encontraste con web_search: nombre, sector y la URL EXACTA del resultado de búsqueda donde aparece. La página arma el enlace a Google Maps (con la dirección real). Máximo 3 por respuesta. No la uses para lugares de la guía.",
+    input_schema: {
+      type: "object",
+      properties: {
+        nombre: { type: "string", description: "Nombre del lugar tal como aparece en la fuente" },
+        sector: { type: "string", description: "Barrio o zona (ej. 'Urdesa'), si la fuente lo dice" },
+        fuente_url: { type: "string", description: "URL exacta del resultado de web_search donde aparece" },
+      },
+      required: ["nombre", "fuente_url"],
+    },
+  },
+  {
     name: "abrir_pagina",
     description: "Propone llevar a la persona a una página de la guía: '/guayaquil' (todas las categorías), '/guayaquil/<categoria>' o '/buscar?q=<palabras>'.",
     input_schema: { type: "object", properties: { ruta: { type: "string" } }, required: ["ruta"] },
@@ -84,9 +99,41 @@ const esquemaBuscar = z
 const esquemaId = z.object({ id: z.uuid() });
 const esquemaMostrar = z.object({ ids: z.array(z.uuid()).min(1).max(4) });
 const esquemaAbrir = z.object({ ruta: z.string().max(120) });
+const esquemaExterno = z.object({
+  nombre: z
+    .string()
+    .trim()
+    .min(2)
+    .max(80)
+    .refine((t) => !/https?:|www\.|\.(com|ec|net|org)\b|\d{7,}/i.test(t), "Solo el nombre"),
+  sector: z.string().trim().max(60).optional(),
+  fuente_url: z.url().max(500),
+});
+
+/** La misma página aunque la IA la copie con "/" al final o con "#…". */
+export function urlComparable(u: string): string | null {
+  try {
+    const x = new URL(u);
+    if (x.protocol !== "https:") return null;
+    x.hash = "";
+    return x.toString().replace(/\/$/, "");
+  } catch {
+    return null;
+  }
+}
+
+const esConfiable = (host: string) => FUENTES_CONFIABLES.some((d) => host === d || host.endsWith(`.${d}`));
 
 /** Lo que va juntando una conversación: tarjetas a mostrar y página a abrir. */
-export type Estado = { vistos: Set<string>; tarjetas: TarjetaPaumi[]; navegar: string | null; categorias: Set<string> };
+export type Estado = {
+  vistos: Set<string>;
+  tarjetas: TarjetaPaumi[];
+  navegar: string | null;
+  categorias: Set<string>;
+  /** Páginas que devolvió la búsqueda web en esta respuesta (solo de esas se aceptan lugares de internet). */
+  urlsWeb: Set<string>;
+  externos: ExternoPaumi[];
+};
 
 function db() {
   const c = crearClientePublico();
@@ -217,6 +264,26 @@ export async function ejecutar(nombre: string, entrada: unknown, e: Estado): Pro
         const orden = new Map(ids.map((id, i) => [id, i]));
         e.tarjetas = filas.sort((a, b) => orden.get(a.id)! - orden.get(b.id)!).map(tarjeta);
         return { resultado: `Se muestran ${e.tarjetas.length} tarjetas.` };
+      }
+      case "sugerir_externo": {
+        const r = esquemaExterno.safeParse(entrada);
+        if (!r.success) return { resultado: "Pedido inválido: nombre (sin enlaces ni teléfonos) y fuente_url.", error: true };
+        const url = urlComparable(r.data.fuente_url);
+        const host = url ? new URL(url).hostname : "";
+        // Solo si la fuente es confiable Y salió de una búsqueda real en esta respuesta (la IA no puede inventarla)
+        if (!url || !esConfiable(host) || !e.urlsWeb.has(url))
+          return { resultado: "Esa fuente no salió de tu búsqueda en sitios confiables: no la muestres.", error: true };
+        if (e.externos.length >= 3) return { resultado: "Ya hay 3 lugares de internet.", error: true };
+        const nombre = r.data.nombre.normalize("NFC");
+        if (e.externos.some((x) => x.nombre.toLowerCase() === nombre.toLowerCase())) return { resultado: "Ya se muestra." };
+        const sector = r.data.sector || null;
+        e.externos.push({
+          nombre,
+          sector,
+          mapa: enlaceComoLlegar(nombre, sector, "Guayaquil"),
+          fuente: { url, sitio: host.replace(/^www\./, "") },
+        });
+        return { resultado: "Listo: se muestra su tarjeta con Google Maps y la fuente." };
       }
       case "abrir_pagina": {
         const r = esquemaAbrir.safeParse(entrada);

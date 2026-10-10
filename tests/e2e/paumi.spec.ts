@@ -242,6 +242,20 @@ test("en el celular no se ofrece manos libres, pero sí el micrófono", async ({
   await expect(chat.getByRole("button", { name: "Activar manos libres" })).toHaveCount(0);
 });
 
+test("si la guía no lo tiene, muestra lugares de internet con Google Maps y su fuente (solo fuentes reales)", async ({ request, baseURL }) => {
+  const r = await request.post("/api/paumi", {
+    data: { mensajes: [{ rol: "usuario", texto: "dónde como un bolón en Urdesa" }] },
+    headers: { origin: baseURL! },
+  });
+  expect(r.status()).toBe(200);
+  const { externos } = await r.json();
+  // Solo el que salió de la búsqueda real; el de URL no buscada y el de un sitio no confiable se rechazan
+  expect(externos).toHaveLength(1);
+  expect(externos[0].nombre).toBe("Bolones de Urdesa");
+  expect(externos[0].mapa).toMatch(/^https:\/\/www\.google\.com\/maps\/search\/\?api=1&query=Bolones%20de%20Urdesa%2C%20Urdesa%2C%20Guayaquil/);
+  expect(externos[0].fuente.sitio).toBe("tripadvisor.com");
+});
+
 test("si la cuenta de Anthropic no tiene la búsqueda web habilitada, Paumi responde igual (sin internet)", async ({ request, baseURL }) => {
   const r = await request.post("/api/paumi", {
     data: { mensajes: [{ rol: "usuario", texto: "pregunta sin internet" }] },

@@ -11,14 +11,14 @@ import { claseEntrada } from "@/components/ui/clasesFormulario";
 import { IconoCerrar, IconoMicrofono, IconoSilencio, IconoSonido, IconoUbicacion } from "@/components/ui/iconos";
 import { tiempoDeLectura } from "@/lib/paumi/pantallas";
 import { AVISO, AVISO_VOZ, MAX_HISTORIAL, MAX_MENSAJE, NOMBRE, SALUDO } from "@/lib/paumi/personaje";
-import type { MensajePaumi, RespuestaPaumi, TarjetaPaumi } from "@/lib/paumi/tipos";
+import type { ExternoPaumi, MensajePaumi, RespuestaPaumi, TarjetaPaumi } from "@/lib/paumi/tipos";
 import { CuadroRetro } from "./CuadroRetro";
 import { Guacamaya } from "./Guacamaya";
 import type { EstadoPaumi } from "./sprite";
 import { despuesDelNombre } from "@/lib/paumi/voz";
 import { callar, escuchar, escucharSiempre, hablar, mensajeErrorMicrofono, prepararVoz, puedeEscuchar, puedeManosLibres } from "./voz";
 
-type Entrada = MensajePaumi & { lugares?: TarjetaPaumi[]; navegar?: string | null; fuentes?: RespuestaPaumi["fuentes"]; aviso?: boolean };
+type Entrada = MensajePaumi & { lugares?: TarjetaPaumi[]; externos?: ExternoPaumi[]; navegar?: string | null; fuentes?: RespuestaPaumi["fuentes"]; aviso?: boolean };
 
 const inicial: Entrada[] = [{ rol: "paumi", texto: SALUDO }];
 const CLAVE_SONIDO = "mle-paumi-sonido";
@@ -240,7 +240,7 @@ export function Paumi() {
     setPico(false);
     if (!leidos.has(indice)) {
       setLeidos((l) => new Set(l).add(indice));
-      if (actual?.lugares?.length) setContento(true);
+      if (actual?.lugares?.length || actual?.externos?.length) setContento(true);
     }
   }
 
@@ -337,7 +337,7 @@ export function Paumi() {
       const datos = (await r.json().catch(() => ({}))) as Partial<RespuestaPaumi> & { error?: string; mensaje?: string };
       if (r.ok && typeof datos.texto === "string") {
         setPideCaptcha(false);
-        decir({ rol: "paumi", texto: datos.texto, firma: datos.firma, lugares: datos.lugares ?? [], navegar: datos.navegar ?? null, fuentes: datos.fuentes ?? [] });
+        decir({ rol: "paumi", texto: datos.texto, firma: datos.firma, lugares: datos.lugares ?? [], externos: datos.externos ?? [], navegar: datos.navegar ?? null, fuentes: datos.fuentes ?? [] });
       } else {
         if (datos.error === "captcha") setPideCaptcha(true);
         decir({ rol: "paumi", texto: datos.mensaje ?? "No pude responder. Intenta de nuevo en un ratito.", aviso: true });
@@ -566,6 +566,9 @@ function Extras({ m, alNavegar }: { m: Entrada; alNavegar: () => void }) {
       {m.lugares?.map((l) => (
         <TarjetaChat key={l.id} l={l} alNavegar={alNavegar} />
       ))}
+      {m.externos?.map((x) => (
+        <TarjetaExterna key={x.nombre} x={x} />
+      ))}
       {m.navegar && (
         <Link href={m.navegar} onClick={alNavegar} className={clasesBoton("secundario", "chico", "justify-self-start self-start")}>
           Ir a la página
@@ -595,6 +598,27 @@ function Mensaje({ m, alNavegar }: { m: Entrada; alNavegar: () => void }) {
       <p className="m-0 rounded-md bg-celeste-suave px-3.5 py-2.5 text-[15px] leading-[22px] break-words whitespace-pre-wrap">{m.texto}</p>
       <Extras m={m} alNavegar={alNavegar} />
     </div>
+  );
+}
+
+/** Lugar de internet (fuera de la guía): sin foto ni ficha; Google Maps da la dirección real y se ve de dónde salió. */
+function TarjetaExterna({ x }: { x: ExternoPaumi }) {
+  return (
+    <article className="grid gap-1 rounded-md border border-dashed border-linea-fuerte bg-papel-alto p-3">
+      <h3 className="m-0 text-[15px] leading-5 font-semibold break-words">{x.nombre}</h3>
+      <p className="m-0 text-[13px] leading-[18px] text-rio-suave">
+        {x.sector ? `${x.sector}. ` : ""}No está en nuestra guía: lo encontré en {x.fuente.sitio}. Confirma horarios y precios antes de ir.
+      </p>
+      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+        <a href={x.mapa} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm leading-5 font-semibold [&_svg]:size-4">
+          <IconoUbicacion />
+          Ver en Google Maps
+        </a>
+        <a href={x.fuente.url} target="_blank" rel="noopener noreferrer nofollow" className="text-sm leading-5 font-semibold">
+          Ver la fuente
+        </a>
+      </div>
+    </article>
   );
 }
 
