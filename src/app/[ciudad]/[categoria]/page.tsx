@@ -1,3 +1,4 @@
+import { Afiche } from "@/components/arte/Afiche";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BarraCategorias } from "@/components/categorias/BarraCategorias";
@@ -38,14 +39,23 @@ export default async function PaginaCategoria({ params, searchParams }: PageProp
   return (
     <>
       <Cabecera />
-      <main className="mx-auto w-full max-w-[1200px] flex-1 px-4 pt-6 pb-16 text-rio md:px-8">
-        <Migas pasos={[{ texto: ciudad.nombre, href: `/${ciudad.slug}` }, { texto: categoria.nombre }]} />
-        <h1 className="m-0 font-rotulo text-[30px] leading-[34px] font-normal tracking-[-0.01em] text-balance md:text-[40px] md:leading-[44px]">
-          {categoria.nombre} en {ciudad.nombre}
-        </h1>
-        <p className="mt-3 mb-0 max-w-[60ch] text-rio-suave">{categoria.bajada}</p>
+      <main className="flex-1 text-rio">
+        {/* Versión 4: entrada de noche con el afiche de la categoría (como la portada) */}
+        <section data-theme="dark" className="bg-papel text-rio">
+          <div className="mx-auto grid w-full max-w-[1280px] items-center gap-6 px-4 pt-6 pb-10 md:grid-cols-[minmax(0,1fr)_auto] md:px-8 md:pb-14">
+            <div className="grid gap-3">
+              <Migas pasos={[{ texto: ciudad.nombre, href: `/${ciudad.slug}` }, { texto: categoria.nombre }]} />
+              <h1 className="m-0 font-rotulo text-[34px] leading-10 font-normal tracking-[-0.01em] text-balance md:text-[56px] md:leading-[62px]">
+                {categoria.nombre} en {ciudad.nombre}
+              </h1>
+              <p className="m-0 max-w-[60ch] text-lg leading-7 text-rio-suave">{categoria.bajada}</p>
+            </div>
+            <Afiche slug={categoria.slug} className="size-28 max-md:hidden md:size-44 lg:size-52" />
+          </div>
+        </section>
 
-        <div className="mt-7">
+        <div className="mx-auto w-full max-w-[1280px] px-4 pt-6 pb-16 md:px-8">
+        <div>
           <BarraCategorias categorias={categorias} activa={categoria.slug} />
         </div>
 
@@ -86,6 +96,7 @@ export default async function PaginaCategoria({ params, searchParams }: PageProp
             )}
           </>
         )}
+        </div>
       </main>
       <Pie />
     </>

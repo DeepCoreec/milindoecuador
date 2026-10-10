@@ -17,6 +17,7 @@ export function TarjetaResumen({ ciudad, lugar: l, tono }: { ciudad: string; lug
       precio={l.precio}
       tono={tono}
       foto={l.foto ?? null}
+      categoria={l.categoria}
       insignias={tiene ? <InsigniasLugar lugar={l} /> : undefined}
       extra={l.extra ? <Insignia>{l.extra}</Insignia> : undefined}
     />

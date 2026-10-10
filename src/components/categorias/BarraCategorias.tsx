@@ -12,7 +12,10 @@ const anilloActiva = "shadow-[0_0_0_3px_var(--papel),0_0_0_6px_var(--celeste-tin
  * Barra de categorías: las principales con su afiche y el botón "Todas las categorías",
  * que despliega el panel con todas.
  */
-export function BarraCategorias({ categorias, activa }: { categorias: CategoriaBarra[]; activa?: string }) {
+export function BarraCategorias({ categorias, activa, grande = false }: { categorias: CategoriaBarra[]; activa?: string; grande?: boolean }) {
+  // Versión 4: en la portada los afiches salen grandes
+  const tam = grande ? "size-[120px] lg:size-[168px]" : "size-[92px] lg:size-28";
+  const ancho = grande ? "w-[120px] lg:w-[168px] text-base leading-6" : "w-[92px] lg:w-28 text-sm leading-5";
   const [abierto, setAbierto] = useState(false);
   const idPanel = useId();
   const principales = categorias.filter((c) => c.principal);
@@ -25,9 +28,9 @@ export function BarraCategorias({ categorias, activa }: { categorias: CategoriaB
             key={c.slug}
             href={c.href}
             aria-current={c.slug === activa ? "page" : undefined}
-            className="grid w-[92px] flex-none justify-items-center gap-2 text-center text-sm leading-5 font-medium text-rio no-underline aria-[current=page]:font-bold lg:w-28"
+            className={`grid ${ancho} flex-none justify-items-center gap-2 text-center font-medium text-rio no-underline aria-[current=page]:font-bold`}
           >
-            <Afiche slug={c.slug} className={`size-[92px] lg:size-28 ${c.slug === activa ? anilloActiva : ""}`} />
+            <Afiche slug={c.slug} className={`${tam} ${c.slug === activa ? anilloActiva : ""}`} />
             <span>{c.nombreCorto ?? c.nombre}</span>
           </Link>
         ))}
@@ -36,11 +39,11 @@ export function BarraCategorias({ categorias, activa }: { categorias: CategoriaB
           aria-expanded={abierto}
           aria-controls={idPanel}
           onClick={() => setAbierto((v) => !v)}
-          className="grid w-[92px] flex-none cursor-pointer justify-items-center gap-2 border-0 bg-transparent p-0 text-center text-sm leading-5 font-medium text-rio aria-expanded:font-bold lg:w-28"
+          className={`grid ${ancho} flex-none cursor-pointer justify-items-center gap-2 border-0 bg-transparent p-0 text-center font-medium text-rio aria-expanded:font-bold`}
         >
           <Afiche
             slug="todas"
-            className={`size-[92px] lg:size-28 ${abierto ? anilloActiva : "shadow-[inset_0_0_0_1px_var(--linea)]"}`}
+            className={`${tam} ${abierto ? anilloActiva : "shadow-[inset_0_0_0_1px_var(--linea)]"}`}
           />
           <span>Todas las categorías</span>
         </button>

@@ -231,7 +231,9 @@
 - **Puerta:** aprobada en celular y computadora
 
 ### Fase 19 · Tarjeta de lugar, categorías y buscador
-- [ ] 19.1 Tarjeta nueva · [ ] 19.2 Categoría con filtros compactos · [ ] 19.3 Buscador
+- [x] 19.1 Tarjeta nueva — 2026-10-10: esquinas grandes, la foto se acerca un poco al pasar el mouse (no con "reducir movimiento"), precio en una píldora sobre la foto y, sin foto, el **afiche de la categoría** sobre su color (ya no "Foto del lugar")
+- [x] 19.2 Categoría con filtros compactos — 2026-10-10: entrada de noche con título grande y el afiche de la categoría (como la portada); filtros en píldoras en una sola fila en computadora (etiquetas solo para el lector de pantalla, "Ordenar: …" en la opción); en la portada los afiches de "¿Qué buscas hoy?" salen grandes (`BarraCategorias grande`)
+- [x] 19.3 Buscador — 2026-10-10: usa la misma tarjeta nueva. Revisado a 390 y 1440 px, claro y oscuro; 114 unitarias y 35 e2e pasan. **Falta (usuario): aprobar la fase 19.** Siguiente: fase 20 (ficha del lugar)
 - **Puerta:** el usuario la aprueba
 
 ### Fase 20 · Ficha del lugar

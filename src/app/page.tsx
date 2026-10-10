@@ -76,7 +76,7 @@ export default async function Inicio() {
 
         <section className={`${ancho} ${seccion}`} aria-labelledby="t-cat">
           <CabezaSeccion id="t-cat" titulo="¿Qué buscas hoy?" />
-          <BarraCategorias categorias={categorias} />
+          <BarraCategorias categorias={categorias} grande />
         </section>
 
         {encebollados.length > 0 && (
