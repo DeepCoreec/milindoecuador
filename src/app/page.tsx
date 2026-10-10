@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { Panorama } from "@/components/arte/Panorama";
 import { Buscador } from "@/components/busqueda/Buscador";
@@ -5,7 +6,6 @@ import { BarraCategorias } from "@/components/categorias/BarraCategorias";
 import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
 import { TarjetaResumen } from "@/components/lugares/TarjetaResumen";
-import { Boton } from "@/components/ui/Boton";
 import { getCategoriasBarra, getSeccionesInicio } from "@/lib/datos/lugares";
 import type { LugarResumen } from "@/lib/datos/tipos";
 
@@ -22,8 +22,8 @@ function Fila({ lugares, tono }: { lugares: LugarResumen[]; tono?: "mango" }) {
 
 function CabezaSeccion({ id, titulo, children }: { id: string; titulo: string; children?: ReactNode }) {
   return (
-    <div className="mb-6 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2">
-      <h2 id={id} className="m-0 font-rotulo text-xl leading-[26px] font-normal text-balance md:text-2xl md:leading-[30px]">
+    <div className="mb-6 flex flex-wrap items-end justify-between gap-x-4 gap-y-2 md:mb-8">
+      <h2 id={id} className="m-0 font-rotulo text-[26px] leading-8 font-normal text-balance md:text-4xl md:leading-[44px]">
         {titulo}
       </h2>
       {children}
@@ -31,10 +31,19 @@ function CabezaSeccion({ id, titulo, children }: { id: string; titulo: string; c
   );
 }
 
+/** Enlace "Ver todos" sobre una franja de color: tinta oscura subrayada (en celeste-tinta no se leería). */
+function VerTodos({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link href={href} className="inline-flex min-h-11 items-center font-semibold text-on-color underline underline-offset-4">
+      {children}
+    </Link>
+  );
+}
+
 // La portada se vuelve a generar cada 5 minutos con los lugares nuevos
 export const revalidate = 300;
 
-const ancho = "mx-auto w-full max-w-[1200px] px-4 md:px-8";
+const ancho = "mx-auto w-full max-w-[1280px] px-4 md:px-8";
 const seccion = "py-12 min-[900px]:py-16";
 
 export default async function Inicio() {
@@ -44,62 +53,74 @@ export default async function Inicio() {
     <>
       <Cabecera />
       <main className="flex-1 text-rio">
-        <section className={`${ancho} grid grid-cols-[minmax(0,1fr)] gap-5 pt-10 pb-6`}>
-          <h1 className="m-0 font-rotulo text-[30px] leading-[34px] font-normal tracking-[-0.01em] text-balance md:text-[40px] md:leading-[44px]">
-            Guayaquil, de punta a punta
-          </h1>
-          <p className="m-0 max-w-[60ch] text-rio-suave">
-            Dónde comer, dónde dormir y qué visitar, recomendado por la gente de aquí. Escríbele directo al negocio por WhatsApp.
-          </p>
-          <Buscador />
+        {/* Entrada de noche (versión 4, opción B): mismos colores del modo oscuro, el Panorama a todo lo ancho */}
+        <section data-theme="dark" className="bg-papel text-rio" aria-labelledby="t-inicio">
+          <div className={`${ancho} grid grid-cols-[minmax(0,1fr)] gap-6 pt-10 md:pt-16`}>
+            <h1
+              id="t-inicio"
+              className="m-0 max-w-[16ch] font-rotulo text-[40px] leading-[46px] font-normal tracking-[-0.01em] text-balance md:text-[64px] md:leading-[70px] min-[1200px]:text-[80px] min-[1200px]:leading-[86px]"
+            >
+              Guayaquil, de punta a punta
+            </h1>
+            <div className="grid items-center gap-5 min-[1000px]:grid-cols-[minmax(0,1fr)_minmax(0,560px)] min-[1000px]:gap-10">
+              <p className="m-0 max-w-[48ch] text-lg leading-7 text-rio-suave">
+                Dónde comer, dónde dormir y qué visitar, recomendado por la gente de aquí. Escríbele directo al negocio por WhatsApp.
+              </p>
+              <Buscador />
+            </div>
+          </div>
+          <div className="mx-auto mt-10 w-full max-w-[1600px] md:mt-14">
+            <Panorama />
+          </div>
         </section>
 
-        <div className={`${ancho} pb-2`}>
-          <Panorama className="rounded-[20px]" />
-        </div>
-
-        <section className={`${ancho} pt-12 pb-4 min-[900px]:pt-16`} aria-labelledby="t-cat">
+        <section className={`${ancho} ${seccion}`} aria-labelledby="t-cat">
           <CabezaSeccion id="t-cat" titulo="¿Qué buscas hoy?" />
           <BarraCategorias categorias={categorias} />
         </section>
 
         {encebollados.length > 0 && (
-          <section className={`${ancho} pt-6 pb-12 min-[900px]:pb-16`} aria-labelledby="t-ence">
-            <CabezaSeccion id="t-ence" titulo={tituloComer}>
-              <Boton href="/guayaquil/restaurantes" variante="texto">
-                Ver todos
-              </Boton>
-            </CabezaSeccion>
-            <Fila lugares={encebollados} tono="mango" />
+          <section className="bg-mango text-on-color" aria-labelledby="t-ence">
+            <div className={`${ancho} ${seccion}`}>
+              <CabezaSeccion id="t-ence" titulo={tituloComer}>
+                <VerTodos href="/guayaquil/restaurantes">Ver todos los restaurantes</VerTodos>
+              </CabezaSeccion>
+              <div className="rounded-[20px] bg-papel-alto p-4 text-rio md:p-6">
+                <Fila lugares={encebollados} tono="mango" />
+              </div>
+            </div>
           </section>
         )}
 
         {imperdibles.length > 0 && (
-          <section className="border-y border-linea bg-papel-alto">
-            <div className={`${ancho} ${seccion}`} aria-labelledby="t-imp">
+          <section className="bg-celeste text-on-color" aria-labelledby="t-imp">
+            <div className={`${ancho} ${seccion}`}>
               <CabezaSeccion id="t-imp" titulo="Imperdibles de Guayaquil">
-                <Boton href="/guayaquil/turismo" variante="texto">
-                  Ver lugares turísticos
-                </Boton>
+                <VerTodos href="/guayaquil/turismo">Ver lugares turísticos</VerTodos>
               </CabezaSeccion>
-              <Fila lugares={imperdibles} />
+              <div className="rounded-[20px] bg-papel-alto p-4 text-rio md:p-6">
+                <Fila lugares={imperdibles} />
+              </div>
             </div>
           </section>
         )}
 
-        <section className={`${ancho} ${seccion}`} aria-labelledby="t-neg">
-          <div className="grid items-center gap-6 rounded-[20px] bg-celeste-suave px-6 py-8 min-[900px]:grid-cols-[minmax(0,1fr)_auto] min-[900px]:px-12 min-[900px]:py-10">
+        <section data-theme="dark" className="bg-papel text-rio" aria-labelledby="t-neg">
+          <div className={`${ancho} ${seccion} grid items-center gap-6 min-[900px]:grid-cols-[minmax(0,1fr)_auto]`}>
             <div>
-              <h2 id="t-neg" className="m-0 font-rotulo text-xl leading-[26px] font-normal text-balance md:text-2xl md:leading-[30px]">
-                ¿Tienes un negocio en Guayaquil?
+              <h2 id="t-neg" className="m-0 max-w-[20ch] font-rotulo text-[28px] leading-9 font-normal text-balance md:text-[40px] md:leading-[48px]">
+                ¿Tienes un negocio? Ponlo en el mapa.
               </h2>
-              <p className="mt-2 mb-0 max-w-[56ch] text-rio-suave">
+              <p className="mt-3 mb-0 max-w-[56ch] text-rio-suave">
                 Publica tu ficha gratis con fotos, horario y tu WhatsApp. Si quieres salir primero, destácala desde 1 $ por semana.
               </p>
             </div>
-            <Boton href="/negocios/registro" variante="principal">
-              Registrar mi negocio
-            </Boton>
+            <Link
+              href="/negocios/registro"
+              className="inline-flex min-h-12 items-center justify-center justify-self-start rounded-md bg-mango px-6 font-semibold text-on-color no-underline"
+            >
+              Registrar mi negocio gratis
+            </Link>
           </div>
         </section>
       </main>

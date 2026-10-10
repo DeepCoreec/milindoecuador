@@ -67,6 +67,16 @@ Las reglas de uso de cada uno están en el artefacto.
 - Tinta `on-color` (no cambia entre modos); blanco de cal `papel-alto` de día y `rio` de noche.
 - Nuevas ilustraciones: formas planas, tinta `on-color`, un color de categoría de fondo, grano y un objeto reconocible de Guayaquil.
 
+## Versión 4: dirección "atrevida" (opción B, elegida por el usuario el 2026-10-10)
+
+- **Entrada de noche:** la portada empieza con una franja `data-theme="dark"` (mismos tokens del modo oscuro): título
+  grande en `rotulo` (40 → 64 → 80 px), buscador al lado en computadora y el Panorama **a todo lo ancho** (hasta 1600 px).
+- **Franjas de color a todo lo ancho** para las secciones: `mango` (dónde comer) y `celeste` (imperdibles), con texto
+  `on-color` y las tarjetas dentro de un panel `papel-alto` (radius-lg). No se usa `faro` de fondo con texto pequeño
+  (no llega a 4,5:1).
+- **Cierre de noche** para negocios con botón `mango` / `on-color` (el botón principal de la pantalla sigue siendo "Buscar").
+- Contenedor más ancho: 1280 px.
+
 ## Reglas que más se olvidan
 
 - Nunca texto todo en mayúsculas. Nunca emojis en la interfaz. Nunca negro puro: el texto es `rio`.
