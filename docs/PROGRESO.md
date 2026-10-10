@@ -242,7 +242,7 @@
 
 ### Fase 21 · Resto y revisión final
 - [x] 21.1 Resto de pantallas — 2026-10-10: pie de página nuevo (franja de noche con Explora, Negocios y La guía), 404 con Paumi pensando sobre fondo de noche, títulos grandes y contenedor de 1280 px en registro, planes, buscador y "Explora Guayaquil". Revisado: 6 páginas a 390, 768, 1024 y 1440 px en claro y oscuro, sin desbordes ni errores. 114 unitarias y 35 e2e pasan
-- [ ] 21.2 Revisión final e independiente
+- [x] 21.2 Revisión final e independiente — 2026-10-10: el revisor no encontró fallas críticas ni altas. Arreglado: (a) el límite de registros (3 al día, 10 en total) lo exige la base con candado, migración `0015_registro_directo.sql` (**usuario: ejecutarla, PUESTA-EN-MARCHA §12**); (b) si ya hay un lugar publicado con el mismo nombre, el registro queda pendiente para el admin (nadie se adueña de un negocio ajeno); (c) la barra fija del celular ya no tapa el pie; (d) galería: "+N" abre desde la primera, contador que se anuncia, leyenda sin repetir. Dejado para después: pedir una sola foto por lugar en las listas. 180 reglas y 36 e2e pasan. **Falta (usuario): aprobar las fases 18 a 21.** Siguiente: fase 22 (eventos)
 - **Puerta:** sin fallas altas y aprobada
 
 ## Versión 5 (borrador)

@@ -80,3 +80,24 @@ test("puerta de la fase 4: un negocio de punta a punta", async ({ page, context,
   await expect(visita.getByRole("link", { name: "Waze" })).toHaveAttribute("href", "https://waze.com/ul?ll=-2.1401,-79.9065&navigate=yes");
   await visita.close();
 });
+
+test("si ya hay un lugar publicado con ese nombre, el registro queda para revisión del admin", async ({ browser, baseURL }, info) => {
+  test.skip(info.project.name !== "escritorio", "basta en un tamaño");
+  const ctx = await browser.newContext();
+  const u = await crearUsuario("copion");
+  await iniciarSesion(ctx, u.correo, baseURL!);
+  const p = await ctx.newPage();
+  await p.goto(new URL("/negocios/registro", baseURL).toString());
+  await p.getByLabel("Nombre del negocio").fill("Parque Seminario");
+  await p.getByLabel("Categoría").selectOption("turismo");
+  await p.getByLabel("Tu nombre").fill("Luis Andrade");
+  await p.getByLabel("WhatsApp del negocio").fill("098 765 4321");
+  await p.getByLabel(/Acepto los/).check();
+  await p.getByRole("button", { name: "Registrar mi negocio" }).click();
+  await expect(p.getByText("¡Solicitud enviada!")).toBeVisible();
+  await expect(p.getByText(/Ya hay un lugar con ese nombre/)).toBeVisible();
+  const { data } = await admin().from("business_requests").select("status").eq("user_id", u.id).single();
+  expect(data?.status).toBe("pendiente");
+  await admin().from("business_requests").delete().eq("user_id", u.id);
+  await ctx.close();
+});

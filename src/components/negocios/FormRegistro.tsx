@@ -60,8 +60,8 @@ export function FormRegistro({ categorias, avisoWhatsApp }: { categorias: { slug
       <div role="status" className="grid gap-4 rounded-xl border border-linea bg-papel-alto p-6">
         <h2 className="m-0 text-xl leading-[26px] font-semibold">¡Solicitud enviada!</h2>
         <p className="m-0 text-rio-suave">
-          Recibimos los datos de <b className="text-rio">{estado.negocio}</b>. Revisamos cada solicitud a mano y te escribimos por WhatsApp
-          cuando tu ficha esté lista.
+          Recibimos los datos de <b className="text-rio">{estado.negocio}</b>.{" "}
+          {estado.mensaje ?? "Revisamos tu solicitud a mano y te escribimos por WhatsApp cuando tu ficha esté lista."}
         </p>
         <a
           href={`https://wa.me/${avisoWhatsApp}?text=${encodeURIComponent(texto)}`}

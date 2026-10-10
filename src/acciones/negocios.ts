@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { obtenerUsuario } from "@/lib/auth";
 import { verificarCaptcha } from "@/lib/captcha";
 import { mensajeModeracion } from "@/lib/moderacion";
+import { aSlug } from "@/lib/slug";
 import { crearFichaBorrador } from "@/lib/fichas";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { configSupabase } from "@/lib/supabase/config";
@@ -22,7 +23,10 @@ export type EstadoSolicitud = {
   intento?: number;
 };
 
-const CAMPOS = ["negocio", "categoria", "sector", "contacto", "whatsapp", "descripcion", "terminos"] as const;
+const MENSAJE_DIA = "Ya registraste 3 negocios hoy. Vuelve mañana para registrar otro.";
+const MENSAJE_TOTAL = "Tu cuenta ya tiene 10 negocios. Escríbenos por WhatsApp si necesitas más.";
+
+const CAMPOS =["negocio", "categoria", "sector", "contacto", "whatsapp", "descripcion", "terminos"] as const;
 
 /**
  * Registra un negocio. Orden: Zod → captcha → sesión → límites → escribir con admin.ts (la tabla no acepta
@@ -63,14 +67,20 @@ export async function solicitarRegistro(_previo: EstadoSolicitud, datos: FormDat
   const { count } = await db.from("business_requests").select("id", { count: "exact", head: true }).eq("user_id", usuario.id).eq("status", "pendiente");
   if ((count ?? 0) >= 3) return { estado: "error", mensaje: "Ya tienes 3 solicitudes esperando revisión. Espera a que las revisemos.", valores, intento: Date.now() };
 
-  // Contra el abuso: como máximo 3 negocios nuevos por cuenta al día y 10 en total
+  // Contra el abuso: como máximo 3 registros por cuenta en 24 horas y 10 en total (la base lo exige con candado, 0015)
   const ayer = new Date(Date.now() - 24 * 3600_000).toISOString();
   const [hoy, total] = await Promise.all([
-    db.from("places").select("id", { count: "exact", head: true }).eq("owner_id", usuario.id).gte("created_at", ayer),
-    db.from("places").select("id", { count: "exact", head: true }).eq("owner_id", usuario.id),
+    db.from("business_requests").select("id", { count: "exact", head: true }).eq("user_id", usuario.id).gte("created_at", ayer),
+    db.from("business_requests").select("id", { count: "exact", head: true }).eq("user_id", usuario.id).neq("status", "rechazada"),
   ]);
-  if ((hoy.count ?? 0) >= 3) return { estado: "error", mensaje: "Ya registraste 3 negocios hoy. Vuelve mañana para registrar otro.", valores, intento: Date.now() };
-  if ((total.count ?? 0) >= 10) return { estado: "error", mensaje: "Tu cuenta ya tiene 10 negocios. Escríbenos por WhatsApp si necesitas más.", valores, intento: Date.now() };
+  if ((hoy.count ?? 0) >= 3) return { estado: "error", mensaje: MENSAJE_DIA, valores, intento: Date.now() };
+  if ((total.count ?? 0) >= 10) return { estado: "error", mensaje: MENSAJE_TOTAL, valores, intento: Date.now() };
+
+  // Si ya hay un lugar publicado con el mismo nombre en la ciudad, no se crea la ficha sola: lo revisa el admin
+  // (evita que alguien se adueñe de un negocio que no es suyo).
+  const base = aSlug(r.data.negocio) || "lugar";
+  const { data: parecidos } = await db.from("places").select("slug").eq("city_id", ciudad.data.id).eq("status", "publicado").like("slug", `${base}%`).limit(20);
+  const repetido = (parecidos ?? []).some((p) => p.slug === base || new RegExp(`^${base}-\\d+$`).test(p.slug));
 
   const { data: solicitud, error } = await db.from("business_requests").insert({
     business_name: r.data.negocio,
@@ -81,12 +91,21 @@ export async function solicitarRegistro(_previo: EstadoSolicitud, datos: FormDat
     whatsapp: r.data.whatsapp,
     description: r.data.descripcion || null,
     user_id: usuario.id,
-    status: "aprobada",
-    admin_notes: "Aprobada automáticamente al registrarse",
+    status: repetido ? "pendiente" : "aprobada",
+    admin_notes: repetido ? "Ya existe un lugar publicado con este nombre: revisar si es el dueño" : "Aprobada automáticamente al registrarse",
   }).select("id").single();
-  if (error?.message?.includes("limite_solicitudes"))
+  const motivo = error?.message ?? "";
+  if (motivo.includes("limite_solicitudes_dia")) return { estado: "error", mensaje: MENSAJE_DIA, valores, intento: Date.now() };
+  if (motivo.includes("limite_solicitudes_total")) return { estado: "error", mensaje: MENSAJE_TOTAL, valores, intento: Date.now() };
+  if (motivo.includes("limite_solicitudes"))
     return { estado: "error", mensaje: "Ya tienes 3 solicitudes esperando revisión. Espera a que las revisemos.", valores, intento: Date.now() };
   if (error || !solicitud) return { estado: "error", mensaje: mensajeModeracion(error) ?? "No se pudo enviar la solicitud. Inténtalo de nuevo.", valores, intento: Date.now() };
+  if (repetido)
+    return {
+      estado: "ok",
+      negocio: r.data.negocio,
+      mensaje: "Ya hay un lugar con ese nombre en la guía. Revisaremos tu registro y te escribiremos por WhatsApp para confirmar que eres el dueño.",
+    };
 
   const ficha = await crearFichaBorrador({
     business_name: r.data.negocio,

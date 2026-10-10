@@ -71,7 +71,7 @@ export default async function FichaLugar({ params }: Props) {
   return (
     <>
       <Cabecera />
-      <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 pt-6 text-rio max-[899px]:pb-24 md:px-8">
+      <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 pt-6 text-rio md:px-8">
         <Migas
           pasos={[
             { texto: ciudad.nombre, href: `/${ciudad.slug}` },

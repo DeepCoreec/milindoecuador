@@ -41,7 +41,7 @@ export function Galeria({ fotos, tono }: { fotos: Foto[]; tono: "celeste" | "man
             <button
               key={f.src}
               type="button"
-              onClick={() => setAbierta(i)}
+              onClick={() => setAbierta(ultima ? 0 : i)}
               aria-label={ultima ? `Ver las ${fotos.length} fotos` : `Ver la foto en grande: ${f.alt}`}
               className={`group relative aspect-[3/2] cursor-zoom-in overflow-hidden border-0 bg-transparent p-0 ${fondo} ${
                 i === 0
@@ -57,7 +57,7 @@ export function Galeria({ fotos, tono }: { fotos: Foto[]; tono: "celeste" | "man
                 sizes={i === 0 && fotos.length > 1 ? "(min-width: 900px) 760px, 100vw" : i === 0 ? "(min-width: 1280px) 1200px, 100vw" : "380px"}
                 className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
               />
-              {ultima && <span className="absolute inset-0 grid place-items-center bg-[#0e2e40]/55 text-xl font-semibold text-white">+{resto}</span>}
+              {ultima && <span className="absolute inset-0 grid place-items-center bg-[#0e2e40]/70 text-xl font-semibold text-white">+{resto}</span>}
             </button>
           );
         })}
@@ -94,7 +94,7 @@ function Visor({ fotos, indice, alCambiar }: { fotos: Foto[]; indice: number | n
           className="fixed inset-0 z-50 grid grid-rows-[auto_minmax(0,1fr)_auto] text-white"
         >
           <div className="flex items-center justify-between gap-4 px-4 pt-[max(12px,env(safe-area-inset-top))] pb-2">
-            <Dialog.Title className="m-0 text-sm font-semibold">
+            <Dialog.Title aria-live="polite" className="m-0 text-sm font-semibold">
               Foto {(indice ?? 0) + 1} de {fotos.length}
             </Dialog.Title>
             <Dialog.Close aria-label="Cerrar" className={`${boton} [&_svg]:size-6`}>
@@ -110,7 +110,7 @@ function Visor({ fotos, indice, alCambiar }: { fotos: Foto[]; indice: number | n
             ) : (
               <span />
             )}
-            <p className="m-0 line-clamp-2 flex-1 text-center text-sm text-white/80">{f?.alt}</p>
+            <p aria-hidden="true" className="m-0 line-clamp-2 flex-1 text-center text-sm text-white/80">{f?.alt}</p>
             {fotos.length > 1 ? (
               <button type="button" onClick={() => ir(1)} aria-label="Foto siguiente" className={boton}>
                 ›

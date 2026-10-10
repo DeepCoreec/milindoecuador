@@ -488,10 +488,21 @@ const sol = (n) => as("service_role", "", `insert into public.business_requests 
 for (let i = 1; i <= 3; i++) await sol(i);
 r = await sol(4);
 check("máximo 3 solicitudes pendientes por cuenta, contado en la base", /limite_solicitudes/.test(r.error ?? ""), r);
-await db.exec(`set session_replication_role = replica; update public.business_requests set status = 'rechazada', updated_at = now() - interval '200 days' where business_name = 'Negocio 1'; set session_replication_role = origin;`); // sin el disparador de updated_at
-await sol(5);
+// 0015: también 3 en 24 horas aunque ya no estén pendientes (el registro ahora se aprueba solo)
+await db.exec(`update public.business_requests set status = 'aprobada' where business_name in ('Negocio 2', 'Negocio 3')`);
+r = await sol(4);
+check("máximo 3 registros por cuenta en 24 horas, aunque ya estén aprobados (0015)", /limite_solicitudes_dia/.test(r.error ?? ""), r);
+await db.exec(`set session_replication_role = replica; update public.business_requests set status = 'rechazada', updated_at = now() - interval '200 days' where business_name = 'Negocio 1'; update public.business_requests set created_at = now() - interval '2 days' where user_id = '${B}'; set session_replication_role = origin;`); // sin el disparador de updated_at
+r = await sol(5);
+check("pasadas 24 horas se puede registrar otro", !r.error, r);
 r = await db.query(`select count(*)::int n from public.business_requests where business_name = 'Negocio 1'`);
 check("las solicitudes rechazadas hace más de 180 días se borran solas", r.rows[0].n === 0, r.rows);
+await db.exec(`set session_replication_role = replica;
+  insert into public.business_requests (business_name, category_id, city_id, contact_name, whatsapp, user_id, status, created_at)
+  select 'Viejo ' || g, '${cat}', '${gye}', 'Ana', '593991234567', '${B}', 'aprobada', now() - interval '3 days' from generate_series(1, 7) g;
+  set session_replication_role = origin;`);
+r = await sol(6);
+check("máximo 10 registros en total por cuenta (0015)", /limite_solicitudes_total/.test(r.error ?? ""), r);
 r = await as("service_role", "", `insert into public.place_photos (place_id, storage_path, alt_text) values ($1, 'lugares/x/0.webp', 'Foto repetida')`, [P["lugar-5"]]);
 check("una misma foto no se registra dos veces", !!r.error, r);
 

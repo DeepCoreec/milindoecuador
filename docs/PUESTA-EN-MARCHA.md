@@ -174,3 +174,8 @@ Paumi viene **apagada**. Para encenderla:
 
 Costo aproximado con Claude Haiku: 1 centavo por pregunta (más si busca en internet). Con el tope de la Consola nunca
 se pasa de lo que elijas; cuando se llega al tope, Paumi dice que está descansando y la guía sigue funcionando.
+
+## 12. Versión 4: límite del registro directo (migración 0015)
+
+Supabase → SQL Editor → **+** → pega todo `supabase/migrations/0015_registro_directo.sql` → **Run** → "Success".
+Hace que el límite de 3 negocios al día y 10 en total por cuenta valga aunque alguien envíe muchos a la vez.

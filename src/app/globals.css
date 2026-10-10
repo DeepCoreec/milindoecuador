@@ -123,4 +123,7 @@ body {
 /* Versión 4: en la ficha del celular hay una barra de acciones fija abajo; el botón de Paumi sube para no taparla */
 @media (max-width: 899px) {
   body:has(.mle-barra-acciones) .mle-boton-paumi { bottom: calc(84px + env(safe-area-inset-bottom)); }
+  /* La barra fija no tapa el pie de página ni lo que recibe el foco */
+  body:has(.mle-barra-acciones) { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+  html:has(.mle-barra-acciones) { scroll-padding-bottom: 96px; }
 }
