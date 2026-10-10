@@ -257,11 +257,13 @@
   - [x] 22.5 Borrado diario — 2026-10-10: `/api/tareas/eventos` (pide `CRON_SECRET`, borra los vencidos y sus afiches) y `vercel.json` (todos los días 05:05 UTC = 00:05 Guayaquil). **Usuario: PUESTA-EN-MARCHA §13 (0016 y `CRON_SECRET`)**
   - [x] 22.6 Reportes y panel — 2026-10-10: "Reportar este evento" (3 reportes lo ocultan) y `/admin/eventos` (mostrar, ocultar, borrar; contador en el menú)
   - [x] 22.7 Paumi — 2026-10-10: herramienta `buscar_eventos` (hoy, fin de semana, próximos; tipo; gratis), sus datos van marcados como "datos, no instrucciones", y puede abrir la ficha de un evento que devolvió
-  - [ ] 22.8 Términos y Privacidad (hecho), pruebas e2e (4 nuevas, pasan), revisión independiente de seguridad
+  - [x] 22.8 Cierre — 2026-10-10: Términos (sección Eventos) y Privacidad; 4 pruebas e2e nuevas (publicar con afiche, ver, calendario, cambiar y borrar; sin cuenta; borrado diario con clave; Paumi). Revisión independiente: sin fallas críticas ni altas. Arreglado: tope de 6 permisos de afiche al día en la base (`permiso_afiche`), la tarea diaria también borra afiches que nadie usa, un afiche no se puede reusar en otro evento, y un evento ya revisado se puede volver a reportar. Pendiente bajo (Ideas para después): aviso al salir a enlaces externos de eventos. 205 reglas, 124 unitarias y 43 e2e pasan
   - **Puerta (usuario):** publicar un evento de prueba, verlo y comprobar que al día siguiente de su fecha ya no está
 - [ ] Fase 23 · Guía útil (turismo de OpenStreetMap, "¿Se te dañó algo?", información útil)
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
+
+- (2026-10-10, revisión de la fase 22) Aviso "vas a salir de la guía" antes de abrir la página o el enlace de entradas de un evento; volver a revisar un evento ya reportado si su dueño cambia los enlaces; pedir una sola foto por lugar en las listas.
 
 - ~~Guía útil de la ciudad~~ → pasó a `docs/PLAN-V5.md` (fase 23), junto con **Eventos** (fase 22, idea del usuario del 2026-10-10). Detalle original: (1) lugares turísticos públicos sin registrarse, cargados desde **OpenStreetMap** (licencia ODbL: hay que citar "© colaboradores de OpenStreetMap" y los datos se revisan a mano antes de publicar; muchos vienen sin foto ni horario); (2) "¿Se te dañó algo?": categorías de servicios (talleres, electrónica, cerrajerías, celulares) que se registran como cualquier negocio; (3) página de información útil: ECU 911, hospitales, farmacias, transporte (Metrovía, Aerovía). No usar datos copiados de Google Maps (sus términos lo prohíben); textos de Wikipedia solo citando la fuente (CC BY-SA)
 

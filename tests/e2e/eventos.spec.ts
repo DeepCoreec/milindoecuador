@@ -3,6 +3,10 @@ import { admin, crearUsuario, iniciarSesion, limpiar, marca, pngDePrueba } from 
 
 /* Versión 5, fase 22: eventos que publica la gente y se borran solos al día siguiente de su fecha de fin. */
 test.afterAll(limpiar);
+// El tope de permisos de afiche es por día: se reinicia para que las pruebas no dependan de cuántas veces se corrieron
+test.beforeAll(async () => {
+  await admin().from("event_upload_permits").delete().gte("id", 0);
+});
 
 /** "2026-10-17T19:30" en hora de Guayaquil, dentro de n días. */
 function enDias(n: number, hora = "19:00") {

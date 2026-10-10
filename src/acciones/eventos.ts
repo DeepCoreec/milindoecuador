@@ -62,10 +62,12 @@ async function leerUbicacionEvento(texto: string): Promise<{ lat: number; lng: n
   return u;
 }
 
-/** El afiche tiene que estar en la carpeta de esta cuenta, existir y ser de verdad una imagen. */
+/** El afiche tiene que estar en la carpeta de esta cuenta, no ser de otro evento, existir y ser de verdad una imagen. */
 async function aficheValido(usuario: string, camino: string): Promise<boolean> {
   if (!camino.startsWith(`eventos/${usuario}/`)) return false;
   const db = crearClienteAdmin();
+  const { count } = await db.from("city_events").select("id", { count: "exact", head: true }).eq("poster_path", camino);
+  if (count) return false;
   const nombre = camino.split("/").pop()!;
   const { data } = await db.storage.from(BUCKET).list(`eventos/${usuario}`, { search: nombre, limit: 1 });
   if (!data?.some((o) => o.name === nombre)) return false;
@@ -82,9 +84,12 @@ export async function pedirSubidaAfiche(formato: "webp" | "jpg"): Promise<{ cami
   const usuario = await obtenerUsuario();
   if (!usuario) return { error: "Tu sesión se cerró. Entra otra vez a tu cuenta." };
   const db = crearClienteAdmin();
-  // Contra el abuso: pocos archivos por cuenta a la vez (los afiches se borran con su evento)
+  // Contra el abuso: pocos archivos por cuenta a la vez (los afiches se borran con su evento; los que nadie usa, cada noche)
   const { data: hay } = await db.storage.from(BUCKET).list(`eventos/${usuario.id}`, { limit: ARCHIVOS_POR_CUENTA + 1 });
   if ((hay?.length ?? 0) >= ARCHIVOS_POR_CUENTA) return { error: "Subiste muchos afiches. Borra algún evento viejo o publica sin afiche." };
+  // Y como mucho 6 permisos al día, contados en la base aunque no se usen
+  const { data: cupo } = await db.rpc("permiso_afiche", { usuario: usuario.id });
+  if (cupo !== true) return { error: "Llegaste al límite de afiches por hoy. Publica sin afiche o vuelve mañana." };
   const camino = `eventos/${usuario.id}/${crypto.randomUUID()}.${r.data.formato}`;
   const { data, error } = await db.storage.from(BUCKET).createSignedUploadUrl(camino);
   if (error || !data) return { error: "No se pudo preparar la subida. Inténtalo de nuevo." };

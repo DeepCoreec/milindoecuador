@@ -133,9 +133,11 @@ create table public.city_event_reports (
   reason       text not null check (char_length(reason) between 3 and 500),
   resolved     boolean not null default false,
   created_at   timestamptz not null default now(),
-  updated_at   timestamptz not null default now(),
-  unique (event_id, reporter_id)
+  updated_at   timestamptz not null default now()
 );
+-- Una vez por persona mientras el reporte esté abierto: si el admin lo resolvió, se puede volver a reportar
+-- (por ejemplo, si después de mostrarlo otra vez el dueño cambia el evento por algo engañoso)
+create unique index city_event_reports_una_vez on public.city_event_reports (event_id, reporter_id) where not resolved;
 create index city_event_reports_evento_idx on public.city_event_reports (event_id) where not resolved;
 create trigger set_updated_at before update on public.city_event_reports for each row execute function public.set_updated_at();
 alter table public.city_event_reports enable row level security;
@@ -200,6 +202,38 @@ as $$
 $$;
 revoke execute on function public.borrar_eventos_vencidos() from public, anon, authenticated;
 grant execute on function public.borrar_eventos_vencidos() to service_role;
+
+-- ---------------------------------------------------------------------
+-- Permisos para subir afiches: como mucho 6 por cuenta en 24 horas (cuenta cada permiso, aunque no se use)
+-- ---------------------------------------------------------------------
+create table public.event_upload_permits (
+  id          bigint generated always as identity primary key,
+  user_id     uuid not null references public.profiles (id) on delete cascade,
+  created_at  timestamptz not null default now()
+);
+create index event_upload_permits_usuario_idx on public.event_upload_permits (user_id, created_at);
+alter table public.event_upload_permits enable row level security;
+-- Nadie la lee ni la escribe desde el navegador (sin políticas ni permisos); solo la función de abajo.
+revoke all on public.event_upload_permits from anon, authenticated;
+
+create function public.permiso_afiche(usuario uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  perform pg_advisory_xact_lock(hashtext('afiches' || usuario::text));
+  delete from public.event_upload_permits where created_at < now() - interval '2 days';
+  if (select count(*) from public.event_upload_permits where user_id = usuario and created_at > now() - interval '24 hours') >= 6 then
+    return false;
+  end if;
+  insert into public.event_upload_permits (user_id) values (usuario);
+  return true;
+end;
+$$;
+revoke execute on function public.permiso_afiche(uuid) from public, anon, authenticated;
+grant execute on function public.permiso_afiche(uuid) to service_role;
 
 -- ---------------------------------------------------------------------
 -- Afiches: lectura pública; se suben solo con un permiso de un solo uso que da el servidor

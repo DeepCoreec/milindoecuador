@@ -572,6 +572,16 @@ r = await as("authenticated", B, `select * from public.city_event_reports`);
 check("quien reporta no ve los reportes", r.rows?.length === 0 || !!r.error, r);
 r = await as("authenticated", ADM, `update public.city_events set status = 'publicado' where id = $1 returning id`, [E1]);
 check("el admin lo vuelve a mostrar", r.rows?.length === 1, r);
+await as("authenticated", ADM, `update public.city_event_reports set resolved = true where event_id = $1`, [E1]);
+r = await as("authenticated", B, `insert into public.city_event_reports (event_id, reason) values ($1, 'Cambió el enlace por una estafa')`, [E1]);
+check("después de que el admin lo revisa, se puede volver a reportar", !r.error, r);
+r = await as("authenticated", B, `insert into public.city_event_reports (event_id, reason) values ($1, 'Otra vez')`, [E1]);
+check("pero no dos veces mientras esté abierto", !!r.error, r);
+for (let i = 0; i < 6; i++) await as("service_role", "", `select public.permiso_afiche($1)`, [A]);
+r = await as("service_role", "", `select public.permiso_afiche($1) as ok`, [A]);
+check("como mucho 6 permisos de afiche al día", r.rows?.[0]?.ok === false, r);
+r = await as("authenticated", A, `select public.permiso_afiche($1)`, [A]);
+check("y el navegador no puede pedirlos directo", !!r.error, r);
 
 console.log("\nDatos iniciales (supabase/seed.sql)");
 const seed = readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8");
