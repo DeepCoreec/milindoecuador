@@ -34,7 +34,7 @@ function Fila({ s }: { s: Sitio }) {
         <a href={enlaceRutaGoogle(s.ubicacion)} target="_blank" rel="noopener noreferrer" aria-label={`Cómo llegar a ${s.nombre}`}>
           Cómo llegar
         </a>
-        {s.telefono && <a href={`tel:${s.telefono.replace(/[^\d+]/g, "")}`}>Llamar</a>}
+        {s.telefono && <a href={`tel:${s.telefono.split(/[;,/]/)[0]!.replace(/[^\d+]/g, "")}`}>Llamar</a>}
       </span>
     </li>
   );

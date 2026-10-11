@@ -550,16 +550,22 @@ const urlOverpass = () => (process.env.NODE_ENV !== "production" && process.env.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- firma de useActionState
 export async function importarOSM(_previo: EstadoAdmin, _datos: FormData): Promise<EstadoAdmin> {
   await requireAdmin();
+  const inicio = Date.now();
+  const db = crearClienteAdmin();
+  // Cuidar la API gratuita de OpenStreetMap: como mucho una importación cada 10 minutos
+  const { data: ultimo } = await db.from("city_spots").select("imported_at").order("imported_at", { ascending: false }).limit(1).maybeSingle();
+  if (ultimo && Date.now() - Date.parse(ultimo.imported_at) < 10 * 60_000) return { estado: "error", mensaje: "Ya se trajeron lugares hace poco. Espera 10 minutos para volver a intentarlo." };
   let json: unknown;
   try {
     const r = await fetch(urlOverpass(), {
       method: "POST",
       headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": "MiLindoEcuador/1.0 (guia de Guayaquil)" },
       body: new URLSearchParams({ data: consultaOverpass() }),
-      signal: AbortSignal.timeout(100_000),
+      signal: AbortSignal.timeout(60_000),
       redirect: "error",
     });
     if (!r.ok) return { estado: "error", mensaje: `OpenStreetMap no respondió (código ${r.status}). Inténtalo en unos minutos.` };
+    if (Number(r.headers.get("content-length") ?? 0) > 20_000_000) return { estado: "error", mensaje: "La respuesta fue demasiado grande." };
     const texto = await r.text();
     if (texto.length > 20_000_000) return { estado: "error", mensaje: "La respuesta fue demasiado grande." };
     json = JSON.parse(texto);
@@ -568,13 +574,17 @@ export async function importarOSM(_previo: EstadoAdmin, _datos: FormData): Promi
   }
   const sitios = aSitios(json);
   if (!sitios.length) return { estado: "error", mensaje: "OpenStreetMap no devolvió lugares." };
-  const db = crearClienteAdmin();
   const { data: ciudad } = await db.from("cities").select("id").eq("slug", "guayaquil").single();
   if (!ciudad) return { estado: "error", mensaje: "No se encontró la ciudad" };
-  const filas = sitios.map((s) => ({ ...s, city_id: ciudad.id }));
+  const filas = sitios.map((s) => ({ ...s, city_id: ciudad.id, imported_at: new Date().toISOString() }));
   let nuevos = 0;
   let rechazados = 0;
   for (let i = 0; i < filas.length; i += 200) {
+    // Si se acaba el tiempo del servidor, se guarda lo hecho y se avisa (lo que ya está no se repite)
+    if (Date.now() - inicio > 90_000) {
+      revalidatePath("/admin/guia");
+      return { estado: "ok", mensaje: `Se guardaron ${nuevos} lugares nuevos, pero faltaron algunos: vuelve a tocar el botón en 10 minutos.` };
+    }
     const lote = filas.slice(i, i + 200);
     const { data, error } = await db.from("city_spots").upsert(lote, { onConflict: "osm_type,osm_id", ignoreDuplicates: true }).select("id");
     if (!error) {

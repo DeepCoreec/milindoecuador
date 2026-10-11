@@ -42,16 +42,23 @@ type Fila = {
 export const getSitios = cache(async (): Promise<Sitio[]> => {
   const db = crearClientePublico();
   if (!db) return [];
-  const { data, error } = await db
-    .from("city_spots")
-    .select("id, grupo, tipo, name, note, address, phone, website, opening_hours, latitude, longitude, osm_type, osm_id, cities!inner(slug)")
-    .eq("cities.slug", "guayaquil")
-    .order("tipo")
-    .order("name")
-    .limit(3000)
-    .returns<Fila[]>();
-  if (error) throw new Error(`No se pudo leer la guía útil: ${error.message}`);
-  return (data ?? []).map((f) => ({
+  // La API devuelve como mucho 1000 filas por pedido: se lee por páginas (hasta 5000)
+  const filas: Fila[] = [];
+  for (let desde = 0; desde < 5000; desde += 1000) {
+    const { data, error } = await db
+      .from("city_spots")
+      .select("id, grupo, tipo, name, note, address, phone, website, opening_hours, latitude, longitude, osm_type, osm_id, cities!inner(slug)")
+      .eq("cities.slug", "guayaquil")
+      .order("tipo")
+      .order("name")
+      .order("id")
+      .range(desde, desde + 999)
+      .returns<Fila[]>();
+    if (error) throw new Error(`No se pudo leer la guía útil: ${error.message}`);
+    filas.push(...(data ?? []));
+    if ((data?.length ?? 0) < 1000) break;
+  }
+  return filas.map((f) => ({
     id: f.id,
     grupo: f.grupo,
     tipo: f.tipo,

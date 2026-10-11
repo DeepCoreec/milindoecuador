@@ -266,7 +266,7 @@
   - [x] 23.3 Revisión del admin — 2026-10-11: `/admin/guia` (Por revisar / Publicados / Descartados, filtro por grupo, marcar varios y publicar o descartar, corregir nombre y frase, enlace a OpenStreetMap)
   - [x] 23.4 Página — 2026-10-11: `/guayaquil/guia-util` con Para visitar, ¿Se te dañó algo? (lleva a los negocios de "Reparaciones y servicios" + lugares de OSM) e Información útil (ECU 911, moverse por la ciudad sin precios que cambian, consejos, salud y transporte de OSM); "Cómo llegar" en cada lugar y crédito ODbL. En el menú del celular, el pie y el mapa del sitio. Revisada a 390 y 1440 px
   - [x] 23.5 Paumi — 2026-10-11: herramientas `buscar_sitios` y `mostrar_sitios` (tarjeta con Cómo llegar y la fuente OSM; solo ids que buscó en esa respuesta) y puede abrir `/guayaquil/guia-util`
-  - [ ] 23.6 Legal (hecho: Términos "Guía útil" y Privacidad), prueba e2e (pasa), revisión de seguridad. **Usuario: PUESTA-EN-MARCHA §14 (0017 e importar)**
+  - [x] 23.6 Cierre — 2026-10-11: Términos (sección "Guía útil", ODbL) y Privacidad; prueba e2e (importar, publicar, ver y Paumi). Revisión independiente: sin fallas críticas ni altas. Arreglado: la página lee por páginas (la API da 1000 filas por pedido), la importación cuida el tiempo del servidor y guarda lo hecho, una importación cada 10 minutos, lo que ya está no pasa otra vez por el filtro, "Llamar" usa el primer número y se publican como mucho 100 a la vez. 215 reglas, 127 unitarias y 44 e2e pasan. **Usuario: PUESTA-EN-MARCHA §14 (0017 e importar)**
   - **Puerta (usuario):** importar, publicar algunos lugares y verlos en la guía y en Paumi
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)

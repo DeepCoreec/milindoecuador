@@ -137,7 +137,7 @@ export const esquemaDecisionEvento = z.object({ evento: z.uuid(), decision: z.en
 
 /** Guía útil (versión 5): decidir varios sitios a la vez, o corregir uno. */
 export const esquemaDecisionSitios = z.object({
-  sitios: z.array(z.uuid()).min(1, "Marca al menos un lugar").max(200),
+  sitios: z.array(z.uuid()).min(1, "Marca al menos un lugar").max(100, "Marca como mucho 100 a la vez"),
   decision: z.enum(["publicado", "descartado", "pendiente"]),
 });
 export const esquemaEditarSitio = z.object({

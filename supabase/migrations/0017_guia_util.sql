@@ -47,6 +47,10 @@ security definer
 set search_path = ''
 as $$
 begin
+  -- Al volver a importar, un lugar que ya está se salta (on conflict do nothing): no hace falta revisarlo de nuevo
+  if tg_op = 'INSERT' and exists (select 1 from public.city_spots c where c.osm_type = new.osm_type and c.osm_id = new.osm_id) then
+    return new;
+  end if;
   if tg_op = 'INSERT' or new.name is distinct from old.name then perform public.revisar_campo('nombre', new.name, false); end if;
   if tg_op = 'INSERT' or new.note is distinct from old.note then perform public.revisar_campo('descripcion', new.note, true); end if;
   return new;
