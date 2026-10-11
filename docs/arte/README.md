@@ -18,6 +18,7 @@ Ilustraciones propias en estilo serigrafía. Sus colores son variables del siste
 | `categoria-compras.svg` | Puesto con toldo, guineos y naranjas sobre `manglar` | Panel "Todas las categorías" |
 | `categoria-ninos.svg` | Cometa sobre el parque, sobre `buganvilla` | Panel "Todas las categorías" |
 | `categoria-naturaleza.svg` | Iguana sobre una rama del manglar, sobre `mango` | Panel "Todas las categorías" |
+| `categoria-reparaciones.svg` | Celular con la pantalla rota, llave y destornillador sobre `celeste` (versión 5) | Panel "Todas las categorías" |
 | `categoria-todas.svg` | Mosaico de colores | Botón "Todas las categorías" |
 
 ## Cómo se editan

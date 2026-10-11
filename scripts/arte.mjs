@@ -6,7 +6,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 const AFICHES = {
   restaurantes: "restaurantes", hoteles: "hoteles", turismo: "turismo", ejercicio: "ejercicio", paseos: "paseos",
   cafes: "cafes", "vida-nocturna": "nocturna", museos: "museos", compras: "compras", ninos: "ninos",
-  naturaleza: "naturaleza", todas: "todas",
+  naturaleza: "naturaleza", reparaciones: "reparaciones", todas: "todas",
 };
 
 const camel = { "stroke-width": "strokeWidth", "stroke-linecap": "strokeLinecap", "stroke-linejoin": "strokeLinejoin",

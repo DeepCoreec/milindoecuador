@@ -193,6 +193,21 @@ v.append('<path class="trazo" stroke-width="2.4" d="M44,62 l-3,8 M70,58 l3,9"/>'
 v.append('<path class="mango" d="M84,52 q4,6 0,10 q-4,-4 0,-10 z" opacity=".9"/>')                 # papada
 naturaleza = afiche("nat", "mango", "".join(v), "Naturaleza y aventura")
 
+# ---------- Reparaciones y servicios ("¿Se te dañó algo?"): un celular con la pantalla rota, llave y destornillador ----------
+r = []
+r.append('<rect class="tinta" x="0" y="92" width="112" height="20"/>')                                   # mesa del taller
+r.append('<rect class="cal" x="34" y="18" width="40" height="70" rx="7"/>')                              # celular
+r.append('<rect class="celeste-tinta" x="39" y="26" width="30" height="50" rx="2"/>')                     # pantalla
+r.append('<path class="cal-trazo" stroke-width="1.6" d="M48,34 l8,10 l-6,6 l10,14 M56,44 l9,-4"/>')       # pantalla rota
+r.append('<circle class="tinta" cx="54" cy="82" r="2.4"/>')
+# llave inglesa cruzada
+r.append('<path class="tinta" d="M14,86 l40,-40 l5,5 l-40,40 z"/>')
+r.append('<path class="tinta" d="M55,44 a11,11 0 1 1 13,13 l-4,-4 l5,-5 l-5,-5 l-5,5 z"/>')
+# destornillador con mango mango
+r.append('<path class="trazo" stroke-width="3.4" d="M94,86 L64,56"/>')
+r.append('<path class="mango" stroke="var(--on-color)" stroke-width="1.6" d="M86,74 l14,14 q4,4 0,8 l-2,2 q-4,4 -8,0 l-14,-14 z"/>')
+reparaciones = afiche("rep", "celeste", "".join(r), "Reparaciones y servicios")
+
 # ---------- "Todas las categorías": mosaico con los colores de la guía ----------
 t2 = []
 cols = ["mango", "celeste", "faro", "manglar", "buganvilla", "celeste-tinta", "tinta", "mango", "faro"]
@@ -203,5 +218,5 @@ todas = afiche("tod", "cal", "".join(t2), "Todas las categorías")
 
 import json, sys
 json.dump({"todas": todas, "restaurantes": restaurantes, "hoteles": hoteles, "turismo": turismo, "ejercicio": ejercicio, "paseos": paseos,
-           "cafes": cafes, "nocturna": nocturna, "museos": museos, "compras": compras, "ninos": ninos, "naturaleza": naturaleza},
+           "cafes": cafes, "nocturna": nocturna, "museos": museos, "compras": compras, "ninos": ninos, "naturaleza": naturaleza, "reparaciones": reparaciones},
           open(sys.argv[1] if len(sys.argv) > 1 else "afiches.json", "w"), ensure_ascii=False)

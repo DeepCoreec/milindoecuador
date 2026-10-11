@@ -37,4 +37,5 @@ export const TEXTO_CATEGORIA: Record<string, { nombreCorto?: string; bajada: str
   compras: { bajada: "Mercados, artesanías y centros comerciales." },
   ninos: { bajada: "Planes para ir con los más pequeños." },
   naturaleza: { bajada: "Manglares, bosques secos y aire libre cerca de la ciudad." },
+  reparaciones: { nombreCorto: "Reparaciones", bajada: "¿Se te dañó algo? Talleres, técnicos de celulares y electrónica, cerrajerías y más." },
 };

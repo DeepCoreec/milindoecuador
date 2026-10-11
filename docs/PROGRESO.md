@@ -261,7 +261,7 @@
   - [x] (usuario) 2026-10-11: ejecutó 0015 y 0016 en el Supabase real y puso `CRON_SECRET` (Secret) en Vercel; redeploy hecho
   - **Puerta (usuario):** publicar un evento de prueba, verlo y comprobar que al día siguiente de su fecha ya no está
 - Fase 23 · Guía útil, aparte de los negocios (el usuario dio el ok el 2026-10-11: "es información adicional, para que la app tenga a dónde recomendar")
-  - [ ] 23.1 Base de datos `0017_guia_util.sql` (tabla `city_spots` con RLS y categoría "Reparaciones y servicios")
+  - [x] 23.1 Base de datos — 2026-10-11: `0017_guia_util.sql`: tabla `city_spots` aparte de los negocios (id de OSM único, grupo visitar/servicios/salud/transporte, estado pendiente/publicado/descartado; todos ven solo los publicados; el admin solo cambia nombre, frase y estado; filtro de palabras) y categoría "Reparaciones y servicios" con su afiche nuevo. 10 reglas nuevas (215)
   - [ ] 23.2 Importar de OpenStreetMap desde el panel (Overpass; entran pendientes)
   - [ ] 23.3 Revisión del admin (publicar / descartar)
   - [ ] 23.4 Página `/guayaquil/guia-util` (Para visitar, ¿Se te dañó algo?, Información útil)

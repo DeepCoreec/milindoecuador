@@ -583,6 +583,31 @@ check("como mucho 6 permisos de afiche al día", r.rows?.[0]?.ok === false, r);
 r = await as("authenticated", A, `select public.permiso_afiche($1)`, [A]);
 check("y el navegador no puede pedirlos directo", !!r.error, r);
 
+console.log("\nGuía útil (0017)");
+const sitio = (id, estado = "pendiente", nombre = "Parque Centenario") =>
+  as("service_role", "", `insert into public.city_spots (city_id, osm_type, osm_id, grupo, tipo, name, latitude, longitude, status) values ($1, 'node', $2, 'visitar', 'parque', $3, -2.19, -79.88, $4) returning id`, [gye, id, nombre, estado]);
+r = await sitio(1);
+const S1 = r.rows?.[0]?.id;
+check("el servidor importa un sitio", !!S1, r);
+r = await sitio(1);
+check("el mismo sitio de OpenStreetMap no se repite", !!r.error, r);
+r = await as("anon", "", `select id from public.city_spots where id = $1`, [S1]);
+check("un sitio pendiente no se ve en público", r.rows?.length === 0, r);
+r = await as("authenticated", A, `insert into public.city_spots (city_id, osm_type, osm_id, grupo, tipo, name, latitude, longitude, status) values ($1, 'node', 9, 'visitar', 'parque', 'Mío', -2.19, -79.88, 'publicado')`, [gye]);
+check("una cuenta normal no puede crear sitios", !!r.error, r);
+r = await as("authenticated", A, `update public.city_spots set status = 'publicado' where id = $1 returning id`, [S1]);
+check("ni publicarlos", !!r.error || r.rows?.length === 0, r);
+r = await as("authenticated", ADM, `update public.city_spots set status = 'publicado', note = 'Ideal para ver iguanas' where id = $1 returning id`, [S1]);
+check("el admin lo publica", r.rows?.length === 1, r);
+r = await as("anon", "", `select name from public.city_spots where id = $1`, [S1]);
+check("y ya se ve en público", r.rows?.length === 1, r);
+r = await as("authenticated", ADM, `update public.city_spots set latitude = 0 where id = $1`, [S1]);
+check("el admin no cambia las coordenadas (vienen de OSM)", !!r.error, r);
+r = await as("authenticated", ADM, `update public.city_spots set note = 'Llama al 0991234567' where id = $1`, [S1]);
+check("la frase pasa por el filtro (sin teléfonos)", /texto_no_permitido/.test(r.error ?? ""), r);
+r = await db.query(`select slug from public.categories where slug = 'reparaciones'`);
+check("existe la categoría Reparaciones y servicios", r.rows.length === 1, r.rows);
+
 console.log("\nDatos iniciales (supabase/seed.sql)");
 const seed = readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8");
 await db.exec(seed);
