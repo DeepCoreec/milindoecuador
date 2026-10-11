@@ -82,6 +82,15 @@ export default function Terminos() {
       </section>
 
       <section>
+        <h2>Guía útil</h2>
+        <p>
+          La Guía útil muestra lugares de referencia que no son negocios registrados (parques, museos, talleres, farmacias, estaciones de
+          transporte). Sus datos vienen de OpenStreetMap, © colaboradores de OpenStreetMap, con licencia ODbL, y los revisamos antes de
+          mostrarlos. Pueden estar desactualizados: confirma horarios y servicios antes de ir. Si ves un dato mal, avísanos.
+        </p>
+      </section>
+
+      <section>
         <h2>Fotos, videos y textos</h2>
         <p>
           Las fotos y videos de la guía son propios o de los negocios que los subieron. Al subir fotos, videos o textos nos das permiso para

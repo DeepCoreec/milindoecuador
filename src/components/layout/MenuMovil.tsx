@@ -10,6 +10,7 @@ const ENLACES = [
   { href: "/guayaquil", texto: "Explorar Guayaquil" },
   { href: "/buscar", texto: "Buscar" },
   { href: "/guayaquil/eventos", texto: "Eventos" },
+  { href: "/guayaquil/guia-util", texto: "Guía útil" },
   { href: "/negocios/planes", texto: "Planes para negocios" },
 ];
 

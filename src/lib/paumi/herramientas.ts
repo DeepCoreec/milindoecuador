@@ -1,6 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { agruparEventos, LISTA_TIPOS, textoFechas, textoPrecio } from "@/lib/eventos";
+import { enlaceOSM, NOMBRE_TIPO, TIPOS_SITIO, type TipoSitio } from "@/lib/osm";
 import { urlPublicaFoto } from "@/lib/fotos";
 import { estadoAhora, leerHorario, resumenHorario } from "@/lib/horario";
 import { enlaceComoLlegar } from "@/lib/enlaces";
@@ -95,9 +96,27 @@ export const DEFINICIONES = [
     },
   },
   {
+    name: "buscar_sitios",
+    description:
+      "Busca en la Guía útil: lugares de referencia que NO son negocios registrados (parques, museos, miradores, monumentos; talleres, celulares, electrónica, cerrajerías; hospitales, clínicas, farmacias; Metrovía, Aerovía, terminal). Úsala cuando buscar_lugares no traiga lo que piden. Devuelve hasta 6 con su id.",
+    input_schema: {
+      type: "object",
+      properties: {
+        texto: { type: "string", description: "Palabras del nombre (máx. 60 caracteres)" },
+        grupo: { type: "string", enum: ["visitar", "servicios", "salud", "transporte"] },
+        tipo: { type: "string", enum: TIPOS_SITIO.map((t) => t.tipo) },
+      },
+    },
+  },
+  {
+    name: "mostrar_sitios",
+    description: "Muestra las tarjetas (con Cómo llegar) de lugares de la Guía útil que devolvió buscar_sitios. Máximo 3 ids.",
+    input_schema: { type: "object", properties: { ids: { type: "array", items: { type: "string" }, maxItems: 3 } }, required: ["ids"] },
+  },
+  {
     name: "abrir_pagina",
     description:
-      "Propone llevar a la persona a una página de la guía: '/guayaquil' (todas las categorías), '/guayaquil/<categoria>', '/buscar?q=<palabras>', '/guayaquil/eventos' o la ruta de un evento que devolvió buscar_eventos.",
+      "Propone llevar a la persona a una página de la guía: '/guayaquil' (todas las categorías), '/guayaquil/<categoria>', '/buscar?q=<palabras>', '/guayaquil/eventos', '/guayaquil/guia-util' o la ruta de un evento que devolvió buscar_eventos.",
     input_schema: { type: "object", properties: { ruta: { type: "string" } }, required: ["ruta"] },
   },
 ] as const;
@@ -118,6 +137,12 @@ const esquemaEventos = z.object({
   tipo: z.enum(LISTA_TIPOS).optional(),
   gratis: z.boolean().optional(),
 });
+const esquemaSitios = z.object({
+  texto: z.string().trim().max(60).optional(),
+  grupo: z.enum(["visitar", "servicios", "salud", "transporte"]).optional(),
+  tipo: z.enum(TIPOS_SITIO.map((t) => t.tipo) as [TipoSitio, ...TipoSitio[]]).optional(),
+});
+const esquemaMostrarSitios = z.object({ ids: z.array(z.uuid()).min(1).max(3) });
 const esquemaAbrir = z.object({ ruta: z.string().max(120) });
 const esquemaExterno = z.object({
   nombre: z
@@ -155,6 +180,8 @@ export type Estado = {
   externos: ExternoPaumi[];
   /** Rutas de eventos que devolvió buscar_eventos en esta respuesta (versión 5). */
   eventos?: Set<string>;
+  /** Sitios de la Guía útil que devolvió buscar_sitios en esta respuesta (versión 5, fase 23). */
+  sitios?: Map<string, ExternoPaumi>;
 };
 
 function db() {
@@ -241,7 +268,7 @@ async function buscar(entrada: z.infer<typeof esquemaBuscar>, e: Estado) {
 
 /** ¿Es una página de la guía a la que se puede llevar a alguien? */
 export function rutaPermitida(ruta: string, categorias: Set<string>, eventos: Set<string> = new Set()): string | null {
-  if (ruta === `/${CIUDAD}` || ruta === `/${CIUDAD}/eventos`) return ruta;
+  if (ruta === `/${CIUDAD}` || ruta === `/${CIUDAD}/eventos` || ruta === `/${CIUDAD}/guia-util`) return ruta;
   if (eventos.has(ruta)) return ruta;
   const cat = /^\/guayaquil\/([a-z0-9-]{2,40})$/.exec(ruta);
   if (cat) return categorias.has(cat[1]!) ? ruta : null;
@@ -327,6 +354,42 @@ export async function ejecutar(nombre: string, entrada: unknown, e: Estado): Pro
           return { titulo: f.title, tipo: f.kind, cuando: textoFechas(f.inicio, f.fin), donde: f.online ? "En línea" : f.venue, precio: textoPrecio(f.price == null ? null : Number(f.price)), ruta };
         });
         return { resultado: resultado.length ? resultado : "No hay eventos publicados con ese filtro." };
+      }
+      case "buscar_sitios": {
+        const r = esquemaSitios.safeParse(entrada ?? {});
+        if (!r.success) return { resultado: "Pedido inválido: usa texto, grupo o tipo.", error: true };
+        let q = db()
+          .from("city_spots")
+          .select("id, tipo, name, note, address, latitude, longitude, osm_type, osm_id, cities!inner(slug)")
+          .eq("cities.slug", CIUDAD)
+          .order("name")
+          .limit(6);
+        if (r.data.grupo) q = q.eq("grupo", r.data.grupo);
+        if (r.data.tipo) q = q.eq("tipo", r.data.tipo);
+        if (r.data.texto) q = q.ilike("name", `%${r.data.texto.replace(/[%_\\,()]/g, " ")}%`);
+        const { data } = await q;
+        e.sitios ??= new Map();
+        const lista = (data ?? []).map((f) => {
+          e.sitios!.set(f.id, {
+            nombre: f.name,
+            sector: f.address,
+            mapa: enlaceRutaGoogle({ lat: f.latitude, lng: f.longitude }),
+            fuente: { url: enlaceOSM(f.osm_type, f.osm_id), sitio: "openstreetmap.org" },
+            origen: "guia-util",
+          });
+          return { id: f.id, nombre: f.name, tipo: NOMBRE_TIPO[f.tipo as TipoSitio] ?? f.tipo, frase: f.note, direccion: f.address };
+        });
+        return { resultado: lista.length ? lista : "No hay lugares así en la Guía útil." };
+      }
+      case "mostrar_sitios": {
+        const r = esquemaMostrarSitios.safeParse(entrada);
+        if (!r.success) return { resultado: "ids inválidos", error: true };
+        for (const id of new Set(r.data.ids)) {
+          const s = e.sitios?.get(id);
+          if (!s || e.externos.length >= 3 || e.externos.some((x) => x.nombre === s.nombre)) continue;
+          e.externos.push(s);
+        }
+        return { resultado: "Listo: se muestran sus tarjetas con Cómo llegar." };
       }
       case "abrir_pagina": {
         const r = esquemaAbrir.safeParse(entrada);

@@ -124,7 +124,7 @@ export async function conversar(historial: MensajePaumi[]): Promise<RespuestaPau
       if (b.type !== "tool_use" || typeof b.id !== "string" || typeof b.name !== "string") continue;
       // Como mucho 4 herramientas por vuelta; a las demás se les responde que no
       const { resultado, error } = ++usos > 4 ? { resultado: "Demasiadas consultas a la vez.", error: true } : await ejecutar(b.name, b.input, estado);
-      const datosGuia = b.name === "buscar_lugares" || b.name === "ver_lugar" || b.name === "buscar_eventos";
+      const datosGuia = b.name === "buscar_lugares" || b.name === "ver_lugar" || b.name === "buscar_eventos" || b.name === "buscar_sitios";
       resultados.push({
         type: "tool_result",
         tool_use_id: b.id,

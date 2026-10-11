@@ -34,6 +34,18 @@ function guion(cuerpo) {
     if (crudo.includes("lugares")) return texto("FALTA MARCAR LOS DATOS DE LA GUÍA");
     return texto("¡Te recomiendo estos encebollados! Están buenazos.");
   }
+  // Versión 5, fase 23: Guía útil. Busca una farmacia, muestra la primera y un id inventado (que el servidor ignora)
+  if (pedido.includes("farmacia")) {
+    const usadas = mensajes.filter((m) => Array.isArray(m.content) && m.content.some((b) => b.type === "tool_use")).length;
+    if (usadas === 0) return usar("buscar_sitios", { tipo: "farmacia" });
+    if (usadas === 1) {
+      const crudo = resultados[0]?.content ?? "";
+      const lista = JSON.parse(crudo.replace(/^<datos_de_la_guia[^>]*>/, "").replace(/<\/datos_de_la_guia>$/, ""));
+      if (!Array.isArray(lista) || !lista.length) return texto("No hay farmacias en la Guía útil.");
+      return usar("mostrar_sitios", { ids: [lista[0].id, "11111111-1111-4111-8111-111111111111"] });
+    }
+    return texto("Esta farmacia está en nuestra Guía útil.");
+  }
   // Versión 5: eventos. Busca, abre la ficha del primero y lo nombra (solo lo que devolvió la herramienta)
   if (pedido.includes("evento")) {
     const usadas = mensajes.filter((m) => Array.isArray(m.content) && m.content.some((b) => b.type === "tool_use")).length;
@@ -85,7 +97,24 @@ function guion(cuerpo) {
   return texto("¡Hola! Soy Paumi. ¿Qué buscas hoy en Guayaquil?");
 }
 
+// Versión 5, fase 23: imita la API Overpass de OpenStreetMap (OVERPASS_URL=http://127.0.0.1:54399/api/interpreter)
+const OVERPASS = {
+  elements: [
+    { type: "way", id: 900001, center: { lat: -2.1951, lon: -79.8826 }, tags: { name: "Parque Seminario (prueba OSM)", leisure: "park" } },
+    { type: "node", id: 900002, lat: -2.1832, lon: -79.8761, tags: { name: "Museo de prueba OSM", tourism: "museum", website: "https://museo.example.org" } },
+    { type: "node", id: 900003, lat: -2.17, lon: -79.89, tags: { name: "Tecnicel de prueba OSM", shop: "mobile_phone", "addr:street": "Av. 9 de Octubre" } },
+    { type: "node", id: 900004, lat: -2.16, lon: -79.9, tags: { name: "Farmacia de prueba OSM", amenity: "pharmacy" } },
+    { type: "node", id: 900005, lat: -2.15, lon: -79.89, tags: { name: "Estación de prueba OSM", public_transport: "station", network: "Metrovía" } },
+    { type: "node", id: 900006, lat: -2.15, lon: -79.89, tags: { name: "Bar Mierda", tourism: "attraction" } },
+  ],
+};
+
 createServer((req, res) => {
+  if (req.method === "POST" && req.url === "/api/interpreter") {
+    req.resume();
+    req.on("end", () => res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify(OVERPASS)));
+    return;
+  }
   if (req.method !== "POST" || req.url !== "/v1/messages") {
     res.writeHead(404).end();
     return;

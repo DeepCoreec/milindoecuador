@@ -25,6 +25,8 @@ export type ExternoPaumi = {
   /** Búsqueda en Google Maps con el nombre, el sector y la ciudad: abre el lugar con su dirección real. */
   mapa: string;
   fuente: { url: string; sitio: string };
+  /** Versión 5: "guia-util" si es un lugar de referencia de la Guía útil (OpenStreetMap revisado por el admin). */
+  origen?: "web" | "guia-util";
 };
 
 export type RespuestaPaumi = {

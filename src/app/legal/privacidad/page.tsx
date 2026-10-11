@@ -95,6 +95,7 @@ export default function Privacidad() {
           <li>Cloudflare Turnstile: el captcha de los formularios.</li>
           <li>Google: solo si eliges entrar con Google.</li>
           <li>Anthropic: procesa los mensajes que le escribes a Paumi, solo para responderlos.</li>
+          <li>OpenStreetMap: de ahí traemos los lugares de la Guía útil. No le enviamos ningún dato tuyo.</li>
           <li>GitHub: guarda las copias de seguridad de la base, cifradas con una contraseña que solo tenemos nosotros.</li>
         </ul>
         <p className="mt-3">Estos servicios pueden guardar los datos fuera de Ecuador.</p>

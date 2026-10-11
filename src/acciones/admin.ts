@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { DIAS_DESTACADO, nuevoVencimiento } from "@/lib/planes";
 import { mensajeModeracion } from "@/lib/moderacion";
+import { aSitios, consultaOverpass } from "@/lib/osm";
 import { crearFichaBorrador } from "@/lib/fichas";
 import { aSlug, slugLibre } from "@/lib/slug";
 import { esEnlaceCorto } from "@/lib/ubicacion";
@@ -16,6 +17,8 @@ import { exigirConfigSupabase } from "@/lib/supabase/config";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import {
   esquemaDecisionEvento,
+  esquemaDecisionSitios,
+  esquemaEditarSitio,
   esquemaDecision,
   esquemaDecisionLugar,
   esquemaLugarAdmin,
@@ -534,4 +537,84 @@ export async function decidirEvento(_previo: EstadoAdmin, datos: FormData): Prom
   await db.from("city_event_reports").update({ resolved: true }).eq("event_id", r.data.evento).eq("resolved", false);
   revalidatePath("/", "layout");
   return { estado: "ok", mensaje: r.data.decision === "mostrar" ? "Se ve otra vez" : "Queda oculto" };
+}
+
+/*
+ * Guía útil (versión 5, fase 23): lugares de OpenStreetMap, aparte de los negocios.
+ * Importar: el servidor pide los lugares a Overpass y los guarda como pendientes (los que ya están no se tocan,
+ * así no se pierde lo que el admin corrigió). Después el admin publica o descarta.
+ */
+const OVERPASS = "https://overpass-api.de/api/interpreter";
+const urlOverpass = () => (process.env.NODE_ENV !== "production" && process.env.OVERPASS_URL) || OVERPASS;
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- firma de useActionState
+export async function importarOSM(_previo: EstadoAdmin, _datos: FormData): Promise<EstadoAdmin> {
+  await requireAdmin();
+  let json: unknown;
+  try {
+    const r = await fetch(urlOverpass(), {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": "MiLindoEcuador/1.0 (guia de Guayaquil)" },
+      body: new URLSearchParams({ data: consultaOverpass() }),
+      signal: AbortSignal.timeout(100_000),
+      redirect: "error",
+    });
+    if (!r.ok) return { estado: "error", mensaje: `OpenStreetMap no respondió (código ${r.status}). Inténtalo en unos minutos.` };
+    const texto = await r.text();
+    if (texto.length > 20_000_000) return { estado: "error", mensaje: "La respuesta fue demasiado grande." };
+    json = JSON.parse(texto);
+  } catch {
+    return { estado: "error", mensaje: "No se pudo conectar con OpenStreetMap. Inténtalo en unos minutos." };
+  }
+  const sitios = aSitios(json);
+  if (!sitios.length) return { estado: "error", mensaje: "OpenStreetMap no devolvió lugares." };
+  const db = crearClienteAdmin();
+  const { data: ciudad } = await db.from("cities").select("id").eq("slug", "guayaquil").single();
+  if (!ciudad) return { estado: "error", mensaje: "No se encontró la ciudad" };
+  const filas = sitios.map((s) => ({ ...s, city_id: ciudad.id }));
+  let nuevos = 0;
+  let rechazados = 0;
+  for (let i = 0; i < filas.length; i += 200) {
+    const lote = filas.slice(i, i + 200);
+    const { data, error } = await db.from("city_spots").upsert(lote, { onConflict: "osm_type,osm_id", ignoreDuplicates: true }).select("id");
+    if (!error) {
+      nuevos += data?.length ?? 0;
+      continue;
+    }
+    // Un nombre que no pasa el filtro de palabras frena el lote: se guardan uno por uno y se salta ese
+    for (const f of lote) {
+      const r = await db.from("city_spots").upsert(f, { onConflict: "osm_type,osm_id", ignoreDuplicates: true }).select("id");
+      if (r.error) rechazados++;
+      else nuevos += r.data?.length ?? 0;
+    }
+  }
+  revalidatePath("/admin/guia");
+  return {
+    estado: "ok",
+    mensaje: `Listo: ${sitios.length} lugares en OpenStreetMap, ${nuevos} nuevos para revisar${rechazados ? ` y ${rechazados} saltados por el filtro de palabras` : ""}.`,
+  };
+}
+
+export async function decidirSitios(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaDecisionSitios.safeParse({ sitios: datos.getAll("sitio"), decision: datos.get("decision") });
+  if (!r.success) return { estado: "error", mensaje: r.error.issues[0]?.message ?? "Datos inválidos" };
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  const { data, error } = await db.from("city_spots").update({ status: r.data.decision }).in("id", r.data.sitios).select("id");
+  if (error) return { estado: "error", mensaje: "No se pudo cambiar" };
+  revalidatePath("/", "layout");
+  const n = data?.length ?? 0;
+  const palabra = r.data.decision === "publicado" ? "publicados" : r.data.decision === "descartado" ? "descartados" : "devueltos a revisión";
+  return { estado: "ok", mensaje: `${n} ${n === 1 ? "lugar" : "lugares"} ${palabra}` };
+}
+
+export async function editarSitio(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaEditarSitio.safeParse({ sitio: datos.get("sitio"), nombre: datos.get("nombre"), nota: datos.get("nota") ?? undefined });
+  if (!r.success) return { estado: "error", mensaje: r.error.issues[0]?.message ?? "Datos inválidos" };
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  const { error } = await db.from("city_spots").update({ name: r.data.nombre, note: r.data.nota || null }).eq("id", r.data.sitio);
+  if (error) return { estado: "error", mensaje: mensajeModeracion(error) ?? "No se pudo guardar" };
+  revalidatePath("/", "layout");
+  return { estado: "ok", mensaje: "Guardado" };
 }

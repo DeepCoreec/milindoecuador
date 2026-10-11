@@ -262,11 +262,11 @@
   - **Puerta (usuario):** publicar un evento de prueba, verlo y comprobar que al día siguiente de su fecha ya no está
 - Fase 23 · Guía útil, aparte de los negocios (el usuario dio el ok el 2026-10-11: "es información adicional, para que la app tenga a dónde recomendar")
   - [x] 23.1 Base de datos — 2026-10-11: `0017_guia_util.sql`: tabla `city_spots` aparte de los negocios (id de OSM único, grupo visitar/servicios/salud/transporte, estado pendiente/publicado/descartado; todos ven solo los publicados; el admin solo cambia nombre, frase y estado; filtro de palabras) y categoría "Reparaciones y servicios" con su afiche nuevo. 10 reglas nuevas (215)
-  - [ ] 23.2 Importar de OpenStreetMap desde el panel (Overpass; entran pendientes)
-  - [ ] 23.3 Revisión del admin (publicar / descartar)
-  - [ ] 23.4 Página `/guayaquil/guia-util` (Para visitar, ¿Se te dañó algo?, Información útil)
-  - [ ] 23.5 Paumi recomienda de la guía útil
-  - [ ] 23.6 Legal, pruebas y revisiones
+  - [x] 23.2 Importar de OpenStreetMap — 2026-10-11: `src/lib/osm.ts` (consulta Overpass de la zona urbana, 18 tipos en 4 grupos; solo con nombre; estaciones solo de Metrovía; iglesias solo turísticas o históricas; quita letras invisibles y webs raras) y la acción `importarOSM` (solo admin; entran pendientes; los que ya están no se tocan; el filtro de palabras salta los nombres con groserías). Pruebas con una imitación de Overpass en `tests/paumi/simulador.mjs`. 3 pruebas unitarias
+  - [x] 23.3 Revisión del admin — 2026-10-11: `/admin/guia` (Por revisar / Publicados / Descartados, filtro por grupo, marcar varios y publicar o descartar, corregir nombre y frase, enlace a OpenStreetMap)
+  - [x] 23.4 Página — 2026-10-11: `/guayaquil/guia-util` con Para visitar, ¿Se te dañó algo? (lleva a los negocios de "Reparaciones y servicios" + lugares de OSM) e Información útil (ECU 911, moverse por la ciudad sin precios que cambian, consejos, salud y transporte de OSM); "Cómo llegar" en cada lugar y crédito ODbL. En el menú del celular, el pie y el mapa del sitio. Revisada a 390 y 1440 px
+  - [x] 23.5 Paumi — 2026-10-11: herramientas `buscar_sitios` y `mostrar_sitios` (tarjeta con Cómo llegar y la fuente OSM; solo ids que buscó en esa respuesta) y puede abrir `/guayaquil/guia-util`
+  - [ ] 23.6 Legal (hecho: Términos "Guía útil" y Privacidad), prueba e2e (pasa), revisión de seguridad. **Usuario: PUESTA-EN-MARCHA §14 (0017 e importar)**
   - **Puerta (usuario):** importar, publicar algunos lugares y verlos en la guía y en Paumi
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)

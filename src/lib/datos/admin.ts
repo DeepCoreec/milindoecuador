@@ -475,3 +475,20 @@ export async function getEventosAdmin(): Promise<EventoAdmin[]> {
     motivos: ((e.city_event_reports ?? []) as { reason: string; resolved: boolean }[]).filter((r) => !r.resolved).map((r) => r.reason),
   }));
 }
+
+export type SitioAdmin = { id: string; tipo: string; grupo: string; nombre: string; nota: string | null; direccion: string | null; osm: string };
+
+/** Guía útil (versión 5): sitios de OpenStreetMap por estado y grupo, y cuántos hay en cada estado. */
+export async function getSitiosAdmin(estado: string, grupo: string | null): Promise<{ sitios: SitioAdmin[]; cuentas: Record<string, number> }> {
+  await requireAdmin();
+  const db = await crearClienteServidor();
+  let q = db.from("city_spots").select("id, tipo, grupo, name, note, address, osm_type, osm_id").eq("status", estado).order("grupo").order("tipo").order("name").limit(300);
+  if (grupo) q = q.eq("grupo", grupo);
+  const contar = (s: string) => db.from("city_spots").select("id", { count: "exact", head: true }).eq("status", s);
+  const [{ data, error }, p, pub, d] = await Promise.all([q, contar("pendiente"), contar("publicado"), contar("descartado")]);
+  if (error) throw new Error(`No se pudieron leer los lugares: ${error.message}`);
+  return {
+    sitios: (data ?? []).map((s) => ({ id: s.id, tipo: s.tipo, grupo: s.grupo, nombre: s.name, nota: s.note, direccion: s.address, osm: `${s.osm_type}/${s.osm_id}` })),
+    cuentas: { pendiente: p.count ?? 0, publicado: pub.count ?? 0, descartado: d.count ?? 0 },
+  };
+}

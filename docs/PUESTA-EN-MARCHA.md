@@ -194,3 +194,12 @@ Primero la base y después el código:
    (05:05 UTC) a `/api/tareas/eventos`, que borra los eventos vencidos con sus afiches. Se ve en Vercel →
    **Settings → Cron Jobs**. Aunque la tarea se atrase, la página nunca muestra un evento vencido.
 4. **Probar:** publica un evento de prueba que termine hoy, míralo en `/guayaquil/eventos` y mañana comprueba que ya no está.
+
+## 14. Versión 5: Guía útil (migración 0017)
+
+1. Supabase → SQL Editor → **+** → pega todo `supabase/migrations/0017_guia_util.sql` → **Run** → "Success".
+2. Entra a la página con tu cuenta de admin → **Panel → Guía útil** → **Traer lugares de OpenStreetMap**.
+   Tarda hasta un minuto. Los lugares entran como "Por revisar": no se ven hasta que los publiques.
+3. Marca los que estén bien (puedes "Corregir" el nombre o agregar una frase) → **Publicar marcados**.
+   Los que no sirvan → **Descartar marcados** (no vuelven a aparecer al traer otra vez).
+4. Míralos en `/guayaquil/guia-util` y pregúntale a Paumi, por ejemplo, "¿dónde hay una farmacia?".

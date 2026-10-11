@@ -26,6 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
   // Versión 5: eventos vigentes de Guayaquil
   paginas.push({ url: url("/guayaquil/eventos"), changeFrequency: "daily", priority: 0.7 });
+  paginas.push({ url: url("/guayaquil/guia-util"), changeFrequency: "weekly", priority: 0.6 });
   for (const e of await getEventos().catch(() => [])) paginas.push({ url: url(`/guayaquil/eventos/${e.slug}`), changeFrequency: "daily", priority: 0.5 });
   return paginas;
 }

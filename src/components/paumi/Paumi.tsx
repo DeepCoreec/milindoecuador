@@ -607,7 +607,10 @@ function TarjetaExterna({ x }: { x: ExternoPaumi }) {
     <article className="grid gap-1 rounded-md border border-dashed border-linea-fuerte bg-papel-alto p-3">
       <h3 className="m-0 text-[15px] leading-5 font-semibold break-words">{x.nombre}</h3>
       <p className="m-0 text-[13px] leading-[18px] text-rio-suave">
-        {x.sector ? `${x.sector}. ` : ""}No está en nuestra guía: lo encontré en {x.fuente.sitio}. Confirma horarios y precios antes de ir.
+        {x.sector ? `${x.sector}. ` : ""}
+        {x.origen === "guia-util"
+          ? "Lugar de referencia de nuestra Guía útil (datos de OpenStreetMap)."
+          : `No está en nuestra guía: lo encontré en ${x.fuente.sitio}. Confirma horarios y precios antes de ir.`}
       </p>
       <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
         <a href={x.mapa} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm leading-5 font-semibold [&_svg]:size-4">

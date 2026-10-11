@@ -134,3 +134,14 @@ export const esquemaDecisionLugar = z.object({ lugar: z.uuid(), decision: z.enum
 
 /** Decisión del admin sobre un evento (versión 5). */
 export const esquemaDecisionEvento = z.object({ evento: z.uuid(), decision: z.enum(["mostrar", "ocultar", "borrar"]) });
+
+/** Guía útil (versión 5): decidir varios sitios a la vez, o corregir uno. */
+export const esquemaDecisionSitios = z.object({
+  sitios: z.array(z.uuid()).min(1, "Marca al menos un lugar").max(200),
+  decision: z.enum(["publicado", "descartado", "pendiente"]),
+});
+export const esquemaEditarSitio = z.object({
+  sitio: z.uuid(),
+  nombre: z.string().trim().min(2, "Escribe el nombre").max(120, "Máximo 120 caracteres"),
+  nota: z.string().trim().max(300, "Máximo 300 caracteres").optional().default(""),
+});
