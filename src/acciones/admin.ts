@@ -561,7 +561,7 @@ export async function importarOSM(_previo: EstadoAdmin, _datos: FormData): Promi
       method: "POST",
       headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": "MiLindoEcuador/1.0 (guia de Guayaquil)" },
       body: new URLSearchParams({ data: consultaOverpass() }),
-      signal: AbortSignal.timeout(60_000),
+      signal: AbortSignal.timeout(35_000),
       redirect: "error",
     });
     if (!r.ok) return { estado: "error", mensaje: `OpenStreetMap no respondió (código ${r.status}). Inténtalo en unos minutos.` };
@@ -581,7 +581,7 @@ export async function importarOSM(_previo: EstadoAdmin, _datos: FormData): Promi
   let rechazados = 0;
   for (let i = 0; i < filas.length; i += 200) {
     // Si se acaba el tiempo del servidor, se guarda lo hecho y se avisa (lo que ya está no se repite)
-    if (Date.now() - inicio > 90_000) {
+    if (Date.now() - inicio > 50_000) {
       revalidatePath("/admin/guia");
       return { estado: "ok", mensaje: `Se guardaron ${nuevos} lugares nuevos, pero faltaron algunos: vuelve a tocar el botón en 10 minutos.` };
     }

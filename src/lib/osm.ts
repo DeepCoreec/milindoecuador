@@ -38,7 +38,7 @@ export const CAJA_GUAYAQUIL = [-2.3, -80.05, -2.05, -79.84] as const;
 export function consultaOverpass(caja: readonly [number, number, number, number] = CAJA_GUAYAQUIL): string {
   const c = caja.join(",");
   const partes = TIPOS_SITIO.flatMap((t) => t.tags.map(([k, v]) => `nwr["${k}"="${v}"]["name"](${c});`));
-  return `[out:json][timeout:90];(${partes.join("")});out center tags 4000;`;
+  return `[out:json][timeout:30];(${partes.join("")});out center tags 4000;`;
 }
 
 export type SitioOSM = {

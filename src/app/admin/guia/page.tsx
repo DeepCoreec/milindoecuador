@@ -4,8 +4,8 @@ import { BotonAccion } from "@/components/admin/BotonAccion";
 import { SitiosGuia } from "@/components/admin/SitiosGuia";
 import { getSitiosAdmin } from "@/lib/datos/admin";
 
-// Importar de OpenStreetMap puede tardar (la API Overpass arma la respuesta)
-export const maxDuration = 120;
+// Importar de OpenStreetMap puede tardar. 60 s es el máximo del plan gratis de Vercel (con 120 el despliegue fallaba)
+export const maxDuration = 60;
 
 const ESTADOS = { pendiente: "Por revisar", publicado: "Publicados", descartado: "Descartados" } as const;
 const GRUPOS = { visitar: "Para visitar", servicios: "¿Se te dañó algo?", salud: "Salud", transporte: "Transporte" } as const;
