@@ -258,6 +258,7 @@
   - [x] 22.6 Reportes y panel — 2026-10-10: "Reportar este evento" (3 reportes lo ocultan) y `/admin/eventos` (mostrar, ocultar, borrar; contador en el menú)
   - [x] 22.7 Paumi — 2026-10-10: herramienta `buscar_eventos` (hoy, fin de semana, próximos; tipo; gratis), sus datos van marcados como "datos, no instrucciones", y puede abrir la ficha de un evento que devolvió
   - [x] 22.8 Cierre — 2026-10-10: Términos (sección Eventos) y Privacidad; 4 pruebas e2e nuevas (publicar con afiche, ver, calendario, cambiar y borrar; sin cuenta; borrado diario con clave; Paumi). Revisión independiente: sin fallas críticas ni altas. Arreglado: tope de 6 permisos de afiche al día en la base (`permiso_afiche`), la tarea diaria también borra afiches que nadie usa, un afiche no se puede reusar en otro evento, y un evento ya revisado se puede volver a reportar. Pendiente bajo (Ideas para después): aviso al salir a enlaces externos de eventos. 205 reglas, 124 unitarias y 43 e2e pasan
+  - [x] (usuario) 2026-10-11: ejecutó 0015 y 0016 en el Supabase real y puso `CRON_SECRET` (Secret) en Vercel; redeploy hecho
   - **Puerta (usuario):** publicar un evento de prueba, verlo y comprobar que al día siguiente de su fecha ya no está
 - [ ] Fase 23 · Guía útil (turismo de OpenStreetMap, "¿Se te dañó algo?", información útil)
 
