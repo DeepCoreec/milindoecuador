@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { Afiche } from "@/components/arte/Afiche";
+import { SitiosPorTipo } from "@/components/guia/ListaSitios";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BarraCategorias } from "@/components/categorias/BarraCategorias";
@@ -9,6 +11,8 @@ import { Pie } from "@/components/layout/Pie";
 import { TarjetaResumen } from "@/components/lugares/TarjetaResumen";
 import { Boton } from "@/components/ui/Boton";
 import { getCategoria, getCategoriasBarra, getCiudad, getLugaresDeCategoria, tonoDeCategoria } from "@/lib/datos/lugares";
+import { getSitios, type Sitio } from "@/lib/datos/sitios";
+import { TIPOS_POR_CATEGORIA } from "@/lib/osm";
 import { paraCompartir } from "@/lib/sitio";
 import { leerFiltros } from "@/lib/validacion/filtros";
 
@@ -35,6 +39,9 @@ export default async function PaginaCategoria({ params, searchParams }: PageProp
   const ruta = `/${ciudad.slug}/${categoria.slug}`;
   const deEjemplo = lugares.length > 0 && lugares.every((l) => l.ejemplo) ? " de ejemplo" : "";
   const tono = tonoDeCategoria(categoria.slug);
+  // Si la categoría tiene pocos negocios, se completa con la Guía útil (versión 5, fase 24)
+  const tiposReferencia = TIPOS_POR_CATEGORIA[categoria.slug] ?? [];
+  const referencia = tiposReferencia.length && total < 8 ? (await getSitios().catch(() => [] as Sitio[])).filter((x) => tiposReferencia.includes(x.tipo)) : [];
 
   return (
     <>
@@ -61,9 +68,13 @@ export default async function PaginaCategoria({ params, searchParams }: PageProp
 
         {total === 0 ? (
           <div className="mt-8 grid justify-items-start gap-4 rounded-[20px] bg-celeste-suave px-6 py-8 md:px-12 md:py-10">
-            <h2 className="m-0 font-rotulo text-xl leading-[26px] font-normal">Todavía no hay lugares aquí</h2>
+            <h2 className="m-0 font-rotulo text-xl leading-[26px] font-normal">
+              {referencia.length ? "Todavía no hay negocios registrados aquí" : "Todavía no hay lugares aquí"}
+            </h2>
             <p className="m-0 max-w-[56ch] text-rio-suave">
-              Estamos sumando lugares a esta categoría. Si tienes un negocio que encaja aquí, publícalo gratis.
+              {referencia.length
+                ? "Mientras tanto, mira abajo los lugares de referencia de la ciudad. Si tienes un negocio que encaja aquí, publícalo gratis."
+                : "Estamos sumando lugares a esta categoría. Si tienes un negocio que encaja aquí, publícalo gratis."}
             </p>
             <Boton href="/negocios/registro" variante="principal">
               Registrar mi negocio
@@ -95,6 +106,26 @@ export default async function PaginaCategoria({ params, searchParams }: PageProp
               </div>
             )}
           </>
+        )}
+
+        {/* Versión 5, fase 24: con pocos negocios, los lugares de referencia de la Guía útil (aparte, sin ficha) */}
+        {referencia.length > 0 && (
+          <section aria-labelledby="t-referencia" className="mt-14 grid gap-6 border-t border-linea pt-10">
+            <div className="grid gap-2">
+              <h2 id="t-referencia" className="m-0 font-rotulo text-[26px] leading-8 font-normal md:text-[32px] md:leading-10">
+                {categoria.slug === "reparaciones" ? "¿Se te dañó algo? Más lugares en la ciudad" : "Más lugares para conocer"}
+              </h2>
+              <p className="m-0 max-w-[64ch] text-rio-suave">
+                Lugares de referencia de nuestra <Link href={`/${ciudad.slug}/guia-util`}>Guía útil</Link>. No son negocios registrados en la guía:
+                confirma horarios antes de ir. Datos ©{" "}
+                <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">
+                  colaboradores de OpenStreetMap
+                </a>
+                .
+              </p>
+            </div>
+            <SitiosPorTipo sitios={referencia} tipos={tiposReferencia} />
+          </section>
         )}
         </div>
       </main>

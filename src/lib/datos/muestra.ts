@@ -23,6 +23,7 @@ const NOMBRES: [slug: string, nombre: string, principal: boolean][] = [
   ["compras", "Compras y mercados", false],
   ["ninos", "Para niños", false],
   ["naturaleza", "Naturaleza y aventura", false],
+  ["reparaciones", "Reparaciones y servicios", false],
 ];
 
 /** Igual que las categorías que siembra la migración, con sus textos. */

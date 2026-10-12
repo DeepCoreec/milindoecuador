@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Afiche } from "@/components/arte/Afiche";
+import { SitiosPorTipo } from "@/components/guia/ListaSitios";
 import { Cabecera } from "@/components/layout/Cabecera";
 import { Migas } from "@/components/layout/Migas";
 import { Pie } from "@/components/layout/Pie";
@@ -10,7 +11,6 @@ import { getCiudad } from "@/lib/datos/lugares";
 import { getSitios, type Sitio } from "@/lib/datos/sitios";
 import { TIPOS_SITIO, type Grupo } from "@/lib/osm";
 import { paraCompartir, WHATSAPP_GUIA } from "@/lib/sitio";
-import { enlaceRutaGoogle } from "@/lib/ubicacion";
 
 export const revalidate = 300;
 
@@ -22,57 +22,8 @@ export async function generateMetadata({ params }: PageProps<"/[ciudad]/guia-uti
   return { title: `Guía útil de ${c.nombre} · Mi Lindo Ecuador`, description: descripcion, ...paraCompartir(`Guía útil de ${c.nombre}`, descripcion, `/${c.slug}/guia-util`) };
 }
 
-const MOSTRAR = 9;
-
-/** Un lugar de referencia: nombre, una frase o dirección, y Cómo llegar. Sin ficha propia (no es un negocio). */
-function Fila({ s }: { s: Sitio }) {
-  return (
-    <li className="grid gap-1 rounded-xl border border-linea bg-papel-alto p-4">
-      <b className="text-base leading-6">{s.nombre}</b>
-      {(s.nota || s.direccion) && <span className="text-[15px] leading-[22px] text-rio-suave">{s.nota ?? s.direccion}</span>}
-      <span className="flex flex-wrap gap-x-4 gap-y-1 text-[15px]">
-        <a href={enlaceRutaGoogle(s.ubicacion)} target="_blank" rel="noopener noreferrer" aria-label={`Cómo llegar a ${s.nombre}`}>
-          Cómo llegar
-        </a>
-        {s.telefono && <a href={`tel:${s.telefono.split(/[;,/]/)[0]!.replace(/[^\d+]/g, "")}`}>Llamar</a>}
-      </span>
-    </li>
-  );
-}
-
-/** Los lugares de un grupo, separados por tipo. Los primeros 9 de cada tipo a la vista y el resto al tocar "Ver todos". */
-function PorTipo({ sitios, grupo, nivel = 3 }: { sitios: Sitio[]; grupo: Grupo; nivel?: 3 | 4 }) {
-  const H = nivel === 3 ? "h3" : "h4";
-  const tipos = TIPOS_SITIO.filter((t) => t.grupo === grupo);
-  const hay = tipos.map((t) => ({ t, lista: sitios.filter((s) => s.tipo === t.tipo) })).filter((x) => x.lista.length > 0);
-  if (!hay.length) return <p className="m-0 text-rio-suave">Estamos revisando los lugares de esta parte. Vuelve pronto.</p>;
-  return (
-    <div className="grid gap-8">
-      {hay.map(({ t, lista }) => (
-        <section key={t.tipo} aria-labelledby={`t-${t.tipo}`} className="grid gap-3">
-          <H id={`t-${t.tipo}`} className="m-0 text-xl leading-7 font-semibold">
-            {t.plural} <span className="text-base font-normal text-rio-suave">({lista.length})</span>
-          </H>
-          <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
-            {lista.slice(0, MOSTRAR).map((s) => (
-              <Fila key={s.id} s={s} />
-            ))}
-          </ul>
-          {lista.length > MOSTRAR && (
-            <details className="grid gap-3">
-              <summary className="cursor-pointer font-semibold">Ver {lista.length - MOSTRAR} más</summary>
-              <ul className="m-0 mt-3 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
-                {lista.slice(MOSTRAR).map((s) => (
-                  <Fila key={s.id} s={s} />
-                ))}
-              </ul>
-            </details>
-          )}
-        </section>
-      ))}
-    </div>
-  );
-}
+const tiposDe = (g: Grupo) => TIPOS_SITIO.filter((t) => t.grupo === g).map((t) => t.tipo);
+const ESPERA = "Estamos revisando los lugares de esta parte. Vuelve pronto.";
 
 /** Guía útil (versión 5, fase 23): información aparte de los negocios, para tener siempre a dónde recomendar. */
 export default async function PaginaGuiaUtil({ params }: PageProps<"/[ciudad]/guia-util">) {
@@ -115,7 +66,7 @@ export default async function PaginaGuiaUtil({ params }: PageProps<"/[ciudad]/gu
             <h2 id="t-visitar" className={h2}>
               Para visitar
             </h2>
-            <PorTipo sitios={de("visitar")} grupo="visitar" />
+            <SitiosPorTipo sitios={de("visitar")} tipos={tiposDe("visitar")} vacio={ESPERA} />
           </section>
 
           <section id="danado" aria-labelledby="t-danado" className="grid scroll-mt-6 gap-6">
@@ -131,7 +82,7 @@ export default async function PaginaGuiaUtil({ params }: PageProps<"/[ciudad]/gu
                 </Boton>
               </div>
             </div>
-            <PorTipo sitios={de("servicios")} grupo="servicios" />
+            <SitiosPorTipo sitios={de("servicios")} tipos={tiposDe("servicios")} vacio={ESPERA} />
           </section>
 
           <section id="info" aria-labelledby="t-info" className="grid scroll-mt-6 gap-8">
@@ -174,13 +125,13 @@ export default async function PaginaGuiaUtil({ params }: PageProps<"/[ciudad]/gu
               <h3 id="t-salud" className="m-0 text-2xl leading-8 font-semibold">
                 Salud
               </h3>
-              <PorTipo sitios={de("salud")} grupo="salud" nivel={4} />
+              <SitiosPorTipo sitios={de("salud")} tipos={tiposDe("salud")} nivel={4} vacio={ESPERA} />
             </section>
             <section aria-labelledby="t-transporte" className="grid gap-5">
               <h3 id="t-transporte" className="m-0 text-2xl leading-8 font-semibold">
                 Transporte
               </h3>
-              <PorTipo sitios={de("transporte")} grupo="transporte" nivel={4} />
+              <SitiosPorTipo sitios={de("transporte")} tipos={tiposDe("transporte")} nivel={4} vacio={ESPERA} />
             </section>
           </section>
 

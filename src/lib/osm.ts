@@ -112,3 +112,28 @@ export function aSitios(respuesta: unknown, caja: readonly [number, number, numb
 export function enlaceOSM(tipo: string, id: number | string): string {
   return `https://www.openstreetmap.org/${encodeURIComponent(tipo)}/${encodeURIComponent(String(id))}`;
 }
+
+/** Tipos de la Guía útil que acompañan a cada categoría de negocios (versión 5, fase 24): así ninguna queda vacía. */
+export const TIPOS_POR_CATEGORIA: Record<string, readonly TipoSitio[]> = {
+  reparaciones: ["celulares", "electronica", "taller", "cerrajeria"],
+  turismo: ["atraccion", "monumento", "mirador", "museo", "iglesia"],
+  paseos: ["parque", "mirador"],
+  museos: ["museo", "monumento"],
+  naturaleza: ["reserva", "zoologico", "parque"],
+  ejercicio: ["parque"],
+  ninos: ["parque", "zoologico"],
+};
+
+const DIAS_OSM: Record<string, string> = { Mo: "lun", Tu: "mar", We: "mié", Th: "jue", Fr: "vie", Sa: "sáb", Su: "dom", PH: "feriados" };
+
+/** Horario de OpenStreetMap ("Mo-Fr 08:00-18:00; Sa 09:00-13:00") en español sencillo. */
+export function horarioLegible(h: string): string {
+  if (h.trim() === "24/7") return "Abierto las 24 horas";
+  return h
+    .replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su|PH)\b/g, (d) => DIAS_OSM[d]!)
+    .replace(/\boff\b|\bclosed\b/gi, "cerrado")
+    .replace(/-/g, " a ")
+    .replace(/\s*;\s*/g, "; ")
+    .replace(/,(?=\S)/g, ", ")
+    .replace(/(\d{2}:\d{2}) a (\d{2}:\d{2})/g, "de $1 a $2");
+}

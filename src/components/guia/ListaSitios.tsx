@@ -1,0 +1,66 @@
+import type { Sitio } from "@/lib/datos/sitios";
+import { horarioLegible, TIPOS_SITIO, type TipoSitio } from "@/lib/osm";
+import { enlaceRutaGoogle } from "@/lib/ubicacion";
+
+const MOSTRAR = 9;
+
+/** Un lugar de referencia de la Guía útil: nombre, frase o dirección, horario, y Cómo llegar. Sin ficha (no es un negocio). */
+export function FilaSitio({ s }: { s: Sitio }) {
+  const telefono = s.telefono?.split(/[;,/]/)[0]!.replace(/[^\d+]/g, "");
+  return (
+    <li className="grid content-start gap-1 rounded-xl border border-linea bg-papel-alto p-4">
+      <b className="text-base leading-6">{s.nombre}</b>
+      {(s.nota || s.direccion) && <span className="text-[15px] leading-[22px] text-rio-suave">{s.nota ?? s.direccion}</span>}
+      {s.horario && <span className="text-sm leading-5 text-rio-suave">Horario: {horarioLegible(s.horario)}</span>}
+      <span className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[15px]">
+        <a href={enlaceRutaGoogle(s.ubicacion)} target="_blank" rel="noopener noreferrer" aria-label={`Cómo llegar a ${s.nombre}`}>
+          Cómo llegar
+        </a>
+        {telefono && telefono.length >= 7 && <a href={`tel:${telefono}`}>Llamar</a>}
+        {s.web && (
+          <a href={s.web} target="_blank" rel="noopener noreferrer nofollow" aria-label={`Página web de ${s.nombre}`}>
+            Página web
+          </a>
+        )}
+      </span>
+    </li>
+  );
+}
+
+/**
+ * Lugares de la Guía útil separados por tipo, en el orden de `tipos`. Los primeros 9 de cada tipo a la vista y el
+ * resto al tocar "Ver más". Si no hay ninguno, muestra `vacio` (o nada).
+ */
+export function SitiosPorTipo({ sitios, tipos, nivel = 3, vacio }: { sitios: Sitio[]; tipos: readonly TipoSitio[]; nivel?: 3 | 4; vacio?: string }) {
+  const H = nivel === 3 ? "h3" : "h4";
+  const hay = tipos
+    .map((tipo) => ({ t: TIPOS_SITIO.find((x) => x.tipo === tipo)!, lista: sitios.filter((s) => s.tipo === tipo) }))
+    .filter((x) => x.lista.length > 0);
+  if (!hay.length) return vacio ? <p className="m-0 text-rio-suave">{vacio}</p> : null;
+  return (
+    <div className="grid gap-8">
+      {hay.map(({ t, lista }) => (
+        <section key={t.tipo} aria-labelledby={`t-sitio-${t.tipo}`} className="grid gap-3">
+          <H id={`t-sitio-${t.tipo}`} className="m-0 text-xl leading-7 font-semibold">
+            {t.plural} <span className="text-base font-normal text-rio-suave">({lista.length})</span>
+          </H>
+          <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
+            {lista.slice(0, MOSTRAR).map((s) => (
+              <FilaSitio key={s.id} s={s} />
+            ))}
+          </ul>
+          {lista.length > MOSTRAR && (
+            <details className="grid gap-3">
+              <summary className="cursor-pointer font-semibold">Ver {lista.length - MOSTRAR} más</summary>
+              <ul className="m-0 mt-3 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
+                {lista.slice(MOSTRAR).map((s) => (
+                  <FilaSitio key={s.id} s={s} />
+                ))}
+              </ul>
+            </details>
+          )}
+        </section>
+      ))}
+    </div>
+  );
+}

@@ -273,7 +273,7 @@
 
 - Fase 24 · Arreglos de lo que ya tenemos (pedido del usuario 2026-10-12; auditoría independiente del plan contra el código)
   - [ ] 24.0 Vercel no publica desde el 2026-10-10 (commit c6a95ce en adelante: "Deployment has failed"); en la copia local compila. Falta (usuario): captura del Build Log
-  - [ ] 24.1 Categorías con lugares de referencia de la Guía útil cuando tienen pocos negocios; chips en Reparaciones; "Servicio técnico" en tarjetas
+  - [x] 24.1 Categorías que nunca quedan vacías — 2026-10-12: con menos de 8 negocios, la página de la categoría muestra los lugares de la Guía útil que le corresponden (`TIPOS_POR_CATEGORIA` en `src/lib/osm.ts`; Reparaciones → celulares, electrónica, talleres, cerrajerías), separados por tipo, con Cómo llegar, Llamar, página web y horario en español (`horarioLegible`). Componente compartido `src/components/guia/ListaSitios.tsx`. Las tarjetas de reparaciones dicen "Servicio técnico"; la categoría está en los datos de muestra
   - [ ] 24.2 Guía útil: cabecera, portada y Explora; negocios de reparaciones dentro; horario y web; buscador la sugiere
   - [ ] 24.3 Portada con respaldo de la Guía útil
   - [ ] 24.4 Filtros en el celular; barra de la ficha con Guardar y Compartir; fila de datos útiles

@@ -15,6 +15,7 @@ const SINGULAR: Record<string, string> = {
   compras: "Compras",
   ninos: "Plan para niños",
   naturaleza: "Naturaleza",
+  reparaciones: "Servicio técnico",
 };
 
 /** Sectores que en una frase llevan artículo: "en el centro", "en la Alborada". */
