@@ -8,7 +8,7 @@ import { IconoCompartir } from "@/components/ui/iconos";
  * Compartir la ficha. En el celular abre el menú de compartir del teléfono (WhatsApp, Instagram…);
  * donde no existe, copia el enlace y lo avisa.
  */
-export function BotonCompartir({ titulo, texto }: { titulo: string; texto: string }) {
+export function BotonCompartir({ titulo, texto, compacto = false }: { titulo: string; texto: string; compacto?: boolean }) {
   const [aviso, setAviso] = useState("");
 
   async function compartir() {
@@ -31,12 +31,12 @@ export function BotonCompartir({ titulo, texto }: { titulo: string; texto: strin
   }
 
   return (
-    <span className="inline-flex items-center gap-2">
-      <button type="button" onClick={compartir} className={clasesBoton("texto")}>
+    <span className={compacto ? "contents" : "inline-flex items-center gap-2"}>
+      <button type="button" onClick={compartir} aria-label={compacto ? "Compartir" : undefined} className={clasesBoton(compacto ? "secundario" : "texto", "normal", compacto ? "w-12 flex-none px-0!" : "")}>
         <IconoCompartir />
-        Compartir
+        {!compacto && "Compartir"}
       </button>
-      <span role="status" className="text-sm leading-5 text-rio-suave">
+      <span role="status" className={compacto ? "sr-only" : "text-sm leading-5 text-rio-suave"}>
         {aviso}
       </span>
     </span>

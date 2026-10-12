@@ -38,7 +38,7 @@ test("horario, estadísticas y favoritos", async ({ page, context, baseURL, brow
   expect((await leer())?.views).toBe(1);
 
   // Favoritos: sin sesión manda a entrar; con sesión guarda y sale en Mi cuenta
-  await expect(pv.getByRole("link", { name: "Guardar" })).toHaveAttribute("href", /\/entrar\?siguiente=/);
+  await expect(pv.getByRole("link", { name: "Guardar", exact: true })).toHaveAttribute("href", /\/entrar\?siguiente=/);
   await visita.close();
   const fan = await crearUsuario("fan");
   const ctxFan = await browser.newContext();
@@ -46,14 +46,14 @@ test("horario, estadísticas y favoritos", async ({ page, context, baseURL, brow
   const pf = await ctxFan.newPage();
   await pf.goto(new URL(lugar.ruta, baseURL).toString());
   await pf.waitForLoadState("networkidle"); // que la página termine de cargar antes de tocar (en desarrollo tarda más)
-  await pf.getByRole("button", { name: "Guardar" }).click();
-  await expect(pf.getByRole("button", { name: "Guardado" })).toHaveAttribute("aria-pressed", "true");
+  await pf.getByRole("button", { name: "Guardar", exact: true }).click();
+  await expect(pf.getByRole("button", { name: "Guardado", exact: true })).toHaveAttribute("aria-pressed", "true");
   await pf.goto(new URL("/cuenta", baseURL).toString());
   const { data: nombre } = await admin().from("places").select("name").eq("id", lugar.id).single();
   await expect(pf.getByRole("link", { name: nombre!.name })).toBeVisible();
   await pf.goto(new URL(lugar.ruta, baseURL).toString());
-  await pf.getByRole("button", { name: "Guardado" }).click();
-  await expect(pf.getByRole("button", { name: "Guardar" })).toHaveAttribute("aria-pressed", "false");
+  await pf.getByRole("button", { name: "Guardado", exact: true }).click();
+  await expect(pf.getByRole("button", { name: "Guardar", exact: true })).toHaveAttribute("aria-pressed", "false");
   await ctxFan.close();
 
   // El dueño ve sus números

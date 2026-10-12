@@ -276,8 +276,8 @@
   - [x] 24.1 Categorías que nunca quedan vacías — 2026-10-12: con menos de 8 negocios, la página de la categoría muestra los lugares de la Guía útil que le corresponden (`TIPOS_POR_CATEGORIA` en `src/lib/osm.ts`; Reparaciones → celulares, electrónica, talleres, cerrajerías), separados por tipo, con Cómo llegar, Llamar, página web y horario en español (`horarioLegible`). Componente compartido `src/components/guia/ListaSitios.tsx`. Las tarjetas de reparaciones dicen "Servicio técnico"; la categoría está en los datos de muestra
   - [x] 24.2 Guía útil más a la vista — 2026-10-12: "Guía útil" en la cabecera; franja `FranjaGuiaUtil` (Para visitar, ¿Se te dañó algo?, Información útil) en la portada y en "Explora Guayaquil", que además enlaza a Eventos; "¿Se te dañó algo?" muestra los negocios registrados de reparaciones (o invita a registrarse); cada lugar con horario y página web; el buscador muestra "En la Guía útil" cuando encuentra poco (`buscarEnSitios`, por tipo o nombre, sin tildes)
   - [x] 24.3 Portada con respaldo — 2026-10-12: sin imperdibles registrados, la franja celeste muestra "Para visitar en Guayaquil" con lugares de la Guía útil
-  - [ ] 24.4 Filtros en el celular; barra de la ficha con Guardar y Compartir; fila de datos útiles
-  - [ ] 24.5 Detalles (Pide destacarlo, muestra, ARQUITECTURA)
+  - [x] 24.4 Pendientes del diseño — 2026-10-12: botón "Filtros" en el celular (muestra cuántos hay activos; sin JavaScript se ven todos); la barra fija de la ficha ahora trae WhatsApp, Cómo llegar, Guardar y Compartir (íconos con nombre para el lector de pantalla). Los datos útiles (abierto ahora, precio, sector, estrellas) ya estaban arriba, junto al título
+  - [x] 24.5 Detalles — 2026-10-12: "Pide destacarlo" solo en negocios (no en parques ni paseos sin WhatsApp); categoría nueva en los datos de muestra; `ARQUITECTURA.md` §2 con las rutas de las versiones 3 a 5. 215 reglas, 129 unitarias y 44 e2e pasan
   - **Puerta (usuario):** revisarlo en el sitio publicado
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)

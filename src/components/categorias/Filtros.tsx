@@ -1,7 +1,7 @@
 "use client";
 
 import Form from "next/form";
-import { useRef, useSyncExternalStore } from "react";
+import { useId, useRef, useState, useSyncExternalStore } from "react";
 import type { Filtros as DatosFiltros } from "@/lib/validacion/filtros";
 
 const PRECIOS = [
@@ -25,6 +25,11 @@ export function Filtros({ accion, sectores, filtros }: { accion: string; sectore
   const ref = useRef<HTMLFormElement>(null);
   // false al dibujarse en el servidor (sin JavaScript), true ya en el navegador
   const conJs = useSyncExternalStore(sinSuscripcion, () => true, () => false);
+  // Versión 4 (fase 24): en el celular los filtros se esconden tras un botón "Filtros" para dejar ver los resultados
+  const [abierto, setAbierto] = useState(false);
+  const idCampos = useId();
+  const activos = (filtros.sector ? 1 : 0) + filtros.precios.length + (filtros.orden !== "destacados" ? 1 : 0);
+  const oculto = conJs && !abierto ? "max-sm:hidden" : "";
 
   return (
     <Form
@@ -35,6 +40,20 @@ export function Filtros({ accion, sectores, filtros }: { accion: string; sectore
       onChange={() => ref.current?.requestSubmit()}
       className="mt-6 mb-6 flex flex-wrap items-center gap-2 border-b border-linea pb-6"
     >
+      {conJs && (
+        <button
+          type="button"
+          aria-expanded={abierto}
+          aria-controls={idCampos}
+          onClick={() => setAbierto((a) => !a)}
+          className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-linea-fuerte bg-papel-alto px-4 text-[15px] font-semibold text-rio sm:hidden"
+        >
+          Filtros
+          {activos > 0 && <span className="grid size-6 place-items-center rounded-full bg-celeste-tinta text-xs text-on-celeste-tinta">{activos}</span>}
+          <span aria-hidden="true">{abierto ? "▴" : "▾"}</span>
+        </button>
+      )}
+      <div id={idCampos} className={`contents ${oculto}`}>
       <div className="grid min-w-0 flex-[1_1_100%] sm:max-w-[240px] sm:flex-[0_1_220px]">
         <label htmlFor="f-sector" className={etiqueta}>
           Sector
@@ -80,6 +99,7 @@ export function Filtros({ accion, sectores, filtros }: { accion: string; sectore
           <option value="calificacion">Ordenar: mejor calificados</option>
           <option value="resenas">Ordenar: más reseñas</option>
         </select>
+      </div>
       </div>
 
       {!conJs && (

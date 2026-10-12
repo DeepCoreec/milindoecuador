@@ -63,7 +63,8 @@ export default async function FichaLugar({ params }: Props) {
   // Con la ubicación exacta abre la ruta ya trazada; sin ella, busca el lugar por nombre y dirección
   const comoLlegar = lugar.ubicacion ? enlaceRutaGoogle(lugar.ubicacion) : enlaceComoLlegar(lugar.nombre, lugar.direccion, ciudad.nombre);
   const precio = lugar.precio ? PRECIOS[lugar.precio] : null;
-  const esNegocio = categoria.slug !== "turismo";
+  // Parques, miradores y lugares públicos no son negocios: no se les ofrece "Pide destacarlo" (fase 24)
+  const esNegocio = !!lugar.whatsapp || !["turismo", "paseos", "naturaleza"].includes(categoria.slug);
   const ruta = `/${ciudad.slug}/${categoria.slug}/${lugar.slug}`;
   const usuario = await obtenerUsuario();
   const [miResena, guardado] = usuario && lugar.id ? await Promise.all([getMiResena(lugar.id, usuario.id), esFavorito(lugar.id)]) : [null, false];
@@ -119,15 +120,25 @@ export default async function FichaLugar({ params }: Props) {
           {/* Versión 4: en el celular, WhatsApp y Cómo llegar siempre a mano en una barra fija abajo */}
           <div className="mle-barra-acciones fixed inset-x-0 bottom-0 z-30 flex gap-2 border-t border-linea bg-papel-alto px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] shadow-flotante min-[900px]:hidden">
             {whatsapp && (
-              <EnlaceContado lugar={lugar.id} tipo="whatsapp" href={whatsapp} target="_blank" rel="noopener noreferrer" className={clasesBoton("whatsapp", "normal", "flex-1")}>
+              <EnlaceContado lugar={lugar.id} tipo="whatsapp" href={whatsapp} target="_blank" rel="noopener noreferrer" className={clasesBoton("whatsapp", "normal", "min-w-0 flex-1 gap-1.5! px-2!")}>
                 <IconoConversacion />
                 WhatsApp
               </EnlaceContado>
             )}
-            <EnlaceContado lugar={lugar.id} tipo="route" href={comoLlegar} target="_blank" rel="noopener noreferrer" className={clasesBoton("secundario", "normal", "flex-1")}>
+            <EnlaceContado lugar={lugar.id} tipo="route" href={comoLlegar} target="_blank" rel="noopener noreferrer" className={clasesBoton("secundario", "normal", "min-w-0 flex-1 gap-1.5! px-2!")}>
               <IconoUbicacion />
               Cómo llegar
             </EnlaceContado>
+            {/* Fase 24: también Guardar y Compartir a mano (solo íconos, con su nombre para el lector de pantalla) */}
+            {lugar.id &&
+              (usuario ? (
+                <BotonGuardar lugar={lugar.id} ruta={ruta} guardado={guardado} compacto />
+              ) : (
+                <Link href={`/entrar?siguiente=${encodeURIComponent(ruta)}`} aria-label="Guardar en tus lugares" className={clasesBoton("secundario", "normal", "w-12 flex-none px-0!")}>
+                  <IconoCorazon />
+                </Link>
+              ))}
+            <BotonCompartir titulo={`${lugar.nombre} · Mi Lindo Ecuador`} texto={`Mira ${lugar.nombre} en Mi Lindo Ecuador`} compacto />
           </div>
 
           <aside aria-labelledby="t-info" className="grid gap-4 rounded-xl border border-linea bg-papel-alto p-6 [grid-area:info]">

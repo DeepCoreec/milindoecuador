@@ -51,8 +51,10 @@ milindoecuador/
 │   │   ├── layout.tsx            # HTML base, fuentes, metadatos globales
 │   │   ├── page.tsx              # inicio
 │   │   ├── [ciudad]/
-│   │   │   ├── page.tsx                          # /guayaquil
-│   │   │   └── [categoria]/
+│   │   │   ├── page.tsx                          # /guayaquil (Explora: categorías, eventos, Guía útil)
+│   │   │   ├── eventos/                          # v5: /guayaquil/eventos, nuevo/, [evento]/ y [evento]/calendario (.ics)
+│   │   │   ├── guia-util/page.tsx                # v5: lugares de referencia de OpenStreetMap, aparte de los negocios
+│   │   │   └── [categoria]/                      # con pocos negocios muestra lugares de la Guía útil (fase 24)
 │   │   │       ├── page.tsx                      # /guayaquil/restaurantes
 │   │   │       └── [lugar]/
 │   │   │           ├── page.tsx                  # ficha del lugar
@@ -64,15 +66,21 @@ milindoecuador/
 │   │   ├── entrar/page.tsx  crear-cuenta/  recuperar/   # correo y contraseña (v2)
 │   │   ├── mi-negocio/page.tsx  mi-negocio/[id]/page.tsx # el dueño maneja su ficha (v2)
 │   │   ├── api/evento/route.ts                   # estadísticas para el dueño (v2)
+│   │   ├── api/paumi/route.ts                    # v3: Paumi, la guía con IA (solo nuestro origen, captcha, topes)
+│   │   ├── api/tareas/eventos/route.ts           # v5: borrado diario de eventos vencidos (Vercel Cron + CRON_SECRET)
+│   │   ├── api/salud/route.ts                    # v3: aviso si la página se cae
 │   │   ├── auth/callback/route.ts               # vuelta del correo o de Google
 │   │   ├── cuenta/page.tsx                       # requiere sesión
+│   │   ├── cuenta/eventos/  cuenta/eventos/[id]/ # v5: Mis eventos (cambiar y borrar los propios)
 │   │   ├── admin/                                # requiere rol admin
 │   │   │   ├── layout.tsx                        # verifica el rol en el servidor
 │   │   │   ├── page.tsx                          # resumen
 │   │   │   ├── solicitudes/page.tsx
 │   │   │   ├── lugares/page.tsx
 │   │   │   ├── lugares/[id]/page.tsx
-│   │   │   └── resenas/page.tsx
+│   │   │   ├── reportes/  cambios/  lugares-reportados/  palabras/   # v2
+│   │   │   ├── videos/  errores/                 # v3
+│   │   │   └── eventos/  guia/                   # v5: eventos y Guía útil (importar de OpenStreetMap)
 │   │   ├── legal/terminos/page.tsx
 │   │   ├── legal/privacidad/page.tsx
 │   │   ├── manifest.ts           # PWA
