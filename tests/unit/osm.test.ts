@@ -53,7 +53,8 @@ describe("horario de OpenStreetMap en español", () => {
     const { horarioLegible } = await import("@/lib/osm");
     expect(horarioLegible("Mo-Fr 08:00-18:00; Sa 09:00-13:00")).toBe("lun a vie de 08:00 a 18:00; sáb de 09:00 a 13:00");
     expect(horarioLegible("24/7")).toBe("Abierto las 24 horas");
-    expect(horarioLegible("Su off")).toBe("dom cerrado");
+    expect(horarioLegible("Su off")).toBe("dom: cerrado");
+    expect(horarioLegible("sunrise-sunset")).toBe("sunrise-sunset");
   });
 });
 
@@ -69,5 +70,7 @@ describe("buscar en la Guía útil", () => {
     expect(buscarEnSitios(s, "farmacias").map((x) => x.nombre)).toEqual(["Farmacia Cruz Azul"]);
     expect(buscarEnSitios(s, "seminario").map((x) => x.nombre)).toEqual(["Parque Seminario"]);
     expect(buscarEnSitios(s, "ab")).toEqual([]);
+    expect(buscarEnSitios(s, "café dos hermanos")).toEqual([]);
+    expect(buscarEnSitios(s, "las")).toEqual([]);
   });
 });

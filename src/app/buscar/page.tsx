@@ -22,6 +22,20 @@ export default async function PaginaBuscar({ searchParams }: PageProps<"/buscar"
   // Versión 5, fase 24: si la guía trae poco, también los lugares de referencia de la Guía útil
   const sitios = q && lugares.length < 4 ? buscarEnSitios(await getSitios().catch(() => [] as Sitio[]), q) : [];
 
+  const guiaUtil = sitios.length > 0 && (
+          <section aria-labelledby="t-sitios" className="mt-10 mb-10 grid gap-4">
+            <h2 id="t-sitios" className="m-0 font-rotulo text-xl leading-[26px] font-normal">
+              En la <Link href={`/${CIUDAD}/guia-util`}>Guía útil</Link>
+            </h2>
+            <p className="m-0 -mt-2 text-sm text-rio-suave">Lugares de referencia de la ciudad (no son negocios registrados). Datos © colaboradores de OpenStreetMap.</p>
+            <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
+              {sitios.map((s) => (
+                <FilaSitio key={s.id} s={s} />
+              ))}
+            </ul>
+          </section>
+        );
+
   return (
     <>
       <Cabecera />
@@ -39,20 +53,6 @@ export default async function PaginaBuscar({ searchParams }: PageProps<"/buscar"
           </p>
         )}
 
-        {sitios.length > 0 && (
-          <section aria-labelledby="t-sitios" className="mb-10 grid gap-4">
-            <h2 id="t-sitios" className="m-0 font-rotulo text-xl leading-[26px] font-normal">
-              En la <Link href={`/${CIUDAD}/guia-util`}>Guía útil</Link>
-            </h2>
-            <p className="m-0 -mt-2 text-sm text-rio-suave">Lugares de referencia de la ciudad (no son negocios registrados). Datos de OpenStreetMap.</p>
-            <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
-              {sitios.map((s) => (
-                <FilaSitio key={s.id} s={s} />
-              ))}
-            </ul>
-          </section>
-        )}
-
         {lugares.length > 0 ? (
           <>
           <h2 className="sr-only">Resultados</h2>
@@ -63,13 +63,18 @@ export default async function PaginaBuscar({ searchParams }: PageProps<"/buscar"
           </div>
           </>
         ) : (
+          <>
+          {guiaUtil}
           <section aria-labelledby="t-explora" className={q ? "mt-2" : "mt-10"}>
             <h2 id="t-explora" className="m-0 mb-4 font-rotulo text-xl leading-[26px] font-normal">
               {q ? "Prueba con otra palabra o explora por categoría" : "O explora por categoría"}
             </h2>
             <BarraCategorias categorias={categorias} />
           </section>
+          </>
         )}
+
+        {lugares.length > 0 && guiaUtil}
       </main>
       <Pie />
     </>

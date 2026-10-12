@@ -32,5 +32,7 @@ export async function alternarFavorito(_previo: EstadoFavorito, datos: FormData)
     if (error) return { estado: "error", mensaje: "No se pudo quitar" };
   }
   revalidatePath("/cuenta");
+  // Fase 24: en el celular hay dos botones Guardar (arriba y en la barra fija): así los dos quedan iguales
+  revalidatePath(r.data.ruta);
   return { estado: "ok", guardado: r.data.guardar === "si" };
 }

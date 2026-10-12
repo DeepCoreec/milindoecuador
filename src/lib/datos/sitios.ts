@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import type { Grupo, TipoSitio } from "@/lib/osm";
 import { crearClientePublico } from "@/lib/supabase/publico";
@@ -38,8 +39,14 @@ type Fila = {
   osm_id: number;
 };
 
-/** Todos los sitios publicados de Guayaquil (lo filtra la base por RLS), ordenados por tipo y nombre. */
-export const getSitios = cache(async (): Promise<Sitio[]> => {
+/**
+ * Todos los sitios publicados de Guayaquil (lo filtra la base por RLS), ordenados por tipo y nombre.
+ * Se guardan 5 minutos en caché (las categorías y el buscador se dibujan en cada visita); el admin la vacía al
+ * publicar o corregir (etiqueta "sitios").
+ */
+export const getSitios = cache(() => leerSitiosEnCache());
+
+const leerSitiosEnCache = unstable_cache(async (): Promise<Sitio[]> => {
   const db = crearClientePublico();
   if (!db) return [];
   // La API devuelve como mucho 1000 filas por pedido: se lee por páginas (hasta 5000)
@@ -71,4 +78,4 @@ export const getSitios = cache(async (): Promise<Sitio[]> => {
     ubicacion: { lat: f.latitude, lng: f.longitude },
     osm: `${f.osm_type}/${f.osm_id}`,
   }));
-});
+}, ["sitios-guia-util"], { revalidate: 300, tags: ["sitios"] });

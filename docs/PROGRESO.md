@@ -278,6 +278,7 @@
   - [x] 24.3 Portada con respaldo — 2026-10-12: sin imperdibles registrados, la franja celeste muestra "Para visitar en Guayaquil" con lugares de la Guía útil
   - [x] 24.4 Pendientes del diseño — 2026-10-12: botón "Filtros" en el celular (muestra cuántos hay activos; sin JavaScript se ven todos); la barra fija de la ficha ahora trae WhatsApp, Cómo llegar, Guardar y Compartir (íconos con nombre para el lector de pantalla). Los datos útiles (abierto ahora, precio, sector, estrellas) ya estaban arriba, junto al título
   - [x] 24.5 Detalles — 2026-10-12: "Pide destacarlo" solo en negocios (no en parques ni paseos sin WhatsApp); categoría nueva en los datos de muestra; `ARQUITECTURA.md` §2 con las rutas de las versiones 3 a 5. 215 reglas, 129 unitarias y 44 e2e pasan
+  - [x] Revisión independiente de la fase 24 — 2026-10-12: sin fallas altas. Arreglado: el panel de Filtros del celular ya no se cierra al cambiar un filtro; la Guía útil se guarda 5 minutos en caché (`unstable_cache`, etiqueta "sitios" que el admin vacía al publicar); el buscador ya no confunde palabras cortas con tipos; los dos botones Guardar de la ficha quedan iguales; en la búsqueda la Guía útil va después de los negocios; horarios raros de OSM se muestran tal cual. 215 reglas, 129 unitarias y 44 e2e pasan
   - **Puerta (usuario):** revisarlo en el sitio publicado
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)

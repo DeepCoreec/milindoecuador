@@ -26,9 +26,10 @@ export function Filtros({ accion, sectores, filtros }: { accion: string; sectore
   // false al dibujarse en el servidor (sin JavaScript), true ya en el navegador
   const conJs = useSyncExternalStore(sinSuscripcion, () => true, () => false);
   // Versión 4 (fase 24): en el celular los filtros se esconden tras un botón "Filtros" para dejar ver los resultados
-  const [abierto, setAbierto] = useState(false);
-  const idCampos = useId();
   const activos = (filtros.sector ? 1 : 0) + filtros.precios.length + (filtros.orden !== "destacados" ? 1 : 0);
+  // Abierto si ya hay filtros: al cambiar uno la página se vuelve a dibujar y el panel no debe cerrarse solo
+  const [abierto, setAbierto] = useState(activos > 0);
+  const idCampos = useId();
   const oculto = conJs && !abierto ? "max-sm:hidden" : "";
 
   return (

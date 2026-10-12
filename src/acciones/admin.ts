@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { ubicacionSinEnlaceCorto } from "@/acciones/ubicacion";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
@@ -612,6 +612,7 @@ export async function decidirSitios(_previo: EstadoAdmin, datos: FormData): Prom
   const db = await crearClienteServidor();
   const { data, error } = await db.from("city_spots").update({ status: r.data.decision }).in("id", r.data.sitios).select("id");
   if (error) return { estado: "error", mensaje: "No se pudo cambiar" };
+  revalidateTag("sitios", { expire: 0 });
   revalidatePath("/", "layout");
   const n = data?.length ?? 0;
   const palabra = r.data.decision === "publicado" ? "publicados" : r.data.decision === "descartado" ? "descartados" : "devueltos a revisión";
@@ -625,6 +626,7 @@ export async function editarSitio(_previo: EstadoAdmin, datos: FormData): Promis
   const db = await crearClienteServidor();
   const { error } = await db.from("city_spots").update({ name: r.data.nombre, note: r.data.nota || null }).eq("id", r.data.sitio);
   if (error) return { estado: "error", mensaje: mensajeModeracion(error) ?? "No se pudo guardar" };
+  revalidateTag("sitios", { expire: 0 });
   revalidatePath("/", "layout");
   return { estado: "ok", mensaje: "Guardado" };
 }

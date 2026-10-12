@@ -126,12 +126,13 @@ export const TIPOS_POR_CATEGORIA: Record<string, readonly TipoSitio[]> = {
 
 const DIAS_OSM: Record<string, string> = { Mo: "lun", Tu: "mar", We: "mié", Th: "jue", Fr: "vie", Sa: "sáb", Su: "dom", PH: "feriados" };
 
-/** Horario de OpenStreetMap ("Mo-Fr 08:00-18:00; Sa 09:00-13:00") en español sencillo. */
+/** Horario de OpenStreetMap ("Mo-Fr 08:00-18:00; Sa 09:00-13:00") en español sencillo; si trae algo raro, tal cual. */
 export function horarioLegible(h: string): string {
   if (h.trim() === "24/7") return "Abierto las 24 horas";
+  if (!/^[\s\d:;,+-]*(?:(?:Mo|Tu|We|Th|Fr|Sa|Su|PH|off|closed)[\s\d:;,+-]*)*$/.test(h)) return h;
   return h
     .replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su|PH)\b/g, (d) => DIAS_OSM[d]!)
-    .replace(/\boff\b|\bclosed\b/gi, "cerrado")
+    .replace(/\s*\b(?:off|closed)\b/gi, ": cerrado")
     .replace(/-/g, " a ")
     .replace(/\s*;\s*/g, "; ")
     .replace(/,(?=\S)/g, ", ")
@@ -144,9 +145,16 @@ const sinTildes = (t: string) => t.normalize("NFD").replace(/\p{Diacritic}/gu, "
 export function buscarEnSitios<T extends { nombre: string; tipo: TipoSitio }>(sitios: T[], q: string, maximo = 12): T[] {
   const palabras = sinTildes(q).split(/\s+/).filter((p) => p.length >= 3);
   if (!palabras.length) return [];
-  const raiz = (p: string) => p.replace(/(es|s)$/, "");
+  // Para reconocer un tipo, la palabra (sin la "s" o "es" del plural) debe tener 4 letras o más y empezar una palabra
+  const raiz = (p: string) => {
+    const r = p.replace(/(es|s)$/, "");
+    return r.length >= 4 ? r : p;
+  };
   const tipos = new Set(
-    TIPOS_SITIO.filter((t) => palabras.some((p) => sinTildes(`${t.nombre} ${t.plural} ${t.tipo}`).includes(raiz(p)))).map((t) => t.tipo as TipoSitio),
+    TIPOS_SITIO.filter((t) => {
+      const nombres = sinTildes(`${t.nombre} ${t.plural} ${t.tipo}`).split(/[\s-]+/);
+      return palabras.some((p) => p.length >= 4 && nombres.some((n) => n.startsWith(raiz(p))));
+    }).map((t) => t.tipo as TipoSitio),
   );
   return sitios.filter((s) => tipos.has(s.tipo) || palabras.every((p) => sinTildes(s.nombre).includes(p))).slice(0, maximo);
 }
