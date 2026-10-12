@@ -28,7 +28,7 @@ test("inicio, categoría, ficha y buscador se ven bien y sin errores", async ({ 
   await sinDesborde(page);
 
   await page.goto("/buscar?q=" + encodeURIComponent("<script>alert(1)</script>"));
-  await expect(page.getByText("No encontramos lugares")).toBeVisible();
+  await expect(page.getByText("No encontramos negocios")).toBeVisible();
   expect(errores).toEqual([]);
 });
 

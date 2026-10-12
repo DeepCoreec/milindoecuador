@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Afiche } from "@/components/arte/Afiche";
 import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
+import { FranjaGuiaUtil } from "@/components/guia/FranjaGuiaUtil";
 import { getCategorias, getCiudad } from "@/lib/datos/lugares";
 import { paraCompartir } from "@/lib/sitio";
 
@@ -44,6 +45,17 @@ export default async function PaginaCiudad({ params }: PageProps<"/[ciudad]">) {
             </li>
           ))}
         </ul>
+
+        {/* Versión 5: eventos y Guía útil también se exploran desde aquí */}
+        <div className="mt-14 grid gap-6">
+          <Link href={`/${ciudad.slug}/eventos`} className="flex flex-wrap items-center justify-between gap-3 rounded-[20px] bg-mango-suave p-6 text-rio no-underline hover:underline md:p-8">
+            <span className="grid gap-1">
+              <b className="font-rotulo text-2xl leading-8 font-normal">Eventos en {ciudad.nombre}</b>
+              <span className="text-rio-suave">Conciertos, ferias, deporte y fiestas del barrio, hoy y esta semana.</span>
+            </span>
+          </Link>
+          <FranjaGuiaUtil ciudad={ciudad.slug} titulo={`Guía útil de ${ciudad.nombre}`} />
+        </div>
       </main>
       <Pie />
     </>

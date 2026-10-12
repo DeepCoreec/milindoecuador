@@ -56,3 +56,18 @@ describe("horario de OpenStreetMap en español", () => {
     expect(horarioLegible("Su off")).toBe("dom cerrado");
   });
 });
+
+describe("buscar en la Guía útil", () => {
+  it("encuentra por tipo (con o sin tilde, en plural) y por nombre", async () => {
+    const { buscarEnSitios } = await import("@/lib/osm");
+    const s = [
+      { nombre: "Cerrajería El Rápido", tipo: "cerrajeria" as const },
+      { nombre: "Farmacia Cruz Azul", tipo: "farmacia" as const },
+      { nombre: "Parque Seminario", tipo: "parque" as const },
+    ];
+    expect(buscarEnSitios(s, "cerrajeria").map((x) => x.nombre)).toEqual(["Cerrajería El Rápido"]);
+    expect(buscarEnSitios(s, "farmacias").map((x) => x.nombre)).toEqual(["Farmacia Cruz Azul"]);
+    expect(buscarEnSitios(s, "seminario").map((x) => x.nombre)).toEqual(["Parque Seminario"]);
+    expect(buscarEnSitios(s, "ab")).toEqual([]);
+  });
+});

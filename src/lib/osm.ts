@@ -137,3 +137,16 @@ export function horarioLegible(h: string): string {
     .replace(/,(?=\S)/g, ", ")
     .replace(/(\d{2}:\d{2}) a (\d{2}:\d{2})/g, "de $1 a $2");
 }
+
+const sinTildes = (t: string) => t.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+
+/** Lugares de la Guía útil que responden a una búsqueda: por nombre o por tipo ("cerrajería", "farmacias"). */
+export function buscarEnSitios<T extends { nombre: string; tipo: TipoSitio }>(sitios: T[], q: string, maximo = 12): T[] {
+  const palabras = sinTildes(q).split(/\s+/).filter((p) => p.length >= 3);
+  if (!palabras.length) return [];
+  const raiz = (p: string) => p.replace(/(es|s)$/, "");
+  const tipos = new Set(
+    TIPOS_SITIO.filter((t) => palabras.some((p) => sinTildes(`${t.nombre} ${t.plural} ${t.tipo}`).includes(raiz(p)))).map((t) => t.tipo as TipoSitio),
+  );
+  return sitios.filter((s) => tipos.has(s.tipo) || palabras.every((p) => sinTildes(s.nombre).includes(p))).slice(0, maximo);
+}

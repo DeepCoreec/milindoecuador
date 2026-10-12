@@ -23,6 +23,9 @@ export function Cabecera() {
           <Link href="/guayaquil/eventos" className="hidden rounded-md px-3 py-2.5 text-[15px] font-medium text-rio no-underline lg:inline-block">
             Eventos
           </Link>
+          <Link href="/guayaquil/guia-util" className="hidden rounded-md px-3 py-2.5 text-[15px] font-medium text-rio no-underline lg:inline-block">
+            Guía útil
+          </Link>
           <EnlaceCuenta className="hidden rounded-md px-3 py-2.5 text-[15px] font-medium text-rio no-underline lg:inline-block" />
           {/* La envoltura oculta el botón en celular: "hidden" no puede competir con el inline-flex del botón. */}
           <span className="hidden lg:contents">

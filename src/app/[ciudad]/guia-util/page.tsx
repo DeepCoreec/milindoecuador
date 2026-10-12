@@ -7,7 +7,9 @@ import { Cabecera } from "@/components/layout/Cabecera";
 import { Migas } from "@/components/layout/Migas";
 import { Pie } from "@/components/layout/Pie";
 import { Boton } from "@/components/ui/Boton";
-import { getCiudad } from "@/lib/datos/lugares";
+import { TarjetaResumen } from "@/components/lugares/TarjetaResumen";
+import { getCiudad, getLugaresDeCategoria } from "@/lib/datos/lugares";
+import { leerFiltros } from "@/lib/validacion/filtros";
 import { getSitios, type Sitio } from "@/lib/datos/sitios";
 import { TIPOS_SITIO, type Grupo } from "@/lib/osm";
 import { paraCompartir, WHATSAPP_GUIA } from "@/lib/sitio";
@@ -29,7 +31,10 @@ const ESPERA = "Estamos revisando los lugares de esta parte. Vuelve pronto.";
 export default async function PaginaGuiaUtil({ params }: PageProps<"/[ciudad]/guia-util">) {
   const ciudad = await getCiudad((await params).ciudad);
   if (!ciudad) notFound();
-  const sitios = await getSitios().catch(() => [] as Sitio[]);
+  const [sitios, { lugares: tecnicos }] = await Promise.all([
+    getSitios().catch(() => [] as Sitio[]),
+    getLugaresDeCategoria(ciudad.slug, "reparaciones", leerFiltros({})).catch(() => ({ lugares: [] })),
+  ]);
   const de = (g: Grupo) => sitios.filter((s) => s.grupo === g);
   const h2 = "m-0 font-rotulo text-[26px] leading-8 font-normal md:text-4xl md:leading-[44px]";
   const ancla = "inline-flex min-h-11 items-center rounded-full border border-linea-fuerte bg-papel-alto px-4 text-[15px] font-semibold text-rio no-underline hover:border-rio";
@@ -76,12 +81,27 @@ export default async function PaginaGuiaUtil({ params }: PageProps<"/[ciudad]/gu
                 <h2 id="t-danado" className={h2}>
                   ¿Se te dañó algo?
                 </h2>
-                <p className="m-0 max-w-[60ch]">Talleres, técnicos de celulares y electrónica, y cerrajerías. Mira primero los negocios de la guía: les escribes directo por WhatsApp.</p>
-                <Boton href={`/${ciudad.slug}/reparaciones`} variante="principal" className="justify-self-start">
-                  Ver negocios de reparaciones
+                <p className="m-0 max-w-[60ch]">
+                  Talleres, técnicos de celulares y electrónica, y cerrajerías.{" "}
+                  {tecnicos.length ? "Primero, los negocios de la guía: les escribes directo por WhatsApp." : "¿Tienes un taller o arreglas celulares? Regístralo gratis y sale aquí."}
+                </p>
+                <Boton href={tecnicos.length ? `/${ciudad.slug}/reparaciones` : "/negocios/registro"} variante="principal" className="justify-self-start">
+                  {tecnicos.length ? "Ver todos los negocios de reparaciones" : "Registrar mi negocio"}
                 </Boton>
               </div>
             </div>
+            {tecnicos.length > 0 && (
+              <section aria-labelledby="t-tecnicos" className="grid gap-3">
+                <h3 id="t-tecnicos" className="m-0 text-xl leading-7 font-semibold">
+                  Negocios de la guía
+                </h3>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-6 max-[599px]:[&_h3]:text-base min-[1000px]:grid-cols-4 min-[1000px]:gap-6">
+                  {tecnicos.slice(0, 4).map((l) => (
+                    <TarjetaResumen key={l.slug} ciudad={ciudad.slug} lugar={l} tono="celeste" />
+                  ))}
+                </div>
+              </section>
+            )}
             <SitiosPorTipo sitios={de("servicios")} tipos={tiposDe("servicios")} vacio={ESPERA} />
           </section>
 

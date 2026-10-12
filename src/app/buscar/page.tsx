@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Buscador } from "@/components/busqueda/Buscador";
 import { BarraCategorias } from "@/components/categorias/BarraCategorias";
 import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
+import { FilaSitio } from "@/components/guia/ListaSitios";
 import { TarjetaResumen } from "@/components/lugares/TarjetaResumen";
 import { buscarLugares, getCategoriasBarra, tonoDeCategoria } from "@/lib/datos/lugares";
+import { getSitios, type Sitio } from "@/lib/datos/sitios";
+import { buscarEnSitios } from "@/lib/osm";
 import { leerBusqueda } from "@/lib/validacion/busqueda";
 
 // Las páginas de resultados no se indexan: Google debe llegar a las fichas, no a búsquedas sueltas
@@ -15,6 +19,8 @@ const CIUDAD = "guayaquil"; // por ahora la guía solo tiene Guayaquil
 export default async function PaginaBuscar({ searchParams }: PageProps<"/buscar">) {
   const q = leerBusqueda(await searchParams);
   const [lugares, categorias] = await Promise.all([q ? buscarLugares(CIUDAD, q) : Promise.resolve([]), getCategoriasBarra(CIUDAD)]);
+  // Versión 5, fase 24: si la guía trae poco, también los lugares de referencia de la Guía útil
+  const sitios = q && lugares.length < 4 ? buscarEnSitios(await getSitios().catch(() => [] as Sitio[]), q) : [];
 
   return (
     <>
@@ -28,9 +34,23 @@ export default async function PaginaBuscar({ searchParams }: PageProps<"/buscar"
         {q && (
           <p aria-live="polite" className="mt-6 mb-4 text-sm leading-5 text-rio-suave">
             {lugares.length === 0
-              ? `No encontramos lugares con «${q}».`
+              ? `No encontramos negocios con «${q}».`
               : `${lugares.length === 1 ? "1 lugar" : `${lugares.length} lugares`} con «${q}»`}
           </p>
+        )}
+
+        {sitios.length > 0 && (
+          <section aria-labelledby="t-sitios" className="mb-10 grid gap-4">
+            <h2 id="t-sitios" className="m-0 font-rotulo text-xl leading-[26px] font-normal">
+              En la <Link href={`/${CIUDAD}/guia-util`}>Guía útil</Link>
+            </h2>
+            <p className="m-0 -mt-2 text-sm text-rio-suave">Lugares de referencia de la ciudad (no son negocios registrados). Datos de OpenStreetMap.</p>
+            <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
+              {sitios.map((s) => (
+                <FilaSitio key={s.id} s={s} />
+              ))}
+            </ul>
+          </section>
         )}
 
         {lugares.length > 0 ? (

@@ -6,6 +6,9 @@ import { BarraCategorias } from "@/components/categorias/BarraCategorias";
 import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
 import { TarjetaEvento } from "@/components/eventos/TarjetaEvento";
+import { FranjaGuiaUtil } from "@/components/guia/FranjaGuiaUtil";
+import { FilaSitio } from "@/components/guia/ListaSitios";
+import { getSitios, type Sitio } from "@/lib/datos/sitios";
 import { TarjetaResumen } from "@/components/lugares/TarjetaResumen";
 import { getEventos } from "@/lib/datos/eventos";
 import { deEstaSemana } from "@/lib/eventos";
@@ -57,6 +60,10 @@ export default async function Inicio() {
   ]);
   // Versión 5: lo que pasa en los próximos 7 días
   const estaSemana = deEstaSemana(eventos);
+  const paraVisitar =
+    imperdibles.length === 0
+      ? (await getSitios().catch(() => [] as Sitio[])).filter((x) => ["museo", "mirador", "monumento", "atraccion", "parque"].includes(x.tipo)).slice(0, 8)
+      : [];
 
   return (
     <>
@@ -101,6 +108,22 @@ export default async function Inicio() {
           </section>
         )}
 
+        {/* Versión 5, fase 24: sin imperdibles registrados, la portada usa los lugares de la Guía útil */}
+        {imperdibles.length === 0 && paraVisitar.length > 0 && (
+          <section className="bg-celeste text-on-color" aria-labelledby="t-imp">
+            <div className={`${ancho} ${seccion}`}>
+              <CabezaSeccion id="t-imp" titulo="Para visitar en Guayaquil">
+                <VerTodos href="/guayaquil/guia-util#visitar">Ver la Guía útil</VerTodos>
+              </CabezaSeccion>
+              <ul className="m-0 grid list-none gap-3 rounded-[20px] bg-papel-alto p-4 text-rio sm:grid-cols-2 md:p-6 lg:grid-cols-4">
+                {paraVisitar.map((s) => (
+                  <FilaSitio key={s.id} s={s} />
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
+
         {imperdibles.length > 0 && (
           <section className="bg-celeste text-on-color" aria-labelledby="t-imp">
             <div className={`${ancho} ${seccion}`}>
@@ -139,6 +162,10 @@ export default async function Inicio() {
             </p>
           )}
         </section>
+
+        <div className={`${ancho} pb-12 min-[900px]:pb-16`}>
+          <FranjaGuiaUtil />
+        </div>
 
         <section data-theme="dark" className="bg-papel text-rio" aria-labelledby="t-neg">
           <div className={`${ancho} ${seccion} grid items-center gap-6 min-[900px]:grid-cols-[minmax(0,1fr)_auto]`}>
