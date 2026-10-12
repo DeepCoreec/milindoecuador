@@ -271,6 +271,15 @@
   - [x] (usuario) 2026-10-11: ejecutó 0017 en el Supabase real (y el ajuste de `revisar_textos_sitio`)
   - **Puerta (usuario):** importar, publicar algunos lugares y verlos en la guía y en Paumi
 
+- Fase 24 · Arreglos de lo que ya tenemos (pedido del usuario 2026-10-12; auditoría independiente del plan contra el código)
+  - [ ] 24.0 Vercel no publica desde el 2026-10-10 (commit c6a95ce en adelante: "Deployment has failed"); en la copia local compila. Falta (usuario): captura del Build Log
+  - [ ] 24.1 Categorías con lugares de referencia de la Guía útil cuando tienen pocos negocios; chips en Reparaciones; "Servicio técnico" en tarjetas
+  - [ ] 24.2 Guía útil: cabecera, portada y Explora; negocios de reparaciones dentro; horario y web; buscador la sugiere
+  - [ ] 24.3 Portada con respaldo de la Guía útil
+  - [ ] 24.4 Filtros en el celular; barra de la ficha con Guardar y Compartir; fila de datos útiles
+  - [ ] 24.5 Detalles (Pide destacarlo, muestra, ARQUITECTURA)
+  - **Puerta (usuario):** revisarlo en el sitio publicado
+
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
 - (2026-10-10, revisión de la fase 22) Aviso "vas a salir de la guía" antes de abrir la página o el enlace de entradas de un evento; volver a revisar un evento ya reportado si su dueño cambia los enlaces; pedir una sola foto por lugar en las listas.

@@ -49,3 +49,26 @@ solo.**
   diciendo que es un dato de OpenStreetMap.
 - **23.6 Cierre:** Términos y Privacidad (fuente ODbL), pruebas, revisión a 390 y 1440 px y revisión de seguridad.
 - **Puerta:** el usuario importa, publica algunos lugares y los ve en la guía y en Paumi.
+
+## Fase 24 · Arreglos de lo que ya tenemos (pedido del usuario, 2026-10-12)
+
+> "En la sección de reparaciones solo está puesto el nombre y no se abre nada, y faltan cosas del esquema. Implementa
+> mejor las cosas usando skills o algún agente; todo lo que hagas que quede en el esquema." Se hizo una auditoría
+> independiente (agente) del plan contra el código; esto es lo que encontró y se arregla, en orden.
+
+- **24.0 Publicación:** Vercel no publica desde el 2026-10-10 (todas las versiones fallan). Encontrar el error y arreglarlo.
+- **24.1 Categorías que nunca quedan vacías:** si una categoría tiene pocos negocios, muestra debajo los lugares de
+  referencia de la Guía útil que le corresponden (Reparaciones → talleres, celulares, electrónica, cerrajerías;
+  Turismo, Paseos, Museos, Naturaleza, Ejercicio → parques, museos, miradores…), con "Cómo llegar". Reparaciones con
+  chips por tipo. Las tarjetas de reparaciones dicen "Servicio técnico" y no "Lugar".
+- **24.2 Guía útil más a la vista y más completa:** enlace en la cabecera, franja en la portada y en "Explora
+  Guayaquil"; la sección "¿Se te dañó algo?" muestra también los negocios registrados de reparaciones; cada lugar
+  muestra su horario y su página web si OpenStreetMap los trae; el buscador sugiere la Guía útil cuando no encuentra.
+- **24.3 Portada que no se queda vacía:** si no hay restaurantes o imperdibles registrados, usa lugares de la Guía útil.
+- **24.4 Pendientes del diseño (versión 4):** botón "Filtros" en el celular en la página de categoría; en la ficha, la
+  barra fija del celular con Guardar y Compartir y una fila de datos útiles arriba (abierto ahora, precio, sector).
+- **24.5 Detalles:** "Pide destacarlo" solo en negocios (no en parques ni lugares públicos); datos de muestra con la
+  categoría nueva; `ARQUITECTURA.md` al día con las rutas de las versiones 3 a 5; lo que falte de las "Ideas para
+  después" se queda ahí.
+- **Revisión:** lint, tipos, pruebas, e2e y capturas a 390 y 1440 px en claro y oscuro; revisión independiente.
+- **Puerta:** el usuario lo revisa en su sitio publicado.
