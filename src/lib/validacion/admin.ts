@@ -148,3 +148,5 @@ export const esquemaEditarSitio = z.object({
 
 /** Agente revisor de la Guía útil (versión 6, fase 27): qué grupo revisar (vacío = todos). */
 export const esquemaAgenteGuia = z.object({ grupo: z.enum(["visitar", "servicios", "salud", "transporte"]).optional() });
+/** "regla": borra solo lo de las reglas; "todas": también lo de la IA (cuando cambia el criterio del dueño). */
+export const esquemaReinicioAgente = esquemaAgenteGuia.extend({ fuente: z.enum(["regla", "todas"]).default("regla") });
