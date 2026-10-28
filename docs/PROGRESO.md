@@ -317,7 +317,8 @@
   - [x] 2026-10-28 12:33: el usuario ejecutó 0019 en el Supabase real (comprobación: 3 `true`); Claude une `agente-guia-util` a `main` (PR #19).
   - [x] 2026-10-28 12:45: ramas unidas a `main` (PR #18 y #19) y Vercel publicó en verde. Primera corrida real en "Para visitar": 268 revisados (38 publicar, 189 revisar, 41 descartar; 168 por reglas, 100 con IA). Problema visto: la regla de duplicados marcó 132 como "posible duplicado" y muchos no lo eran ("Estatua de las Artes Aplicadas" vs "…Mayores", "Elemento Fuego" vs "…Tierra")
   - [x] 27.4b Ajuste — 2026-10-28: las palabras de tipo (monumento, estatua, plaza, cancha, área…) ya no cuentan para comparar nombres, y con una sola palabra en común solo es duplicado si las dos se reducen a esa palabra; la IA ya no menciona ids (L9) en el motivo; botón "Volver a revisar lo de las reglas" (borra solo las recomendaciones de las reglas del grupo, para repetir con las reglas nuevas). Pruebas con los casos reales (143 unitarias)
-  - **Siguiente paso:** publicar el ajuste, volver a revisar "Para visitar" y que el usuario apruebe la muestra (puerta de la fase 27) **Puerta:** el agente revisa la Guía útil y el usuario aprueba una muestra de 100; el acierto queda medido en el panel. 27.5 solo si el usuario la activa
+  - [x] 27.4c Segundo ajuste — 2026-10-28: tras repetir la corrida (300 revisados: 15 publicar, 225 revisar, 60 descartar; 163 "posible duplicado"), los lugares con número distinto ya no son duplicados ("Parque Herradura 3" y "4", "Cancha Sintética 1" y "2"). Pruebas con esos casos reales
+  - **Siguiente paso:** publicar el ajuste, "Volver a revisar lo de las reglas" + "Pedir revisión al agente" en "Para visitar" y que el usuario apruebe la muestra (puerta de la fase 27) **Puerta:** el agente revisa la Guía útil y el usuario aprueba una muestra de 100; el acierto queda medido en el panel. 27.5 solo si el usuario la activa
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 

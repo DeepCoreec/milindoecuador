@@ -71,7 +71,12 @@ describe("reglas del agente revisor de la Guía útil", () => {
       aplicarReglas({ ...s(a, tipo), lat: -2.19, lng: -79.88 }, [{ ...s(b, tipo), id: `otro-${b}`, lat: -2.1901, lng: -79.8801 }]);
     expect(cerca("Estatua de Las Artes Aplicadas (Oficios)", "Estatua de Las Artes Mayores")).toBeNull();
     expect(cerca('Monumento "Elemento Fuego"', 'Monumento "Elemento Tierra"')).toBeNull();
+    expect(cerca("Parque Herradura 3", "Parque Herradura 4", "parque")).toBeNull();
+    expect(cerca("Cancha Sintética 1 Ciudad Victoria", "Cancha Sintética 2 Ciudad Victoria", "parque")).toBeNull();
+    expect(cerca("Parque Central Huancavilca 1", "Parque Central Huancavilca 2", "parque")).toBeNull();
+    expect(cerca("Cancha Múltiple - Ferroviaria II", "PARQUE FERROVIARIA 3", "parque")).toBeNull();
     // Y siguen siendo duplicados los que sí lo son
+    expect(cerca("Parque Centenario", "Parque Centenario", "parque")?.veredicto).toBe("revisar");
     expect(cerca("Los Aurigas", "Los Aurigas")?.veredicto).toBe("revisar");
     expect(cerca("Orquideas", "Monumento a Las Orquideas")?.veredicto).toBe("revisar");
   });

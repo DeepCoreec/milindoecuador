@@ -75,11 +75,18 @@ const palabras = (t: string) =>
   );
 
 /** ¿Dos nombres hablan del mismo lugar? Iguales, o comparten casi todas sus palabras importantes (todas si es una sola). */
+/** Números y números romanos de un nombre ("Parque Herradura 3", "La Floresta II"). */
+const numeros = (t: string) => new Set(normalizar(t).match(/\b(\d+|i{1,3}|iv|v|vi{1,3}|ix|x)\b/g) ?? []);
+
 export function nombresParecidos(a: string, b: string): boolean {
   const na = normalizar(a);
   const nb = normalizar(b);
   if (!na || !nb) return false;
   if (na === nb) return true;
+  // Si los dos llevan número y no es el mismo, son lugares distintos ("Herradura 2" y "Herradura 3")
+  const xa = numeros(a);
+  const xb = numeros(b);
+  if (xa.size && xb.size && ![...xa].some((x) => xb.has(x))) return false;
   const pa = palabras(a);
   const pb = palabras(b);
   if (!pa.size || !pb.size) return false;
