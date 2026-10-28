@@ -87,10 +87,27 @@ describe("reglas del agente revisor de la Guía útil", () => {
     expect(aplicarReglas(uno, [otro])).toBeNull();
   });
 
-  it("no marcan duplicado si está lejos o es de otro tipo", () => {
+  it("no marcan duplicado si está lejos o es de otro grupo", () => {
     const uno = { ...s("Mirador de Cerro Paraíso", "mirador"), lat: -2.19, lng: -79.88 };
     expect(aplicarReglas(uno, [{ ...s("Mirador de Cerro Paraíso", "mirador", "visitar"), id: "x", lat: -2.15, lng: -79.9 }])).toBeNull();
-    expect(aplicarReglas(uno, [{ ...s("Mirador de Cerro Paraíso", "parque"), id: "y", lat: -2.19, lng: -79.88 }])).toBeNull();
+    // En transporte, la parada de Aerovía y la de Metrovía con el mismo nombre son distintas
+    const aerovia = { ...s("Parque Centenario", "aerovia", "transporte"), lat: -2.19, lng: -79.88 };
+    expect(aplicarReglas(aerovia, [{ ...s("Parque Centenario", "metrovia", "transporte"), id: "m", lat: -2.1901, lng: -79.8801 }])).toBeNull();
+  });
+
+  it("ven duplicados entre tipos distintos de «Para visitar» (casos reales de la tercera corrida)", () => {
+    const cerca = (a: string, ta: string, b: string, tb: string) =>
+      aplicarReglas({ ...s(a, ta), lat: -2.19, lng: -79.88 }, [{ ...s(b, tb), id: `otro-${b}`, lat: -2.1901, lng: -79.8801 }]);
+    expect(cerca("Parque Histórico de Guayaquil", "parque", "Parque Histórico", "museo")?.veredicto).toBe("revisar");
+    expect(cerca('Mirador "Cerro Paraíso"', "parque", "Mirador de Cerro Paraíso", "mirador")?.veredicto).toBe("revisar");
+  });
+
+  it("no toman por casa un parque con «familia» y dicen que los parques de ciudadela son de barrio", () => {
+    expect(aplicarReglas(s("Parque de la Familia", "parque"))).toBeNull();
+    expect(aplicarReglas(s("Parque Sagrada Familia", "parque"))).toBeNull();
+    const barrio = aplicarReglas(s("Parque Junín - Cdla. Ferroviaria", "parque"));
+    expect(barrio?.veredicto).toBe("descartar");
+    expect(barrio?.motivo).toContain("barrio");
   });
 
   it("normalizan tildes y signos", () => {

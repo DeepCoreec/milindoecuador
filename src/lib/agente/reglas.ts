@@ -44,8 +44,8 @@ const GENERICOS = new Set(
 const VIVIENDA = /\b(urb|urbanizacion|etapa|conjunto|condominio|manzana|mz|bloque|villa|ciudadela|cdla)\b/;
 /** Cosas que nunca son un lugar para visitar aunque OSM las marque así. */
 const NO_VISITABLE = /\b(palco|palcos|servicios higienicos|bano|banos|parqueadero|garita|bodega)\b/;
-/** Casas particulares. */
-const CASA = /\b(home|casa familia|familia)\b|^casa de [a-z]+$/;
+/** Casas particulares ("familia" sola no: "Parque de la Familia" es un parque; ajuste del 2026-10-28). */
+const CASA = /\b(home|casa familia)\b|^casa de [a-z]+$/;
 /** Negocios o servicios que OSM marcó como "para visitar". */
 const NEGOCIO = /\b(farmacia|clinica|consultorio|hospital|taller|ferreteria|tienda|bazar|restaurante|panaderia|abarrotes|despensa|cyber)\b/;
 
@@ -60,7 +60,7 @@ export function distancia(a: { lat: number; lng: number }, b: { lat: number; lng
  *  "Estatua de las Artes Aplicadas" no son el mismo lugar; ajuste del 2026-10-28 tras la primera corrida real). */
 const PALABRAS_VACIAS = new Set(
   [
-    "de", "del", "la", "las", "el", "los", "y", "a", "al", "en", "san", "santa",
+    "de", "del", "la", "las", "el", "los", "y", "a", "al", "en", "san", "santa", "guayaquil",
     "museo", "parque", "mirador", "estacion", "monumento", "estatua", "busto", "plaza", "plazoleta", "iglesia", "capilla",
     "cancha", "multiple", "area", "comun", "verde", "torre", "elemento", "artes", "arte",
   ].map(normalizar),
@@ -99,7 +99,10 @@ export function nombresParecidos(a: string, b: string): boolean {
 
 /**
  * La regla que aplica a este lugar, o null si el caso necesita criterio (Claude).
- * `otros`: lugares ya publicados o pendientes del mismo tipo, para detectar duplicados (a menos de 300 m).
+ * `otros`: lugares ya publicados o pendientes, para detectar duplicados (a menos de 300 m): del mismo tipo, o de
+ * cualquier tipo de "Para visitar" ("Parque Histórico de Guayaquil" como parque y "Parque Histórico" como museo son
+ * el mismo lugar; ajuste del 2026-10-28). En transporte no: la parada de Aerovía y la de Metrovía de "Parque
+ * Centenario" son distintas.
  */
 export function aplicarReglas(s: SitioParaRevisar, otros: SitioParaRevisar[] = []): Recomendacion | null {
   const n = normalizar(s.nombre);
@@ -108,14 +111,15 @@ export function aplicarReglas(s: SitioParaRevisar, otros: SitioParaRevisar[] = [
 
   if (s.grupo === "visitar") {
     if (NO_VISITABLE.test(n)) return { veredicto: "descartar", motivo: "No es un lugar para visitar (palco, baño u otro)" };
-    if (VIVIENDA.test(n)) return { veredicto: "descartar", motivo: "Parece una urbanización, etapa o bloque de vivienda" };
+    if (VIVIENDA.test(n))
+      return { veredicto: "descartar", motivo: s.tipo === "parque" ? "Parque de barrio o ciudadela (en la guía van solo los parques grandes)" : "Parece una urbanización, etapa o bloque de vivienda" };
     if (CASA.test(n)) return { veredicto: "descartar", motivo: "Parece una casa particular" };
     if (NEGOCIO.test(n)) return { veredicto: "descartar", motivo: "Es un negocio o servicio, no un lugar para visitar" };
   }
 
   if (s.lat != null && s.lng != null) {
     const gemelo = otros.find(
-      (o) => o.id !== s.id && o.tipo === s.tipo && o.lat != null && o.lng != null && distancia({ lat: s.lat!, lng: s.lng! }, { lat: o.lat, lng: o.lng }) < 300 && nombresParecidos(s.nombre, o.nombre),
+      (o) => o.id !== s.id && (o.tipo === s.tipo || (s.grupo === "visitar" && o.grupo === "visitar")) && o.lat != null && o.lng != null && distancia({ lat: s.lat!, lng: s.lng! }, { lat: o.lat, lng: o.lng }) < 300 && nombresParecidos(s.nombre, o.nombre),
     );
     if (gemelo) return { veredicto: "revisar", motivo: `Posible duplicado de «${gemelo.nombre.slice(0, 80)}»` };
   }

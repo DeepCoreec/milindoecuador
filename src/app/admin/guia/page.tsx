@@ -50,6 +50,12 @@ export default async function PaginaGuiaAdmin({ searchParams }: PageProps<"/admi
                 texto="Volver a revisar lo de las reglas"
                 etiqueta="Borrar las recomendaciones de las reglas para que el agente las vuelva a mirar"
               />
+              <BotonAccion
+                accion={reiniciarRecomendacionesReglas}
+                campos={grupo ? { grupo, fuente: "todas" } : { fuente: "todas" }}
+                texto="Volver a revisar todo (también lo de la IA)"
+                etiqueta="Borrar todas las recomendaciones, también las de la IA, para que el agente las vuelva a mirar con el criterio nuevo"
+              />
             </div>
             {acierto.length > 0 && (
               <p className="m-0 text-sm">

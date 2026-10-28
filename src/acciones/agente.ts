@@ -5,7 +5,7 @@ import { requireAdmin } from "@/lib/auth";
 import { aplicarReglas, type Recomendacion, type SitioParaRevisar } from "@/lib/agente/reglas";
 import { agenteConIA, ErrorAgente, LOTE, modeloAgente, revisarLoteConIA } from "@/lib/agente/revisor";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
-import { esquemaAgenteGuia } from "@/lib/validacion/admin";
+import { esquemaAgenteGuia, esquemaReinicioAgente } from "@/lib/validacion/admin";
 import type { EstadoAdmin } from "@/acciones/admin";
 
 /*
@@ -45,9 +45,9 @@ export async function pedirRevisionAgente(_previo: EstadoAdmin, datos: FormData)
   if (error) return { estado: "error", mensaje: "No se pudieron leer los lugares" };
   if (!candidatos?.length) return { estado: "ok", mensaje: "No quedan lugares sin recomendación en este grupo." };
 
-  // Para detectar duplicados: los lugares publicados o pendientes de los mismos tipos
-  const tipos = [...new Set(candidatos.map((c) => c.tipo))];
-  const { data: vecinos } = await db.from("city_spots").select(COLUMNAS).in("tipo", tipos).in("status", ["pendiente", "publicado"]).limit(5000).returns<Fila[]>();
+  // Para detectar duplicados: los lugares publicados o pendientes de los mismos grupos (las reglas filtran por tipo)
+  const grupos = [...new Set(candidatos.map((c) => c.grupo))];
+  const { data: vecinos } = await db.from("city_spots").select(COLUMNAS).in("grupo", grupos).in("status", ["pendiente", "publicado"]).limit(5000).returns<Fila[]>();
   const otros = (vecinos ?? []).map(aSitio);
 
   const modelo = modeloAgente();
@@ -120,21 +120,24 @@ export async function pedirRevisionAgente(_previo: EstadoAdmin, datos: FormData)
 }
 
 /**
- * Borra las recomendaciones que dieron las REGLAS en los lugares "Por revisar" del grupo, para que el agente los
- * vuelva a mirar con las reglas nuevas (ajuste del 2026-10-28). No toca lo que dijo la IA ni el estado de ningún lugar.
+ * Borra las recomendaciones de los lugares "Por revisar" del grupo para que el agente los vuelva a mirar: solo las de
+ * las REGLAS (cuando cambian las reglas) o también las de la IA (`fuente=todas`, cuando cambia el criterio del dueño;
+ * ajustes del 2026-10-28). Nunca toca el estado de ningún lugar.
  */
 export async function reiniciarRecomendacionesReglas(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
-  const r = esquemaAgenteGuia.safeParse({ grupo: datos.get("grupo") || undefined });
-  if (!r.success) return { estado: "error", mensaje: "Grupo inválido" };
+  const r = esquemaReinicioAgente.safeParse({ grupo: datos.get("grupo") || undefined, fuente: datos.get("fuente") || undefined });
+  if (!r.success) return { estado: "error", mensaje: "Datos inválidos" };
   await requireAdmin();
   let q = crearClienteAdmin()
     .from("city_spots")
     .update({ agent_verdict: null, agent_reason: null, agent_source: null, agent_model: null, agent_at: null })
     .eq("status", "pendiente")
-    .eq("agent_source", "regla");
+    .not("agent_verdict", "is", null);
+  if (r.data.fuente === "regla") q = q.eq("agent_source", "regla");
   if (r.data.grupo) q = q.eq("grupo", r.data.grupo);
   const { data, error } = await q.select("id");
   if (error) return { estado: "error", mensaje: "No se pudo reiniciar" };
   revalidatePath("/admin/guia");
-  return { estado: "ok", mensaje: `${data?.length ?? 0} recomendaciones de las reglas borradas. Vuelve a pedir la revisión.` };
+  const de = r.data.fuente === "regla" ? "de las reglas" : "(reglas e IA)";
+  return { estado: "ok", mensaje: `${data?.length ?? 0} recomendaciones ${de} borradas. Vuelve a pedir la revisión.` };
 }
