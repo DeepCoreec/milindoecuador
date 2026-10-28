@@ -302,6 +302,7 @@
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
+- (2026-10-28, pedido del usuario) **Agentes de IA que ayuden al admin**, partiendo de lo que ya existe y no desde cero. Propuesta de Claude: sin entrenar un modelo propio (no hay datos etiquetados); cada agente = reglas con los datos de OpenStreetMap + cruce con Overture Maps Places (puntaje de "existe", licencia CDLA/Apache) + Claude Haiku (la misma clave de Paumi) para el juicio, y **siempre el admin aprueba**: el agente solo recomienda. Primer candidato: revisor de la Guía útil (2332 lugares por revisar). Después: reseñas y reportes, fichas nuevas de dueños (C5), eventos reportados. Referencia revisada: vercel-labs/review-desk (patrón con aprobación humana; trae Workflow SDK, Slack y Redis: se toma la idea, no el código). Necesita su propio plan (PLAN-V6), permiso para librerías nuevas y estimar el costo antes de correrlo
 - (2026-10-27, auditoría de Supabase) Si hay abuso de Paumi, agrupar las IPv6 por /48 en la huella (hoy /64) (H2); al ocultar un video, mover o borrar su archivo (C6); verificar negocios nuevos antes de mostrarlos como confiables (C5).
 
 - (2026-10-10, revisión de la fase 22) Aviso "vas a salir de la guía" antes de abrir la página o el enlace de entradas de un evento; volver a revisar un evento ya reportado si su dueño cambia los enlaces; pedir una sola foto por lugar en las listas.
