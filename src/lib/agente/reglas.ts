@@ -49,6 +49,13 @@ const CASA = /\b(home|casa familia)\b|^casa de [a-z]+$/;
 /** Negocios o servicios que OSM marcó como "para visitar". */
 const NEGOCIO = /\b(farmacia|clinica|consultorio|hospital|taller|ferreteria|tienda|bazar|restaurante|panaderia|abarrotes|despensa|cyber)\b/;
 
+/**
+ * A menos de esta distancia y del mismo tipo, un lugar de Wikidata puede ser el mismo que uno de OpenStreetMap aunque
+ * se llamen distinto ("A. José de Sucre" y "Monumento a Sucre" a 10 m; fase 30). Solo se usa al traer de Wikidata:
+ * entre lugares de OpenStreetMap daría falsos duplicados (esculturas distintas en la misma plaza).
+ */
+export const MISMO_PUNTO_M = 25;
+
 /** Distancia aproximada en metros (suficiente para Guayaquil). */
 export function distancia(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
   const dLat = (a.lat - b.lat) * 111_320;
