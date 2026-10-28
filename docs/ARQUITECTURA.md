@@ -148,6 +148,7 @@ milindoecuador/
      - funciones que solo puede llamar el servidor: contador de visitas (`/api/evento`), tope de Paumi
        (`/api/paumi`), registro de errores (`instrumentation.ts`), borrado diario (`/api/tareas/eventos`) y
        comprobar si una cuenta es dueña antes de abrir un enlace corto de Maps (`acciones/ubicacion.ts`).
+     - el agente revisor de la Guía útil (versión 6): solo guarda su recomendación, después de `requireAdmin` (`acciones/agente.ts`).
   5. `revalidatePath()` de las páginas afectadas.
 - **Fotos:** el admin las sube al bucket `fotos-lugares` desde el panel (las reglas del bucket le dejan). El dueño
   (versión 2) recibe del servidor un permiso de subida firmado, de un solo uso, para un camino que elige el servidor;
@@ -170,12 +171,14 @@ milindoecuador/
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Widget del captcha | Sí |
 | `NEXT_PUBLIC_GOOGLE_ACTIVO` | `si` muestra "Entrar con Google" (solo cuando Google está configurado en Supabase) | Sí |
 | `TURNSTILE_SECRET_KEY` | `src/lib/captcha.ts` | **No** |
+| `ANTHROPIC_API_KEY` | Paumi y el agente revisor (`src/lib/paumi/config.ts`) | **No** |
+| `AGENTE_MODELO` | Agente revisor de la Guía útil (opcional; por defecto `claude-haiku-5-5`) | No (no es secreta, pero solo la usa el servidor) |
 
 `.env.local` está en `.gitignore`. En Vercel se cargan en Settings → Environment Variables.
 
 ## 5. Base de datos
 
-Definida completa en `supabase/migrations/` (0001 a 0018, en orden). Resumen:
+Definida completa en `supabase/migrations/` (0001 a 0019, en orden). Resumen:
 
 | Tabla | Lee | Escribe |
 | --- | --- | --- |
@@ -203,6 +206,8 @@ Definida completa en `supabase/migrations/` (0001 a 0018, en orden). Resumen:
 | `event_upload_permits` (0016) | Nadie | Solo `permiso_afiche` (6 por cuenta al día) |
 | `city_spots` (0017) | Todos (publicados) | El servidor importa de OSM; el admin cambia nombre, frase y estado |
 | `review_holds` (0018) | Nadie | Solo los disparadores: quien tuvo una reseña oculta en un lugar; su reseña nueva ahí entra oculta |
+| `city_spots.agent_*` (0019) | Admin (el público no) | Solo el servidor (agente revisor, después de `requireAdmin`); recomienda, no cambia el estado |
+| `spot_decisions` (0019) | Admin | Solo el disparador: cada decisión del admin en la Guía útil con lo que había recomendado el agente (para medir su acierto) |
 
 Reglas dentro de la base: una reseña por usuario y lugar, solo en lugares publicados; estrellas de 1 a 5;
 texto de 10 a 1000 caracteres sin caracteres invisibles; máximo 5 reseñas por usuario cada 24 horas

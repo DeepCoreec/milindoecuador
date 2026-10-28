@@ -234,3 +234,23 @@ migración, pero los arreglos de la base solo valen cuando la ejecutas).
 2. **Supabase → Authentication → Attack Protection:** captcha (Turnstile) activado. **Sign In / Providers → Email:**
    "Confirm email" activado.
 3. Pega las consultas de la sección "Lo que necesito de Supabase real" del informe y envíale el resultado a Claude.
+
+## 16. Versión 6: agente revisor de la Guía útil (migración 0019)
+
+Va **después** de la 0018 (sección 15). Detalle: `docs/PLAN-V6.md`.
+
+1. Supabase → SQL Editor → **+** → pega todo `supabase/migrations/0019_agente_guia.sql` → **Run** → "Success".
+   Agrega la recomendación del agente a los lugares de la Guía útil y el registro de tus decisiones.
+2. **Comprobar** (las 3 columnas deben decir `true`):
+   ```sql
+   select exists (select 1 from information_schema.columns where table_name = 'city_spots' and column_name = 'agent_verdict') as columnas,
+          exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'spot_decisions') as registro,
+          not has_column_privilege('anon', 'public.city_spots', 'agent_reason', 'SELECT') as privado;
+   ```
+3. Avísale a Claude: une la rama `agente-guia-util` a `main` y Vercel publica.
+4. La clave `ANTHROPIC_API_KEY` ya está en Vercel (la de Paumi): el agente usa la misma, con **Claude Haiku 5.5**. Si quieres
+   otro modelo, agrega `AGENTE_MODELO` en Vercel. Revisa en la Consola de Anthropic que tenga un **tope de gasto** puesto.
+5. **Usarlo:** Panel → Guía útil → "Por revisar" → **Pedir revisión al agente** (revisa hasta 100 por clic). Filtra por
+   "Dice publicar", revisa la lista, **Marcar los que el agente dice publicar** → **Publicar marcados**. Lo mismo con
+   descartar. Cada decisión tuya queda anotada y el panel muestra cuánto acierta el agente.
+
