@@ -271,6 +271,7 @@
   - [x] 2026-10-11: arreglo: Vercel (plan gratis) no publicaba la fase 23 porque el panel pedía 120 s por función; ahora 60 s (Overpass 35 s)
   - [x] (usuario) 2026-10-11: ejecutó 0017 en el Supabase real (y el ajuste de `revisar_textos_sitio`)
   - [x] 2026-10-28: importación de OpenStreetMap hecha desde el panel (el primer intento a las 09:19 falló porque `overpass-api.de` estaba saturado; el reintento a las 09:46 funcionó): **2332 lugares, todos "Por revisar"** (nada publicado). En las primeras 300 filas de cada grupo: Para visitar = parques 120, monumentos 106, atracciones 26, museos 25, miradores 19, iglesias 4; ¿Se te dañó algo? = talleres de autos 156, electrónica 91, celulares 50, cerrajerías 3; Salud = farmacias 180, clínicas 120; Transporte (43 en total) = terminales de buses 34, Aerovía 6, Metrovía 3. **Falta (usuario):** decidir qué se publica
+  - [x] 2026-10-28: primera revisión, aprobada por el usuario (11:55) y aplicada desde el panel (11:57): de 79 museos, atracciones, miradores y estaciones de Aerovía/Metrovía, **28 publicados**, 23 descartados y 28 siguen por revisar. Comprobado en `/guayaquil/guia-util` (Museos 13, Miradores 3…). Detalle y motivos: `docs/revisiones/guia-util-2026-10-28.md` (también son los primeros ejemplos para medir al agente revisor). Quedan 2281 por revisar
   - **Puerta (usuario):** importar, publicar algunos lugares y verlos en la guía y en Paumi
 
 - Fase 24 · Arreglos de lo que ya tenemos (pedido del usuario 2026-10-12; auditoría independiente del plan contra el código)
