@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { urlPublicaFoto, urlPublicaVideo } from "@/lib/fotos";
+import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { crearClienteServidor } from "@/lib/supabase/server";
 
 /*
@@ -500,7 +501,9 @@ export async function getSitiosAdmin(
 ): Promise<{ sitios: SitioAdmin[]; cuentas: Record<string, number>; acierto: AciertoAgente[] }> {
   await requireAdmin();
   const db = await crearClienteServidor();
-  let q = db
+  // La recomendación del agente no se puede leer con la sesión (0019): se lee con admin.ts, ya comprobado el admin
+  const dbAdmin = crearClienteAdmin();
+  let q = dbAdmin
     .from("city_spots")
     .select("id, tipo, grupo, name, note, address, osm_type, osm_id, agent_verdict, agent_reason, agent_source")
     .eq("status", estado)

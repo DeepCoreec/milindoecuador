@@ -19,11 +19,12 @@ alter table public.city_spots
   add column agent_at      timestamptz,
   add constraint agente_completo check ((agent_verdict is null) = (agent_reason is null));
 
--- El público lee la guía por columnas: todo menos la recomendación del agente (0017 daba la tabla entera).
--- Las cuentas con sesión siguen con la tabla entera: el admin la necesita y RLS solo les deja ver lo publicado.
-revoke select on public.city_spots from anon;
+-- Desde el navegador se lee la guía por columnas: todo menos la recomendación del agente (0017 daba la tabla entera).
+-- Vale para anon y para las cuentas con sesión (incluido el admin): el panel lee la recomendación con admin.ts,
+-- después de requireAdmin (revisión independiente del 2026-10-28).
+revoke select on public.city_spots from anon, authenticated;
 grant select (id, city_id, osm_type, osm_id, grupo, tipo, name, note, latitude, longitude, address, phone, website,
-  opening_hours, status, imported_at, created_at, updated_at) on public.city_spots to anon;
+  opening_hours, status, imported_at, created_at, updated_at) on public.city_spots to anon, authenticated;
 
 -- ---------------------------------------------------------------------
 -- 2. Registro de decisiones del admin
@@ -43,6 +44,8 @@ create policy "admin lee" on public.spot_decisions for select to authenticated u
 revoke all on public.spot_decisions from anon, authenticated;
 grant select on public.spot_decisions to authenticated; -- solo pasa la política del admin
 
+-- Solo cuentan como decisión publicar y descartar. "Devolver a revisión" no se anota (no es un acierto ni un error
+-- del agente) y borra la recomendación vieja para que el agente vuelva a mirar ese lugar.
 create function public.anotar_decision_sitio()
 returns trigger
 language plpgsql
@@ -50,12 +53,12 @@ security definer
 set search_path = ''
 as $$
 begin
-  if new.status is distinct from old.status then
+  if new.status is distinct from old.status and new.status in ('publicado', 'descartado') then
     insert into public.spot_decisions (spot_id, tipo, decision, agent_verdict, admin_id)
     values (
       new.id,
       new.tipo,
-      case new.status when 'publicado' then 'publicar' when 'descartado' then 'descartar' else 'revisar' end,
+      case new.status when 'publicado' then 'publicar' else 'descartar' end,
       new.agent_verdict,
       (select auth.uid())
     );
@@ -63,5 +66,25 @@ begin
   return null;
 end;
 $$;
+
+create function public.limpiar_recomendacion_sitio()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if new.status = 'pendiente' and old.status is distinct from 'pendiente' then
+    new.agent_verdict := null;
+    new.agent_reason := null;
+    new.agent_source := null;
+    new.agent_model := null;
+    new.agent_at := null;
+  end if;
+  return new;
+end;
+$$;
+create trigger limpiar_recomendacion before update of status on public.city_spots
+  for each row execute function public.limpiar_recomendacion_sitio();
 create trigger anotar_decision after update of status on public.city_spots
   for each row execute function public.anotar_decision_sitio();

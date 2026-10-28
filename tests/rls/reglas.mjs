@@ -676,6 +676,18 @@ r = await as("anon", "", `select name from public.city_spots where id = $1`, [SA
 check("el público ve el lugar publicado", r.rows?.length === 1, r);
 r = await as("anon", "", `select agent_reason from public.city_spots where id = $1`, [SA]);
 check("pero no la recomendación del agente", !!r.error, r);
+r = await as("authenticated", B, `select agent_reason from public.city_spots where id = $1`, [SA]);
+check("ni una cuenta con sesión (la lee el servidor después de requireAdmin)", !!r.error, r);
+r = await sitio(9002, "pendiente", "Museo de Prueba Dos");
+const SB = r.rows?.[0]?.id;
+await as("service_role", "", `update public.city_spots set agent_verdict = 'descartar', agent_reason = 'Dudoso', agent_source = 'regla' where id = $1`, [SB]);
+await as("authenticated", ADM, `update public.city_spots set status = 'descartado' where id = $1`, [SB]);
+r = await as("authenticated", ADM, `update public.city_spots set status = 'pendiente' where id = $1 returning id`, [SB]);
+check("el admin devuelve un lugar a revisión", r.rows?.length === 1, r);
+r = await db.query(`select agent_verdict, agent_reason from public.city_spots where id = $1`, [SB]);
+check("al volver a revisión se borra la recomendación vieja", r.rows[0].agent_verdict === null && r.rows[0].agent_reason === null, r.rows);
+r = await db.query(`select decision from public.spot_decisions where spot_id = $1`, [SB]);
+check("y \"devolver a revisión\" no cuenta como decisión", r.rows.length === 1 && r.rows[0].decision === "descartar", r.rows);
 r = await as("authenticated", B, `select * from public.spot_decisions`);
 check("una cuenta común no lee el registro de decisiones", r.rows?.length === 0 || !!r.error, r);
 r = await as("authenticated", ADM, `insert into public.spot_decisions (spot_id, tipo, decision) values ($1, 'museo', 'publicar')`, [SA]);

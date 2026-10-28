@@ -40,7 +40,7 @@ export default async function PaginaGuiaAdmin({ searchParams }: PageProps<"/admi
             </h2>
             <p className="m-0 max-w-[68ch] text-sm text-rio-suave">
               Revisa hasta 100 lugares «Por revisar» {grupo ? `de «${GRUPOS[grupo]}»` : ""} y recomienda publicar, revisar o descartar, con su motivo.
-              No cambia nada: tú decides con los botones de abajo. Primero usa reglas (gratis) y luego Claude Haiku.
+              No cambia nada: tú decides con los botones de abajo. Primero usa reglas (gratis) y luego Claude Haiku. Puede equivocarse: mira la lista antes de publicar en bloque.
             </p>
             <div>
               <BotonAccion accion={pedirRevisionAgente} campos={grupo ? { grupo } : {}} texto="Pedir revisión al agente" />
