@@ -123,7 +123,7 @@ async function pedirJSON(url: string, c: Ctx): Promise<unknown> {
   return j;
 }
 
-type Entidad = { titulo: string | null; archivo: string | null; punto: { lat: number; lng: number } | null };
+type Entidad = { titulo: string | null; archivo: string | null; punto: { lat: number; lng: number } | null; esPersona: boolean };
 
 /** Lo que importa de una entidad de Wikidata: artículo en español, imagen principal (P18) y coordenadas (P625). */
 async function leerEntidad(qid: string, c: Ctx): Promise<Entidad | null> {
@@ -135,7 +135,11 @@ async function leerEntidad(qid: string, c: Ctx): Promise<Entidad | null> {
   const archivo = e.claims?.P18?.[0]?.mainsnak?.datavalue?.value;
   const coord = e.claims?.P625?.[0]?.mainsnak?.datavalue?.value as { latitude?: unknown; longitude?: unknown } | undefined;
   const titulo = e.sitelinks?.eswiki?.title;
+  // "Es una instancia de" (P31) ser humano (Q5): un monumento enlazado a la persona traería su retrato (visto en
+  // producción el 2026-10-28 con "Presidente Gabriel García Moreno")
+  const esPersona = (e.claims?.P31 ?? []).some((x) => (x.mainsnak?.datavalue?.value as { id?: unknown } | undefined)?.id === "Q5");
   return {
+    esPersona,
     titulo: typeof titulo === "string" && titulo.length <= 250 ? titulo : null,
     archivo: typeof archivo === "string" && archivo.length <= 250 ? archivo : null,
     punto: typeof coord?.latitude === "number" && typeof coord.longitude === "number" ? { lat: coord.latitude, lng: coord.longitude } : null,
@@ -230,6 +234,7 @@ export async function buscarEnWikimedia(l: LugarParaBuscar, pedir: typeof fetch 
   // 2. La ficha de Wikidata: ¿de verdad está aquí?
   const e = await leerEntidad(qid, c);
   if (!e) return vacio("La ficha de Wikidata no existe");
+  if (e.esPersona) return vacio("La ficha de Wikidata es de una persona, no de un lugar");
   if (e.punto && distancia({ lat: l.lat, lng: l.lng }, e.punto) > (enlazado ? LEJOS_ENLAZADO_M : CERCA_BUSQUEDA_M)) {
     return vacio("La ficha de Wikidata está lejos de este lugar: puede ser otro");
   }
