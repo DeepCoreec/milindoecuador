@@ -145,3 +145,6 @@ export const esquemaEditarSitio = z.object({
   nombre: z.string().trim().min(2, "Escribe el nombre").max(120, "Máximo 120 caracteres"),
   nota: z.string().trim().max(300, "Máximo 300 caracteres").optional().default(""),
 });
+
+/** Agente revisor de la Guía útil (versión 6, fase 27): qué grupo revisar (vacío = todos). */
+export const esquemaAgenteGuia = z.object({ grupo: z.enum(["visitar", "servicios", "salud", "transporte"]).optional() });

@@ -289,8 +289,8 @@
   - [x] 25.2 Migración `0018_auditoria_supabase.sql` — 2026-10-27: eventos solo se ocultan con reportes de cuentas de 7+ días (C3); `review_holds`: una reseña ocultada no vuelve a salir borrándola y enviándola otra vez (C2); `revoke update (role)`: ni el admin cambia roles desde la página (I2). `guardarResena` avisa "en revisión" si quedó oculta. 12 reglas nuevas (227)
   - [x] 25.3 Fotos sueltas — 2026-10-27: la tarea diaria (`/api/tareas/eventos`) borra de `fotos-lugares` los archivos de más de 3 horas que no están en `place_photos` (C4)
   - [x] 25.4 Documentos al día — 2026-10-27: `ARQUITECTURA.md` §3 (lista completa de dónde se usa la clave de servicio) y §5 (las 9 tablas que faltaban), comentario de `admin.ts`, `PUESTA-EN-MARCHA.md` §15 y `docs/AUDITORIA-2026-10-27.md`. 227 reglas, 129 unitarias, lint y typecheck sin errores. Todo en la rama `seguridad-2026-10-27`
-  - [ ] 25.5 (usuario) PUESTA-EN-MARCHA §15: ejecutar 0018 en el Supabase real y comprobarla; hacer el repositorio privado y revisar los artifacts de copias (C1/H1); captcha y "Confirm email" en Supabase Auth (H3); enviar a Claude el resultado de las consultas del informe
-  - [ ] 25.6 Claude: cuando el usuario confirme 0018, unir `seguridad-2026-10-27` a `main`; con las consultas, confirmar en el informe lo que hoy dice "según el repositorio"
+  - [x] 25.5 (usuario) 2026-10-28 12:30: ejecutó 0018 en el Supabase real y la comprobación dio 3 `true` (antes se comprobó que tenía 0009–0017). Pendiente de este paso: repositorio privado, captcha/"Confirm email" y las consultas del informe. Texto original: ejecutar 0018 en el Supabase real y comprobarla; hacer el repositorio privado y revisar los artifacts de copias (C1/H1); captcha y "Confirm email" en Supabase Auth (H3); enviar a Claude el resultado de las consultas del informe
+  - [x] 25.6 2026-10-28: Claude une `seguridad-2026-10-27` a `main` (PR #18) después de la confirmación de 0018. Texto original: unir `seguridad-2026-10-27` a `main`; con las consultas, confirmar en el informe lo que hoy dice "según el repositorio"
   - [ ] 25.7 (usuario) Decidir C5 (verificar negocios nuevos antes de mostrarlos como confiables) y C6 (qué hacer con el archivo de un video ocultado)
   - **Siguiente paso:** 25.5 (usuario). Lo de Claude espera a que la migración esté en el Supabase real
 
@@ -301,6 +301,21 @@
   - [ ] 26.4 Ronda 4 · Paumi
   - [x] 26.5 PLAN-V6 (agentes de IA para el admin) en borrador — 2026-10-28: `docs/PLAN-V6.md`. Fase 27: agente revisor de la Guía útil (reglas + Claude Haiku + el admin decide; etapas de autonomía; registro de cada decisión; costo estimado 0,25 a 2,40 $ para los 2281 lugares). Fase 28: reseñas y reportes, fichas nuevas de dueños, eventos reportados. **Falta (usuario): aprobarlo**
   - **Siguiente paso:** el usuario autoriza acciones de las rondas 1 y 2 (y manda el Build Log de Vercel para R1); luego 26.3
+
+## Versión 6 · Agentes que ayudan al admin
+
+> Plan: `docs/PLAN-V6.md`. Aprobado el 2026-10-28 con **Claude Haiku 5.5** (el más barato). Rama `agente-guia-util`
+> (sale de `seguridad-2026-10-27`: necesita 0018 antes que 0019).
+
+- Fase 27 · Agente revisor de la Guía útil
+  - [x] 27.1 Base de datos — 2026-10-28: `0019_agente_guia.sql`: recomendación del agente en `city_spots` (`agent_verdict`, `agent_reason`, `agent_source`, `agent_model`, `agent_at`; el público ya no lee la tabla entera, solo sus columnas de siempre) y `spot_decisions`, registro automático (disparador) de cada decisión del admin con lo que había dicho el agente. 10 reglas nuevas (237)
+  - [x] 27.2 Reglas sin IA — 2026-10-28: `src/lib/agente/reglas.ts`: descartan nombres vacíos o genéricos, urbanizaciones/etapas/bloques, palcos y baños, casas particulares y negocios marcados "para visitar"; mandan a revisar posibles duplicados (mismo tipo, a menos de 300 m, nombre parecido). Nunca publican. Pruebas con las 51 decisiones del 2026-10-28: 0 de los 28 publicados tocados, 16 de los 23 descartados atrapados solos, el resto queda para Claude (`tests/unit/agente-reglas.test.ts`, 8 pruebas)
+  - [x] 27.3 Criterio con Claude Haiku 5.5 — 2026-10-28: `src/lib/agente/revisor.ts` (lotes de 20, herramienta obligatoria "recomendar", ids cortos L1…L20, datos entre `<datos>` y aviso contra instrucciones escondidas, respuesta validada con Zod, motivo limpio de 200 caracteres) y la acción `pedirRevisionAgente` (`src/acciones/agente.ts`: requireAdmin → reglas → Claude de a 3 lotes → guarda solo la recomendación; 100 lugares por clic, corte a los 40 s, registro de tokens en los logs de Vercel). Sin la clave de Anthropic usa solo las reglas. 5 pruebas unitarias con una API simulada
+  - [x] 27.4 Panel — 2026-10-28: en `/admin/guia` (Por revisar) caja "Agente revisor" con el botón "Pedir revisión al agente" (del grupo elegido), el acierto por tipo ("coincidió contigo en N de M", sale de `spot_decisions`), filtro por recomendación (dice publicar / revisar / descartar / sin recomendación), la recomendación y su motivo en cada lugar (regla o IA) y los botones "Marcar los que el agente dice publicar" / "descartar" (máximo 100). Publicar y descartar siguen siendo los botones de siempre: decide el admin. Compila; 142 unitarias y 237 reglas pasan. **No se pudo ver en pantalla:** necesita 0019 en la base (se verá al publicar)
+  - [ ] 27.5 Etapa 2 (aprobar solo lo seguro): solo si el usuario la activa
+  - [x] 27.6 Cierre — 2026-10-28: revisión independiente de seguridad (sin hallazgos altos). Arreglado: (a) se guarda después de cada tanda y una tanda nueva solo empieza si alcanza antes de los 55 s (antes un corte de Vercel perdía todo); (b) las reglas miran 500 lugares por clic y a Claude van como mucho 100, así la cola avanza aunque la IA falle; (c) "devolver a revisión" ya no cuenta como decisión y borra la recomendación vieja; (d) ninguna cuenta con sesión lee la recomendación (el panel la lee con admin.ts después de requireAdmin); (e) aviso en el panel: mirar la lista antes de publicar en bloque. `ARQUITECTURA.md` (§3, §4, §5) y `PUESTA-EN-MARCHA.md` §16. 241 reglas, 142 unitarias, lint, typecheck y build sin errores
+  - [x] 2026-10-28 12:33: el usuario ejecutó 0019 en el Supabase real (comprobación: 3 `true`); Claude une `agente-guia-util` a `main` (PR #19).
+  - **Siguiente paso:** probar el agente en Panel → Guía útil con el usuario. **Puerta:** el agente revisa la Guía útil y el usuario aprueba una muestra de 100; el acierto queda medido en el panel. 27.5 solo si el usuario la activa
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
@@ -345,3 +360,4 @@
 | 2026-10-27 | Auditoría independiente de Supabase (fase 25): migración 0018, limpieza de fotos sueltas y documentos al día, en la rama `seguridad-2026-10-27` | (usuario) PUESTA-EN-MARCHA §15; luego unir la rama a `main` |
 | 2026-10-28 | Auditoría integral, ronda 1 (producto y experiencia) | (usuario) autorizar R1–R11 y mandar el Build Log de Vercel; ronda 2 |
 | 2026-10-28 | Auditoría integral, ronda 2 (Google, velocidad y accesibilidad) | (usuario) autorizar G1–G9; ronda 3 |
+| 2026-10-28 | Versión 6, fase 27: agente revisor de la Guía útil (0019, reglas, Claude Haiku 5.5, panel) + revisión independiente arreglada, en la rama `agente-guia-util` | (usuario) 0018 y 0019 en Supabase; unir ramas a `main`; probar el agente |

@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/lib/auth";
 import { urlPublicaFoto, urlPublicaVideo } from "@/lib/fotos";
+import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { crearClienteServidor } from "@/lib/supabase/server";
 
 /*
@@ -476,19 +477,71 @@ export async function getEventosAdmin(): Promise<EventoAdmin[]> {
   }));
 }
 
-export type SitioAdmin = { id: string; tipo: string; grupo: string; nombre: string; nota: string | null; direccion: string | null; osm: string };
+export type SitioAdmin = {
+  id: string;
+  tipo: string;
+  grupo: string;
+  nombre: string;
+  nota: string | null;
+  direccion: string | null;
+  osm: string;
+  /** Recomendación del agente revisor (versión 6, fase 27), si ya la tiene. */
+  agente: { veredicto: "publicar" | "revisar" | "descartar"; motivo: string; fuente: "regla" | "ia" | null } | null;
+};
+export type FiltroAgente = "publicar" | "revisar" | "descartar" | "sin";
+/** Acierto del agente por tipo: en cuántas decisiones del admin coincidió con lo que había recomendado. */
+export type AciertoAgente = { tipo: string; total: number; aciertos: number };
 
-/** Guía útil (versión 5): sitios de OpenStreetMap por estado y grupo, y cuántos hay en cada estado. */
-export async function getSitiosAdmin(estado: string, grupo: string | null): Promise<{ sitios: SitioAdmin[]; cuentas: Record<string, number> }> {
+/** Guía útil (versión 5): sitios de OpenStreetMap por estado y grupo, y cuántos hay en cada estado.
+ *  Versión 6: también la recomendación del agente (filtro opcional) y cuánto acierta. */
+export async function getSitiosAdmin(
+  estado: string,
+  grupo: string | null,
+  agente: FiltroAgente | null = null,
+): Promise<{ sitios: SitioAdmin[]; cuentas: Record<string, number>; acierto: AciertoAgente[] }> {
   await requireAdmin();
   const db = await crearClienteServidor();
-  let q = db.from("city_spots").select("id, tipo, grupo, name, note, address, osm_type, osm_id").eq("status", estado).order("grupo").order("tipo").order("name").limit(300);
+  // La recomendación del agente no se puede leer con la sesión (0019): se lee con admin.ts, ya comprobado el admin
+  const dbAdmin = crearClienteAdmin();
+  let q = dbAdmin
+    .from("city_spots")
+    .select("id, tipo, grupo, name, note, address, osm_type, osm_id, agent_verdict, agent_reason, agent_source")
+    .eq("status", estado)
+    .order("grupo")
+    .order("tipo")
+    .order("name")
+    .limit(300);
   if (grupo) q = q.eq("grupo", grupo);
+  if (agente === "sin") q = q.is("agent_verdict", null);
+  else if (agente) q = q.eq("agent_verdict", agente);
   const contar = (s: string) => db.from("city_spots").select("id", { count: "exact", head: true }).eq("status", s);
-  const [{ data, error }, p, pub, d] = await Promise.all([q, contar("pendiente"), contar("publicado"), contar("descartado")]);
+  const [{ data, error }, p, pub, d, dec] = await Promise.all([
+    q,
+    contar("pendiente"),
+    contar("publicado"),
+    contar("descartado"),
+    db.from("spot_decisions").select("tipo, decision, agent_verdict").not("agent_verdict", "is", null).order("created_at", { ascending: false }).limit(5000),
+  ]);
   if (error) throw new Error(`No se pudieron leer los lugares: ${error.message}`);
+  const porTipo = new Map<string, AciertoAgente>();
+  for (const x of dec.data ?? []) {
+    const a = porTipo.get(x.tipo) ?? { tipo: x.tipo, total: 0, aciertos: 0 };
+    a.total++;
+    if (x.decision === x.agent_verdict) a.aciertos++;
+    porTipo.set(x.tipo, a);
+  }
   return {
-    sitios: (data ?? []).map((s) => ({ id: s.id, tipo: s.tipo, grupo: s.grupo, nombre: s.name, nota: s.note, direccion: s.address, osm: `${s.osm_type}/${s.osm_id}` })),
+    sitios: (data ?? []).map((s) => ({
+      id: s.id,
+      tipo: s.tipo,
+      grupo: s.grupo,
+      nombre: s.name,
+      nota: s.note,
+      direccion: s.address,
+      osm: `${s.osm_type}/${s.osm_id}`,
+      agente: s.agent_verdict ? { veredicto: s.agent_verdict, motivo: s.agent_reason ?? "", fuente: s.agent_source ?? null } : null,
+    })),
     cuentas: { pendiente: p.count ?? 0, publicado: pub.count ?? 0, descartado: d.count ?? 0 },
+    acierto: [...porTipo.values()].sort((a, b) => b.total - a.total),
   };
 }

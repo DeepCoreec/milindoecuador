@@ -1,7 +1,7 @@
 # Mi Lindo Ecuador — Plan de la versión 6: agentes que ayudan al admin
 
 > Idea del usuario del 2026-10-28: "agentes de IA que detecten y automaticen tareas de la página, partiendo de lo que
-> ya existe y no desde cero". Estado: **borrador, espera la aprobación del usuario**. Fase 27 en adelante.
+> ya existe y no desde cero". Estado: **aprobado por el usuario el 2026-10-28** ("usa haiku es mas barato para mi listo encargate"): modelo Claude Haiku 5.5. Fase 27 en adelante.
 > **Sin librerías nuevas:** se usa la API de Anthropic con `fetch`, igual que Paumi (`src/lib/paumi/cerebro.ts`).
 
 ## La idea en una línea
