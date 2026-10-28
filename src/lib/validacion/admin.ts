@@ -151,5 +151,7 @@ export const esquemaAgenteGuia = z.object({ grupo: z.enum(["visitar", "servicios
 /** Foto y descripción de un lugar de la Guía útil (versión 7, 29.3): botón de buscar (sin datos) y "Quitar". */
 export const esquemaBuscarFotosGuia = z.object({});
 export const esquemaQuitarFotoSitio = z.object({ sitio: z.uuid("Lugar inválido") });
+/** "Agregar un lugar" (versión 7, 30.3): el enlace que pegó el admin; qué es se decide en src/lib/guia/enlace.ts. */
+export const esquemaAgregarSitio = z.object({ enlace: z.string().trim().min(2, "Pega un enlace").max(300, "El enlace es demasiado largo") });
 /** "regla": borra solo lo de las reglas; "todas": también lo de la IA (cuando cambia el criterio del dueño). */
 export const esquemaReinicioAgente = esquemaAgenteGuia.extend({ fuente: z.enum(["regla", "todas"]).default("regla") });

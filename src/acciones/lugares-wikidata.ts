@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import type { EstadoAdmin } from "@/acciones/admin";
-import { distancia, MISMO_PUNTO_M, nombresParecidos } from "@/lib/agente/reglas";
+import { buscarRepetido, leerExistentes } from "@/lib/guia/duplicados";
 import { requireAdmin } from "@/lib/auth";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { esquemaBuscarFotosGuia } from "@/lib/validacion/admin";
@@ -17,8 +17,6 @@ import { ErrorWikimedia } from "@/lib/wikimedia";
  * Orden: Zod → requireAdmin → admin.ts (después de requireAdmin).
  */
 
-const CERCA_M = 300;
-type Existente = { name: string; tipo: string; latitude: number; longitude: number; wikidata: string | null };
 
 /** Espera entre importaciones, para cuidar el servicio público de Wikidata (revisión del 2026-10-28, hallazgo 3). */
 const ESPERA_MS = 10 * 60_000;
@@ -46,44 +44,21 @@ export async function importarWikidata(_previo: EstadoAdmin, datos: FormData): P
   }
   if (!candidatos.length) return { estado: "error", mensaje: "Wikidata no devolvió lugares." };
 
-  // Lo que ya hay, para no duplicar: los que tienen alguno de estos Q (cualquier grupo) y todos los "para visitar",
-  // leídos por páginas (la API entrega como mucho 1000 filas por pedido; hallazgo 2)
+  // Lo que ya hay, para no duplicar (src/lib/guia/duplicados.ts)
   const { data: ciudad } = await db.from("cities").select("id").eq("slug", "guayaquil").single();
   if (!ciudad) return { estado: "error", mensaje: "No se encontró la ciudad" };
-  const ya: Existente[] = [];
-  for (let i = 0; i < candidatos.length; i += 200) {
-    const { data, error } = await db.from("city_spots").select("name, tipo, latitude, longitude, wikidata").in("wikidata", candidatos.slice(i, i + 200).map((c) => c.qid)).returns<Existente[]>();
-    if (error) return { estado: "error", mensaje: "No se pudo leer la guía" };
-    ya.push(...(data ?? []));
-  }
-  for (let desde = 0; desde < 10_000; desde += 1000) {
-    const { data, error } = await db
-      .from("city_spots")
-      .select("name, tipo, latitude, longitude, wikidata")
-      .eq("grupo", "visitar")
-      .order("id")
-      .range(desde, desde + 999)
-      .returns<Existente[]>();
-    if (error) return { estado: "error", mensaje: "No se pudo leer la guía" };
-    ya.push(...(data ?? []));
-    if ((data?.length ?? 0) < 1000) break;
-  }
+  const ya = await leerExistentes(db, candidatos.map((c) => c.qid));
+  if (!ya) return { estado: "error", mensaje: "No se pudo leer la guía" };
 
   const nuevos: CandidatoWikidata[] = [];
   let repetidos = 0;
   for (const c of candidatos) {
-    const igual = ya.some((e) => {
-      if (e.wikidata === c.qid) return true;
-      const d = distancia({ lat: c.lat, lng: c.lng }, { lat: e.latitude, lng: e.longitude });
-      // Nombre parecido cerca, o del mismo tipo casi en el mismo punto aunque se llame distinto (fase 30)
-      return (d < CERCA_M && nombresParecidos(c.nombre, e.name)) || (d < MISMO_PUNTO_M && e.tipo === c.tipo);
-    });
-    if (igual) {
+    if (buscarRepetido(c, ya)) {
       repetidos++;
       continue;
     }
     nuevos.push(c);
-    ya.push({ name: c.nombre, tipo: c.tipo, latitude: c.lat, longitude: c.lng, wikidata: c.qid });
+    ya.push({ name: c.nombre, tipo: c.tipo, status: "pendiente", latitude: c.lat, longitude: c.lng, wikidata: c.qid });
   }
 
   // Se guardan por lotes, como en OpenStreetMap; si un nombre no pasa el filtro de palabras, ese lote va uno por uno.

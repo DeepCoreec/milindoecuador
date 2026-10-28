@@ -37,9 +37,12 @@ export const CLASES: readonly (readonly [string, TipoSitio, string])[] = [
 ];
 
 /** La consulta SPARQL (se arma solo con constantes: nada que venga de afuera). */
-export function consultaWikidata(): string {
+export function consultaWikidata(soloQ?: string): string {
   const [latMin, lonMin, latMax, lonMax] = CAJA_GUAYAQUIL;
-  return `SELECT ?item ?nombre ?coord ?clase WHERE {
+  // 30.3: un solo lugar (agregar por enlace). El Q se valida con su forma exacta antes de ponerlo en la consulta
+  if (soloQ !== undefined && !/^Q[1-9]\d{0,11}$/.test(soloQ)) throw new ErrorWikimedia("Código de Wikidata inválido", true);
+  const uno = soloQ ? `\n  VALUES ?item { wd:${soloQ} }` : "";
+  return `SELECT ?item ?nombre ?coord ?clase WHERE {${uno}
   SERVICE wikibase:box {
     ?item wdt:P625 ?coord .
     bd:serviceParam wikibase:cornerSouthWest "Point(${lonMin} ${latMin})"^^geo:wktLiteral .
@@ -85,8 +88,8 @@ export function aCandidatos(respuesta: unknown): CandidatoWikidata[] {
 }
 
 /** Pide la consulta al servicio público de Wikidata (solo ese dominio, sin redirecciones, máximo 5 MB). */
-export async function buscarCandidatosWikidata(pedir: typeof fetch = fetch): Promise<CandidatoWikidata[]> {
-  const url = `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(consultaWikidata())}`;
+export async function buscarCandidatosWikidata(pedir: typeof fetch = fetch, soloQ?: string): Promise<CandidatoWikidata[]> {
+  const url = `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(consultaWikidata(soloQ))}`;
   const r = await pedir(url, {
     headers: { "user-agent": AGENTE, accept: "application/sparql-results+json" },
     signal: AbortSignal.timeout(40_000),

@@ -32,6 +32,10 @@ export type TipoSitio = (typeof TIPOS_SITIO)[number]["tipo"];
 export const NOMBRE_TIPO = Object.fromEntries(TIPOS_SITIO.map((t) => [t.tipo, t.nombre])) as Record<TipoSitio, string>;
 
 /** Zona urbana de Guayaquil (sur, oeste, norte, este), con Samborondón y la Isla Santay. */
+/** API Overpass de OpenStreetMap (en desarrollo se puede cambiar con OVERPASS_URL; en producción, nunca). */
+const OVERPASS = "https://overpass-api.de/api/interpreter";
+export const urlOverpass = () => (process.env.NODE_ENV !== "production" && process.env.OVERPASS_URL) || OVERPASS;
+
 export const CAJA_GUAYAQUIL = [-2.3, -80.05, -2.05, -79.84] as const;
 
 /** Consulta para Overpass: solo lo que tiene nombre, con el centro de las áreas. */

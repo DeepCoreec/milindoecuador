@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { DIAS_DESTACADO, nuevoVencimiento } from "@/lib/planes";
 import { mensajeModeracion } from "@/lib/moderacion";
-import { aSitios, consultaOverpass } from "@/lib/osm";
+import { aSitios, consultaOverpass, urlOverpass } from "@/lib/osm";
 import { crearFichaBorrador } from "@/lib/fichas";
 import { aSlug, slugLibre } from "@/lib/slug";
 import { esEnlaceCorto } from "@/lib/ubicacion";
@@ -544,8 +544,6 @@ export async function decidirEvento(_previo: EstadoAdmin, datos: FormData): Prom
  * Importar: el servidor pide los lugares a Overpass y los guarda como pendientes (los que ya están no se tocan,
  * así no se pierde lo que el admin corrigió). Después el admin publica o descarta.
  */
-const OVERPASS = "https://overpass-api.de/api/interpreter";
-const urlOverpass = () => (process.env.NODE_ENV !== "production" && process.env.OVERPASS_URL) || OVERPASS;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars -- firma de useActionState
 export async function importarOSM(_previo: EstadoAdmin, _datos: FormData): Promise<EstadoAdmin> {
