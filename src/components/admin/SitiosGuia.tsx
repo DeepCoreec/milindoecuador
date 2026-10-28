@@ -44,6 +44,18 @@ function Corregir({ s }: { s: SitioAdmin }) {
   );
 }
 
+/** Marca (como mucho 100, el máximo por envío) los lugares con esa recomendación del agente; desmarca el resto. */
+function marcarSegun(veredicto: string) {
+  let n = 0;
+  document.querySelectorAll<HTMLInputElement>('input[form="f-lote"][name="sitio"]').forEach((c) => {
+    c.checked = c.dataset.agente === veredicto && n < 100;
+    if (c.checked) n++;
+  });
+}
+
+const ETIQUETA_AGENTE = { publicar: "Agente: publicar", revisar: "Agente: revisar", descartar: "Agente: descartar" } as const;
+const COLOR_AGENTE = { publicar: "text-exito", revisar: "text-rio-suave", descartar: "text-error" } as const;
+
 /** Lista de lugares de OpenStreetMap con casillas para publicar o descartar varios a la vez. */
 export function SitiosGuia({ sitios, estado }: { sitios: SitioAdmin[]; estado: string }) {
   const [r, accion, ocupado] = useActionState(decidirSitios, inicial);
@@ -57,6 +69,16 @@ export function SitiosGuia({ sitios, estado }: { sitios: SitioAdmin[]; estado: s
         >
           Marcar todos
         </button>
+        {estado === "pendiente" && sitios.some((s) => s.agente) && (
+          <>
+            <button type="button" onClick={() => marcarSegun("publicar")} className={clasesBoton("texto", "chico")}>
+              Marcar los que el agente dice publicar
+            </button>
+            <button type="button" onClick={() => marcarSegun("descartar")} className={clasesBoton("texto", "chico")}>
+              Marcar los que dice descartar
+            </button>
+          </>
+        )}
         {estado !== "publicado" && (
           <button type="submit" name="decision" value="publicado" disabled={ocupado} className={clasesBoton("principal", "chico")}>
             Publicar marcados
@@ -80,7 +102,7 @@ export function SitiosGuia({ sitios, estado }: { sitios: SitioAdmin[]; estado: s
           return (
             <li key={s.id} className="grid gap-2 rounded-xl border border-linea bg-papel-alto p-4">
               <label className="flex cursor-pointer items-start gap-3">
-                <input type="checkbox" form="f-lote" name="sitio" value={s.id} className="mt-1 size-5 flex-none accent-celeste-tinta" />
+                <input type="checkbox" form="f-lote" name="sitio" value={s.id} data-agente={s.agente?.veredicto ?? ""} className="mt-1 size-5 flex-none accent-celeste-tinta" />
                 <span className="grid gap-0.5">
                   <b className="text-base">{s.nombre}</b>
                   <span className="text-sm text-rio-suave">
@@ -88,6 +110,16 @@ export function SitiosGuia({ sitios, estado }: { sitios: SitioAdmin[]; estado: s
                     {s.direccion ? `, ${s.direccion}` : ""}
                   </span>
                   {s.nota && <span className="text-sm">{s.nota}</span>}
+                  {s.agente && (
+                    <span className="text-sm">
+                      <b className={COLOR_AGENTE[s.agente.veredicto]}>{ETIQUETA_AGENTE[s.agente.veredicto]}</b>
+                      <span className="text-rio-suave">
+                        {" "}
+                        · {s.agente.motivo}
+                        {s.agente.fuente === "regla" ? " (regla)" : s.agente.fuente === "ia" ? " (IA)" : ""}
+                      </span>
+                    </span>
+                  )}
                 </span>
               </label>
               <span className="flex flex-wrap gap-4 pl-8 text-sm">

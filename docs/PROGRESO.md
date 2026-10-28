@@ -311,10 +311,10 @@
   - [x] 27.1 Base de datos — 2026-10-28: `0019_agente_guia.sql`: recomendación del agente en `city_spots` (`agent_verdict`, `agent_reason`, `agent_source`, `agent_model`, `agent_at`; el público ya no lee la tabla entera, solo sus columnas de siempre) y `spot_decisions`, registro automático (disparador) de cada decisión del admin con lo que había dicho el agente. 10 reglas nuevas (237)
   - [x] 27.2 Reglas sin IA — 2026-10-28: `src/lib/agente/reglas.ts`: descartan nombres vacíos o genéricos, urbanizaciones/etapas/bloques, palcos y baños, casas particulares y negocios marcados "para visitar"; mandan a revisar posibles duplicados (mismo tipo, a menos de 300 m, nombre parecido). Nunca publican. Pruebas con las 51 decisiones del 2026-10-28: 0 de los 28 publicados tocados, 16 de los 23 descartados atrapados solos, el resto queda para Claude (`tests/unit/agente-reglas.test.ts`, 8 pruebas)
   - [x] 27.3 Criterio con Claude Haiku 5.5 — 2026-10-28: `src/lib/agente/revisor.ts` (lotes de 20, herramienta obligatoria "recomendar", ids cortos L1…L20, datos entre `<datos>` y aviso contra instrucciones escondidas, respuesta validada con Zod, motivo limpio de 200 caracteres) y la acción `pedirRevisionAgente` (`src/acciones/agente.ts`: requireAdmin → reglas → Claude de a 3 lotes → guarda solo la recomendación; 100 lugares por clic, corte a los 40 s, registro de tokens en los logs de Vercel). Sin la clave de Anthropic usa solo las reglas. 5 pruebas unitarias con una API simulada
-  - [ ] 27.4 Panel
+  - [x] 27.4 Panel — 2026-10-28: en `/admin/guia` (Por revisar) caja "Agente revisor" con el botón "Pedir revisión al agente" (del grupo elegido), el acierto por tipo ("coincidió contigo en N de M", sale de `spot_decisions`), filtro por recomendación (dice publicar / revisar / descartar / sin recomendación), la recomendación y su motivo en cada lugar (regla o IA) y los botones "Marcar los que el agente dice publicar" / "descartar" (máximo 100). Publicar y descartar siguen siendo los botones de siempre: decide el admin. Compila; 142 unitarias y 237 reglas pasan. **No se pudo ver en pantalla:** necesita 0019 en la base (se verá al publicar)
   - [ ] 27.5 Etapa 2 (aprobar solo lo seguro): solo si el usuario la activa
   - [ ] 27.6 Cierre
-  - **Siguiente paso:** 27.4
+  - **Siguiente paso:** 27.6 (cierre); 27.5 solo si el usuario la activa
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
