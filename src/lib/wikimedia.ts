@@ -163,6 +163,11 @@ async function leerResumen(idioma: string, titulo: string, c: Ctx): Promise<Resu
   };
 }
 
+/** El Q de Wikidata de un artículo de Wikipedia (`idioma` de 2–3 letras), o null (30.3: agregar por enlace). */
+export async function qidDeWikipedia(idioma: string, titulo: string, pedir: typeof fetch = fetch, corte?: AbortSignal): Promise<string | null> {
+  return (await leerResumen(idioma, titulo, { pedir, corte }))?.qid ?? null;
+}
+
 /** Artículos de Wikipedia en español a menos de 300 m; el primero con nombre parecido (regla 4). */
 async function buscarCerca(l: LugarParaBuscar, c: Ctx): Promise<{ titulo: string | null; detalle: string }> {
   const url = `https://es.wikipedia.org/w/api.php?action=query&list=geosearch&gscoord=${l.lat.toFixed(6)}%7C${l.lng.toFixed(6)}&gsradius=${CERCA_BUSQUEDA_M}&gslimit=15&format=json`;

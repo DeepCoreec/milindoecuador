@@ -3,6 +3,7 @@ import { importarOSM } from "@/acciones/admin";
 import { pedirRevisionAgente, reiniciarRecomendacionesReglas } from "@/acciones/agente";
 import { buscarFotosGuia, reiniciarBusquedaFotos } from "@/acciones/fotos-guia";
 import { importarWikidata } from "@/acciones/lugares-wikidata";
+import { AgregarSitio } from "@/components/admin/AgregarSitio";
 import { BotonAccion } from "@/components/admin/BotonAccion";
 import { SitiosGuia } from "@/components/admin/SitiosGuia";
 import { getSitiosAdmin, type FiltroAgente } from "@/lib/datos/admin";
@@ -43,6 +44,12 @@ export default async function PaginaGuiaAdmin({ searchParams }: PageProps<"/admi
             etiqueta="Traer de Wikidata solo lugares turísticos con foto, artículo en Wikipedia y ubicación, para revisarlos"
           />
         </div>
+        <section aria-labelledby="t-agregar" className="grid gap-2 rounded-xl border border-linea bg-papel-alto p-4">
+          <h2 id="t-agregar" className="m-0 text-base font-semibold">
+            Agregar un lugar
+          </h2>
+          <AgregarSitio />
+        </section>
         {estado === "publicado" && (
           <section aria-labelledby="t-fotos" className="grid gap-2 rounded-xl border border-linea bg-papel-alto p-4">
             <h2 id="t-fotos" className="m-0 text-base font-semibold">

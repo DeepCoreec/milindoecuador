@@ -5,7 +5,7 @@ import type { EstadoAdmin } from "@/acciones/admin";
 import { requireAdmin } from "@/lib/auth";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { esquemaBuscarFotosGuia, esquemaQuitarFotoSitio } from "@/lib/validacion/admin";
-import { buscarEnWikimedia, descargarFoto, ErrorWikimedia } from "@/lib/wikimedia";
+import { enriquecerSitio } from "@/lib/guia/enriquecer";
 
 /*
  * "Buscar fotos y descripción" en /admin/guia (versión 7, fase 29.3; plan en docs/PLAN-V7.md).
@@ -51,64 +51,23 @@ export async function buscarFotosGuia(_previo: EstadoAdmin, datos: FormData): Pr
   let fallas = 0;
   /** Por qué cada lugar no trajo foto (29.8): se muestra al admin para encontrar fallas. */
   const motivos: string[] = [];
-  const bucket = db.storage.from("fotos-lugares");
 
   // Corte duro antes de los 60 s de Vercel: lo que no alcance se aborta y se reintenta en el próximo clic (hallazgo 3)
   const corte = AbortSignal.timeout(Math.max(LIMITE_MS + 10_000 - (Date.now() - inicio), 5_000));
-  const anotar = (id: string, cambios: Record<string, unknown> = {}) =>
-    db.from("city_spots").update({ ...cambios, enriched_at: new Date().toISOString() }).eq("id", id).or("status.eq.publicado,and(status.eq.pendiente,osm_type.eq.wikidata)").select("id");
-
   const uno = async (f: Fila) => {
-    let subida: string | null = null;
-    try {
-      const r = await buscarEnWikimedia({ nombre: f.name, lat: f.latitude, lng: f.longitude, wikidata: f.wikidata, wikipedia: f.wikipedia }, fetch, corte);
-      let foto: { photo_path: string; photo_credit: string; photo_license: string; photo_source: string } | null = null;
-      let sinFoto = r.sinFoto;
-      if (r.foto) {
-        try {
-          const d = await descargarFoto(r.foto.url, fetch, corte);
-          const camino = `guia/${f.id}.${d.extension}`;
-          const { error: e } = await bucket.upload(camino, d.datos, { contentType: d.tipo, upsert: true, cacheControl: "604800" });
-          if (e) throw new ErrorWikimedia(`no se pudo guardar en el bucket (${e.message.slice(0, 40)})`);
-          subida = camino;
-          foto = { photo_path: camino, photo_credit: r.foto.credito, photo_license: r.foto.licencia, photo_source: r.foto.fuente };
-        } catch (e) {
-          // Si la descarga falla sin arreglo, la descripción igual se guarda; si es pasajera, se reintenta todo
-          if (!(e instanceof ErrorWikimedia && e.permanente)) throw e;
-          sinFoto = `descarga: ${e.message}`;
-        }
-      }
-      if (sinFoto) motivos.push(`${f.name.slice(0, 40)}: ${sinFoto}`);
-      const textos = { ...(foto ?? {}), ...(r.descripcion ? { description: r.descripcion.texto, description_source: r.descripcion.fuente } : {}) };
-      let res = await anotar(f.id, { wikidata: r.wikidata ?? f.wikidata, ...textos });
-      let filtrado = false;
-      // El filtro de palabras de la base (0020) rechazó el texto o el autor: el lugar se queda sin foto ni descripción
-      if (res.error?.message?.includes("texto_no_permitido")) {
-        filtrado = true;
-        res = await anotar(f.id, { wikidata: r.wikidata ?? f.wikidata });
-      }
-      if (res.error) throw new ErrorWikimedia("No se pudo guardar");
-      // Sin fila actualizada (el lugar dejó de estar publicado) o rechazado por el filtro: la foto no queda suelta
-      if (subida && (filtrado || !res.data?.length)) await bucket.remove([subida]);
-      if (!res.data?.length) return;
+    const r = await enriquecerSitio(db, f, "busqueda", corte);
+    const nombre = f.name.slice(0, 40);
+    if (r.estado === "pasajero") fallas++;
+    else if (r.estado === "permanente") {
       revisados++;
-      const conFotoAqui = !!foto && !filtrado;
-      const conTextoAqui = !!r.descripcion && !filtrado;
-      if (conFotoAqui) conFoto++;
-      if (conTextoAqui) conTexto++;
-      if (!conFotoAqui && !conTextoAqui) sinNada++;
-      console.log(JSON.stringify({ evento: "foto_guia", sitio: f.id, wikidata: r.wikidata, foto: conFotoAqui, descripcion: conTextoAqui, filtrado, nada: r.nada }));
-    } catch (e) {
-      if (subida) await bucket.remove([subida]);
-      const permanente = e instanceof ErrorWikimedia && e.permanente;
-      // Un error que no se arregla solo: se anota como revisado (sin foto ni texto) para no trabar el botón (hallazgo 2)
-      if (permanente) {
-        await anotar(f.id);
-        revisados++;
-        sinNada++;
-        motivos.push(`${f.name.slice(0, 40)}: ${e instanceof ErrorWikimedia ? e.message : "error"}`);
-      } else fallas++;
-      console.log(JSON.stringify({ evento: "foto_guia_falla", sitio: f.id, permanente, error: e instanceof ErrorWikimedia ? e.message : "inesperado o tiempo agotado" }));
+      sinNada++;
+      motivos.push(`${nombre}: ${r.motivo}`);
+    } else if (r.estado === "listo") {
+      revisados++;
+      if (r.conFoto) conFoto++;
+      if (r.conTexto) conTexto++;
+      if (!r.conFoto && !r.conTexto) sinNada++;
+      if (r.sinFoto) motivos.push(`${nombre}: ${r.sinFoto}`);
     }
   };
 
