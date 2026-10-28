@@ -292,6 +292,13 @@
   - [ ] 25.7 (usuario) Decidir C5 (verificar negocios nuevos antes de mostrarlos como confiables) y C6 (qué hacer con el archivo de un video ocultado)
   - **Siguiente paso:** 25.5 (usuario). Lo de Claude espera a que la migración esté en el Supabase real
 
+- Fase 26 · Auditoría integral en rondas (pedido del usuario 2026-10-27, prompt revisado con ChatGPT). Solo lectura; cada ronda deja un informe privado de Claude y una lista priorizada que espera autorización
+  - [x] 26.1 Ronda 1 · Producto y experiencia — 2026-10-28: web real revisada en el Chrome del usuario (sin tocar nada) y el código actual a 390 px en una copia local. La web publicada tiene 1 ficha (DeepCore.ec, mal categorizada y con su propia reseña), 11 de 12 categorías vacías, 0 eventos, y sigue con el código del 2026-10-10 (`/guayaquil/guia-util` da 404: ver 24.0). En el celular, 0 desbordes en 8 páginas. 11 acciones (R1–R11) en el informe "Ronda 1 · Producto y experiencia"; las de código: R1 (publicación en Vercel), R3 (no reseñar el propio negocio), R7 (medición propia), R8 (ejemplos del buscador), R9, R10
+  - [ ] 26.2 Ronda 2 · Google, velocidad y accesibilidad
+  - [ ] 26.3 Ronda 3 · Estructura del código, pruebas y publicación automática
+  - [ ] 26.4 Ronda 4 · Paumi
+  - **Siguiente paso:** el usuario autoriza acciones de la ronda 1 (y manda el Build Log de Vercel para R1); luego 26.2
+
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
 - (2026-10-27, auditoría de Supabase) Si hay abuso de Paumi, agrupar las IPv6 por /48 en la huella (hoy /64) (H2); al ocultar un video, mover o borrar su archivo (C6); verificar negocios nuevos antes de mostrarlos como confiables (C5).
@@ -332,3 +339,4 @@
 | 2026-10-05 | 1.2, 1.4, 1.5 y maquetas de las 5 pantallas | Aprobación de maquetas; datos de Supabase y Vercel |
 | 2026-10-09 | Lluvia de ideas y plan de la versión 3; fases 11 (video y redes), 12 (enlace corto de Maps y buscador) y 13 (seguridad y herramientas) construidas y revisadas | (usuario) migraciones 0009–0012 en el Supabase real; unir `v3-video` a `main`; fase 14 |
 | 2026-10-27 | Auditoría independiente de Supabase (fase 25): migración 0018, limpieza de fotos sueltas y documentos al día, en la rama `seguridad-2026-10-27` | (usuario) PUESTA-EN-MARCHA §15; luego unir la rama a `main` |
+| 2026-10-28 | Auditoría integral, ronda 1 (producto y experiencia) | (usuario) autorizar R1–R11 y mandar el Build Log de Vercel; ronda 2 |
