@@ -203,3 +203,34 @@ Primero la base y después el código:
 3. Marca los que estén bien (puedes "Corregir" el nombre o agregar una frase) → **Publicar marcados**.
    Los que no sirvan → **Descartar marcados** (no vuelven a aparecer al traer otra vez).
 4. Míralos en `/guayaquil/guia-util` y pregúntale a Paumi, por ejemplo, "¿dónde hay una farmacia?".
+
+## 15. Arreglos de la auditoría de Supabase del 2026-10-27 (migración 0018)
+
+Detalle: `docs/AUDITORIA-2026-10-27.md`. Primero la base y después el código (el código funciona igual sin la
+migración, pero los arreglos de la base solo valen cuando la ejecutas).
+
+1. Supabase → SQL Editor → **+** → pega todo `supabase/migrations/0018_auditoria_supabase.sql` → **Run** → "Success".
+   - Los eventos solo se ocultan solos con reportes de cuentas de 7 días o más.
+   - Una reseña que ocultaste no vuelve a salir si su autor la borra y la envía de nuevo (entra "en revisión").
+   - Nadie cambia un rol desde la página, ni el admin. Para dar el rol de admin a otra cuenta, solo aquí en el
+     SQL Editor (ver el final de `0001_esquema_inicial.sql`).
+2. **Comprobar** (pega esto y **Run**; las 3 filas deben decir `true`):
+   ```sql
+   select exists (select 1 from pg_tables where schemaname = 'public' and tablename = 'review_holds') as tabla_nueva,
+          not has_column_privilege('authenticated', 'public.profiles', 'role', 'UPDATE') as rol_cerrado,
+          (select rowsecurity from pg_tables where schemaname = 'public' and tablename = 'review_holds') as con_rls;
+   ```
+3. Avísale a Claude. Claude une la rama `seguridad-2026-10-27` a `main` y Vercel publica.
+4. Desde ese día, la tarea diaria de las 00:05 también borra las fotos de negocios que se subieron y nunca se
+   guardaron (más de 3 horas). **Ojo:** si alguna vez subiste fotos a mano en Supabase → Storage → `fotos-lugares`
+   sin pasar por el panel, se borrarían; súbelas por el panel.
+
+### Lo que la auditoría pide que hagas tú (no lo puede hacer Claude)
+
+1. **GitHub → el repositorio → Settings → General → Danger Zone → Change visibility → Private.** Las copias de la
+   base (con correos y contraseñas cifradas) se guardan en GitHub Actions y en un repositorio público cualquiera
+   las descarga. Hazlo **antes** de poner los secretos `SUPABASE_DB_URL` y `CLAVE_COPIAS`: el 2026-10-27 todavía no había
+   ninguna copia guardada.
+2. **Supabase → Authentication → Attack Protection:** captcha (Turnstile) activado. **Sign In / Providers → Email:**
+   "Confirm email" activado.
+3. Pega las consultas de la sección "Lo que necesito de Supabase real" del informe y envíale el resultado a Claude.

@@ -563,6 +563,8 @@ r = await db.query(`select slug from public.city_events order by slug`);
 check("y deja los vigentes", r.rows.map((x) => x.slug).join() === "feria-1,feria-3", r.rows);
 const C = "00000000-0000-0000-0000-00000000000c";
 await db.exec(`insert into auth.users (id, email) values ('${C}', 'c@test.com') on conflict do nothing`);
+// Desde 0018 solo cuentan los reportes de cuentas con 7 días o más (como en lugares y videos)
+await db.exec(`update public.profiles set created_at = now() - interval '30 days' where id = '${C}'`);
 for (const quien of [B, C, ADM]) await as("authenticated", quien, `insert into public.city_event_reports (event_id, reason) values ($1, 'Es falso')`, [E1]);
 r = await as("anon", "", `select id from public.city_events where id = $1`, [E1]);
 check("con 3 reportes el evento se oculta solo", r.rows?.length === 0, r);
@@ -607,6 +609,52 @@ r = await as("authenticated", ADM, `update public.city_spots set note = 'Llama a
 check("la frase pasa por el filtro (sin teléfonos)", /texto_no_permitido/.test(r.error ?? ""), r);
 r = await db.query(`select slug from public.categories where slug = 'reparaciones'`);
 check("existe la categoría Reparaciones y servicios", r.rows.length === 1, r.rows);
+
+console.log("\nAuditoría de Supabase del 2026-10-27 (0018)");
+// C3: tres cuentas recién creadas ya no ocultan un evento
+const NUEVAS = ["00000000-0000-0000-0000-0000000000f1", "00000000-0000-0000-0000-0000000000f2", "00000000-0000-0000-0000-0000000000f3"];
+await db.exec(`insert into auth.users (id, email) values ${NUEVAS.map((id, i) => `('${id}', 'nueva${i}@test.com')`).join(", ")}`);
+r = await ev(B, "concierto-0018");
+const E2 = r.rows?.[0]?.id;
+for (const quien of NUEVAS) await as("authenticated", quien, `insert into public.city_event_reports (event_id, reason) values ($1, 'Es falso')`, [E2]);
+r = await as("anon", "", `select id from public.city_events where id = $1`, [E2]);
+check("3 cuentas recién creadas no ocultan un evento", r.rows?.length === 1, r);
+await db.exec(`update public.profiles set created_at = now() - interval '8 days' where id in (${NUEVAS.map((id) => `'${id}'`).join(", ")})`);
+await as("authenticated", NUEVAS[0], `insert into public.city_event_reports (event_id, reason) values ($1, 'Es falso')`, [E2]); // ya reportó: no cuenta doble
+await as("authenticated", C, `insert into public.city_event_reports (event_id, reason) values ($1, 'Es falso')`, [E2]); // un reporte más dispara la cuenta
+r = await as("anon", "", `select id from public.city_events where id = $1`, [E2]);
+check("con cuentas de 7 días o más, sí se oculta", r.rows?.length === 0, r);
+
+// C2: una reseña que el admin ocultó no vuelve a salir borrándola y enviándola de nuevo
+const autora = NUEVAS[1];
+const [L1, L2] = (await db.query(`select id from public.places where status = 'publicado' order by slug limit 2`)).rows.map((x) => x.id);
+r = await as("service_role", "", `insert into public.reviews (place_id, user_id, stars, text) values ($1, $2, 1, 'Reseña falsa contra el negocio') returning id`, [L1, autora]);
+const revX = r.rows?.[0]?.id;
+r = await as("authenticated", ADM, `update public.reviews set status = 'oculta' where id = $1 returning id`, [revX]);
+check("el admin oculta la reseña", r.rows?.length === 1, r);
+r = await as("authenticated", autora, `delete from public.reviews where id = $1 returning id`, [revX]);
+check("la autora todavía puede borrar la suya", r.rows?.length === 1, r);
+r = await as("service_role", "", `insert into public.reviews (place_id, user_id, stars, text) values ($1, $2, 1, 'Reseña falsa contra el negocio') returning id, status`, [L1, autora]);
+const revY = r.rows?.[0]?.id;
+check("al volver a enviarla entra oculta", r.rows?.[0]?.status === "oculta", r);
+r = await as("anon", "", `select id from public.reviews where id = $1`, [revY]);
+check("y el público no la ve", r.rows?.length === 0, r);
+r = await as("authenticated", autora, `select status from public.reviews where id = $1`, [revY]);
+check("la autora la ve (en revisión)", r.rows?.[0]?.status === "oculta", r);
+r = await as("authenticated", autora, `select * from public.review_holds`);
+check("nadie lee la lista de reseñas retenidas", !!r.error, r);
+await as("authenticated", ADM, `update public.reviews set status = 'visible' where id = $1`, [revY]);
+await as("authenticated", autora, `delete from public.reviews where id = $1`, [revY]);
+r = await as("service_role", "", `insert into public.reviews (place_id, user_id, stars, text) values ($1, $2, 3, 'Ahora sí una reseña normal') returning status`, [L1, autora]);
+check("si el admin la muestra, la siguiente sale visible", r.rows?.[0]?.status === "visible", r);
+r = await as("service_role", "", `insert into public.reviews (place_id, user_id, stars, text) values ($1, $2, 4, 'Reseña en otro lugar distinto') returning status`, [L2, autora]);
+check("en otros lugares no cambia nada", r.rows?.[0]?.status === "visible", r);
+
+// I2: nadie cambia un rol desde el navegador, ni el admin
+r = await as("authenticated", ADM, `update public.profiles set role = 'admin' where id = $1`, [B]);
+check("el admin no puede dar el rol de admin desde el navegador", !!r.error, r);
+r = await as("authenticated", ADM, `update public.profiles set display_name = 'Beto Moderado' where id = $1 returning id`, [B]);
+check("pero sí sigue pudiendo corregir un nombre", r.rows?.length === 1, r);
 
 console.log("\nDatos iniciales (supabase/seed.sql)");
 const seed = readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8");

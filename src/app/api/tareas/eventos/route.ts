@@ -6,7 +6,8 @@ import { configSupabase } from "@/lib/supabase/config";
 /*
  * Borrado diario de eventos vencidos (versión 5, fase 22). Lo llama Vercel Cron a las 00:05 de Guayaquil
  * (vercel.json) con la clave CRON_SECRET; sin esa clave no hace nada. Borra los eventos cuya fecha de fin ya pasó
- * y después sus afiches del bucket (Supabase no deja borrar archivos desde SQL), y los afiches que nadie usa.
+ * y después sus afiches del bucket (Supabase no deja borrar archivos desde SQL), los afiches que nadie usa y las fotos
+ * de negocios que se subieron pero nunca se registraron (auditoría 2026-10-27).
  * Aunque esta tarea se atrase, las páginas nunca muestran un evento vencido (lo filtra la base).
  */
 
@@ -30,8 +31,9 @@ export async function GET(req: Request) {
   const afiches = ((data ?? []) as { poster_path: string | null }[]).map((f) => f.poster_path).filter((p): p is string => !!p);
   for (let i = 0; i < afiches.length; i += 100) await db.storage.from("afiches-eventos").remove(afiches.slice(i, i + 100));
   const sueltos = await borrarAfichesSueltos(db);
+  const fotosSueltas = await borrarFotosSueltas(db);
   revalidatePath("/", "layout");
-  return Response.json({ borrados: (data ?? []).length, afiches: afiches.length, sueltos });
+  return Response.json({ borrados: (data ?? []).length, afiches: afiches.length, sueltos, fotosSueltas });
 }
 
 /**
@@ -54,6 +56,34 @@ async function borrarAfichesSueltos(db: ReturnType<typeof crearClienteAdmin>): P
       await db.storage.from("afiches-eventos").remove(borrar);
       borrados += borrar.length;
     }
+  }
+  return borrados;
+}
+
+/**
+ * Fotos de negocios que se subieron con un permiso firmado pero nunca se registraron en `place_photos` (auditoría
+ * 2026-10-27, C4): sin esto se quedaban para siempre en el bucket público. Se borran si tienen más de 3 horas.
+ */
+async function borrarFotosSueltas(db: ReturnType<typeof crearClienteAdmin>): Promise<number> {
+  const limite = Date.now() - 3 * 3600_000;
+  const bucket = db.storage.from("fotos-lugares");
+  let borrados = 0;
+  for (let desde = 0; ; desde += 500) {
+    const { data: carpetas } = await bucket.list("lugares", { limit: 500, offset: desde });
+    for (const c of carpetas ?? []) {
+      if (!/^[0-9a-f-]{36}$/.test(c.name)) continue;
+      const { data: archivos } = await bucket.list(`lugares/${c.name}`, { limit: 100 });
+      const viejos = (archivos ?? []).filter((a) => a.created_at && Date.parse(a.created_at) < limite).map((a) => `lugares/${c.name}/${a.name}`);
+      if (!viejos.length) continue;
+      const { data: usadas } = await db.from("place_photos").select("storage_path").in("storage_path", viejos);
+      const enUso = new Set((usadas ?? []).map((u) => u.storage_path));
+      const borrar = viejos.filter((v) => !enUso.has(v));
+      if (borrar.length) {
+        await bucket.remove(borrar);
+        borrados += borrar.length;
+      }
+    }
+    if ((carpetas ?? []).length < 500) break;
   }
   return borrados;
 }

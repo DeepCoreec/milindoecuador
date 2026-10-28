@@ -4,9 +4,9 @@ import { createClient } from "@supabase/supabase-js";
 import { exigirConfigSupabase } from "./config";
 
 // Cliente con la clave service_role: SALTA las reglas RLS.
-// Solo para el servidor y solo donde ARQUITECTURA.md lo permite (insertar solicitudes de negocios
-// después de verificar el captcha). `server-only` hace fallar la compilación si alguien lo importa
-// desde código del navegador.
+// Solo para el servidor y solo donde ARQUITECTURA.md §3 lo permite (lista completa ahí): siempre DESPUÉS de comprobar
+// en el servidor quién es (sesión, dueño de ese lugar o evento, o admin) y filtrando por ese id.
+// `server-only` hace fallar la compilación si alguien lo importa desde código del navegador.
 export function crearClienteAdmin() {
   const { url } = exigirConfigSupabase();
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

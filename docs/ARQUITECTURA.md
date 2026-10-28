@@ -136,9 +136,18 @@ milindoecuador/
   2. Verificar el captcha si el formulario es público.
   3. Verificar la sesión y el rol (`requireUsuario()` o `requireAdmin()`).
   4. Escribir con el cliente del usuario (RLS aplica). Usan `admin.ts` (clave de servicio) solo cuando la base
-     no acepta escrituras directas desde el navegador: las solicitudes de negocios, crear y editar reseñas
-     (migración 0003: así nadie se salta el captcha; el autor se fija con el id de la sesión verificada) y
-     borrar la cuenta (Supabase Auth).
+     no acepta escrituras directas desde el navegador, y SIEMPRE después de comprobar en el servidor quién es
+     (sesión, dueño de ESE lugar o evento, o admin) y filtrando por ese id. Lista completa (auditoría 2026-10-27):
+     - solicitudes de negocios y la ficha borrador del dueño (`acciones/negocios.ts`, `lib/fichas.ts`);
+     - crear y editar reseñas (migración 0003: así nadie se salta el captcha; el autor se fija con la sesión);
+     - borrar la cuenta (Supabase Auth, `acciones/cuenta.ts`);
+     - todo lo del dueño: ficha, fotos, respuestas, video y sus lecturas (`acciones/dueno.ts`, `acciones/videos.ts`,
+       `lib/datos/dueno.ts`, `lib/datos/video.ts`);
+     - eventos: publicar, editar, borrar, afiches y "mis eventos" (`acciones/eventos.ts`, `lib/datos/eventos.ts`);
+     - permisos firmados de subida y borrado de archivos del panel (`acciones/admin.ts`);
+     - funciones que solo puede llamar el servidor: contador de visitas (`/api/evento`), tope de Paumi
+       (`/api/paumi`), registro de errores (`instrumentation.ts`), borrado diario (`/api/tareas/eventos`) y
+       comprobar si una cuenta es dueña antes de abrir un enlace corto de Maps (`acciones/ubicacion.ts`).
   5. `revalidatePath()` de las páginas afectadas.
 - **Fotos:** el admin las sube al bucket `fotos-lugares` desde el panel (las reglas del bucket le dejan). El dueño
   (versión 2) recibe del servidor un permiso de subida firmado, de un solo uso, para un camino que elige el servidor;
@@ -166,14 +175,14 @@ milindoecuador/
 
 ## 5. Base de datos
 
-Definida completa en `supabase/migrations/` (0001 a 0008, en orden). Resumen:
+Definida completa en `supabase/migrations/` (0001 a 0018, en orden). Resumen:
 
 | Tabla | Lee | Escribe |
 | --- | --- | --- |
 | `cities`, `categories` | Todos | Admin |
 | `places` | Todos (solo publicados); admin todo | Admin |
 | `place_photos` | Todos (de lugares publicados) | Admin |
-| `profiles` | Todos, solo `id` y `display_name` (el rol no; se consulta con `is_admin()`) | El propio usuario solo su `display_name`; el rol nunca |
+| `profiles` | Todos, solo `id` y `display_name` (el rol no; se consulta con `is_admin()`) | El propio usuario solo su `display_name`; el admin puede corregir nombres; el rol nunca desde la página, ni el admin (0018): solo en el SQL Editor |
 | `reviews` | Todos (solo visibles); el autor ve las suyas | El servidor crea y edita (después del captcha); el autor borra la suya; admin modera |
 | `review_log` | Nadie | Solo el trigger: cuenta reseñas creadas para el límite diario (no se salta borrando) |
 | `review_reports` | Admin | Usuarios con sesión |
@@ -185,6 +194,15 @@ Definida completa en `supabase/migrations/` (0001 a 0008, en orden). Resumen:
 | `place_reports` (0006) | Admin | Usuarios con sesión (lugares publicados, 1 por persona, 10 por día); 3 reportes de cuentas con 7+ días ocultan la ficha (salvo verificadas) |
 | `place_stats` (0007) | Admin; el dueño, por el servidor | Solo `contar_evento`, desde `POST /api/evento` |
 | `favorites` (0007) | Cada uno los suyos | Cada uno los suyos (lugares publicados, máximo 500) |
+| `place_videos` (0009) | Todos (no ocultos, de lugares publicados; sin el tamaño); admin todo | Solo el servidor (dueño o admin) |
+| `event_limits` (0011) | Nadie | Solo `registrar_evento`, desde `POST /api/evento` |
+| `error_log` (0012) | Admin | Solo `anotar_error` (servidor); el admin marca resuelto |
+| `paumi_usage` (0014) | Nadie | Solo `usar_paumi`, desde `POST /api/paumi` |
+| `city_events` (0016) | Todos (publicados y vigentes, sin quién lo publicó); quien lo publicó los suyos; admin todo | Solo el servidor (tras captcha); el admin oculta o borra |
+| `city_event_reports` (0016) | Admin | Usuarios con sesión (eventos publicados, 1 abierto por persona, 10 por día); 3 reportes de cuentas con 7+ días lo ocultan (0018) |
+| `event_upload_permits` (0016) | Nadie | Solo `permiso_afiche` (6 por cuenta al día) |
+| `city_spots` (0017) | Todos (publicados) | El servidor importa de OSM; el admin cambia nombre, frase y estado |
+| `review_holds` (0018) | Nadie | Solo los disparadores: quien tuvo una reseña oculta en un lugar; su reseña nueva ahí entra oculta |
 
 Reglas dentro de la base: una reseña por usuario y lugar, solo en lugares publicados; estrellas de 1 a 5;
 texto de 10 a 1000 caracteres sin caracteres invisibles; máximo 5 reseñas por usuario cada 24 horas
