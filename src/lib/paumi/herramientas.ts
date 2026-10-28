@@ -374,7 +374,7 @@ export async function ejecutar(nombre: string, entrada: unknown, e: Estado): Pro
             nombre: f.name,
             sector: f.address,
             mapa: enlaceRutaGoogle({ lat: f.latitude, lng: f.longitude }),
-            fuente: { url: enlaceOSM(f.osm_type, f.osm_id), sitio: "openstreetmap.org" },
+            fuente: { url: enlaceOSM(f.osm_type, f.osm_id), sitio: f.osm_type === "wikidata" ? "wikidata.org" : "openstreetmap.org" },
             origen: "guia-util",
           });
           return { id: f.id, nombre: f.name, tipo: NOMBRE_TIPO[f.tipo as TipoSitio] ?? f.tipo, frase: f.note, direccion: f.address };

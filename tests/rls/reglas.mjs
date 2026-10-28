@@ -729,6 +729,18 @@ check("la foto de un lugar sin publicar no se ve", r.rows?.length === 0, r);
 r = await as("anon", "", `select wikidata, enriched_at from public.city_spots where id = $1`, [SF]);
 check("los datos internos (wikidata, fecha de búsqueda) no se leen desde el navegador", !!r.error, r);
 
+console.log("\nLugares desde Wikidata (0021)");
+r = await as("service_role", "", `insert into public.city_spots (city_id, osm_type, osm_id, grupo, tipo, name, latitude, longitude, wikidata) values ($1, 'wikidata', 2364048, 'visitar', 'parque', 'Parque Seminario (Wikidata)', -2.1947, -79.8848, 'Q2364048') returning id, status`, [gye]);
+check("el servidor guarda un candidato de Wikidata, por revisar", r.rows?.[0]?.status === "pendiente", r);
+r = await as("service_role", "", `insert into public.city_spots (city_id, osm_type, osm_id, grupo, tipo, name, latitude, longitude, wikidata) values ($1, 'wikidata', 999, 'visitar', 'parque', 'Otro', -2.19, -79.88, 'Q1000')`, [gye]);
+check("su Q tiene que ser el mismo número que su osm_id", !!r.error, r);
+r = await as("service_role", "", `insert into public.city_spots (city_id, osm_type, osm_id, grupo, tipo, name, latitude, longitude) values ($1, 'wikidata', 998, 'visitar', 'parque', 'Sin Q', -2.19, -79.88)`, [gye]);
+check("un lugar de Wikidata sin su Q no se acepta", !!r.error, r);
+r = await as("service_role", "", `insert into public.city_spots (city_id, osm_type, osm_id, grupo, tipo, name, latitude, longitude) values ($1, 'otra-fuente', 997, 'visitar', 'parque', 'Raro', -2.19, -79.88)`, [gye]);
+check("solo OpenStreetMap o Wikidata como origen", !!r.error, r);
+r = await as("authenticated", B, `insert into public.city_spots (city_id, osm_type, osm_id, grupo, tipo, name, latitude, longitude, wikidata) values ($1, 'wikidata', 996, 'visitar', 'parque', 'Intruso', -2.19, -79.88, 'Q996')`, [gye]);
+check("una cuenta común no agrega candidatos", !!r.error, r);
+
 console.log("\nDatos iniciales (supabase/seed.sql)");
 const seed = readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8");
 await db.exec(seed);

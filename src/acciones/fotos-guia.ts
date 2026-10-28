@@ -32,14 +32,15 @@ export async function buscarFotosGuia(_previo: EstadoAdmin, datos: FormData): Pr
   const { data: filas, error } = await db
     .from("city_spots")
     .select("id, name, latitude, longitude, wikidata, wikipedia")
-    .eq("status", "publicado")
+    // Publicados, y también los candidatos de Wikidata por revisar (30.2: se deciden ya con foto y descripción)
+    .or("status.eq.publicado,and(status.eq.pendiente,osm_type.eq.wikidata)")
     .is("enriched_at", null)
     .order("wikidata", { nullsFirst: false })
     .order("grupo", { ascending: false })
     .limit(POR_CLIC)
     .returns<Fila[]>();
   if (error) return { estado: "error", mensaje: "No se pudieron leer los lugares" };
-  if (!filas?.length) return { estado: "ok", mensaje: "Ya se buscó en todos los lugares publicados." };
+  if (!filas?.length) return { estado: "ok", mensaje: "Ya se buscó en todos los lugares publicados y en los candidatos de Wikidata." };
 
   let revisados = 0;
   let conFoto = 0;
@@ -53,7 +54,7 @@ export async function buscarFotosGuia(_previo: EstadoAdmin, datos: FormData): Pr
   // Corte duro antes de los 60 s de Vercel: lo que no alcance se aborta y se reintenta en el próximo clic (hallazgo 3)
   const corte = AbortSignal.timeout(Math.max(LIMITE_MS + 10_000 - (Date.now() - inicio), 5_000));
   const anotar = (id: string, cambios: Record<string, unknown> = {}) =>
-    db.from("city_spots").update({ ...cambios, enriched_at: new Date().toISOString() }).eq("id", id).eq("status", "publicado").select("id");
+    db.from("city_spots").update({ ...cambios, enriched_at: new Date().toISOString() }).eq("id", id).neq("status", "descartado").select("id");
 
   const uno = async (f: Fila) => {
     let subida: string | null = null;

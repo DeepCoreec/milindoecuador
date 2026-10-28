@@ -165,7 +165,7 @@ export function SitiosGuia({ sitios, estado }: { sitios: SitioAdmin[]; estado: s
               </label>
               <span className="flex flex-wrap gap-4 pl-8 text-sm">
                 <a href={enlaceOSM(tipoOsm!, idOsm!)} target="_blank" rel="noopener noreferrer">
-                  Ver en OpenStreetMap
+                  {tipoOsm === "wikidata" ? "Ver en Wikidata" : "Ver en OpenStreetMap"}
                 </a>
               </span>
               <FotoYTexto s={s} />
