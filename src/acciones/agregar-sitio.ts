@@ -23,6 +23,7 @@ import { ErrorWikimedia, qidDeWikipedia } from "@/lib/wikimedia";
 
 const AGENTE = "MiLindoEcuador/1.0 (https://milindoecuador.vercel.app; guia de Guayaquil)";
 type Fila = { id: string; name: string; latitude: number; longitude: number; wikidata: string | null; wikipedia: string | null };
+const ESTADO: Record<string, string> = { publicado: "publicado", pendiente: "por revisar", descartado: "descartado" };
 const NO_CUMPLE =
   "Ese lugar no cumple lo que pide la guía: tiene que estar en Guayaquil, ser un lugar para visitar y tener foto y artículo en Wikipedia en español.";
 
@@ -72,6 +73,9 @@ export async function agregarSitio(_previo: EstadoAdmin, datos: FormData): Promi
     } else {
       const qid = enlace.fuente === "wikidata" ? enlace.qid : await qidDeWikipedia(enlace.idioma, enlace.titulo, fetch, AbortSignal.timeout(quedan(15_000)));
       if (!qid) return { estado: "error", mensaje: "No se encontró ese artículo de Wikipedia, o no tiene ficha en Wikidata." };
+      // Primero: ¿ya está en la guía con ese Q? (si no, "no cumple" confunde con un lugar ya publicado; prueba real 30.3c)
+      const { data: mismo } = await db.from("city_spots").select("name, status").eq("wikidata", qid).limit(1).maybeSingle<{ name: string; status: string }>();
+      if (mismo) return { estado: "error", mensaje: `Ya está en la guía como «${mismo.name}» (${ESTADO[mismo.status] ?? mismo.status}).` };
       const c = (await buscarCandidatosWikidata(fetch, qid, AbortSignal.timeout(quedan(40_000))))[0];
       if (!c) return { estado: "error", mensaje: NO_CUMPLE };
       fila = { city_id: ciudad.id, osm_type: "wikidata", osm_id: Number(c.qid.slice(1)), grupo: "visitar", tipo: c.tipo, name: c.nombre, latitude: c.lat, longitude: c.lng, wikidata: c.qid };
@@ -86,8 +90,7 @@ export async function agregarSitio(_previo: EstadoAdmin, datos: FormData): Promi
   if (!ya) return { estado: "error", mensaje: "No se pudo leer la guía" };
   const repetido = buscarRepetido(nuevo, ya);
   if (repetido) {
-    const estado = { publicado: "publicado", pendiente: "por revisar", descartado: "descartado" }[repetido.status] ?? repetido.status;
-    return { estado: "error", mensaje: `Ya está en la guía como «${repetido.name}» (${estado}).` };
+    return { estado: "error", mensaje: `Ya está en la guía como «${repetido.name}» (${ESTADO[repetido.status] ?? repetido.status}).` };
   }
 
   // 3. Guardar por revisar y buscar su foto y descripción
