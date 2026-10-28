@@ -58,6 +58,12 @@ describe("Wikidata · candidatos a lugares turísticos (30.1)", () => {
     expect(aCandidatos({ results: { bindings: "x" } })).toEqual([]);
   });
 
+  it("sin clase: no entra al traer todos; al agregar uno a mano entra como atracción", () => {
+    const sinClase = { results: { bindings: [{ ...fila("Q300", "Malecón 2000", "Q22698"), clase: undefined }] } };
+    expect(aCandidatos(sinClase)).toEqual([]);
+    expect(aCandidatos(sinClase, true)).toEqual([{ qid: "Q300", nombre: "Malecón 2000", lat: -2.1947, lng: -79.8848, tipo: "atraccion" }]);
+  });
+
   it("habla solo con query.wikidata.org y avisa si falla", async () => {
     let url = "";
     const ok = (async (u: string) => {
