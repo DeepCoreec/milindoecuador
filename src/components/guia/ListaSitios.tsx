@@ -74,7 +74,7 @@ export function SitiosPorTipo({ sitios, tipos, nivel = 3, vacio }: { sitios: Sit
           <H id={`t-sitio-${t.tipo}`} className="m-0 text-xl leading-7 font-semibold">
             {t.plural} <span className="text-base font-normal text-rio-suave">({lista.length})</span>
           </H>
-          <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="m-0 grid list-none items-start gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
             {lista.slice(0, MOSTRAR).map((s) => (
               <FilaSitio key={s.id} s={s} />
             ))}
@@ -82,7 +82,7 @@ export function SitiosPorTipo({ sitios, tipos, nivel = 3, vacio }: { sitios: Sit
           {lista.length > MOSTRAR && (
             <details className="grid gap-3">
               <summary className="cursor-pointer font-semibold">Ver {lista.length - MOSTRAR} más</summary>
-              <ul className="m-0 mt-3 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
+              <ul className="m-0 mt-3 grid list-none items-start gap-3 p-0 sm:grid-cols-2 lg:grid-cols-3">
                 {lista.slice(MOSTRAR).map((s) => (
                   <FilaSitio key={s.id} s={s} />
                 ))}
