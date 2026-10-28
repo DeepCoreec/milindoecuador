@@ -1,7 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { useActionState } from "react";
 import { decidirSitios, editarSitio, type EstadoAdmin } from "@/acciones/admin";
+import { quitarFotoSitio } from "@/acciones/fotos-guia";
 import { clasesBoton } from "@/components/ui/Boton";
 import { claseEntrada, claseEtiqueta } from "@/components/ui/clasesFormulario";
 import type { SitioAdmin } from "@/lib/datos/admin";
@@ -41,6 +43,45 @@ function Corregir({ s }: { s: SitioAdmin }) {
         </span>
       </form>
     </details>
+  );
+}
+
+/** Foto y descripción de Wikimedia (versión 7, 29.3): para revisarlas una por una y quitarlas si no corresponden. */
+function FotoYTexto({ s }: { s: SitioAdmin }) {
+  const [r, accion, ocupado] = useActionState(quitarFotoSitio, inicial);
+  if (!s.foto && !s.descripcion) return null;
+  return (
+    <div className="grid gap-2 pl-8 sm:grid-cols-[160px_1fr] sm:items-start">
+      {s.foto && (
+        <Image src={s.foto.src} alt={`Foto de ${s.nombre}`} width={160} height={120} sizes="160px" className="aspect-[4/3] w-40 rounded-lg object-cover" />
+      )}
+      <div className="grid gap-1 text-sm">
+        {s.descripcion && <p className="m-0">{s.descripcion.texto}</p>}
+        <p className="m-0 text-rio-suave">
+          {s.foto && (
+            <>
+              Foto: {s.foto.credito} ·{" "}
+              <a href={s.foto.fuente} target="_blank" rel="noopener noreferrer">
+                {s.foto.licencia}
+              </a>
+              {s.descripcion ? " · " : ""}
+            </>
+          )}
+          {s.descripcion && (
+            <a href={s.descripcion.fuente} target="_blank" rel="noopener noreferrer">
+              Texto de Wikipedia
+            </a>
+          )}
+        </p>
+        <form action={accion} className="flex flex-wrap items-center gap-3">
+          <input type="hidden" name="sitio" value={s.id} />
+          <button type="submit" disabled={ocupado} className={clasesBoton("texto", "chico", "text-error!")}>
+            Quitar foto y descripción
+          </button>
+          <Resultado r={r} />
+        </form>
+      </div>
+    </div>
   );
 }
 
@@ -127,6 +168,7 @@ export function SitiosGuia({ sitios, estado }: { sitios: SitioAdmin[]; estado: s
                   Ver en OpenStreetMap
                 </a>
               </span>
+              <FotoYTexto s={s} />
               <div className="pl-8">
                 <Corregir s={s} />
               </div>

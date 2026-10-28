@@ -1,16 +1,28 @@
+import Image from "next/image";
 import type { Sitio } from "@/lib/datos/sitios";
 import { horarioLegible, TIPOS_SITIO, type TipoSitio } from "@/lib/osm";
 import { enlaceRutaGoogle } from "@/lib/ubicacion";
 
 const MOSTRAR = 9;
 
-/** Un lugar de referencia de la Guía útil: nombre, frase o dirección, horario, y Cómo llegar. Sin ficha (no es un negocio). */
+/**
+ * Un lugar de referencia de la Guía útil: nombre, frase o dirección, horario, y Cómo llegar. Sin ficha (no es un negocio).
+ * Versión 7 (29.4): si tiene foto de Wikimedia Commons, va arriba con su crédito; la frase del admin manda sobre la
+ * descripción de Wikipedia, y esta sobre la dirección.
+ */
 export function FilaSitio({ s }: { s: Sitio }) {
   const telefono = s.telefono?.split(/[;,/]/)[0]!.replace(/[^\d+]/g, "");
+  const texto = s.nota ?? s.descripcion?.texto ?? s.direccion;
+  const usaWikipedia = !s.nota && !!s.descripcion;
   return (
-    <li className="grid content-start gap-1 rounded-xl border border-linea bg-papel-alto p-4">
+    <li className="grid content-start gap-1 overflow-hidden rounded-xl border border-linea bg-papel-alto p-4">
+      {s.foto && (
+        <div className="relative -mx-4 -mt-4 mb-2 aspect-[4/3] bg-celeste-suave">
+          <Image src={s.foto.src} alt={`Foto de ${s.nombre}`} fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
+        </div>
+      )}
       <b className="text-base leading-6">{s.nombre}</b>
-      {(s.nota || s.direccion) && <span className="text-[15px] leading-[22px] text-rio-suave">{s.nota ?? s.direccion}</span>}
+      {texto && <span className="text-[15px] leading-[22px] text-rio-suave">{texto}</span>}
       {s.horario && <span className="text-sm leading-5 text-rio-suave">Horario: {horarioLegible(s.horario)}</span>}
       <span className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[15px]">
         <a href={enlaceRutaGoogle(s.ubicacion)} target="_blank" rel="noopener noreferrer" aria-label={`Cómo llegar a ${s.nombre}`}>
@@ -23,6 +35,24 @@ export function FilaSitio({ s }: { s: Sitio }) {
           </a>
         )}
       </span>
+      {(s.foto || usaWikipedia) && (
+        <small className="mt-1 text-[13px] leading-[18px] text-rio-suave">
+          {s.foto && (
+            <>
+              Foto: {s.foto.credito},{" "}
+              <a href={s.foto.fuente} target="_blank" rel="noopener noreferrer" className="text-rio-suave">
+                {s.foto.licencia}
+              </a>
+              {usaWikipedia ? ". " : ""}
+            </>
+          )}
+          {usaWikipedia && (
+            <a href={s.descripcion!.fuente} target="_blank" rel="noopener noreferrer" className="text-rio-suave">
+              Texto: Wikipedia (CC BY-SA 4.0)
+            </a>
+          )}
+        </small>
+      )}
     </li>
   );
 }

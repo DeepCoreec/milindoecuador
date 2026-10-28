@@ -1,4 +1,5 @@
 import { requireAdmin } from "@/lib/auth";
+import { fotoYDescripcion, type Sitio } from "@/lib/datos/sitios";
 import { urlPublicaFoto, urlPublicaVideo } from "@/lib/fotos";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { crearClienteServidor } from "@/lib/supabase/server";
@@ -487,7 +488,7 @@ export type SitioAdmin = {
   osm: string;
   /** Recomendación del agente revisor (versión 6, fase 27), si ya la tiene. */
   agente: { veredicto: "publicar" | "revisar" | "descartar"; motivo: string; fuente: "regla" | "ia" | null } | null;
-};
+} & Pick<Sitio, "foto" | "descripcion">;
 export type FiltroAgente = "publicar" | "revisar" | "descartar" | "sin";
 /** Acierto del agente por tipo: en cuántas decisiones del admin coincidió con lo que había recomendado. */
 export type AciertoAgente = { tipo: string; total: number; aciertos: number };
@@ -505,7 +506,7 @@ export async function getSitiosAdmin(
   const dbAdmin = crearClienteAdmin();
   let q = dbAdmin
     .from("city_spots")
-    .select("id, tipo, grupo, name, note, address, osm_type, osm_id, agent_verdict, agent_reason, agent_source")
+    .select("id, tipo, grupo, name, note, address, osm_type, osm_id, agent_verdict, agent_reason, agent_source, photo_path, photo_credit, photo_license, photo_source, description, description_source")
     .eq("status", estado)
     .order("grupo")
     .order("tipo")
@@ -540,6 +541,7 @@ export async function getSitiosAdmin(
       direccion: s.address,
       osm: `${s.osm_type}/${s.osm_id}`,
       agente: s.agent_verdict ? { veredicto: s.agent_verdict, motivo: s.agent_reason ?? "", fuente: s.agent_source ?? null } : null,
+      ...fotoYDescripcion(s),
     })),
     cuentas: { pendiente: p.count ?? 0, publicado: pub.count ?? 0, descartado: d.count ?? 0 },
     acierto: [...porTipo.values()].sort((a, b) => b.total - a.total),
