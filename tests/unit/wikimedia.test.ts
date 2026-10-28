@@ -207,6 +207,15 @@ describe("Wikimedia · arreglos de la revisión independiente del 2026-10-28", (
     await expect(buscarEnWikimedia(lugar({ wikidata: "Q100" }), raro.pedir)).rejects.toMatchObject({ permanente: true });
   });
 
+  it("29.12 · no usa la ficha de una persona (un monumento enlazado a la persona traería su retrato)", async () => {
+    const e = entidad("Q100", { titulo: "Gabriel García Moreno" });
+    (e.entities.Q100.claims as Record<string, unknown>).P31 = [{ mainsnak: { datavalue: { value: { "entity-type": "item", id: "Q5" } } } }];
+    const { pedir } = simulador({ "wbgetentities&ids=Q100": e, "prop=imageinfo": imagen() });
+    const r = await buscarEnWikimedia(lugar({ nombre: "Presidente Gabriel García Moreno", wikidata: "Q100" }), pedir);
+    expect(r.foto).toBeNull();
+    expect(r.nada).toMatch(/persona/);
+  });
+
   it("3 · se corta si se acaba el tiempo", async () => {
     const lento = (async (_u: string, init: RequestInit) =>
       new Promise((_, rechazar) => init.signal?.addEventListener("abort", () => rechazar(new DOMException("corte", "AbortError"))))) as unknown as typeof fetch;
