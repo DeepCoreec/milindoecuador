@@ -362,8 +362,9 @@
   - 5 pruebas unitarias y 3 RLS nuevas: 163 unitarias y 255 RLS pasan; `npm run build` pasa
 - [x] 29.6 Migración en el Supabase real — 2026-10-28 15:00: el usuario ejecutó `0020_fotos_guia.sql` y la consulta de comprobación devolvió las 3 columnas (`photo_path`, `description`, `enriched_at`)
 - [x] 29.7 Publicado y primera búsqueda — 2026-10-28 15:10: PR #28 unido a `main` y desplegado. "Traer lugares de OpenStreetMap": 27 lugares quedaron con su enlace a Wikipedia. Primer clic en "Buscar fotos y descripción": 15 revisados, **solo 1 con foto**, 11 con descripción, 4 sin nada. Problemas vistos: (1) lugares que sí tienen foto en Wikimedia (la Catedral) no la trajeron: falla al leer la foto, causa sin confirmar; (2) "Faro del Cerro Santa Ana" recibió la descripción del cerro entero (su enlace de OpenStreetMap apunta al cerro): hay que quitarla. El usuario no quiere que Claude navegue a Wikimedia con su navegador; dejó la decisión a Claude ("lo dejo en tus manos")
-- [ ] 29.8 Diagnóstico: el mensaje del botón dice por qué cada lugar no trajo foto (sin foto en Wikidata, licencia, tipo de archivo, descarga…) y botón "Volver a buscar los que quedaron sin foto" (borra la fecha de búsqueda solo de los publicados sin foto). Con eso se encuentra la causa, se corrige y se vuelve a buscar
-- **Siguiente paso:** 29.8; después quitar la descripción del Faro, buscar los 86 publicados, revisar las fotos una por una y el diseño a 390 px y escritorio, claro y oscuro
+- [x] 29.8 Diagnóstico — 2026-10-28 (PR #29): el mensaje del botón dice por qué cada lugar no trajo foto; si la descarga falla sin arreglo, la descripción igual se guarda; botón "Volver a buscar los que quedaron sin foto". **Causa encontrada en producción:** Wikimedia ahora sirve las copias web desde `thumb.wikimedia.org` y el código solo aceptaba `upload.wikimedia.org` ("copia web rara"). Otros motivos vistos, correctos: fichas sin foto (P18) y "El Sagrario" con ficha sin ubicación y nombre distinto (no se usa)
+- [ ] 29.9 Aceptar `thumb.wikimedia.org` (solo ese otro servidor de Wikimedia) y volver a buscar
+- **Siguiente paso:** 29.9; después quitar la descripción del Faro, buscar los 86 publicados, revisar las fotos una por una y el diseño a 390 px y escritorio, claro y oscuro
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 

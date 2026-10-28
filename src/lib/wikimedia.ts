@@ -37,7 +37,9 @@ export class ErrorWikimedia extends Error {
 /** Cómo se pide: el fetch (se reemplaza en las pruebas) y un corte opcional para no pasarse del tiempo de Vercel. */
 type Ctx = { pedir: typeof fetch; corte?: AbortSignal };
 const senal = (c: Ctx, ms: number) => (c.corte ? AbortSignal.any([AbortSignal.timeout(ms), c.corte]) : AbortSignal.timeout(ms));
-const HOSTS = /^(www\.wikidata\.org|commons\.wikimedia\.org|upload\.wikimedia\.org|[a-z]{2,3}\.wikipedia\.org)$/;
+const HOSTS = /^(www\.wikidata\.org|commons\.wikimedia\.org|upload\.wikimedia\.org|thumb\.wikimedia\.org|[a-z]{2,3}\.wikipedia\.org)$/;
+/** Dónde Wikimedia sirve las copias web de las fotos (desde 2026 también thumb.wikimedia.org; visto en producción el 2026-10-28). */
+const ORIGEN_FOTO = /^https:\/\/(upload|thumb)\.wikimedia\.org\//;
 
 /** Después de una redirección, la respuesta tiene que seguir viniendo de Wikimedia (hallazgo 6). */
 function hostPermitido(r: Response) {
@@ -173,7 +175,7 @@ async function leerFoto(archivo: string, c: Ctx): Promise<FotoWikimedia | string
   if (mime !== "image/jpeg" && mime !== "image/png" && mime !== "image/webp") return `tipo de archivo ${String(mime).slice(0, 30)}`;
   const foto = typeof ii.thumburl === "string" ? ii.thumburl : null;
   const fuente = typeof ii.descriptionurl === "string" ? ii.descriptionurl : null;
-  if (!foto?.startsWith("https://upload.wikimedia.org/")) return `copia web rara (${String(foto).slice(0, 40)})`;
+  if (!foto || !ORIGEN_FOTO.test(foto)) return `copia web rara (${String(foto).slice(0, 40)})`;
   if (!fuente?.startsWith("https://commons.wikimedia.org/") || fuente.length > 400) return `enlace raro (${String(fuente).slice(0, 40)})`;
   const meta = ii.extmetadata ?? {};
   const licencia = typeof meta.LicenseShortName?.value === "string" ? textoPlano(meta.LicenseShortName.value, 60) : "";
@@ -252,7 +254,7 @@ export async function descargarFoto(
   pedir: typeof fetch = fetch,
   corte?: AbortSignal,
 ): Promise<{ datos: Uint8Array; tipo: "image/jpeg" | "image/png" | "image/webp"; extension: "jpg" | "png" | "webp" }> {
-  if (!url.startsWith("https://upload.wikimedia.org/")) throw new ErrorWikimedia("Origen de la foto no permitido", true);
+  if (!ORIGEN_FOTO.test(url)) throw new ErrorWikimedia("Origen de la foto no permitido", true);
   const r = await pedir(url, { headers: { "user-agent": AGENTE }, signal: senal({ pedir, corte }, 15_000), redirect: "error", cache: "no-store" });
   revisarEstado(r, "La foto");
   const tipo = (r.headers.get("content-type") ?? "").split(";")[0]!.trim();

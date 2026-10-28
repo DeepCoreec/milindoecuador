@@ -120,6 +120,16 @@ describe("Wikimedia · foto y descripción (29.3)", () => {
     expect(r.nada).toMatch(/lejos/);
   });
 
+  it("acepta la copia web desde thumb.wikimedia.org (como la sirve Wikimedia desde 2026)", async () => {
+    const { pedir } = simulador({
+      "wbgetentities&ids=Q100": entidad("Q100"),
+      "page/summary/Parque_Seminario": resumen("Q100", "Parque Seminario"),
+      "prop=imageinfo": imagen({ thumb: "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/Parque.jpg/960px-Parque.jpg" }),
+    });
+    const r = await buscarEnWikimedia(lugar({ wikidata: "Q100" }), pedir);
+    expect(r.foto?.url).toMatch(/^https:\/\/thumb\.wikimedia\.org\//);
+  });
+
   it("descarta fotos sin licencia libre, de otro sitio o que no son imágenes web", async () => {
     for (const mala of [
       imagen({ licencia: "CC BY-NC-SA 4.0" }),
@@ -240,6 +250,8 @@ describe("Wikimedia · ayudantes", () => {
     const ok = (async () => new Response(new Uint8Array(5000), { status: 200, headers: { "content-type": "image/jpeg" } })) as unknown as typeof fetch;
     const f = await descargarFoto("https://upload.wikimedia.org/x/960px-a.jpg", ok);
     expect(f.extension).toBe("jpg");
+    expect((await descargarFoto("https://thumb.wikimedia.org/wikipedia/commons/x/960px-a.jpg", ok)).extension).toBe("jpg");
+    await expect(descargarFoto("https://thumb.wikimedia.org.malo.com/a.jpg", ok)).rejects.toBeInstanceOf(ErrorWikimedia);
     await expect(descargarFoto("https://ejemplo.com/a.jpg", ok)).rejects.toBeInstanceOf(ErrorWikimedia);
     const svg = (async () => new Response("<svg/>", { status: 200, headers: { "content-type": "image/svg+xml" } })) as unknown as typeof fetch;
     await expect(descargarFoto("https://upload.wikimedia.org/x/a.svg", svg)).rejects.toBeInstanceOf(ErrorWikimedia);
