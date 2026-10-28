@@ -372,11 +372,13 @@
 
 ### Fase 30 · Lugares turísticos buenos que ya existen
 
-- [ ] 30.1 Candidatos desde Wikidata (consulta SPARQL dentro de la caja de Guayaquil: solo con foto, artículo en Wikipedia en español y coordenadas; clases turísticas; sin personas); entran "por revisar", sin duplicar lo que ya hay (mismo Q o nombre parecido a menos de 300 m, incluidos los descartados)
-- [ ] 30.2 Foto y descripción para los candidatos antes de decidir, y el agente los revisa con el criterio estricto; se publican solo los que tienen foto y descripción
+- [x] 30.1 Candidatos desde Wikidata — 2026-10-28 (rama `v7-fase30`): migración `0021_lugares_wikidata.sql` (**falta ejecutarla en el Supabase real**): los candidatos van en `city_spots` con `osm_type = 'wikidata'` y `osm_id` = número de su Q (siempre con su Q). `src/lib/wikidata-lugares.ts`: consulta SPARQL fija (caja de Guayaquil; solo con foto P18, artículo en Wikipedia en español y nombre en español; clases turísticas y sus subclases; sin personas) a `query.wikidata.org`. Botón "Traer lugares turísticos de Wikidata" (`src/acciones/lugares-wikidata.ts`, Zod + requireAdmin): entran "por revisar" y no duplican lo que ya hay (mismo Q, o nombre parecido a menos de 300 m, en cualquier estado). "Ver en Wikidata" en el panel; Paumi cita wikidata.org. 5 pruebas unitarias y 5 RLS
+- [x] 30.2 (código) "Buscar fotos y descripción" también revisa los candidatos de Wikidata por revisar, para decidir ya con foto y descripción; el agente revisor existente los recomienda
 - [ ] 30.3 "Agregar un lugar" pegando su enlace de Wikipedia, Wikidata u OpenStreetMap
 - **Puerta:** los lugares nuevos publicados tienen foto, descripción, crédito y "Cómo llegar"; cero duplicados
-- **Siguiente paso:** 30.1
+- [x] 30.2b Revisión independiente de seguridad — 2026-10-28: sin hallazgos críticos ni altos (hosts fijos, sin inyección en SPARQL, validación de datos, RLS sin fugas, migración correcta). Arreglados: (media) la importación guarda por lotes de 100 y corta antes de los 60 s de Vercel; (baja) la búsqueda de duplicados lee la guía por páginas y también por Q en cualquier grupo; (baja) Wikidata tiene su propia espera de 10 minutos y ya no bloquea el botón de OpenStreetMap; (baja) en la cola de fotos van primero los publicados; (baja) las fotos solo se guardan en publicados o candidatos de Wikidata por revisar. Pendiente informativo: si después OpenStreetMap trae el mismo lugar, el agente lo marca como posible duplicado
+- [x] 30.2c Migración en el Supabase real — 2026-10-28 17:05: el usuario ejecutó `0021_lugares_wikidata.sql`; la comprobación devolvió `wikidata_con_su_q`
+- **Siguiente paso:** unir `v7-fase30`; "Traer lugares turísticos de Wikidata"; "Buscar fotos y descripción" hasta terminar; "Pedir revisión al agente"; publicar solo los buenos que tengan foto y descripción; revisar uno por uno
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 

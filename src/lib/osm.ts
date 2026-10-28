@@ -123,6 +123,8 @@ export function aSitios(respuesta: unknown, caja: readonly [number, number, numb
 
 /** Enlace a la ficha del lugar en OpenStreetMap (para revisarlo y para citar la fuente). */
 export function enlaceOSM(tipo: string, id: number | string): string {
+  // Versión 7 (30.1): los lugares traídos de Wikidata guardan osm_type = "wikidata" y el número de su Q
+  if (tipo === "wikidata") return `https://www.wikidata.org/wiki/Q${encodeURIComponent(String(id))}`;
   return `https://www.openstreetmap.org/${encodeURIComponent(tipo)}/${encodeURIComponent(String(id))}`;
 }
 

@@ -553,7 +553,8 @@ export async function importarOSM(_previo: EstadoAdmin, _datos: FormData): Promi
   const inicio = Date.now();
   const db = crearClienteAdmin();
   // Cuidar la API gratuita de OpenStreetMap: como mucho una importación cada 10 minutos
-  const { data: ultimo } = await db.from("city_spots").select("imported_at").order("imported_at", { ascending: false }).limit(1).maybeSingle();
+  // (Los traídos de Wikidata tienen su propia espera: no bloquean esta; revisión del 2026-10-28)
+  const { data: ultimo } = await db.from("city_spots").select("imported_at").neq("osm_type", "wikidata").order("imported_at", { ascending: false }).limit(1).maybeSingle();
   if (ultimo && Date.now() - Date.parse(ultimo.imported_at) < 10 * 60_000) return { estado: "error", mensaje: "Ya se trajeron lugares hace poco. Espera 10 minutos para volver a intentarlo." };
   let json: unknown;
   try {
