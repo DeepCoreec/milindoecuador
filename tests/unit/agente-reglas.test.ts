@@ -66,6 +66,16 @@ describe("reglas del agente revisor de la Guía útil", () => {
     expect(encontrados).toBeGreaterThanOrEqual(2);
   });
 
+  it("no confunden lugares distintos con palabras de tipo en común (casos reales de la primera corrida)", () => {
+    const cerca = (a: string, b: string, tipo = "monumento") =>
+      aplicarReglas({ ...s(a, tipo), lat: -2.19, lng: -79.88 }, [{ ...s(b, tipo), id: `otro-${b}`, lat: -2.1901, lng: -79.8801 }]);
+    expect(cerca("Estatua de Las Artes Aplicadas (Oficios)", "Estatua de Las Artes Mayores")).toBeNull();
+    expect(cerca('Monumento "Elemento Fuego"', 'Monumento "Elemento Tierra"')).toBeNull();
+    // Y siguen siendo duplicados los que sí lo son
+    expect(cerca("Los Aurigas", "Los Aurigas")?.veredicto).toBe("revisar");
+    expect(cerca("Orquideas", "Monumento a Las Orquideas")?.veredicto).toBe("revisar");
+  });
+
   it("no confunden lugares distintos aunque estén cerca", () => {
     const uno = { ...s("Museo Nahim Isaías", "museo"), lat: -2.19, lng: -79.88 };
     const otro = { ...s("Museo Municipal de Guayaquil", "museo"), lat: -2.1902, lng: -79.8801 };

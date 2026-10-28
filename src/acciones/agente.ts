@@ -118,3 +118,23 @@ export async function pedirRevisionAgente(_previo: EstadoAdmin, datos: FormData)
   ];
   return { estado: resultados.size ? "ok" : "error", mensaje: partes.filter(Boolean).join(" ") };
 }
+
+/**
+ * Borra las recomendaciones que dieron las REGLAS en los lugares "Por revisar" del grupo, para que el agente los
+ * vuelva a mirar con las reglas nuevas (ajuste del 2026-10-28). No toca lo que dijo la IA ni el estado de ningún lugar.
+ */
+export async function reiniciarRecomendacionesReglas(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaAgenteGuia.safeParse({ grupo: datos.get("grupo") || undefined });
+  if (!r.success) return { estado: "error", mensaje: "Grupo inválido" };
+  await requireAdmin();
+  let q = crearClienteAdmin()
+    .from("city_spots")
+    .update({ agent_verdict: null, agent_reason: null, agent_source: null, agent_model: null, agent_at: null })
+    .eq("status", "pendiente")
+    .eq("agent_source", "regla");
+  if (r.data.grupo) q = q.eq("grupo", r.data.grupo);
+  const { data, error } = await q.select("id");
+  if (error) return { estado: "error", mensaje: "No se pudo reiniciar" };
+  revalidatePath("/admin/guia");
+  return { estado: "ok", mensaje: `${data?.length ?? 0} recomendaciones de las reglas borradas. Vuelve a pedir la revisión.` };
+}

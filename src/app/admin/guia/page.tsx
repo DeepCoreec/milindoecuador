@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { importarOSM } from "@/acciones/admin";
-import { pedirRevisionAgente } from "@/acciones/agente";
+import { pedirRevisionAgente, reiniciarRecomendacionesReglas } from "@/acciones/agente";
 import { BotonAccion } from "@/components/admin/BotonAccion";
 import { SitiosGuia } from "@/components/admin/SitiosGuia";
 import { getSitiosAdmin, type FiltroAgente } from "@/lib/datos/admin";
@@ -42,8 +42,14 @@ export default async function PaginaGuiaAdmin({ searchParams }: PageProps<"/admi
               Revisa hasta 100 lugares «Por revisar» {grupo ? `de «${GRUPOS[grupo]}»` : ""} y recomienda publicar, revisar o descartar, con su motivo.
               No cambia nada: tú decides con los botones de abajo. Primero usa reglas (gratis) y luego Claude Haiku. Puede equivocarse: mira la lista antes de publicar en bloque.
             </p>
-            <div>
+            <div className="flex flex-wrap gap-3">
               <BotonAccion accion={pedirRevisionAgente} campos={grupo ? { grupo } : {}} texto="Pedir revisión al agente" />
+              <BotonAccion
+                accion={reiniciarRecomendacionesReglas}
+                campos={grupo ? { grupo } : {}}
+                texto="Volver a revisar lo de las reglas"
+                etiqueta="Borrar las recomendaciones de las reglas para que el agente las vuelva a mirar"
+              />
             </div>
             {acierto.length > 0 && (
               <p className="m-0 text-sm">
