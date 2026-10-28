@@ -598,10 +598,29 @@ export async function importarOSM(_previo: EstadoAdmin, _datos: FormData): Promi
       else nuevos += r.data?.length ?? 0;
     }
   }
+  // Versión 7 (29.2): a los lugares que ya estaban se les completa el enlace a Wikidata/Wikipedia si ahora lo
+  // tienen. Solo esas dos columnas y solo si estaban vacías: no cambia el estado, el nombre ni la frase.
+  let enlazados = 0;
+  const conEnlace = sitios.filter((s) => s.wikidata || s.wikipedia);
+  for (let i = 0; i < conEnlace.length && Date.now() - inicio < 55_000; i += 20) {
+    const resultados = await Promise.all(
+      conEnlace.slice(i, i + 20).map((s) =>
+        db
+          .from("city_spots")
+          .update({ wikidata: s.wikidata, wikipedia: s.wikipedia })
+          .eq("osm_type", s.osm_type)
+          .eq("osm_id", s.osm_id)
+          .is("wikidata", null)
+          .is("wikipedia", null)
+          .select("id"),
+      ),
+    );
+    enlazados += resultados.reduce((n, r) => n + (r.data?.length ?? 0), 0);
+  }
   revalidatePath("/admin/guia");
   return {
     estado: "ok",
-    mensaje: `Listo: ${sitios.length} lugares en OpenStreetMap, ${nuevos} nuevos para revisar${rechazados ? ` y ${rechazados} saltados por el filtro de palabras` : ""}.`,
+    mensaje: `Listo: ${sitios.length} lugares en OpenStreetMap, ${nuevos} nuevos para revisar${rechazados ? ` y ${rechazados} saltados por el filtro de palabras` : ""}${enlazados ? `; ${enlazados} ya existentes ahora tienen su enlace a Wikipedia` : ""}.`,
   };
 }
 
@@ -612,6 +631,18 @@ export async function decidirSitios(_previo: EstadoAdmin, datos: FormData): Prom
   const db = await crearClienteServidor();
   const { data, error } = await db.from("city_spots").update({ status: r.data.decision }).in("id", r.data.sitios).select("id");
   if (error) return { estado: "error", mensaje: "No se pudo cambiar" };
+  // Versión 7: un lugar descartado no deja su foto de Wikimedia en el bucket público (revisión del 2026-10-28, 4b)
+  if (r.data.decision === "descartado" && data?.length) {
+    const dbAdmin = crearClienteAdmin();
+    const { data: conFoto } = await dbAdmin.from("city_spots").select("id, photo_path").in("id", data.map((x) => x.id)).not("photo_path", "is", null);
+    if (conFoto?.length) {
+      await dbAdmin.storage.from("fotos-lugares").remove(conFoto.map((x) => x.photo_path as string));
+      await dbAdmin
+        .from("city_spots")
+        .update({ photo_path: null, photo_credit: null, photo_license: null, photo_source: null, description: null, description_source: null, enriched_at: null })
+        .in("id", conFoto.map((x) => x.id));
+    }
+  }
   revalidateTag("sitios", { expire: 0 });
   revalidatePath("/", "layout");
   const n = data?.length ?? 0;

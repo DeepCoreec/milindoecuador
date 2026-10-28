@@ -9,7 +9,7 @@ const respuesta = {
     { type: "node", id: 14, lat: -2.17, lon: -79.89, tags: { name: "Estación Garzota", public_transport: "station", network: "Metrovía" } },
     { type: "node", id: 15, lat: -2.17, lon: -79.89, tags: { name: "Estación de tren", public_transport: "station" } },
     { type: "node", id: 16, lat: -2.17, lon: -79.89, tags: { name: "Capilla del barrio", amenity: "place_of_worship" } },
-    { type: "node", id: 17, lat: -2.17, lon: -79.89, tags: { name: "Catedral", amenity: "place_of_worship", wikidata: "Q1" } },
+    { type: "node", id: 17, lat: -2.17, lon: -79.89, tags: { name: "Catedral", amenity: "place_of_worship", wikidata: "Q1", wikipedia: "es:Catedral de Guayaquil" } },
     { type: "node", id: 18, lat: -0.2, lon: -78.5, tags: { name: "Parque en Quito", leisure: "park" } },
     { type: "node", id: 19, lat: -2.17, lon: -79.89, tags: { leisure: "park" } },
     { type: "node", id: 12, lat: -2.18, lon: -79.87, tags: { name: "Repetido", tourism: "museum" } },
@@ -33,6 +33,13 @@ describe("importar de OpenStreetMap", () => {
     expect(s[1]).toMatchObject({ website: "https://maac.gob.ec", address: "Malecón Simón Bolívar" });
     expect(s[2]).toMatchObject({ website: null, phone: "+593 4 123 4567", grupo: "salud" });
     expect(s[5]!.name).toBe("Tecni Cel"); // sin letras invisibles
+    expect(s[4]).toMatchObject({ wikidata: "Q1", wikipedia: "es:Catedral de Guayaquil" });
+    expect(s[0]).toMatchObject({ wikidata: null, wikipedia: null });
+  });
+
+  it("solo guarda enlaces a Wikimedia con la forma correcta", () => {
+    const raro = aSitios({ elements: [{ type: "node", id: 30, lat: -2.17, lon: -79.89, tags: { name: "Parque Raro", leisure: "park", wikidata: "Q12; drop", wikipedia: "javascript:alert(1)" } }] });
+    expect(raro[0]).toMatchObject({ wikidata: null, wikipedia: null });
   });
 
   it("una respuesta rara no rompe nada", () => {

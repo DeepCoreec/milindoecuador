@@ -3,7 +3,7 @@
 > Pedido del usuario del 2026-10-28: "que estas secciones tengan también fotos y una descripción" y "una API gratuita
 > que nos genere lugares ya existentes como una guía, con fotos, videos, descripción y cómo llegar". Condición del
 > usuario: **"no queremos llenar de basura, solo lugares buenos"**; él también irá buscando y sugiriendo lugares.
-> Estado: **borrador, falta la aprobación del usuario.** Fases 29 a 31.
+> Estado: **aprobado por el usuario el 2026-10-28** ("claro encargate"). Fases 29 a 31.
 > **Sin librerías nuevas:** todo con `fetch` desde el servidor, igual que Paumi y el agente.
 
 ## La idea en una línea

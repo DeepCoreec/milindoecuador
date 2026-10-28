@@ -53,6 +53,9 @@ export type SitioOSM = {
   phone: string | null;
   website: string | null;
   opening_hours: string | null;
+  /** Enlace a Wikidata ("Q123") y a Wikipedia ("es:Título") si OpenStreetMap lo trae (versión 7, fase 29.2). */
+  wikidata: string | null;
+  wikipedia: string | null;
 };
 
 type Elemento = { type?: unknown; id?: unknown; lat?: unknown; lon?: unknown; center?: { lat?: unknown; lon?: unknown }; tags?: Record<string, unknown> };
@@ -63,6 +66,14 @@ const limpio = (v: unknown, max: number): string | null => {
   return t ? t.slice(0, max) : null;
 };
 const numero = (v: unknown): number | null => (typeof v === "number" && Number.isFinite(v) ? v : null);
+
+/** "Q123" válido de Wikidata, o null (lo que no tenga esa forma no se guarda). */
+export const codigoWikidata = (v: unknown): string | null => (typeof v === "string" && /^Q[1-9]\d{0,11}$/.test(v.trim()) ? v.trim() : null);
+/** "es:Título" de Wikipedia (idioma de 2 o 3 letras), o null. */
+export const tituloWikipedia = (v: unknown): string | null => {
+  const t = limpio(v, 200);
+  return t && /^[a-z]{2,3}:.+/.test(t) ? t : null;
+};
 
 /** Traduce la respuesta de Overpass a filas de `city_spots`. Ignora lo incompleto, raro o fuera de la caja. */
 export function aSitios(respuesta: unknown, caja: readonly [number, number, number, number] = CAJA_GUAYAQUIL): SitioOSM[] {
@@ -103,6 +114,8 @@ export function aSitios(respuesta: unknown, caja: readonly [number, number, numb
       phone: limpio(tags.phone ?? tags["contact:phone"], 40),
       website: web && /^https?:\/\/[^\s]+\.[^\s]+$/i.test(web) ? web : null,
       opening_hours: limpio(tags.opening_hours, 300),
+      wikidata: codigoWikidata(tags.wikidata),
+      wikipedia: tituloWikipedia(tags.wikipedia),
     });
   }
   return sitios;

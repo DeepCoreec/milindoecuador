@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { importarOSM } from "@/acciones/admin";
 import { pedirRevisionAgente, reiniciarRecomendacionesReglas } from "@/acciones/agente";
+import { buscarFotosGuia } from "@/acciones/fotos-guia";
 import { BotonAccion } from "@/components/admin/BotonAccion";
 import { SitiosGuia } from "@/components/admin/SitiosGuia";
 import { getSitiosAdmin, type FiltroAgente } from "@/lib/datos/admin";
@@ -33,6 +34,21 @@ export default async function PaginaGuiaAdmin({ searchParams }: PageProps<"/admi
       </p>
       <div className="mb-6 grid gap-3">
         <BotonAccion accion={importarOSM} campos={{}} texto="Traer lugares de OpenStreetMap" variante="principal" />
+        {estado === "publicado" && (
+          <section aria-labelledby="t-fotos" className="grid gap-2 rounded-xl border border-linea bg-papel-alto p-4">
+            <h2 id="t-fotos" className="m-0 text-base font-semibold">
+              Fotos y descripción
+            </h2>
+            <p className="m-0 max-w-[68ch] text-sm text-rio-suave">
+              Busca en Wikipedia y Wikimedia Commons la foto y una descripción corta de hasta 15 lugares publicados por clic. Solo se usan fotos con
+              licencia libre (con su autor) y el texto tal como está en Wikipedia. Si no hay nada bueno, el lugar se queda como está. Revisa las fotos
+              abajo y quita las que no correspondan.
+            </p>
+            <div>
+              <BotonAccion accion={buscarFotosGuia} campos={{}} texto="Buscar fotos y descripción" />
+            </div>
+          </section>
+        )}
         {estado === "pendiente" && (
           <section aria-labelledby="t-agente" className="grid gap-2 rounded-xl border border-linea bg-papel-alto p-4">
             <h2 id="t-agente" className="m-0 text-base font-semibold">
