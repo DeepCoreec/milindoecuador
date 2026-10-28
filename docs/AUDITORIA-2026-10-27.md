@@ -9,7 +9,7 @@
 
 ## Resumen
 
-- **Críticas: 0. Altas: 0 confirmadas (1 posible, H1). Medias: 3. Bajas: 3. Informativas: 3.**
+- **Críticas: 0. Altas: 0 (la posible, H1, se descartó: no hay copias publicadas). Medias: 3. Bajas: 3. Informativas: 3.**
 - Nadie logró: leer datos privados de otra persona (favoritos, reportes, solicitudes, estadísticas, errores, contadores
   de Paumi), cambiar su rol, tocar un negocio ajeno, llamar funciones internas ni subir o borrar archivos sin permiso.
 - RLS activado en las 22 tablas; la vista `place_ratings` respeta RLS; las 27 funciones `SECURITY DEFINER` fijan
@@ -28,7 +28,8 @@
 | I1 | Info | `reviews.user_id` es público | **No se cambia:** la página lo usa para marcar "tu reseña" y unir el nombre del autor |
 | I2 | Info | El admin podía cambiar roles desde el navegador | **Arreglado** (0018: `revoke update (role)`; admins solo por SQL) |
 | I3 | Info | La protección del rol depende de `current_user` | Regla para migraciones futuras (abajo) |
-| H1–H3 | Posibles | Dependen del Supabase real, de GitHub y de Vercel | **Usuario:** consultas del informe (PUESTA-EN-MARCHA §15) |
+| H1 | Posible | Copias ya publicadas con una clave débil | **Descartada hoy:** el 2026-10-27 no hay ningún artifact de copias (el flujo todavía no tiene sus secretos). Vuelve a ser real en cuanto se pongan, si el repositorio sigue público |
+| H2–H3 | Posibles | Dependen del Supabase real y de Vercel | **Usuario:** consultas del informe (PUESTA-EN-MARCHA §15) |
 
 ## Diferencias entre documentos y código (arregladas en esta rama)
 

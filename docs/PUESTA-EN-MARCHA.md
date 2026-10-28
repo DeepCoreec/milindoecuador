@@ -229,8 +229,8 @@ migración, pero los arreglos de la base solo valen cuando la ejecutas).
 
 1. **GitHub → el repositorio → Settings → General → Danger Zone → Change visibility → Private.** Las copias de la
    base (con correos y contraseñas cifradas) se guardan en GitHub Actions y en un repositorio público cualquiera
-   las descarga. Después: GitHub → Actions → "Copia semanal de la base" → si hay *artifacts*, bórralos si tu
-   `CLAVE_COPIAS` no es de 25+ caracteres al azar, y cámbiala.
+   las descarga. Hazlo **antes** de poner los secretos `SUPABASE_DB_URL` y `CLAVE_COPIAS`: el 2026-10-27 todavía no había
+   ninguna copia guardada.
 2. **Supabase → Authentication → Attack Protection:** captcha (Turnstile) activado. **Sign In / Providers → Email:**
    "Confirm email" activado.
 3. Pega las consultas de la sección "Lo que necesito de Supabase real" del informe y envíale el resultado a Claude.
