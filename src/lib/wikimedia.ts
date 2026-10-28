@@ -54,6 +54,8 @@ export type ResultadoWikimedia = {
   wikidata: string | null;
   foto: FotoWikimedia | null;
   descripcion: { texto: string; fuente: string } | null;
+  /** Por qué no hay foto (diagnóstico para el admin, 29.8), o null si hay foto. */
+  sinFoto: string | null;
   /** Por qué no se encontró nada (para el registro), o null si se encontró algo. */
   nada: string | null;
 };
@@ -158,23 +160,24 @@ async function buscarCerca(l: LugarParaBuscar, c: Ctx): Promise<string | null> {
   return null;
 }
 
-/** La foto en Commons: copia de 960 px, licencia libre, autor y enlace. Si algo no cuadra, null. */
-async function leerFoto(archivo: string, c: Ctx): Promise<FotoWikimedia | null> {
+/** La foto en Commons: copia de 960 px, licencia libre, autor y enlace. Si algo no cuadra, el motivo (texto). */
+async function leerFoto(archivo: string, c: Ctx): Promise<FotoWikimedia | string> {
   const url = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(`File:${archivo}`)}&prop=imageinfo&iiprop=url%7Cextmetadata%7Cmime&iiurlwidth=960&format=json`;
   const j = (await pedirJSON(url, c)) as {
     query?: { pages?: Record<string, { missing?: string; imageinfo?: { thumburl?: unknown; thumbmime?: unknown; mime?: unknown; descriptionurl?: unknown; extmetadata?: Record<string, { value?: unknown }> }[] }> };
   } | null;
   const pagina = Object.values(j?.query?.pages ?? {})[0];
   const ii = pagina && !("missing" in pagina) ? pagina.imageinfo?.[0] : undefined;
-  if (!ii) return null;
+  if (!ii) return j ? `Commons no tiene el archivo «${archivo.slice(0, 40)}»` : "Commons no respondió el archivo";
   const mime = typeof ii.thumbmime === "string" ? ii.thumbmime : ii.mime;
-  if (mime !== "image/jpeg" && mime !== "image/png" && mime !== "image/webp") return null;
+  if (mime !== "image/jpeg" && mime !== "image/png" && mime !== "image/webp") return `tipo de archivo ${String(mime).slice(0, 30)}`;
   const foto = typeof ii.thumburl === "string" ? ii.thumburl : null;
   const fuente = typeof ii.descriptionurl === "string" ? ii.descriptionurl : null;
-  if (!foto?.startsWith("https://upload.wikimedia.org/") || !fuente?.startsWith("https://commons.wikimedia.org/") || fuente.length > 400) return null;
+  if (!foto?.startsWith("https://upload.wikimedia.org/")) return `copia web rara (${String(foto).slice(0, 40)})`;
+  if (!fuente?.startsWith("https://commons.wikimedia.org/") || fuente.length > 400) return `enlace raro (${String(fuente).slice(0, 40)})`;
   const meta = ii.extmetadata ?? {};
   const licencia = typeof meta.LicenseShortName?.value === "string" ? textoPlano(meta.LicenseShortName.value, 60) : "";
-  if (!licenciaLibre(licencia)) return null;
+  if (!licenciaLibre(licencia)) return `licencia no libre o desconocida «${licencia || "sin dato"}»`;
   const autor = typeof meta.Artist?.value === "string" ? textoPlano(meta.Artist.value, 150) : "";
   return { url: foto, credito: autor || "Autor en Wikimedia Commons", licencia, fuente };
 }
@@ -185,7 +188,7 @@ async function leerFoto(archivo: string, c: Ctx): Promise<FotoWikimedia | null> 
  */
 export async function buscarEnWikimedia(l: LugarParaBuscar, pedir: typeof fetch = fetch, corte?: AbortSignal): Promise<ResultadoWikimedia> {
   const c: Ctx = { pedir, corte };
-  const vacio = (nada: string): ResultadoWikimedia => ({ wikidata: null, foto: null, descripcion: null, nada });
+  const vacio = (nada: string): ResultadoWikimedia => ({ wikidata: null, foto: null, descripcion: null, sinFoto: nada, nada });
   let qid = l.wikidata && QID.test(l.wikidata) ? l.wikidata : null;
   let tituloEs: string | null = null;
   let enlazado = !!qid;
@@ -224,13 +227,20 @@ export async function buscarEnWikimedia(l: LugarParaBuscar, pedir: typeof fetch 
   }
 
   // 3. Foto y descripción (cada una por su lado: puede haber una sin la otra)
-  const foto = e.archivo ? await leerFoto(e.archivo, c) : null;
+  const leida = e.archivo ? await leerFoto(e.archivo, c) : "la ficha de Wikidata no tiene foto (P18)";
+  const foto = typeof leida === "string" ? null : leida;
   let descripcion: ResultadoWikimedia["descripcion"] = null;
   if (tituloEs) {
     const r = await leerResumen("es", tituloEs, c);
     if (r?.extracto && r.pagina) descripcion = { texto: primerasFrases(r.extracto), fuente: r.pagina };
   }
-  return { wikidata: qid, foto, descripcion, nada: foto || descripcion ? null : "La ficha no tiene foto libre ni artículo en español" };
+  return {
+    wikidata: qid,
+    foto,
+    descripcion,
+    sinFoto: typeof leida === "string" ? leida : null,
+    nada: foto || descripcion ? null : "La ficha no tiene foto libre ni artículo en español",
+  };
 }
 
 /**

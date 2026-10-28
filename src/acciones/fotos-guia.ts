@@ -45,6 +45,8 @@ export async function buscarFotosGuia(_previo: EstadoAdmin, datos: FormData): Pr
   let conTexto = 0;
   let sinNada = 0;
   let fallas = 0;
+  /** Por qué cada lugar no trajo foto (29.8): se muestra al admin para encontrar fallas. */
+  const motivos: string[] = [];
   const bucket = db.storage.from("fotos-lugares");
 
   // Corte duro antes de los 60 s de Vercel: lo que no alcance se aborta y se reintenta en el próximo clic (hallazgo 3)
@@ -57,14 +59,22 @@ export async function buscarFotosGuia(_previo: EstadoAdmin, datos: FormData): Pr
     try {
       const r = await buscarEnWikimedia({ nombre: f.name, lat: f.latitude, lng: f.longitude, wikidata: f.wikidata, wikipedia: f.wikipedia }, fetch, corte);
       let foto: { photo_path: string; photo_credit: string; photo_license: string; photo_source: string } | null = null;
+      let sinFoto = r.sinFoto;
       if (r.foto) {
-        const d = await descargarFoto(r.foto.url, fetch, corte);
-        const camino = `guia/${f.id}.${d.extension}`;
-        const { error: e } = await bucket.upload(camino, d.datos, { contentType: d.tipo, upsert: true, cacheControl: "604800" });
-        if (e) throw new ErrorWikimedia("No se pudo guardar la foto");
-        subida = camino;
-        foto = { photo_path: camino, photo_credit: r.foto.credito, photo_license: r.foto.licencia, photo_source: r.foto.fuente };
+        try {
+          const d = await descargarFoto(r.foto.url, fetch, corte);
+          const camino = `guia/${f.id}.${d.extension}`;
+          const { error: e } = await bucket.upload(camino, d.datos, { contentType: d.tipo, upsert: true, cacheControl: "604800" });
+          if (e) throw new ErrorWikimedia(`no se pudo guardar en el bucket (${e.message.slice(0, 40)})`);
+          subida = camino;
+          foto = { photo_path: camino, photo_credit: r.foto.credito, photo_license: r.foto.licencia, photo_source: r.foto.fuente };
+        } catch (e) {
+          // Si la descarga falla sin arreglo, la descripción igual se guarda; si es pasajera, se reintenta todo
+          if (!(e instanceof ErrorWikimedia && e.permanente)) throw e;
+          sinFoto = `descarga: ${e.message}`;
+        }
       }
+      if (sinFoto) motivos.push(`${f.name.slice(0, 40)}: ${sinFoto}`);
       const textos = { ...(foto ?? {}), ...(r.descripcion ? { description: r.descripcion.texto, description_source: r.descripcion.fuente } : {}) };
       let res = await anotar(f.id, { wikidata: r.wikidata ?? f.wikidata, ...textos });
       let filtrado = false;
@@ -92,6 +102,7 @@ export async function buscarFotosGuia(_previo: EstadoAdmin, datos: FormData): Pr
         await anotar(f.id);
         revisados++;
         sinNada++;
+        motivos.push(`${f.name.slice(0, 40)}: ${e instanceof ErrorWikimedia ? e.message : "error"}`);
       } else fallas++;
       console.log(JSON.stringify({ evento: "foto_guia_falla", sitio: f.id, permanente, error: e instanceof ErrorWikimedia ? e.message : "inesperado o tiempo agotado" }));
     }
@@ -108,8 +119,28 @@ export async function buscarFotosGuia(_previo: EstadoAdmin, datos: FormData): Pr
     `Se buscaron ${revisados} lugares: ${conFoto} con foto, ${conTexto} con descripción y ${sinNada} sin nada bueno en Wikipedia (se quedan como están).`,
     filas.length === POR_CLIC ? "Puede que queden más: vuelve a tocar el botón." : null,
     fallas ? `${fallas} no se pudieron revisar ahora (Wikimedia no respondió): vuelve a tocar el botón.` : null,
+    motivos.length ? `Sin foto — ${motivos.slice(0, 15).join(" · ")}` : null,
   ];
   return { estado: "ok", mensaje: partes.filter(Boolean).join(" ") };
+}
+
+/**
+ * "Volver a buscar los que quedaron sin foto" (29.8): borra la fecha de búsqueda de los lugares publicados que no tienen
+ * foto, para que el botón los vuelva a mirar (después de corregir una falla). No toca fotos ni descripciones ya puestas.
+ */
+export async function reiniciarBusquedaFotos(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  if (!esquemaBuscarFotosGuia.safeParse(Object.fromEntries(datos)).success) return { estado: "error", mensaje: "Datos inválidos" };
+  await requireAdmin();
+  const { data, error } = await crearClienteAdmin()
+    .from("city_spots")
+    .update({ enriched_at: null })
+    .eq("status", "publicado")
+    .is("photo_path", null)
+    .not("enriched_at", "is", null)
+    .select("id");
+  if (error) return { estado: "error", mensaje: "No se pudo reiniciar" };
+  revalidatePath("/admin/guia");
+  return { estado: "ok", mensaje: `${data?.length ?? 0} lugares sin foto se volverán a buscar. Toca "Buscar fotos y descripción".` };
 }
 
 /** Quitar la foto y la descripción de un lugar (regla 7: todo se puede deshacer). No se vuelven a buscar solas. */
