@@ -299,6 +299,7 @@
   - [x] 26.2 Ronda 2 · Google, velocidad y accesibilidad — 2026-10-28: web real (etiquetas, robots, sitemap, 404) en el Chrome del usuario; Lighthouse celular y axe sobre una copia local del código de hoy. Accesibilidad: 0 errores de axe en 8 páginas, 100 en Lighthouse; velocidad 94–97 (LCP 1,9–3,0 s, 296–415 KB); SEO básico 100. Falta: dominio propio, datos estructurados (ninguno), no indexar categorías vacías, título de la portada. PageSpeed de Google sin cuota ese día. 9 acciones (G1–G9) en el informe "Ronda 2 · Google, velocidad y accesibilidad"
   - [ ] 26.3 Ronda 3 · Estructura del código, pruebas y publicación automática
   - [ ] 26.4 Ronda 4 · Paumi
+  - [x] 26.5 PLAN-V6 (agentes de IA para el admin) en borrador — 2026-10-28: `docs/PLAN-V6.md`. Fase 27: agente revisor de la Guía útil (reglas + Claude Haiku + el admin decide; etapas de autonomía; registro de cada decisión; costo estimado 0,25 a 2,40 $ para los 2281 lugares). Fase 28: reseñas y reportes, fichas nuevas de dueños, eventos reportados. **Falta (usuario): aprobarlo**
   - **Siguiente paso:** el usuario autoriza acciones de las rondas 1 y 2 (y manda el Build Log de Vercel para R1); luego 26.3
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
