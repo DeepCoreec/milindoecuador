@@ -43,6 +43,8 @@ describe("consulta de Wikidata para un solo lugar", () => {
   it("agrega el Q a la consulta con sus mismas exigencias de calidad", () => {
     const q = consultaWikidata("Q2364048");
     expect(q).toContain("VALUES ?item { wd:Q2364048 }");
+    expect(q).toContain("OPTIONAL { VALUES ?clase"); // la clase turística es opcional con un solo lugar
+    expect(consultaWikidata()).not.toContain("OPTIONAL"); // y obligatoria al traer todos
     expect(q).toContain("wdt:P18");
     expect(q).toContain("wikibase:box");
   });

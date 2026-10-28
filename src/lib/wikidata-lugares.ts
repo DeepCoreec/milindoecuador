@@ -42,6 +42,12 @@ export function consultaWikidata(soloQ?: string): string {
   // 30.3: un solo lugar (agregar por enlace). El Q se valida con su forma exacta antes de ponerlo en la consulta
   if (soloQ !== undefined && !/^Q[1-9]\d{0,11}$/.test(soloQ)) throw new ErrorWikimedia("Código de Wikidata inválido", true);
   const uno = soloQ ? `\n  VALUES ?item { wd:${soloQ} }` : "";
+  // Con un solo lugar (lo eligió el admin) la clase turística es opcional: si no tiene una conocida, entra como
+  // "Atracción" (Malecón 2000 es un "paseo marítimo" en Wikidata; visto en producción el 2026-10-28)
+  const lista = CLASES.map(([q]) => `wd:${q}`).join(" ");
+  const clases = soloQ
+    ? `  OPTIONAL { VALUES ?clase { ${lista} } ?item wdt:P31/wdt:P279* ?clase . }`
+    : `  VALUES ?clase { ${lista} }\n  ?item wdt:P31/wdt:P279* ?clase .`;
   return `SELECT ?item ?nombre ?coord ?clase WHERE {${uno}
   SERVICE wikibase:box {
     ?item wdt:P625 ?coord .
@@ -50,8 +56,7 @@ export function consultaWikidata(soloQ?: string): string {
   }
   ?item wdt:P18 ?foto .
   ?articulo schema:about ?item ; schema:isPartOf <https://es.wikipedia.org/> .
-  VALUES ?clase { ${CLASES.map(([q]) => `wd:${q}`).join(" ")} }
-  ?item wdt:P31/wdt:P279* ?clase .
+${clases}
   FILTER NOT EXISTS { ?item wdt:P31 wd:Q5 }
   ?item rdfs:label ?nombre . FILTER(LANG(?nombre) = "es")
 }
@@ -64,7 +69,7 @@ const QID_URI = /^http:\/\/www\.wikidata\.org\/entity\/(Q[1-9]\d{0,11})$/;
 const PUNTO = /^Point\((-?\d+(?:\.\d+)?) (-?\d+(?:\.\d+)?)\)$/;
 
 /** Traduce la respuesta SPARQL: un candidato por Q, con el tipo de la clase más importante. Ignora lo raro. */
-export function aCandidatos(respuesta: unknown): CandidatoWikidata[] {
+export function aCandidatos(respuesta: unknown, claseOpcional = false): CandidatoWikidata[] {
   const filas = (respuesta as { results?: { bindings?: unknown } })?.results?.bindings;
   if (!Array.isArray(filas)) return [];
   const prioridad = new Map(CLASES.map(([q], i) => [q, i]));
@@ -75,14 +80,17 @@ export function aCandidatos(respuesta: unknown): CandidatoWikidata[] {
     const clase = typeof f.clase?.value === "string" ? QID_URI.exec(f.clase.value)?.[1] : undefined;
     const punto = typeof f.coord?.value === "string" ? PUNTO.exec(f.coord.value) : null;
     const nombre = typeof f.nombre?.value === "string" ? f.nombre.value.replace(/[\p{Cc}\p{Cf}]/gu, " ").replace(/\s+/g, " ").trim() : "";
-    if (!qid || !clase || !punto || nombre.length < 2 || nombre.length > 120 || /^Q\d+$/.test(nombre)) continue;
-    const orden = prioridad.get(clase);
+    if (!qid || !punto || nombre.length < 2 || nombre.length > 120 || /^Q\d+$/.test(nombre)) continue;
+    if (!clase && !claseOpcional) continue;
+    // Sin clase conocida (solo al agregar uno a mano): "Atracción", con la prioridad más baja
+    const orden = clase ? prioridad.get(clase) : CLASES.length - 1;
     if (orden === undefined) continue;
     const lng = Number(punto[1]);
     const lat = Number(punto[2]);
     if (lat < latMin || lat > latMax || lng < lonMin || lng > lonMax) continue;
     const antes = porQ.get(qid);
-    if (!antes || orden < antes.orden) porQ.set(qid, { qid, nombre, lat, lng, tipo: CLASES[orden]![1], orden });
+    const tipo = clase ? CLASES[orden]![1] : "atraccion";
+    if (!antes || orden < antes.orden) porQ.set(qid, { qid, nombre, lat, lng, tipo, orden });
   }
   return [...porQ.values()].map((c) => ({ qid: c.qid, nombre: c.nombre, lat: c.lat, lng: c.lng, tipo: c.tipo })).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"));
 }
@@ -101,7 +109,7 @@ export async function buscarCandidatosWikidata(pedir: typeof fetch = fetch, solo
   const texto = await r.text();
   if (texto.length > 5_000_000) throw new ErrorWikimedia("La respuesta de Wikidata es demasiado grande");
   try {
-    return aCandidatos(JSON.parse(texto));
+    return aCandidatos(JSON.parse(texto), soloQ !== undefined);
   } catch {
     throw new ErrorWikimedia("Wikidata no devolvió datos válidos");
   }
