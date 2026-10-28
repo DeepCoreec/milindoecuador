@@ -302,6 +302,20 @@
   - [x] 26.5 PLAN-V6 (agentes de IA para el admin) en borrador — 2026-10-28: `docs/PLAN-V6.md`. Fase 27: agente revisor de la Guía útil (reglas + Claude Haiku + el admin decide; etapas de autonomía; registro de cada decisión; costo estimado 0,25 a 2,40 $ para los 2281 lugares). Fase 28: reseñas y reportes, fichas nuevas de dueños, eventos reportados. **Falta (usuario): aprobarlo**
   - **Siguiente paso:** el usuario autoriza acciones de las rondas 1 y 2 (y manda el Build Log de Vercel para R1); luego 26.3
 
+## Versión 6 · Agentes que ayudan al admin
+
+> Plan: `docs/PLAN-V6.md`. Aprobado el 2026-10-28 con **Claude Haiku 5.5** (el más barato). Rama `agente-guia-util`
+> (sale de `seguridad-2026-10-27`: necesita 0018 antes que 0019).
+
+- Fase 27 · Agente revisor de la Guía útil
+  - [x] 27.1 Base de datos — 2026-10-28: `0019_agente_guia.sql`: recomendación del agente en `city_spots` (`agent_verdict`, `agent_reason`, `agent_source`, `agent_model`, `agent_at`; el público ya no lee la tabla entera, solo sus columnas de siempre) y `spot_decisions`, registro automático (disparador) de cada decisión del admin con lo que había dicho el agente. 10 reglas nuevas (237)
+  - [ ] 27.2 Reglas sin IA con las 51 decisiones del 2026-10-28 como pruebas
+  - [ ] 27.3 Criterio con Claude Haiku 5.5
+  - [ ] 27.4 Panel
+  - [ ] 27.5 Etapa 2 (aprobar solo lo seguro): solo si el usuario la activa
+  - [ ] 27.6 Cierre
+  - **Siguiente paso:** 27.2
+
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
 - (2026-10-28, pedido del usuario) **Agentes de IA que ayuden al admin**, partiendo de lo que ya existe y no desde cero. Propuesta de Claude: sin entrenar un modelo propio (no hay datos etiquetados); cada agente = reglas con los datos de OpenStreetMap + cruce con Overture Maps Places (puntaje de "existe", licencia CDLA/Apache) + Claude Haiku (la misma clave de Paumi) para el juicio, y **siempre el admin aprueba**: el agente solo recomienda. Primer candidato: revisor de la Guía útil (2332 lugares por revisar). Después: reseñas y reportes, fichas nuevas de dueños (C5), eventos reportados. Referencia revisada: vercel-labs/review-desk (patrón con aprobación humana; trae Workflow SDK, Slack y Redis: se toma la idea, no el código). Necesita su propio plan (PLAN-V6), permiso para librerías nuevas y estimar el costo antes de correrlo
