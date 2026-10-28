@@ -377,7 +377,8 @@
 - [ ] 30.3 "Agregar un lugar" pegando su enlace de Wikipedia, Wikidata u OpenStreetMap
 - **Puerta:** los lugares nuevos publicados tienen foto, descripción, crédito y "Cómo llegar"; cero duplicados
 - [x] 30.2b Revisión independiente de seguridad — 2026-10-28: sin hallazgos críticos ni altos (hosts fijos, sin inyección en SPARQL, validación de datos, RLS sin fugas, migración correcta). Arreglados: (media) la importación guarda por lotes de 100 y corta antes de los 60 s de Vercel; (baja) la búsqueda de duplicados lee la guía por páginas y también por Q en cualquier grupo; (baja) Wikidata tiene su propia espera de 10 minutos y ya no bloquea el botón de OpenStreetMap; (baja) en la cola de fotos van primero los publicados; (baja) las fotos solo se guardan en publicados o candidatos de Wikidata por revisar. Pendiente informativo: si después OpenStreetMap trae el mismo lugar, el agente lo marca como posible duplicado
-- **Siguiente paso:** (usuario) ejecutar `0021_lugares_wikidata.sql`; unir `v7-fase30`; traer los candidatos, buscar sus fotos, pedir revisión al agente y publicar solo los buenos con foto y descripción
+- [x] 30.2c Migración en el Supabase real — 2026-10-28 17:05: el usuario ejecutó `0021_lugares_wikidata.sql`; la comprobación devolvió `wikidata_con_su_q`
+- **Siguiente paso:** unir `v7-fase30`; "Traer lugares turísticos de Wikidata"; "Buscar fotos y descripción" hasta terminar; "Pedir revisión al agente"; publicar solo los buenos que tengan foto y descripción; revisar uno por uno
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
