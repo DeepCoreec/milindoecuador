@@ -351,7 +351,16 @@
   - `src/lib/wikimedia.ts`: cuál es el lugar (enlace `wikidata` → `wikipedia` de OpenStreetMap → artículo a menos de 300 m con nombre parecido); la ficha de Wikidata se descarta si queda lejos (1,5 km con enlace, 300 m sin enlace); foto P18 de Commons en 960 px, solo licencias libres (CC0, CC BY, CC BY-SA, dominio público) y solo de upload.wikimedia.org; descripción = primeras frases del resumen de Wikipedia en español, sin IA (**cambio frente al plan:** no hace falta Haiku para acortar y así no hay riesgo de inventos); User-Agent propio, como pide Wikimedia. 12 pruebas unitarias.
   - `src/acciones/fotos-guia.ts`: botón "Buscar fotos y descripción" (pestaña Publicados de `/admin/guia`), 15 lugares por clic, 3 a la vez, guarda después de cada lugar; la foto se copia a `fotos-lugares/guia/<id>`; si no hay nada bueno solo anota la fecha; si Wikimedia falla, se reintenta en otro clic. "Quitar foto y descripción" por lugar (borra el archivo; no se vuelve a buscar sola). Zod + requireAdmin en las dos.
 - [x] 29.4 Mostrarlo — 2026-10-28: tarjeta de la guía (`FilaSitio`) con la foto arriba, la frase del admin o la descripción de Wikipedia, y el crédito ("Foto: autor, licencia" y "Texto: Wikipedia (CC BY-SA 4.0)" con enlaces). En el panel, cada lugar publicado muestra su foto, texto y crédito para revisarlos. `npm run build` pasa; **falta revisarlo en la página real a 390 px y escritorio, claro y oscuro** (necesita 0020 en Supabase).
-- **Siguiente paso:** revisión independiente de seguridad de 29.1–29.4; luego (usuario) ejecutar `0020_fotos_guia.sql` en el SQL Editor de Supabase; después Claude une la rama `v7-fotos-guia` a `main`, toca "Buscar fotos y descripción" hasta terminar, revisa las fotos una por una y revisa el diseño en la página real
+- [x] 29.5 Revisión independiente de seguridad — 2026-10-28: sin hallazgos críticos ni altos. Arreglados todos:
+  - (media) ficha de Wikidata sin ubicación → solo vale si el nombre coincide (un enlace malo en OpenStreetMap no trae la foto de otra cosa);
+  - (media) un lugar con error permanente (400) trababa el botón → se anota como revisado sin foto ni texto; los pasajeros (429, 5xx, tiempo) se reintentan;
+  - (baja) corte de tiempo a los 50 s para no pasar los 60 s de Vercel;
+  - (baja) fotos sueltas: se borran si el lugar dejó de estar publicado mientras se guardaba, si el filtro rechazó el texto y al descartar un lugar;
+  - (baja) la descripción y el autor de la foto pasan por el filtro de palabras de la base (0020 reemplaza `revisar_textos_sitio`); la descripción sin enlaces ni teléfonos;
+  - (baja) después de una redirección la respuesta tiene que seguir siendo de Wikimedia; la descarga cuenta los bytes mientras llegan (tope 5 MB);
+  - (info) el crédito dice "Extracto de Wikipedia (CC BY-SA 4.0)".
+  - 5 pruebas unitarias y 3 RLS nuevas: 163 unitarias y 255 RLS pasan; `npm run build` pasa
+- **Siguiente paso:** (usuario) ejecutar `0020_fotos_guia.sql` en el SQL Editor de Supabase; después Claude une la rama `v7-fotos-guia` a `main`, toca "Buscar fotos y descripción" hasta terminar, revisa las fotos una por una y revisa el diseño en la página real
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 

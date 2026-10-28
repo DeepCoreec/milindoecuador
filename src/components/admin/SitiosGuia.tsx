@@ -69,7 +69,7 @@ function FotoYTexto({ s }: { s: SitioAdmin }) {
           )}
           {s.descripcion && (
             <a href={s.descripcion.fuente} target="_blank" rel="noopener noreferrer">
-              Texto de Wikipedia
+              Extracto de Wikipedia
             </a>
           )}
         </p>

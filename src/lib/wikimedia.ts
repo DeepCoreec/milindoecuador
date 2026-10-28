@@ -19,8 +19,35 @@ const LEJOS_ENLAZADO_M = 1500;
 /** Sin enlace, solo se acepta un artículo muy cerca y con nombre parecido. */
 const CERCA_BUSQUEDA_M = 300;
 export const MAX_DESCRIPCION = 300;
+const MAX_FOTO = 5_000_000;
 
-export class ErrorWikimedia extends Error {}
+/**
+ * Falla al hablar con Wikimedia. `permanente`: volver a intentar no sirve (por ejemplo, un título inválido que da 400):
+ * el lugar se anota como revisado para que no trabe el botón (revisión independiente del 2026-10-28, hallazgo 2).
+ */
+export class ErrorWikimedia extends Error {
+  constructor(
+    mensaje: string,
+    readonly permanente = false,
+  ) {
+    super(mensaje);
+  }
+}
+
+/** Cómo se pide: el fetch (se reemplaza en las pruebas) y un corte opcional para no pasarse del tiempo de Vercel. */
+type Ctx = { pedir: typeof fetch; corte?: AbortSignal };
+const senal = (c: Ctx, ms: number) => (c.corte ? AbortSignal.any([AbortSignal.timeout(ms), c.corte]) : AbortSignal.timeout(ms));
+const HOSTS = /^(www\.wikidata\.org|commons\.wikimedia\.org|upload\.wikimedia\.org|[a-z]{2,3}\.wikipedia\.org)$/;
+
+/** Después de una redirección, la respuesta tiene que seguir viniendo de Wikimedia (hallazgo 6). */
+function hostPermitido(r: Response) {
+  if (r.url && !HOSTS.test(new URL(r.url).hostname)) throw new ErrorWikimedia("Wikimedia redirigió a otro sitio", true);
+}
+/** 404: no existe (no es error). 429 y 5xx: volver a intentar después. Otro 4xx: no tiene arreglo (permanente). */
+function revisarEstado(r: Response, que: string) {
+  if (r.ok) return;
+  throw new ErrorWikimedia(`${que} respondió ${r.status}`, r.status >= 400 && r.status < 500 && r.status !== 429);
+}
 
 export type FotoWikimedia = { url: string; credito: string; licencia: string; fuente: string };
 export type ResultadoWikimedia = {
@@ -72,24 +99,25 @@ const sinAclaracion = (t: string) => t.replace(/\s*\([^)]*\)\s*$/, "").trim();
 const QID = /^Q[1-9]\d{0,11}$/;
 const IDIOMA = /^[a-z]{2,3}$/;
 
-async function pedirJSON(url: string, pedir: typeof fetch): Promise<unknown> {
-  const r = await pedir(url, {
+async function pedirJSON(url: string, c: Ctx): Promise<unknown> {
+  const r = await c.pedir(url, {
     headers: { "user-agent": AGENTE, "api-user-agent": AGENTE, accept: "application/json" },
-    signal: AbortSignal.timeout(10_000),
+    signal: senal(c, 10_000),
     cache: "no-store",
   });
+  hostPermitido(r);
   if (r.status === 404) return null;
-  if (!r.ok) throw new ErrorWikimedia(`Wikimedia respondió ${r.status}`);
+  revisarEstado(r, "Wikimedia");
   return r.json();
 }
 
 type Entidad = { titulo: string | null; archivo: string | null; punto: { lat: number; lng: number } | null };
 
 /** Lo que importa de una entidad de Wikidata: artículo en español, imagen principal (P18) y coordenadas (P625). */
-async function leerEntidad(qid: string, pedir: typeof fetch): Promise<Entidad | null> {
+async function leerEntidad(qid: string, c: Ctx): Promise<Entidad | null> {
   if (!QID.test(qid)) return null;
   const url = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${qid}&props=claims%7Csitelinks&sitefilter=eswiki&format=json`;
-  const j = (await pedirJSON(url, pedir)) as { entities?: Record<string, { missing?: string; claims?: Record<string, { mainsnak?: { datavalue?: { value?: unknown } } }[]>; sitelinks?: { eswiki?: { title?: unknown } } }> } | null;
+  const j = (await pedirJSON(url, c)) as { entities?: Record<string, { missing?: string; claims?: Record<string, { mainsnak?: { datavalue?: { value?: unknown } } }[]>; sitelinks?: { eswiki?: { title?: unknown } } }> } | null;
   const e = j?.entities?.[qid];
   if (!e || "missing" in e) return null;
   const archivo = e.claims?.P18?.[0]?.mainsnak?.datavalue?.value;
@@ -105,10 +133,10 @@ async function leerEntidad(qid: string, pedir: typeof fetch): Promise<Entidad | 
 type Resumen = { qid: string | null; extracto: string | null; pagina: string | null };
 
 /** Resumen de un artículo de Wikipedia (`idioma`.wikipedia.org). Las desambiguaciones no sirven. */
-async function leerResumen(idioma: string, titulo: string, pedir: typeof fetch): Promise<Resumen | null> {
+async function leerResumen(idioma: string, titulo: string, c: Ctx): Promise<Resumen | null> {
   if (!IDIOMA.test(idioma)) return null;
   const url = `https://${idioma}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(titulo.replace(/ /g, "_"))}`;
-  const j = (await pedirJSON(url, pedir)) as { type?: unknown; extract?: unknown; wikibase_item?: unknown; content_urls?: { desktop?: { page?: unknown } } } | null;
+  const j = (await pedirJSON(url, c)) as { type?: unknown; extract?: unknown; wikibase_item?: unknown; content_urls?: { desktop?: { page?: unknown } } } | null;
   if (!j || j.type !== "standard") return null;
   const qid = typeof j.wikibase_item === "string" && QID.test(j.wikibase_item) ? j.wikibase_item : null;
   const pagina = typeof j.content_urls?.desktop?.page === "string" ? j.content_urls.desktop.page : null;
@@ -120,9 +148,9 @@ async function leerResumen(idioma: string, titulo: string, pedir: typeof fetch):
 }
 
 /** Artículos de Wikipedia en español a menos de 300 m; el primero con nombre parecido (regla 4). */
-async function buscarCerca(l: LugarParaBuscar, pedir: typeof fetch): Promise<string | null> {
+async function buscarCerca(l: LugarParaBuscar, c: Ctx): Promise<string | null> {
   const url = `https://es.wikipedia.org/w/api.php?action=query&list=geosearch&gscoord=${l.lat.toFixed(6)}%7C${l.lng.toFixed(6)}&gsradius=${CERCA_BUSQUEDA_M}&gslimit=15&format=json`;
-  const j = (await pedirJSON(url, pedir)) as { query?: { geosearch?: { title?: unknown; dist?: unknown }[] } } | null;
+  const j = (await pedirJSON(url, c)) as { query?: { geosearch?: { title?: unknown; dist?: unknown }[] } } | null;
   for (const g of j?.query?.geosearch ?? []) {
     if (typeof g.title !== "string" || typeof g.dist !== "number" || g.dist > CERCA_BUSQUEDA_M) continue;
     if (nombresParecidos(l.nombre, sinAclaracion(g.title))) return g.title;
@@ -131,9 +159,9 @@ async function buscarCerca(l: LugarParaBuscar, pedir: typeof fetch): Promise<str
 }
 
 /** La foto en Commons: copia de 960 px, licencia libre, autor y enlace. Si algo no cuadra, null. */
-async function leerFoto(archivo: string, pedir: typeof fetch): Promise<FotoWikimedia | null> {
+async function leerFoto(archivo: string, c: Ctx): Promise<FotoWikimedia | null> {
   const url = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(`File:${archivo}`)}&prop=imageinfo&iiprop=url%7Cextmetadata%7Cmime&iiurlwidth=960&format=json`;
-  const j = (await pedirJSON(url, pedir)) as {
+  const j = (await pedirJSON(url, c)) as {
     query?: { pages?: Record<string, { missing?: string; imageinfo?: { thumburl?: unknown; thumbmime?: unknown; mime?: unknown; descriptionurl?: unknown; extmetadata?: Record<string, { value?: unknown }> }[] }> };
   } | null;
   const pagina = Object.values(j?.query?.pages ?? {})[0];
@@ -155,7 +183,8 @@ async function leerFoto(archivo: string, pedir: typeof fetch): Promise<FotoWikim
  * Busca foto y descripción para un lugar publicado. Nunca lanza por "no encontré": devuelve `nada` con el motivo.
  * Lanza ErrorWikimedia si Wikimedia falla (para volver a intentar después). `pedir` se reemplaza en las pruebas.
  */
-export async function buscarEnWikimedia(l: LugarParaBuscar, pedir: typeof fetch = fetch): Promise<ResultadoWikimedia> {
+export async function buscarEnWikimedia(l: LugarParaBuscar, pedir: typeof fetch = fetch, corte?: AbortSignal): Promise<ResultadoWikimedia> {
+  const c: Ctx = { pedir, corte };
   const vacio = (nada: string): ResultadoWikimedia => ({ wikidata: null, foto: null, descripcion: null, nada });
   let qid = l.wikidata && QID.test(l.wikidata) ? l.wikidata : null;
   let tituloEs: string | null = null;
@@ -166,49 +195,80 @@ export async function buscarEnWikimedia(l: LugarParaBuscar, pedir: typeof fetch 
     const [idioma, ...resto] = l.wikipedia.split(":");
     const titulo = resto.join(":").trim();
     if (idioma && titulo && IDIOMA.test(idioma)) {
-      const r = await leerResumen(idioma, titulo, pedir);
+      const r = await leerResumen(idioma, titulo, c);
       qid = r?.qid ?? null;
       if (idioma === "es" && r) tituloEs = titulo;
       enlazado = !!qid;
     }
   }
   if (!qid) {
-    const cerca = await buscarCerca(l, pedir);
+    const cerca = await buscarCerca(l, c);
     if (!cerca) return vacio("Sin artículo en Wikipedia cerca y con el mismo nombre");
-    const r = await leerResumen("es", cerca, pedir);
+    const r = await leerResumen("es", cerca, c);
     if (!r?.qid) return vacio("El artículo cercano no tiene ficha en Wikidata");
     qid = r.qid;
     tituloEs = cerca;
   }
 
   // 2. La ficha de Wikidata: ¿de verdad está aquí?
-  const e = await leerEntidad(qid, pedir);
+  const e = await leerEntidad(qid, c);
   if (!e) return vacio("La ficha de Wikidata no existe");
   if (e.punto && distancia({ lat: l.lat, lng: l.lng }, e.punto) > (enlazado ? LEJOS_ENLAZADO_M : CERCA_BUSQUEDA_M)) {
     return vacio("La ficha de Wikidata está lejos de este lugar: puede ser otro");
   }
   tituloEs = e.titulo ?? tituloEs;
+  // Sin coordenadas no hay cómo saber si es este lugar: solo vale si el nombre coincide (hallazgo 1 de la revisión:
+  // un enlace equivocado en OpenStreetMap, por ejemplo a una persona o a un logo, no debe traer su foto)
+  if (!e.punto && !(tituloEs && nombresParecidos(l.nombre, sinAclaracion(tituloEs)))) {
+    return vacio("La ficha de Wikidata no tiene ubicación y su nombre no coincide: puede ser otro");
+  }
 
   // 3. Foto y descripción (cada una por su lado: puede haber una sin la otra)
-  const foto = e.archivo ? await leerFoto(e.archivo, pedir) : null;
+  const foto = e.archivo ? await leerFoto(e.archivo, c) : null;
   let descripcion: ResultadoWikimedia["descripcion"] = null;
   if (tituloEs) {
-    const r = await leerResumen("es", tituloEs, pedir);
+    const r = await leerResumen("es", tituloEs, c);
     if (r?.extracto && r.pagina) descripcion = { texto: primerasFrases(r.extracto), fuente: r.pagina };
   }
   return { wikidata: qid, foto, descripcion, nada: foto || descripcion ? null : "La ficha no tiene foto libre ni artículo en español" };
 }
 
-/** Descarga la copia web de la foto (solo de upload.wikimedia.org, máximo 5 MB, solo jpg/png/webp). */
-export async function descargarFoto(url: string, pedir: typeof fetch = fetch): Promise<{ datos: ArrayBuffer; tipo: "image/jpeg" | "image/png" | "image/webp"; extension: "jpg" | "png" | "webp" }> {
-  if (!url.startsWith("https://upload.wikimedia.org/")) throw new ErrorWikimedia("Origen de la foto no permitido");
-  const r = await pedir(url, { headers: { "user-agent": AGENTE }, signal: AbortSignal.timeout(15_000), redirect: "error", cache: "no-store" });
-  if (!r.ok) throw new ErrorWikimedia(`La foto respondió ${r.status}`);
+/**
+ * Descarga la copia web de la foto: solo de upload.wikimedia.org, sin redirecciones, solo jpg/png/webp y como mucho
+ * 5 MB, contando mientras llega (aunque el servidor no diga el tamaño; hallazgo 7 de la revisión).
+ */
+export async function descargarFoto(
+  url: string,
+  pedir: typeof fetch = fetch,
+  corte?: AbortSignal,
+): Promise<{ datos: Uint8Array; tipo: "image/jpeg" | "image/png" | "image/webp"; extension: "jpg" | "png" | "webp" }> {
+  if (!url.startsWith("https://upload.wikimedia.org/")) throw new ErrorWikimedia("Origen de la foto no permitido", true);
+  const r = await pedir(url, { headers: { "user-agent": AGENTE }, signal: senal({ pedir, corte }, 15_000), redirect: "error", cache: "no-store" });
+  revisarEstado(r, "La foto");
   const tipo = (r.headers.get("content-type") ?? "").split(";")[0]!.trim();
   const extension = ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" } as const)[tipo as "image/jpeg"];
-  if (!extension) throw new ErrorWikimedia("La foto no es jpg, png ni webp");
-  if (Number(r.headers.get("content-length") ?? 0) > 5_000_000) throw new ErrorWikimedia("La foto pesa más de 5 MB");
-  const datos = await r.arrayBuffer();
-  if (datos.byteLength > 5_000_000 || datos.byteLength < 1000) throw new ErrorWikimedia("Tamaño de foto raro");
+  if (!extension) throw new ErrorWikimedia("La foto no es jpg, png ni webp", true);
+  if (Number(r.headers.get("content-length") ?? 0) > MAX_FOTO) throw new ErrorWikimedia("La foto pesa más de 5 MB", true);
+  if (!r.body) throw new ErrorWikimedia("La foto llegó vacía", true);
+  const partes: Uint8Array[] = [];
+  let total = 0;
+  const lector = r.body.getReader();
+  for (;;) {
+    const { done, value } = await lector.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > MAX_FOTO) {
+      await lector.cancel();
+      throw new ErrorWikimedia("La foto pesa más de 5 MB", true);
+    }
+    partes.push(value);
+  }
+  if (total < 1000) throw new ErrorWikimedia("Tamaño de foto raro", true);
+  const datos = new Uint8Array(total);
+  let pos = 0;
+  for (const p of partes) {
+    datos.set(p, pos);
+    pos += p.byteLength;
+  }
   return { datos, tipo: tipo as "image/jpeg", extension };
 }

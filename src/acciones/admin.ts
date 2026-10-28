@@ -631,6 +631,18 @@ export async function decidirSitios(_previo: EstadoAdmin, datos: FormData): Prom
   const db = await crearClienteServidor();
   const { data, error } = await db.from("city_spots").update({ status: r.data.decision }).in("id", r.data.sitios).select("id");
   if (error) return { estado: "error", mensaje: "No se pudo cambiar" };
+  // Versión 7: un lugar descartado no deja su foto de Wikimedia en el bucket público (revisión del 2026-10-28, 4b)
+  if (r.data.decision === "descartado" && data?.length) {
+    const dbAdmin = crearClienteAdmin();
+    const { data: conFoto } = await dbAdmin.from("city_spots").select("id, photo_path").in("id", data.map((x) => x.id)).not("photo_path", "is", null);
+    if (conFoto?.length) {
+      await dbAdmin.storage.from("fotos-lugares").remove(conFoto.map((x) => x.photo_path as string));
+      await dbAdmin
+        .from("city_spots")
+        .update({ photo_path: null, photo_credit: null, photo_license: null, photo_source: null, description: null, description_source: null, enriched_at: null })
+        .in("id", conFoto.map((x) => x.id));
+    }
+  }
   revalidateTag("sitios", { expire: 0 });
   revalidatePath("/", "layout");
   const n = data?.length ?? 0;

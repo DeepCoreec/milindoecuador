@@ -715,6 +715,12 @@ r = await as("service_role", "", `update public.city_spots set photo_source = 'h
 check("el enlace de la foto solo puede ser de Wikimedia Commons", !!r.error, r);
 r = await as("service_role", "", `update public.city_spots set wikidata = 'Q0; drop' where id = $1`, [SF]);
 check("el código de Wikidata se valida", !!r.error, r);
+r = await as("service_role", "", `update public.city_spots set description = 'Parque lleno de estafadores', description_source = 'https://es.wikipedia.org/wiki/X' where id = $1`, [SF]);
+check("la descripción de Wikipedia pasa por el filtro de palabras", !!r.error && r.error.includes("texto_no_permitido"), r);
+r = await as("service_role", "", `update public.city_spots set description = 'Más información en www.ejemplo.com', description_source = 'https://es.wikipedia.org/wiki/X' where id = $1`, [SF]);
+check("y no puede traer enlaces", !!r.error && r.error.includes("texto_no_permitido"), r);
+r = await as("service_role", "", `update public.city_spots set photo_credit = 'Foto de estafadores' where id = $1`, [SF]);
+check("el autor de la foto también pasa por el filtro", !!r.error && r.error.includes("texto_no_permitido"), r);
 r = await sitio(9102, "pendiente", "Parque Escondido");
 const SP = r.rows?.[0]?.id;
 await as("service_role", "", `update public.city_spots set photo_path = $2, photo_license = 'CC0', photo_source = 'https://commons.wikimedia.org/wiki/File:X.jpg' where id = $1`, [SP, `guia/${SP}.jpg`]);

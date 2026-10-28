@@ -48,7 +48,7 @@ export function FilaSitio({ s }: { s: Sitio }) {
           )}
           {usaWikipedia && (
             <a href={s.descripcion!.fuente} target="_blank" rel="noopener noreferrer" className="text-rio-suave">
-              Texto: Wikipedia (CC BY-SA 4.0)
+              Extracto de Wikipedia (CC BY-SA 4.0)
             </a>
           )}
         </small>

@@ -158,6 +158,61 @@ describe("Wikimedia · foto y descripción (29.3)", () => {
   });
 });
 
+describe("Wikimedia · arreglos de la revisión independiente del 2026-10-28", () => {
+  const sinUbicacion = (titulo: string) => {
+    const e = entidad("Q100", { titulo });
+    delete (e.entities.Q100.claims as Record<string, unknown>).P625;
+    return e;
+  };
+
+  it("1 · una ficha sin ubicación solo vale si su nombre coincide con el lugar", async () => {
+    const malo = simulador({ "wbgetentities&ids=Q100": sinUbicacion("Logotipo de una empresa"), "prop=imageinfo": imagen() });
+    const r = await buscarEnWikimedia(lugar({ wikidata: "Q100" }), malo.pedir);
+    expect(r.foto).toBeNull();
+    expect(r.nada).toMatch(/no tiene ubicación/);
+    const bueno = simulador({
+      "wbgetentities&ids=Q100": sinUbicacion("Parque Seminario"),
+      "page/summary/Parque_Seminario": resumen("Q100", "Parque Seminario"),
+      "prop=imageinfo": imagen(),
+    });
+    expect((await buscarEnWikimedia(lugar({ wikidata: "Q100" }), bueno.pedir)).foto).not.toBeNull();
+  });
+
+  it("2 · un error que no se arregla solo (400) es permanente; uno pasajero (429, 503) no", async () => {
+    const malo = simulador({ "page/summary": new Response("x", { status: 400 }) });
+    await expect(buscarEnWikimedia(lugar({ wikipedia: "es:Título|raro" }), malo.pedir)).rejects.toMatchObject({ permanente: true });
+    for (const status of [429, 503]) {
+      const pasajero = simulador({ "wbgetentities": new Response("x", { status }) });
+      await expect(buscarEnWikimedia(lugar({ wikidata: "Q100" }), pasajero.pedir)).rejects.toMatchObject({ permanente: false });
+    }
+  });
+
+  it("3 · se corta si se acaba el tiempo", async () => {
+    const lento = (async (_u: string, init: RequestInit) =>
+      new Promise((_, rechazar) => init.signal?.addEventListener("abort", () => rechazar(new DOMException("corte", "AbortError"))))) as unknown as typeof fetch;
+    await expect(buscarEnWikimedia(lugar({ wikidata: "Q100" }), lento, AbortSignal.timeout(50))).rejects.toThrow();
+  });
+
+  it("6 · si Wikimedia redirige a otro sitio, no se usa la respuesta", async () => {
+    const redirigido = (async () => {
+      const r = new Response(JSON.stringify(entidad("Q100")), { status: 200 });
+      Object.defineProperty(r, "url", { value: "https://malo.example.com/x" });
+      return r;
+    }) as unknown as typeof fetch;
+    await expect(buscarEnWikimedia(lugar({ wikidata: "Q100" }), redirigido)).rejects.toMatchObject({ permanente: true });
+  });
+
+  it("7 · corta la descarga al pasar 5 MB aunque el servidor no diga el tamaño", async () => {
+    const enorme = (async () => {
+      const trozo = new Uint8Array(1_000_000);
+      let n = 0;
+      const cuerpo = new ReadableStream<Uint8Array>({ pull: (c) => (n++ < 10 ? c.enqueue(trozo) : c.close()) });
+      return new Response(cuerpo, { status: 200, headers: { "content-type": "image/jpeg" } });
+    }) as unknown as typeof fetch;
+    await expect(descargarFoto("https://upload.wikimedia.org/x/a.jpg", enorme)).rejects.toThrow(/5 MB/);
+  });
+});
+
 describe("Wikimedia · ayudantes", () => {
   it("licencias libres", () => {
     for (const l of ["CC BY-SA 4.0", "CC BY 2.0", "CC0", "CC0 1.0", "Public domain", "CC BY-SA 3.0 igo", "PD-US"]) expect(licenciaLibre(l), l).toBe(true);
