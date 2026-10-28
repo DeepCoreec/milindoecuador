@@ -56,7 +56,15 @@ export function distancia(a: { lat: number; lng: number }, b: { lat: number; lng
   return Math.hypot(dLat, dLng);
 }
 
-const PALABRAS_VACIAS = new Set(["de", "del", "la", "las", "el", "los", "y", "a", "en", "museo", "parque", "mirador", "estacion"]);
+/** Palabras que no distinguen un lugar de otro: artículos y nombres de tipo ("Estatua de las Artes Mayores" y
+ *  "Estatua de las Artes Aplicadas" no son el mismo lugar; ajuste del 2026-10-28 tras la primera corrida real). */
+const PALABRAS_VACIAS = new Set(
+  [
+    "de", "del", "la", "las", "el", "los", "y", "a", "al", "en", "san", "santa",
+    "museo", "parque", "mirador", "estacion", "monumento", "estatua", "busto", "plaza", "plazoleta", "iglesia", "capilla",
+    "cancha", "multiple", "area", "comun", "verde", "torre", "elemento", "artes", "arte",
+  ].map(normalizar),
+);
 /** Palabras importantes, en singular simple ("bomberos" = "bombero"). */
 const palabras = (t: string) =>
   new Set(
@@ -77,7 +85,9 @@ export function nombresParecidos(a: string, b: string): boolean {
   if (!pa.size || !pb.size) return false;
   const comunes = [...pa].filter((p) => pb.has(p)).length;
   const parte = comunes / Math.min(pa.size, pb.size);
-  return comunes >= 2 ? parte >= 0.6 : parte === 1;
+  // Con 2 o más palabras en común: casi todas iguales. Con 1 sola: solo si las dos se reducen a esa misma palabra
+  // ("Orquídeas" y "Monumento a las Orquídeas" sí; "Elemento Fuego" y "Elemento Tierra" no).
+  return comunes >= 2 ? parte >= 0.6 : comunes === 1 && pa.size === 1 && pb.size === 1;
 }
 
 /**
