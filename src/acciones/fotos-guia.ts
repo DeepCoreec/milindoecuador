@@ -35,6 +35,8 @@ export async function buscarFotosGuia(_previo: EstadoAdmin, datos: FormData): Pr
     // Publicados, y también los candidatos de Wikidata por revisar (30.2: se deciden ya con foto y descripción)
     .or("status.eq.publicado,and(status.eq.pendiente,osm_type.eq.wikidata)")
     .is("enriched_at", null)
+    // Los publicados antes que los candidatos (hallazgo 4); dentro de cada grupo, primero los que tienen enlace
+    .order("status", { ascending: false })
     .order("wikidata", { nullsFirst: false })
     .order("grupo", { ascending: false })
     .limit(POR_CLIC)
@@ -54,7 +56,7 @@ export async function buscarFotosGuia(_previo: EstadoAdmin, datos: FormData): Pr
   // Corte duro antes de los 60 s de Vercel: lo que no alcance se aborta y se reintenta en el próximo clic (hallazgo 3)
   const corte = AbortSignal.timeout(Math.max(LIMITE_MS + 10_000 - (Date.now() - inicio), 5_000));
   const anotar = (id: string, cambios: Record<string, unknown> = {}) =>
-    db.from("city_spots").update({ ...cambios, enriched_at: new Date().toISOString() }).eq("id", id).neq("status", "descartado").select("id");
+    db.from("city_spots").update({ ...cambios, enriched_at: new Date().toISOString() }).eq("id", id).or("status.eq.publicado,and(status.eq.pendiente,osm_type.eq.wikidata)").select("id");
 
   const uno = async (f: Fila) => {
     let subida: string | null = null;
