@@ -41,9 +41,11 @@ export async function guardarResena(_previo: EstadoResena, datos: FormData): Pro
   const db = crearClienteAdmin();
 
   const { data: existente } = await db.from("reviews").select("id").eq("place_id", r.data.lugar).eq("user_id", usuario.id).maybeSingle();
-  const { error } = existente
-    ? await db.from("reviews").update({ stars: r.data.estrellas, text: r.data.texto }).eq("id", existente.id).eq("user_id", usuario.id)
-    : await db.from("reviews").insert({ place_id: r.data.lugar, user_id: usuario.id, stars: r.data.estrellas, text: r.data.texto });
+  // `status` vuelve para avisar si quedó oculta: una reseña que el admin ocultó (o la nueva de quien tuvo una oculta en
+  // este lugar, migración 0018) sigue en revisión aunque se edite o se borre y se vuelva a enviar
+  const { data: guardada, error } = existente
+    ? await db.from("reviews").update({ stars: r.data.estrellas, text: r.data.texto }).eq("id", existente.id).eq("user_id", usuario.id).select("status").maybeSingle()
+    : await db.from("reviews").insert({ place_id: r.data.lugar, user_id: usuario.id, stars: r.data.estrellas, text: r.data.texto }).select("status").maybeSingle();
 
   if (error) {
     const mensaje = mensajeModeracion(error) ?? (/límite de 5 reseñas/.test(error.message)
@@ -55,6 +57,7 @@ export async function guardarResena(_previo: EstadoResena, datos: FormData): Pro
   }
   revalidatePath(r.data.ruta);
   revalidatePath("/cuenta");
+  if (guardada?.status === "oculta") return { estado: "ok", mensaje: "Guardamos tu reseña. Está en revisión: la verás publicada cuando la revisemos." };
   return { estado: "ok", mensaje: existente ? "Reseña actualizada" : "¡Gracias! Tu reseña ya está publicada" };
 }
 
