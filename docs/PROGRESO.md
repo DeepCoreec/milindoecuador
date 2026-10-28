@@ -367,8 +367,16 @@
 - [x] 29.10 Diagnóstico de la búsqueda por cercanía — 2026-10-28 (PR #31). Resultado en producción: la mayoría son correctos (monumentos sin artículo propio; cerca solo hay otros lugares, como "Las Peñas" o "Museo del Bombero"), pero varios fallaron porque Wikipedia respondió `cirrussearch-too-busy-error` con código 200 y el código lo tomaba como "no hay artículo"
 - [x] 29.11 "Demasiado ocupado" es pasajero — 2026-10-28: los errores `{"error": …}` de la API de Wikipedia/Wikidata ya no se toman como "no hay nada": ocupado, límite de pedidos, maxlag y parecidos se reintentan en otro clic; los demás (ficha inexistente) cuentan como revisado. Búsqueda de a un lugar (12 por clic) para no saturar a Wikipedia. Prueba unitaria
 - [x] 29.12 Búsqueda completa y revisión una por una — 2026-10-28 ~16:30. Se buscó en los 86 publicados ("Ya se buscó en todos"). Resultado: **18 con foto o descripción**; el resto no tiene artículo propio en Wikipedia (monumentos pequeños, paradas, servicios) y se queda como estaba, sin relleno. Claude revisó cada una (texto y nombre del archivo en Commons) y **quitó 5 que no correspondían**, todas por enlaces de OpenStreetMap que apuntan a algo relacionado y no al lugar: "Parque Centenario" (parada de Aerovía → recibió el parque), "Plaza Rodolfo Baquerizo Moreno" (→ Malecón del Salado), "Monumento Alberto Spencer Herrera" (→ estadio Modelo), "Presidente Gabriel García Moreno" (→ la persona, con su retrato) y "Faro del Cerro Santa Ana" (→ el cerro). Quedan **13 con foto** (todas del lugar: Aerovía Cuatro Mosqueteros, Durán y Julián Coronel, La Perla, Puerto Santa Ana, Catedral, Columna de los Próceres, Fragua de Vulcano, Sagrado Corazón, MAAC, Museo de la Música Popular, Presley Norton, Parque Histórico) y 3 solo con descripción (Archivo Histórico del Guayas, Parque Seminario, Isla Santay). Regla nueva: si la ficha de Wikidata es de una persona (P31 = Q5), no se usa
-- [ ] 29.13 Revisar el diseño en la página real a 390 px y escritorio, claro y oscuro. **Pendiente:** las capturas de pantalla no responden mientras la pestaña del panel no está a la vista (el usuario usa otra); se hace cuando la pestaña esté visible o el usuario lo mire en su celular
-- **Siguiente paso:** 29.13 y la puerta de la fase 29 (el usuario mira la guía con fotos y la aprueba); luego fase 30 (lugares turísticos buenos desde Wikidata)
+- [x] 29.13 Diseño en la página real — 2026-10-28 16:50: escritorio en claro y oscuro bien (foto arriba, texto y crédito legibles, buen contraste). Ajuste: las tarjetas ya no se estiran al alto de la vecina con foto (`items-start`), así no quedan cuadros vacíos. A 390 px la lista es de una columna con la foto a todo el ancho (por construcción: `sm:grid-cols-2`); no se pudo capturar a 390 px sin cambiar el tamaño de la ventana del usuario
+- [x] **Puerta de la fase 29** — 2026-10-28 16:48: el usuario respondió "continua" tras ver el resumen; se toma como aprobación
+
+### Fase 30 · Lugares turísticos buenos que ya existen
+
+- [ ] 30.1 Candidatos desde Wikidata (consulta SPARQL dentro de la caja de Guayaquil: solo con foto, artículo en Wikipedia en español y coordenadas; clases turísticas; sin personas); entran "por revisar", sin duplicar lo que ya hay (mismo Q o nombre parecido a menos de 300 m, incluidos los descartados)
+- [ ] 30.2 Foto y descripción para los candidatos antes de decidir, y el agente los revisa con el criterio estricto; se publican solo los que tienen foto y descripción
+- [ ] 30.3 "Agregar un lugar" pegando su enlace de Wikipedia, Wikidata u OpenStreetMap
+- **Puerta:** los lugares nuevos publicados tienen foto, descripción, crédito y "Cómo llegar"; cero duplicados
+- **Siguiente paso:** 30.1
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
