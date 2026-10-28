@@ -152,14 +152,18 @@ async function leerResumen(idioma: string, titulo: string, c: Ctx): Promise<Resu
 }
 
 /** Artículos de Wikipedia en español a menos de 300 m; el primero con nombre parecido (regla 4). */
-async function buscarCerca(l: LugarParaBuscar, c: Ctx): Promise<string | null> {
+async function buscarCerca(l: LugarParaBuscar, c: Ctx): Promise<{ titulo: string | null; detalle: string }> {
   const url = `https://es.wikipedia.org/w/api.php?action=query&list=geosearch&gscoord=${l.lat.toFixed(6)}%7C${l.lng.toFixed(6)}&gsradius=${CERCA_BUSQUEDA_M}&gslimit=15&format=json`;
-  const j = (await pedirJSON(url, c)) as { query?: { geosearch?: { title?: unknown; dist?: unknown }[] } } | null;
+  const j = (await pedirJSON(url, c)) as { error?: { code?: unknown }; query?: { geosearch?: { title?: unknown; dist?: unknown }[] } } | null;
+  // Diagnóstico (29.10): qué devolvió Wikipedia, para saber si no hay artículos cerca o si el nombre no coincide
+  if (j?.error) return { titulo: null, detalle: `Wikipedia dio error «${String(j.error.code).slice(0, 30)}»` };
+  const vistos: string[] = [];
   for (const g of j?.query?.geosearch ?? []) {
     if (typeof g.title !== "string" || typeof g.dist !== "number" || g.dist > CERCA_BUSQUEDA_M) continue;
-    if (nombresParecidos(l.nombre, sinAclaracion(g.title))) return g.title;
+    if (nombresParecidos(l.nombre, sinAclaracion(g.title))) return { titulo: g.title, detalle: "" };
+    if (vistos.length < 3) vistos.push(`«${g.title.slice(0, 40)}» a ${Math.round(g.dist)} m`);
   }
-  return null;
+  return { titulo: null, detalle: vistos.length ? `cerca solo hay ${vistos.join(", ")}` : "ningún artículo a menos de 300 m" };
 }
 
 /** La foto en Commons: copia de 960 px, licencia libre, autor y enlace. Si algo no cuadra, el motivo (texto). */
@@ -207,8 +211,9 @@ export async function buscarEnWikimedia(l: LugarParaBuscar, pedir: typeof fetch 
     }
   }
   if (!qid) {
-    const cerca = await buscarCerca(l, c);
-    if (!cerca) return vacio("Sin artículo en Wikipedia cerca y con el mismo nombre");
+    const busqueda = await buscarCerca(l, c);
+    const cerca = busqueda.titulo;
+    if (!cerca) return vacio(`Sin artículo en Wikipedia cerca y con el mismo nombre (${busqueda.detalle})`);
     const r = await leerResumen("es", cerca, c);
     if (!r?.qid) return vacio("El artículo cercano no tiene ficha en Wikidata");
     qid = r.qid;
