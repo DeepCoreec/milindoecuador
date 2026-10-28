@@ -200,6 +200,13 @@ describe("Wikimedia · arreglos de la revisión independiente del 2026-10-28", (
     }
   });
 
+  it("29.11 · 'demasiado ocupado' de Wikipedia es pasajero (se reintenta), no 'no hay artículo'", async () => {
+    const ocupado = simulador({ "list=geosearch": { error: { code: "cirrussearch-too-busy-error", info: "Search is currently too busy" } } });
+    await expect(buscarEnWikimedia(lugar(), ocupado.pedir)).rejects.toMatchObject({ permanente: false });
+    const raro = simulador({ "wbgetentities": { error: { code: "no-such-entity" } } });
+    await expect(buscarEnWikimedia(lugar({ wikidata: "Q100" }), raro.pedir)).rejects.toMatchObject({ permanente: true });
+  });
+
   it("3 · se corta si se acaba el tiempo", async () => {
     const lento = (async (_u: string, init: RequestInit) =>
       new Promise((_, rechazar) => init.signal?.addEventListener("abort", () => rechazar(new DOMException("corte", "AbortError"))))) as unknown as typeof fetch;

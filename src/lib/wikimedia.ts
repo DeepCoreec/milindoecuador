@@ -112,7 +112,15 @@ async function pedirJSON(url: string, c: Ctx): Promise<unknown> {
   hostPermitido(r);
   if (r.status === 404) return null;
   revisarEstado(r, "Wikimedia");
-  return r.json();
+  const j = (await r.json()) as unknown;
+  // La API de Wikipedia/Wikidata avisa errores con código 200 y {"error": {...}}. "Demasiado ocupado" y parecidos son
+  // pasajeros: se reintenta en otro clic, nunca se toma como "no hay nada" (visto en producción el 2026-10-28, 29.11)
+  const error = (j as { error?: { code?: unknown } } | null)?.error;
+  if (error) {
+    const codigo = String(error.code ?? "desconocido").slice(0, 40);
+    throw new ErrorWikimedia(`Wikimedia dio error «${codigo}»`, !/busy|ratelimit|maxlag|readonly|internal|timeout/i.test(codigo));
+  }
+  return j;
 }
 
 type Entidad = { titulo: string | null; archivo: string | null; punto: { lat: number; lng: number } | null };
@@ -154,9 +162,8 @@ async function leerResumen(idioma: string, titulo: string, c: Ctx): Promise<Resu
 /** Artículos de Wikipedia en español a menos de 300 m; el primero con nombre parecido (regla 4). */
 async function buscarCerca(l: LugarParaBuscar, c: Ctx): Promise<{ titulo: string | null; detalle: string }> {
   const url = `https://es.wikipedia.org/w/api.php?action=query&list=geosearch&gscoord=${l.lat.toFixed(6)}%7C${l.lng.toFixed(6)}&gsradius=${CERCA_BUSQUEDA_M}&gslimit=15&format=json`;
-  const j = (await pedirJSON(url, c)) as { error?: { code?: unknown }; query?: { geosearch?: { title?: unknown; dist?: unknown }[] } } | null;
-  // Diagnóstico (29.10): qué devolvió Wikipedia, para saber si no hay artículos cerca o si el nombre no coincide
-  if (j?.error) return { titulo: null, detalle: `Wikipedia dio error «${String(j.error.code).slice(0, 30)}»` };
+  const j = (await pedirJSON(url, c)) as { query?: { geosearch?: { title?: unknown; dist?: unknown }[] } } | null;
+  // Diagnóstico (29.10): qué artículos hay cerca, para saber si no hay ninguno o si el nombre no coincide
   const vistos: string[] = [];
   for (const g of j?.query?.geosearch ?? []) {
     if (typeof g.title !== "string" || typeof g.dist !== "number" || g.dist > CERCA_BUSQUEDA_M) continue;

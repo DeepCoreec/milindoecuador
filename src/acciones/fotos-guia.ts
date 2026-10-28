@@ -16,8 +16,9 @@ import { buscarEnWikimedia, descargarFoto, ErrorWikimedia } from "@/lib/wikimedi
  */
 
 /** Lugares por clic y al mismo tiempo: despacio, como pide Wikimedia, y dentro de los 60 s de Vercel. */
-const POR_CLIC = 15;
-const PARALELO = 3;
+const POR_CLIC = 12;
+/** De a uno: con 3 a la vez la búsqueda de Wikipedia respondía "demasiado ocupado" (29.11). */
+const PARALELO = 1;
 const LIMITE_MS = 40_000;
 
 type Fila = { id: string; name: string; latitude: number; longitude: number; wikidata: string | null; wikipedia: string | null };

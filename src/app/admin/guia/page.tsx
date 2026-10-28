@@ -40,7 +40,7 @@ export default async function PaginaGuiaAdmin({ searchParams }: PageProps<"/admi
               Fotos y descripción
             </h2>
             <p className="m-0 max-w-[68ch] text-sm text-rio-suave">
-              Busca en Wikipedia y Wikimedia Commons la foto y una descripción corta de hasta 15 lugares publicados por clic. Solo se usan fotos con
+              Busca en Wikipedia y Wikimedia Commons la foto y una descripción corta de hasta 12 lugares publicados por clic. Solo se usan fotos con
               licencia libre (con su autor) y el texto tal como está en Wikipedia. Si no hay nada bueno, el lugar se queda como está. Revisa las fotos
               abajo y quita las que no correspondan.
             </p>
