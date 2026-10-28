@@ -68,6 +68,7 @@ describe("Wikimedia · foto y descripción (29.3)", () => {
     });
     const r = await buscarEnWikimedia(lugar({ wikidata: "Q100" }), pedir);
     expect(r.nada).toBeNull();
+    expect(r.sinFoto).toBeNull();
     expect(r.wikidata).toBe("Q100");
     expect(r.foto).toEqual({
       url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Parque.jpg/960px-Parque.jpg",
@@ -129,6 +130,7 @@ describe("Wikimedia · foto y descripción (29.3)", () => {
       const { pedir } = simulador({ "wbgetentities&ids=Q100": entidad("Q100"), "page/summary/Parque_Seminario": resumen("Q100", "Parque Seminario"), "prop=imageinfo": mala });
       const r = await buscarEnWikimedia(lugar({ wikidata: "Q100" }), pedir);
       expect(r.foto).toBeNull();
+      expect(r.sinFoto).toBeTruthy(); // y dice por qué (29.8)
       expect(r.descripcion).not.toBeNull(); // la descripción vale por su lado
     }
   });
@@ -137,6 +139,7 @@ describe("Wikimedia · foto y descripción (29.3)", () => {
     const { pedir } = simulador({ "wbgetentities&ids=Q100": entidad("Q100", { archivo: "", titulo: "" }) });
     const r = await buscarEnWikimedia(lugar({ wikidata: "Q100" }), pedir);
     expect(r).toMatchObject({ foto: null, descripcion: null });
+    expect(r.sinFoto).toMatch(/P18/);
     expect(r.nada).toBeTruthy();
   });
 

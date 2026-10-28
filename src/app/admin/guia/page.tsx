@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { importarOSM } from "@/acciones/admin";
 import { pedirRevisionAgente, reiniciarRecomendacionesReglas } from "@/acciones/agente";
-import { buscarFotosGuia } from "@/acciones/fotos-guia";
+import { buscarFotosGuia, reiniciarBusquedaFotos } from "@/acciones/fotos-guia";
 import { BotonAccion } from "@/components/admin/BotonAccion";
 import { SitiosGuia } from "@/components/admin/SitiosGuia";
 import { getSitiosAdmin, type FiltroAgente } from "@/lib/datos/admin";
@@ -46,6 +46,14 @@ export default async function PaginaGuiaAdmin({ searchParams }: PageProps<"/admi
             </p>
             <div>
               <BotonAccion accion={buscarFotosGuia} campos={{}} texto="Buscar fotos y descripción" />
+            </div>
+            <div>
+              <BotonAccion
+                accion={reiniciarBusquedaFotos}
+                campos={{}}
+                texto="Volver a buscar los que quedaron sin foto"
+                etiqueta="Borrar la fecha de búsqueda de los lugares publicados sin foto para que se vuelvan a buscar"
+              />
             </div>
           </section>
         )}
