@@ -360,7 +360,8 @@
   - (baja) después de una redirección la respuesta tiene que seguir siendo de Wikimedia; la descarga cuenta los bytes mientras llegan (tope 5 MB);
   - (info) el crédito dice "Extracto de Wikipedia (CC BY-SA 4.0)".
   - 5 pruebas unitarias y 3 RLS nuevas: 163 unitarias y 255 RLS pasan; `npm run build` pasa
-- **Siguiente paso:** (usuario) ejecutar `0020_fotos_guia.sql` en el SQL Editor de Supabase; después Claude une la rama `v7-fotos-guia` a `main`, toca "Buscar fotos y descripción" hasta terminar, revisa las fotos una por una y revisa el diseño en la página real
+- [x] 29.6 Migración en el Supabase real — 2026-10-28 15:00: el usuario ejecutó `0020_fotos_guia.sql` y la consulta de comprobación devolvió las 3 columnas (`photo_path`, `description`, `enriched_at`)
+- **Siguiente paso:** unir `v7-fotos-guia` a `main`; en `/admin/guia` → Publicados, "Traer lugares de OpenStreetMap" (para completar los enlaces a Wikipedia) y "Buscar fotos y descripción" hasta terminar; revisar las fotos una por una y quitar las que no correspondan; revisar el diseño a 390 px y escritorio, claro y oscuro
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
