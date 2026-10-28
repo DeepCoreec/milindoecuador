@@ -598,10 +598,29 @@ export async function importarOSM(_previo: EstadoAdmin, _datos: FormData): Promi
       else nuevos += r.data?.length ?? 0;
     }
   }
+  // Versión 7 (29.2): a los lugares que ya estaban se les completa el enlace a Wikidata/Wikipedia si ahora lo
+  // tienen. Solo esas dos columnas y solo si estaban vacías: no cambia el estado, el nombre ni la frase.
+  let enlazados = 0;
+  const conEnlace = sitios.filter((s) => s.wikidata || s.wikipedia);
+  for (let i = 0; i < conEnlace.length && Date.now() - inicio < 55_000; i += 20) {
+    const resultados = await Promise.all(
+      conEnlace.slice(i, i + 20).map((s) =>
+        db
+          .from("city_spots")
+          .update({ wikidata: s.wikidata, wikipedia: s.wikipedia })
+          .eq("osm_type", s.osm_type)
+          .eq("osm_id", s.osm_id)
+          .is("wikidata", null)
+          .is("wikipedia", null)
+          .select("id"),
+      ),
+    );
+    enlazados += resultados.reduce((n, r) => n + (r.data?.length ?? 0), 0);
+  }
   revalidatePath("/admin/guia");
   return {
     estado: "ok",
-    mensaje: `Listo: ${sitios.length} lugares en OpenStreetMap, ${nuevos} nuevos para revisar${rechazados ? ` y ${rechazados} saltados por el filtro de palabras` : ""}.`,
+    mensaje: `Listo: ${sitios.length} lugares en OpenStreetMap, ${nuevos} nuevos para revisar${rechazados ? ` y ${rechazados} saltados por el filtro de palabras` : ""}${enlazados ? `; ${enlazados} ya existentes ahora tienen su enlace a Wikipedia` : ""}.`,
   };
 }
 

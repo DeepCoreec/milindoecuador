@@ -338,6 +338,20 @@
     - **Ojo con el acierto del panel:** estas decisiones las tomó Claude siguiendo al agente, no el usuario. El "acierto" de esta tanda no mide al agente contra una persona y **no sirve para activar 27.5** (aprobar solo). La puerta de la fase 27 queda cumplida por delegación del usuario.
   - **Siguiente paso:** los 300 "revisar" de "Para visitar" (125 posibles duplicados) y los otros grupos (¿Se te dañó algo?, Salud, Transporte) con el mismo método, por delegación del usuario **Puerta:** el agente revisa la Guía útil y el usuario aprueba una muestra de 100; el acierto queda medido en el panel. 27.5 solo si el usuario la activa
 
+## Versión 7 · Fotos, descripción y lugares turísticos buenos
+
+> Plan: `docs/PLAN-V7.md`, **aprobado por el usuario el 2026-10-28 13:29** ("claro encargate"). Condición del usuario:
+> "no queremos llenar de basura, solo lugares buenos". Fuente: Wikimedia (Wikidata, Wikipedia en español, Commons), gratis y con crédito.
+
+### Fase 29 · Foto y descripción para los lugares publicados
+
+- [x] 29.1 Base de datos — 2026-10-28: migración `0020_fotos_guia.sql` (en el repo; **falta ejecutarla en el Supabase real**). Columnas `wikidata`, `wikipedia`, `photo_path` (solo `guia/<id>.jpg|png|webp`), `photo_credit`, `photo_license`, `photo_source` (solo Commons), `description` (≤300), `description_source` (solo es.wikipedia.org), `enriched_at`. Foto siempre con licencia y enlace; descripción siempre con fuente. El público lee foto y descripción solo de lo publicado; nadie las escribe desde el navegador (solo el servidor). 11 pruebas RLS nuevas: 252 pasan
+- [x] 29.2 Enlace de OpenStreetMap — 2026-10-28: al importar se guardan las etiquetas `wikidata` ("Q123") y `wikipedia` ("es:Título"), validadas; a los lugares que ya estaban se les completa el enlace sin tocar estado, nombre ni frase. Prueba unitaria con enlaces válidos y maliciosos
+- [ ] 29.3 Buscar foto y texto (`src/lib/wikimedia.ts` + botón en `/admin/guia`). **Decisión del 2026-10-28:** desde la nube de Claude no se llega a Wikimedia (la red lo bloquea) y la página no puede consultarla desde el navegador (su política de seguridad lo impide, y está bien). El usuario aprobó escribirlo con los formatos públicos de las APIs, probarlo con respuestas simuladas y verificarlo en producción con un lote pequeño, revisando las fotos una por una
+- [ ] 29.4 Mostrar foto, descripción y crédito en la guía pública
+- **Puerta:** los lugares publicados con enlace a Wikidata muestran foto y descripción correctas; ninguno con foto equivocada
+- **Siguiente paso:** 29.3
+
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
 - (2026-10-28, pedido del usuario) **Fotos, descripción y videos para los lugares de la Guía útil**, y **descubrir lugares turísticos que ya existen** con una fuente gratuita. Propuesta de Claude (falta que el usuario la apruebe como PLAN-V7): guardar las etiquetas `wikidata`/`wikipedia`/`image` de OpenStreetMap; foto de Wikimedia Commons y resumen de Wikipedia en español (gratis, con crédito y licencia CC); lugares nuevos desde Wikidata (lo que está "ubicado en Guayaquil"), revisados por el agente; videos con la API de YouTube (gratis hasta 10 000 unidades al día) como paso aparte. Google Places descartado: fotos que no se pueden guardar y cobro después de 1000 fichas al mes

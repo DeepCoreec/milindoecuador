@@ -693,6 +693,36 @@ check("una cuenta común no lee el registro de decisiones", r.rows?.length === 0
 r = await as("authenticated", ADM, `insert into public.spot_decisions (spot_id, tipo, decision) values ($1, 'museo', 'publicar')`, [SA]);
 check("nadie inventa decisiones desde el navegador", !!r.error, r);
 
+console.log("\nFoto y descripción de la Guía útil (0020)");
+r = await sitio(9101, "publicado", "Parque Seminario");
+const SF = r.rows?.[0]?.id;
+const foto = `guia/${SF}.jpg`;
+r = await as("service_role", "", `update public.city_spots set wikidata = 'Q2618390', photo_path = $2, photo_credit = 'Autora X', photo_license = 'CC BY-SA 4.0', photo_source = 'https://commons.wikimedia.org/wiki/File:Parque.jpg', description = 'Parque del centro con iguanas.', description_source = 'https://es.wikipedia.org/wiki/Parque_Seminario', enriched_at = now() where id = $1 returning id`, [SF, foto]);
+check("el servidor guarda foto, crédito y descripción", r.rows?.length === 1, r);
+r = await as("anon", "", `select photo_path, photo_credit, photo_license, photo_source, description, description_source from public.city_spots where id = $1`, [SF]);
+check("el público ve la foto, su crédito y la descripción de un lugar publicado", r.rows?.[0]?.photo_path === foto && r.rows[0].description_source?.startsWith("https://es.wikipedia.org/"), r);
+r = await as("authenticated", ADM, `update public.city_spots set photo_path = null where id = $1`, [SF]);
+check("ni el admin cambia la foto desde el navegador (lo hace el servidor)", !!r.error, r);
+r = await as("authenticated", ADM, `update public.city_spots set description = 'Texto inventado' where id = $1`, [SF]);
+check("ni la descripción", !!r.error, r);
+r = await as("service_role", "", `update public.city_spots set photo_license = null where id = $1`, [SF]);
+check("una foto sin licencia no se acepta", !!r.error, r);
+r = await as("service_role", "", `update public.city_spots set description_source = null where id = $1`, [SF]);
+check("una descripción sin fuente no se acepta", !!r.error, r);
+r = await as("service_role", "", `update public.city_spots set photo_path = 'lugares/otro/foto.jpg' where id = $1`, [SF]);
+check("la foto solo puede estar en la carpeta guia/", !!r.error, r);
+r = await as("service_role", "", `update public.city_spots set photo_source = 'https://ejemplo.com/foto.jpg' where id = $1`, [SF]);
+check("el enlace de la foto solo puede ser de Wikimedia Commons", !!r.error, r);
+r = await as("service_role", "", `update public.city_spots set wikidata = 'Q0; drop' where id = $1`, [SF]);
+check("el código de Wikidata se valida", !!r.error, r);
+r = await sitio(9102, "pendiente", "Parque Escondido");
+const SP = r.rows?.[0]?.id;
+await as("service_role", "", `update public.city_spots set photo_path = $2, photo_license = 'CC0', photo_source = 'https://commons.wikimedia.org/wiki/File:X.jpg' where id = $1`, [SP, `guia/${SP}.jpg`]);
+r = await as("anon", "", `select photo_path from public.city_spots where id = $1`, [SP]);
+check("la foto de un lugar sin publicar no se ve", r.rows?.length === 0, r);
+r = await as("anon", "", `select wikidata, enriched_at from public.city_spots where id = $1`, [SF]);
+check("los datos internos (wikidata, fecha de búsqueda) no se leen desde el navegador", !!r.error, r);
+
 console.log("\nDatos iniciales (supabase/seed.sql)");
 const seed = readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8");
 await db.exec(seed);
