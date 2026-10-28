@@ -30,6 +30,9 @@ export async function agregarSitio(_previo: EstadoAdmin, datos: FormData): Promi
   const r = esquemaAgregarSitio.safeParse({ enlace: datos.get("enlace") });
   if (!r.success) return { estado: "error", mensaje: r.error.issues[0]?.message ?? "Enlace inválido" };
   await requireAdmin();
+  const inicio = Date.now();
+  // Todo dentro de los 60 s de Vercel (revisión del 2026-10-28, hallazgo 1): un plazo que se acorta con cada paso
+  const quedan = (ms: number) => Math.max(ms - (Date.now() - inicio), 1_000);
   const enlace = leerEnlace(r.data.enlace);
   if (!enlace) return { estado: "error", mensaje: "Pega un enlace de Wikipedia, Wikidata u OpenStreetMap (los de Google Maps o redes sociales no sirven: no podemos usar sus datos)." };
 
@@ -40,26 +43,36 @@ export async function agregarSitio(_previo: EstadoAdmin, datos: FormData): Promi
   // 1. Qué lugar es, con los datos de su fuente
   let fila: Record<string, unknown>;
   let nuevo: { nombre: string; tipo: string; lat: number; lng: number; qid: string | null };
+  let grupo = "visitar";
   try {
     if (enlace.fuente === "osm") {
       const r2 = await fetch(urlOverpass(), {
         method: "POST",
         headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": AGENTE },
         body: new URLSearchParams({ data: `[out:json][timeout:20];${enlace.tipo}(${enlace.id});out center tags;` }),
-        signal: AbortSignal.timeout(25_000),
+        signal: AbortSignal.timeout(Math.min(25_000, quedan(35_000))),
         redirect: "error",
       });
       if (!r2.ok) return { estado: "error", mensaje: `OpenStreetMap no respondió (código ${r2.status}). Inténtalo en unos minutos.` };
+      if (Number(r2.headers.get("content-length") ?? 0) > 1_000_000) return { estado: "error", mensaje: "La respuesta de OpenStreetMap fue demasiado grande." };
       const texto = await r2.text();
       if (texto.length > 1_000_000) return { estado: "error", mensaje: "La respuesta de OpenStreetMap fue demasiado grande." };
-      const s = aSitios(JSON.parse(texto))[0];
+      let json: unknown;
+      try {
+        json = JSON.parse(texto);
+      } catch {
+        return { estado: "error", mensaje: "OpenStreetMap no devolvió datos válidos. Inténtalo en unos minutos." };
+      }
+      // Solo el elemento pedido (hallazgo 3)
+      const s = aSitios(json).find((x) => x.osm_type === enlace.tipo && x.osm_id === enlace.id);
       if (!s) return { estado: "error", mensaje: "Ese lugar de OpenStreetMap no tiene nombre, no es de un tipo de la guía o está fuera de Guayaquil." };
       fila = { ...s, city_id: ciudad.id };
       nuevo = { nombre: s.name, tipo: s.tipo, lat: s.latitude, lng: s.longitude, qid: s.wikidata };
+      grupo = s.grupo;
     } else {
-      const qid = enlace.fuente === "wikidata" ? enlace.qid : await qidDeWikipedia(enlace.idioma, enlace.titulo);
+      const qid = enlace.fuente === "wikidata" ? enlace.qid : await qidDeWikipedia(enlace.idioma, enlace.titulo, fetch, AbortSignal.timeout(quedan(15_000)));
       if (!qid) return { estado: "error", mensaje: "No se encontró ese artículo de Wikipedia, o no tiene ficha en Wikidata." };
-      const c = (await buscarCandidatosWikidata(fetch, qid))[0];
+      const c = (await buscarCandidatosWikidata(fetch, qid, AbortSignal.timeout(quedan(40_000))))[0];
       if (!c) return { estado: "error", mensaje: NO_CUMPLE };
       fila = { city_id: ciudad.id, osm_type: "wikidata", osm_id: Number(c.qid.slice(1)), grupo: "visitar", tipo: c.tipo, name: c.nombre, latitude: c.lat, longitude: c.lng, wikidata: c.qid };
       nuevo = c;
@@ -69,7 +82,7 @@ export async function agregarSitio(_previo: EstadoAdmin, datos: FormData): Promi
   }
 
   // 2. ¿Ya está?
-  const ya = await leerExistentes(db, nuevo.qid ? [nuevo.qid] : []);
+  const ya = await leerExistentes(db, nuevo.qid ? [nuevo.qid] : [], grupo);
   if (!ya) return { estado: "error", mensaje: "No se pudo leer la guía" };
   const repetido = buscarRepetido(nuevo, ya);
   if (repetido) {
@@ -86,7 +99,10 @@ export async function agregarSitio(_previo: EstadoAdmin, datos: FormData): Promi
   if (error) return { estado: "error", mensaje: error.message.includes("texto_no_permitido") ? "El nombre del lugar no pasa el filtro de palabras." : "No se pudo guardar" };
   const f = guardado?.[0];
   if (!f) return { estado: "error", mensaje: "Ese lugar ya estaba en la guía." };
-  const e = await enriquecerSitio(db, f, "agregado", AbortSignal.timeout(25_000));
+  // Si queda poco tiempo, la foto se busca después (no se arriesga a que Vercel corte a mitad de la subida)
+  const resto = 52_000 - (Date.now() - inicio);
+  const e = resto > 8_000 ? await enriquecerSitio(db, f, "agregado", AbortSignal.timeout(resto)) : ({ estado: "pasajero", motivo: "sin tiempo" } as const);
+  const deWikidata = fila.osm_type === "wikidata";
   revalidatePath("/admin/guia");
   const detalle =
     e.estado === "listo"
@@ -98,7 +114,9 @@ export async function agregarSitio(_previo: EstadoAdmin, datos: FormData): Promi
             ? `con descripción, sin foto (${e.sinFoto ?? "sin foto"})`
             : `sin foto ni descripción (${e.sinFoto ?? "no hay en Wikipedia"})`
       : e.estado === "pasajero"
-        ? "la foto se buscará con «Buscar fotos y descripción» (Wikimedia no respondió)"
+        ? deWikidata
+          ? "su foto se buscará con «Buscar fotos y descripción» (Wikimedia no respondió a tiempo)"
+          : "su foto se buscará con «Buscar fotos y descripción» cuando lo publiques (Wikimedia no respondió a tiempo)"
         : e.estado === "permanente"
           ? `sin foto ni descripción (${e.motivo})`
           : "";

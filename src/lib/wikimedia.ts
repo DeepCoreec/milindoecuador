@@ -164,8 +164,8 @@ async function leerResumen(idioma: string, titulo: string, c: Ctx): Promise<Resu
 }
 
 /** El Q de Wikidata de un artículo de Wikipedia (`idioma` de 2–3 letras), o null (30.3: agregar por enlace). */
-export async function qidDeWikipedia(idioma: string, titulo: string, pedir: typeof fetch = fetch): Promise<string | null> {
-  return (await leerResumen(idioma, titulo, { pedir }))?.qid ?? null;
+export async function qidDeWikipedia(idioma: string, titulo: string, pedir: typeof fetch = fetch, corte?: AbortSignal): Promise<string | null> {
+  return (await leerResumen(idioma, titulo, { pedir, corte }))?.qid ?? null;
 }
 
 /** Artículos de Wikipedia en español a menos de 300 m; el primero con nombre parecido (regla 4). */

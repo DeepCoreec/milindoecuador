@@ -30,7 +30,7 @@ export function leerEnlace(texto: string): EnlaceLugar | null {
     return q && QID.test(q) ? { fuente: "wikidata", qid: q } : null;
   }
   const wiki = /^([a-z]{2,3})(?:\.m)?\.wikipedia\.org$/.exec(host);
-  if (wiki) {
+  if (wiki && wiki[1] !== "www") {
     if (partes[0] !== "wiki" || !partes[1]) return null;
     let titulo: string;
     try {

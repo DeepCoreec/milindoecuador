@@ -32,6 +32,7 @@ describe("leer el enlace que pega el admin", () => {
       "https://www.openstreetmap.org/node/abc",
       "Parque Seminario",
       "https://es.wikipedia.org/wiki/%E0%A4%A",
+      "https://www.wikipedia.org/wiki/X",
     ]) {
       expect(leerEnlace(malo), malo).toBeNull();
     }

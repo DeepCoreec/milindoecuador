@@ -14,8 +14,11 @@ export type Nuevo = { nombre: string; tipo: string; lat: number; lng: number; qi
 const CERCA_M = 300;
 const COLUMNAS = "name, tipo, status, latitude, longitude, wikidata";
 
-/** Lo que ya hay: los que tienen alguno de estos Q (cualquier grupo) y todos los "para visitar", por páginas. */
-export async function leerExistentes(db: Db, qids: string[]): Promise<Existente[] | null> {
+/**
+ * Lo que ya hay: los que tienen alguno de estos Q (cualquier grupo) y todos los del grupo (por defecto "para visitar";
+ * al agregar un lugar de OpenStreetMap, su propio grupo), por páginas.
+ */
+export async function leerExistentes(db: Db, qids: string[], grupo: string = "visitar"): Promise<Existente[] | null> {
   const ya: Existente[] = [];
   for (let i = 0; i < qids.length; i += 200) {
     const { data, error } = await db.from("city_spots").select(COLUMNAS).in("wikidata", qids.slice(i, i + 200)).returns<Existente[]>();
@@ -23,7 +26,7 @@ export async function leerExistentes(db: Db, qids: string[]): Promise<Existente[
     ya.push(...(data ?? []));
   }
   for (let desde = 0; desde < 10_000; desde += 1000) {
-    const { data, error } = await db.from("city_spots").select(COLUMNAS).eq("grupo", "visitar").order("id").range(desde, desde + 999).returns<Existente[]>();
+    const { data, error } = await db.from("city_spots").select(COLUMNAS).eq("grupo", grupo).order("id").range(desde, desde + 999).returns<Existente[]>();
     if (error) return null;
     ya.push(...(data ?? []));
     if ((data?.length ?? 0) < 1000) break;

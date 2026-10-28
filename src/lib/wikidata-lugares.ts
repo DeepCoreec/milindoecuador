@@ -88,11 +88,11 @@ export function aCandidatos(respuesta: unknown): CandidatoWikidata[] {
 }
 
 /** Pide la consulta al servicio público de Wikidata (solo ese dominio, sin redirecciones, máximo 5 MB). */
-export async function buscarCandidatosWikidata(pedir: typeof fetch = fetch, soloQ?: string): Promise<CandidatoWikidata[]> {
+export async function buscarCandidatosWikidata(pedir: typeof fetch = fetch, soloQ?: string, corte?: AbortSignal): Promise<CandidatoWikidata[]> {
   const url = `https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(consultaWikidata(soloQ))}`;
   const r = await pedir(url, {
     headers: { "user-agent": AGENTE, accept: "application/sparql-results+json" },
-    signal: AbortSignal.timeout(40_000),
+    signal: corte ? AbortSignal.any([AbortSignal.timeout(40_000), corte]) : AbortSignal.timeout(40_000),
     redirect: "error",
     cache: "no-store",
   });
