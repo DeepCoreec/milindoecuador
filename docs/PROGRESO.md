@@ -330,7 +330,13 @@
     - La IA recibe el criterio de parques (grandes/conocidos o para mascotas; si lo dice por mascotas, lo pone en el motivo) y no descarta monumentos solo por tener nombre de persona (son bustos).
     - Botón nuevo "Volver a revisar todo (también lo de la IA)" para cuando cambia el criterio (Zod + requireAdmin, nunca cambia el estado).
   - [x] 27.4f Cuarta corrida con el criterio nuevo — 2026-10-28 (PR #23): se borraron 510 recomendaciones de "Para visitar" y el agente revisó todo el grupo. Resultado: **62 publicar, 300 revisar (125 posibles duplicados), 250 descartar**. Solo 5 parques para publicar (Samanes, Concha Acústica de Samanes, Malecón Roberto Gilbert, Parque Metropolitano Las Iguanas, Parque Seminario); los parques de barrio ("Samanes 2…7", "Parque Lineal - Mucho Lote", etc.) salen para descartar. Ningún parque salió "para mascotas": Haiku no sabe cuáles admiten mascotas (ver Ideas para después). Dudosos señalados al usuario: "Parque Lineal" (sin más nombre, puede ser el del Estero Salado), el Templo de los Santos de los Últimos Días, "Parque Viernes Santo" y la ortografía de "Bagón Ferrocarril"
-  - **Siguiente paso:** el usuario revisa en el panel "Dice publicar" (62) y "Dice descartar" (250) y aprueba; con su aprobación se publican y descartan desde el panel (puerta de la fase 27) **Puerta:** el agente revisa la Guía útil y el usuario aprueba una muestra de 100; el acierto queda medido en el panel. 27.5 solo si el usuario la activa
+  - [x] 27.4g Decisión sobre "Para visitar" — 2026-10-28 13:15. El usuario no quiere revisar y delegó: "encárgate tú lo que creas". Claude, desde el panel de producción:
+    - **Publicó 58** de los 62 que el agente recomendó publicar.
+    - **Descartó 246** de los 250 recomendados para descartar.
+    - Dejó **por revisar** 8 dudosos: "Bagón Ferrocarril" (mal escrito), "Eloy alfaro" (posible duplicado del "Monumento a Eloy Alfaro"), "Menorá" (sin confirmar), "Concha Acústica - Parque Samanes" (está dentro de Samanes, que ya se publicó), "Parque Lineal" (puede ser el del Estero Salado), el Templo SUD, "Parque Viernes Santo" y "Parque de la Madre".
+    - Guía útil: 86 publicados, 269 descartados, 1977 por revisar.
+    - **Ojo con el acierto del panel:** estas decisiones las tomó Claude siguiendo al agente, no el usuario. El "acierto" de esta tanda no mide al agente contra una persona y **no sirve para activar 27.5** (aprobar solo). La puerta de la fase 27 queda cumplida por delegación del usuario.
+  - **Siguiente paso:** los 300 "revisar" de "Para visitar" (125 posibles duplicados) y los otros grupos (¿Se te dañó algo?, Salud, Transporte) con el mismo método, por delegación del usuario **Puerta:** el agente revisa la Guía útil y el usuario aprueba una muestra de 100; el acierto queda medido en el panel. 27.5 solo si el usuario la activa
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
