@@ -17,7 +17,7 @@ Este proyecto usa Next.js 16: lee también `AGENTS.md` y la documentación en `n
 ## 2. Reglas de trabajo
 
 - **Un paso a la vez.** Trabaja solo en el paso que dice `docs/PROGRESO.md`. No adelantes trabajo de otras fases.
-- **Nada fuera del plan.** Si algo no está en `docs/PLAN.md`, `docs/PLAN-V2.md`, `docs/PLAN-V3.md`, `docs/PLAN-V4.md`, `docs/PLAN-V5.md`, `docs/PLAN-V6.md`, `docs/PLAN-V7.md` o `docs/ARQUITECTURA.md`, no lo agregues.
+- **Nada fuera del plan.** Si algo no está en `docs/PLAN.md`, `docs/PLAN-V2.md`, `docs/PLAN-V3.md`, `docs/PLAN-V4.md`, `docs/PLAN-V5.md`, `docs/PLAN-V6.md`, `docs/PLAN-V7.md`, `docs/PLAN-V8.md` o `docs/ARQUITECTURA.md`, no lo agregues.
   Anótalo en la sección "Ideas para después" de `docs/PROGRESO.md` y sigue.
 - **Sin librerías nuevas sin permiso.** Las permitidas están en `docs/ARQUITECTURA.md`. Para cualquier otra, pregunta primero.
 - **Puertas de fase.** Una fase solo se cierra cuando se cumple su puerta (ver `docs/PLAN.md`) y el usuario la aprueba.
@@ -78,6 +78,7 @@ npm run tokens     # regenera src/app/tokens.css si cambian los colores aprobado
 - `docs/PLAN-V5.md` — versión 5 (eventos que se borran solos y guía útil de la ciudad): fases 22 y 23 (borrador).
 - `docs/PLAN-V6.md` — versión 6 (agentes de IA que ayudan al admin; el admin decide): fases 27 y 28.
 - `docs/PLAN-V7.md` — versión 7 (foto, descripción y lugares turísticos buenos desde Wikimedia): fases 29 a 31.
+- `docs/PLAN-V8.md` — versión 8 (portada solo para destacados, categorías ordenadas, enlaces útiles, "Cerca de mí"): fases 32 a 34.
 - `docs/ARQUITECTURA.md` — carpetas, rutas, tecnologías y convenciones.
 - `docs/PROGRESO.md` — bitácora: dónde estamos y qué sigue. **Se actualiza en cada paso.**
 - `docs/DISENO.md` — sistema de diseño (se crea en la fase 0).

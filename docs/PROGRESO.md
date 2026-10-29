@@ -386,7 +386,22 @@
 - [x] 30.3e Pruebas finales — 2026-10-28 17:40 (PR #39): "Parque Seminario" → "Ya está en la guía como «Parque Seminario» (publicado)"; Google Maps → rechazado con su explicación; "Malecón 2000" → revisado por Claude (foto "Vista del Malecón 2000", descripción del Malecón Simón Bolívar) y **publicado** por delegación del usuario. Guía útil: **94 publicados**, 271 descartados, 1977 por revisar
 - **Siguiente paso:** puerta de la fase 30 (el usuario mira los lugares nuevos en la guía y la aprueba). Después: fase 31 (videos de YouTube), que necesita una clave de Google del usuario; o volver a los pendientes de la versión 6 (los 300 "revisar" de "Para visitar" y los otros grupos)
 
+## Versión 8 · Orden, enlaces útiles y "Cerca de mí"
+
+> Plan: `docs/PLAN-V8.md`, **aprobado por el usuario el 2026-10-28 19:28–19:47**. Decisiones: la portada solo muestra
+> negocios con Destacado pagado (sin ninguno, no aparece nada); los lugares turísticos van dentro de su categoría en
+> dos partes que se despliegan ("Lugares de la guía" y "Lugares registrados", que son los negocios que se registran);
+> enlaces oficiales en "Información útil"; "Cerca de mí". La fase 31 (videos) queda para después.
+
+### Fase 32 · Orden de la portada y de las categorías
+
+- [x] 32.1 Portada — 2026-10-28: "Recomendados en Guayaquil" solo con negocios con Destacado vigente (sin los de ejemplo), hasta 8, de cualquier categoría; sin ninguno, la sección no aparece. Quitados "Para visitar en Guayaquil", "Dónde comer" e "Imperdibles" (`getSeccionesInicio` devuelve solo `recomendados`)
+- [x] 32.2 Categorías — 2026-10-28: en las categorías con lugares de la Guía útil (Turismo, Paseos, Museos, Naturaleza, Ejercicio, Niños, Reparaciones), dos partes que se despliegan (`<details>`, accesibles con teclado): "Lugares registrados (N)" con sus filtros y "Lugares de la guía (M)", ahora siempre (antes solo con menos de 8 negocios). Abierta de entrada: registrados si hay o si se usan filtros; la guía si no hay registrados. Las demás categorías no cambian
+- **Siguiente paso:** publicar y revisar en la página real (portada y Turismo) a 390 px y escritorio, claro y oscuro; puerta de la fase 32
+
 ## Ideas para después (no se hacen hasta terminar la versión 1)
+
+- (2026-10-28, del usuario) **Espacio publicitario en la portada** para quien pague aparte (un anuncio pequeño). Lo decide el usuario más adelante
 
 - (2026-10-28 19:21, pedido del usuario) **"Cerca de mí"**: si el visitante está en un punto, que Paumi le diga qué eventos, lugares y cosas para hacer hay cerca, y que el buscador también ordene por cercanía. Revisado: ya existe lo necesario sin librerías ni migraciones (negocios, eventos y Guía útil tienen coordenadas; la política de la página ya permite la ubicación solo en el propio sitio). Propuesta de Claude: botón "Cerca de mí" que pide permiso al navegador; la ubicación se usa solo para esa búsqueda, redondeada (~100 m), sin guardarla; Paumi con una herramienta "cerca" (lugares abiertos ahora, eventos de hoy y esta semana, Guía útil) y el buscador con filtro y orden por distancia. Falta que el usuario apruebe el plan (PLAN-V8 o fase nueva)
 

@@ -7,8 +7,6 @@ import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
 import { TarjetaEvento } from "@/components/eventos/TarjetaEvento";
 import { FranjaGuiaUtil } from "@/components/guia/FranjaGuiaUtil";
-import { FilaSitio } from "@/components/guia/ListaSitios";
-import { getSitios, type Sitio } from "@/lib/datos/sitios";
 import { TarjetaResumen } from "@/components/lugares/TarjetaResumen";
 import { getEventos } from "@/lib/datos/eventos";
 import { deEstaSemana } from "@/lib/eventos";
@@ -37,15 +35,6 @@ function CabezaSeccion({ id, titulo, children }: { id: string; titulo: string; c
   );
 }
 
-/** Enlace "Ver todos" sobre una franja de color: tinta oscura subrayada (en celeste-tinta no se leería). */
-function VerTodos({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <Link href={href} className="inline-flex min-h-11 items-center font-semibold text-on-color underline underline-offset-4">
-      {children}
-    </Link>
-  );
-}
-
 // La portada se vuelve a generar cada 5 minutos con los lugares nuevos
 export const revalidate = 300;
 
@@ -53,17 +42,13 @@ const ancho = "mx-auto w-full max-w-[1280px] px-4 md:px-8";
 const seccion = "py-12 min-[900px]:py-16";
 
 export default async function Inicio() {
-  const [categorias, { encebollados, imperdibles, tituloComer }, eventos] = await Promise.all([
+  const [categorias, { recomendados }, eventos] = await Promise.all([
     getCategoriasBarra("guayaquil"),
     getSeccionesInicio(),
     getEventos().catch(() => []),
   ]);
   // Versión 5: lo que pasa en los próximos 7 días
   const estaSemana = deEstaSemana(eventos);
-  const paraVisitar =
-    imperdibles.length === 0
-      ? (await getSitios().catch(() => [] as Sitio[])).filter((x) => ["museo", "mirador", "monumento", "atraccion", "parque"].includes(x.tipo)).slice(0, 8)
-      : [];
 
   return (
     <>
@@ -95,43 +80,13 @@ export default async function Inicio() {
           <BarraCategorias categorias={categorias} grande />
         </section>
 
-        {encebollados.length > 0 && (
-          <section className="bg-mango text-on-color" aria-labelledby="t-ence">
+        {/* Versión 8 (32.1): solo negocios con el plan Destacado pagado; sin ninguno, la sección no aparece */}
+        {recomendados.length > 0 && (
+          <section className="bg-mango text-on-color" aria-labelledby="t-recomendados">
             <div className={`${ancho} ${seccion}`}>
-              <CabezaSeccion id="t-ence" titulo={tituloComer}>
-                <VerTodos href="/guayaquil/restaurantes">Ver todos los restaurantes</VerTodos>
-              </CabezaSeccion>
+              <CabezaSeccion id="t-recomendados" titulo="Recomendados en Guayaquil" />
               <div className="rounded-[20px] bg-papel-alto p-4 text-rio md:p-6">
-                <Fila lugares={encebollados} tono="mango" />
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* Versión 5, fase 24: sin imperdibles registrados, la portada usa los lugares de la Guía útil */}
-        {imperdibles.length === 0 && paraVisitar.length > 0 && (
-          <section className="bg-celeste text-on-color" aria-labelledby="t-imp">
-            <div className={`${ancho} ${seccion}`}>
-              <CabezaSeccion id="t-imp" titulo="Para visitar en Guayaquil">
-                <VerTodos href="/guayaquil/guia-util#visitar">Ver la Guía útil</VerTodos>
-              </CabezaSeccion>
-              <ul className="m-0 grid list-none gap-3 rounded-[20px] bg-papel-alto p-4 text-rio sm:grid-cols-2 md:p-6 lg:grid-cols-4">
-                {paraVisitar.map((s) => (
-                  <FilaSitio key={s.id} s={s} />
-                ))}
-              </ul>
-            </div>
-          </section>
-        )}
-
-        {imperdibles.length > 0 && (
-          <section className="bg-celeste text-on-color" aria-labelledby="t-imp">
-            <div className={`${ancho} ${seccion}`}>
-              <CabezaSeccion id="t-imp" titulo="Imperdibles de Guayaquil">
-                <VerTodos href="/guayaquil/turismo">Ver lugares turísticos</VerTodos>
-              </CabezaSeccion>
-              <div className="rounded-[20px] bg-papel-alto p-4 text-rio md:p-6">
-                <Fila lugares={imperdibles} />
+                <Fila lugares={recomendados} />
               </div>
             </div>
           </section>
