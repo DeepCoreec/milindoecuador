@@ -397,9 +397,17 @@
 
 - [x] 32.1 Portada — 2026-10-28: "Recomendados en Guayaquil" solo con negocios con Destacado vigente (sin los de ejemplo), hasta 8, de cualquier categoría; sin ninguno, la sección no aparece. Quitados "Para visitar en Guayaquil", "Dónde comer" e "Imperdibles" (`getSeccionesInicio` devuelve solo `recomendados`)
 - [x] 32.2 Categorías — 2026-10-28: en las categorías con lugares de la Guía útil (Turismo, Paseos, Museos, Naturaleza, Ejercicio, Niños, Reparaciones), dos partes que se despliegan (`<details>`, accesibles con teclado): "Lugares registrados (N)" con sus filtros y "Lugares de la guía (M)", ahora siempre (antes solo con menos de 8 negocios). Abierta de entrada: registrados si hay o si se usan filtros; la guía si no hay registrados. Las demás categorías no cambian
-- **Siguiente paso:** publicar y revisar en la página real (portada y Turismo) a 390 px y escritorio, claro y oscuro; puerta de la fase 32
+- [x] 32.3 Revisión en la página real — 2026-10-28 20:05: escritorio bien (portada sin negocios sin pagar: "¿Qué buscas hoy?", eventos, Guía útil, "Registra tu negocio"; Turismo con "Lugares registrados (0)" cerrada y "Lugares de la guía (81)" abierta). **A 390 px no se pudo capturar**: la ventana de Chrome del usuario no se deja achicar y la nube de Claude no llega a la página publicada. Por construcción: las partes son de ancho completo y las tarjetas van en una columna. **Puerta de la fase 32: falta que el usuario lo mire en su celular y la apruebe**
+
+### Fase 33 · Información útil con enlaces oficiales
+
+- [x] 33.1 Enlaces comprobados — 2026-10-28 20:10 (abiertos uno por uno en el navegador): la ATM **sigue activa** (atm.gob.ec, "Autoridad de Tránsito y Movilidad", tarifario 2026) y publica el **mapa oficial de la Metrovía 2026** (PDF, octubre 2026), la página de Metrovía y la de Aerovía; Terminal Terrestre (ttg.ec); aeropuerto (tagsa.aero, vuelos en vivo); ECU 911 (ecu911.gob.ec). **No se puso:** laguayacagye.com (la tarjeta de la Metrovía) estaba "en mantenimiento"; app de la Metrovía (no hay una oficial vigente: la de 2015 ya no existe y Moovit es de terceros)
+- [x] 33.2 Sección "Enlaces oficiales" en Información útil — 2026-10-28: `src/lib/enlaces-utiles.ts` (lista con fecha de comprobación) y `src/components/guia/EnlacesUtiles.tsx` (filas grandes para tocar en el celular, dicen a qué sitio llevan, se abren en otra pestaña), agrupadas en Moverse por la ciudad, Viajar y Emergencias. La tarjeta "Moverse por la ciudad" ahora manda a esos enlaces. Prueba unitaria: solo HTTPS y solo dominios oficiales de la lista
+- **Siguiente paso:** publicar y revisar; puerta de la fase 33 (el usuario abre los enlaces); luego fase 34 "Cerca de mí"
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
+
+- (2026-10-28, fase 33) Enlazar **La Guayaca** (laguayacagye.com, tarjeta y subsidio de la Metrovía) cuando su sitio salga de mantenimiento. ¿Enlazar Moovit (app gratuita de terceros con rutas de la Metrovía)? Lo decide el usuario: no es oficial
 
 - (2026-10-28, del usuario) **Espacio publicitario en la portada** para quien pague aparte (un anuncio pequeño). Lo decide el usuario más adelante
 
