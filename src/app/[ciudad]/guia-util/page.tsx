@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Afiche } from "@/components/arte/Afiche";
+import { EnlacesUtiles } from "@/components/guia/EnlacesUtiles";
 import { SitiosPorTipo } from "@/components/guia/ListaSitios";
 import { Cabecera } from "@/components/layout/Cabecera";
 import { Migas } from "@/components/layout/Migas";
@@ -124,11 +125,7 @@ export default async function PaginaGuiaUtil({ params }: PageProps<"/[ciudad]/gu
                   teleférico que cruza el río Guayas entre Guayaquil y Durán. Para viajar a otras ciudades sale todo desde el Terminal Terrestre.
                 </p>
                 <p className="m-0 text-[15px] leading-[22px] text-rio-suave">
-                  Precios y horarios cambian: confírmalos en la{" "}
-                  <a href="https://www.atm.gob.ec" target="_blank" rel="noopener noreferrer">
-                    Agencia de Tránsito (ATM)
-                  </a>
-                  .
+                  Precios y horarios cambian: confírmalos en los <a href="#t-enlaces">enlaces oficiales</a> de aquí abajo.
                 </p>
               </div>
               <div className="grid content-start gap-2 rounded-xl border border-linea bg-papel-alto p-5">
@@ -141,6 +138,7 @@ export default async function PaginaGuiaUtil({ params }: PageProps<"/[ciudad]/gu
                 </ul>
               </div>
             </div>
+            <EnlacesUtiles />
             <section aria-labelledby="t-salud" className="grid gap-5">
               <h3 id="t-salud" className="m-0 text-2xl leading-8 font-semibold">
                 Salud
