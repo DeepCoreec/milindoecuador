@@ -80,18 +80,17 @@ export async function buscarLugares(ciudad: string, q: string) {
 }
 
 /**
- * Secciones del inicio. Con la base: los restaurantes mejor ubicados (destacados primero) y los
- * lugares turísticos. Con la muestra: la selección fija de la maqueta.
+ * Secciones del inicio (versión 8, fase 32.1): la portada es la vitrina de los que pagan. "Recomendados" son solo los
+ * negocios con el plan Destacado vigente, de cualquier categoría (mejor ubicados primero). Si no hay ninguno, la lista
+ * va vacía y la portada no muestra la sección (decisión del usuario del 2026-10-28).
  */
 export async function getSeccionesInicio(ciudad = "guayaquil") {
   const lugares = await getLugaresDeCiudad(ciudad);
-  const orden = { sector: null, precios: [], orden: "destacados" as const };
-  const encebollados = configSupabase()
-    ? filtrarLugares(lugares.filter((l) => l.categoria === "restaurantes"), orden).slice(0, 4)
-    : muestra.ENCEBOLLADOS.map((s) => lugares.find((l) => l.slug === s)!);
-  const imperdibles = filtrarLugares(lugares.filter((l) => l.categoria === "turismo"), orden).slice(0, 4);
-  const tituloComer = configSupabase() ? "Dónde comer" : "Dónde comer encebollado";
-  return { encebollados, imperdibles, tituloComer };
+  const recomendados = filtrarLugares(
+    lugares.filter((l) => l.destacado && !l.ejemplo),
+    { sector: null, precios: [], orden: "destacados" as const },
+  ).slice(0, 8);
+  return { recomendados };
 }
 
 /** Categorías de comida y compras usan el tono mango en las fotos vacías; el resto, celeste. */

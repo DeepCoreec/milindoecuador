@@ -395,9 +395,9 @@
 
 ### Fase 32 · Orden de la portada y de las categorías
 
-- [ ] 32.1 Portada: "Recomendados" solo con Destacado vigente; quitar "Para visitar", "Dónde comer" e "Imperdibles"
-- [ ] 32.2 Categorías: "Lugares registrados" y "Lugares de la guía" que se despliegan
-- **Siguiente paso:** 32.1
+- [x] 32.1 Portada — 2026-10-28: "Recomendados en Guayaquil" solo con negocios con Destacado vigente (sin los de ejemplo), hasta 8, de cualquier categoría; sin ninguno, la sección no aparece. Quitados "Para visitar en Guayaquil", "Dónde comer" e "Imperdibles" (`getSeccionesInicio` devuelve solo `recomendados`)
+- [x] 32.2 Categorías — 2026-10-28: en las categorías con lugares de la Guía útil (Turismo, Paseos, Museos, Naturaleza, Ejercicio, Niños, Reparaciones), dos partes que se despliegan (`<details>`, accesibles con teclado): "Lugares registrados (N)" con sus filtros y "Lugares de la guía (M)", ahora siempre (antes solo con menos de 8 negocios). Abierta de entrada: registrados si hay o si se usan filtros; la guía si no hay registrados. Las demás categorías no cambian
+- **Siguiente paso:** publicar y revisar en la página real (portada y Turismo) a 390 px y escritorio, claro y oscuro; puerta de la fase 32
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
