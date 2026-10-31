@@ -421,8 +421,9 @@
   - (baja) Paumi avisa claro si la ubicación está fuera de Ecuador; los eventos muestran lugar y dirección.
   - **Decisión:** "orden por cercanía" del buscador quedó como una sección propia ("Cerca de mí"), no mezclada con los resultados por palabra
   - 185 unitarias y 260 RLS pasan; probado otra vez con Playwright a 390 px (claro y oscuro) y 1366 px
-- [ ] 34.5 Publicar y probar en la página real con una ubicación simulada (nunca la del usuario)
-- **Siguiente paso:** 34.5
+- [x] 34.5 Prueba en la página real — 2026-10-30 21:55 (PR #44): en `/buscar`, con la ubicación **simulada** en el Malecón (nunca la del usuario), "Cerca de mí" mostró 9 resultados a 3 km: Para visitar con fotos (Malecón 2000 a 250 m, Museo Noboa Naranjo, Basílica de la Merced, San Francisco, Fragua de Vulcano, La Rotonda a 100 m…), Negocios (DeepCore.ec a 1,4 km, "Cerrado · abre el lunes") y Eventos (ninguno con dirección esta semana). Paumi no se probó en vivo (la primera vez pide captcha); sus pruebas unitarias pasan
+- **Puerta de la fase 34:** falta que el usuario lo pruebe en su celular (en la portada, "Cerca de mí"; y en Paumi, "¿qué hay cerca de mí?") y la apruebe
+- **Siguiente paso:** puerta de la fase 34. Pendientes del usuario en la versión 8: mirar en el celular la portada, Turismo y "Enlaces oficiales" (puertas 32 y 33); decidir si se enlaza Moovit
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
