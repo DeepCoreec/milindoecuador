@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { verificarCaptcha } from "@/lib/captcha";
+import { ubicacionAproximada } from "@/lib/cerca";
 import { huellaDelDia, leerCuerpoCorto } from "@/lib/huella";
 import { ErrorPaumi, conversar } from "@/lib/paumi/cerebro";
 import { configPaumi, paumiActivo } from "@/lib/paumi/config";
@@ -26,6 +27,9 @@ const esquema = z.object({
     .max(MAX_HISTORIAL)
     .refine((m) => m.at(-1)!.rol === "usuario" && m.at(-1)!.texto.length <= MAX_MENSAJE, "Mensaje inválido"),
   captcha: z.string().max(2048).optional(),
+  // Versión 8 (34.3): "Cerca de mí" del chat. Se redondea a ~100 m, no se guarda ni se registra, y NO se le pasa a la IA
+  // (la IA solo ve distancias como "a 350 m" en lo que devuelve la herramienta buscar_cerca)
+  ubicacion: z.object({ lat: z.number(), lng: z.number() }).optional(),
 });
 
 const respuesta = (cuerpo: object, status = 200) => NextResponse.json(cuerpo, { status, headers: { "cache-control": "no-store" } });
@@ -65,7 +69,11 @@ export async function POST(request: NextRequest) {
   if (uso !== "ok") return respuesta({ error: "descanso", mensaje: "Paumi está descansando por hoy. Vuelve mañana. Mientras tanto, explora la guía." }, 503);
 
   try {
-    const resultado = await conversar(r.data.mensajes.map(({ rol, texto }) => ({ rol, texto: texto.trim() })));
+    const ubicacion = r.data.ubicacion ? ubicacionAproximada(r.data.ubicacion) : null;
+    const resultado = await conversar(
+      r.data.mensajes.map(({ rol, texto }) => ({ rol, texto: texto.trim() })),
+      { ubicacion },
+    );
     const salida = respuesta({ ...resultado, firma: firmarRespuesta(resultado.texto) });
     if (pase) salida.cookies.set(COOKIE_PASE, pase, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict", path: "/api/paumi", maxAge: DURACION_PASE });
     return salida;

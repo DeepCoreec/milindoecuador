@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { buscarCerca, textoDistancia } from "@/lib/cerca";
 import { agruparEventos, LISTA_TIPOS, textoFechas, textoPrecio } from "@/lib/eventos";
 import { enlaceOSM, NOMBRE_TIPO, TIPOS_SITIO, type TipoSitio } from "@/lib/osm";
 import { urlPublicaFoto } from "@/lib/fotos";
@@ -7,7 +8,7 @@ import { estadoAhora, leerHorario, resumenHorario } from "@/lib/horario";
 import { enlaceComoLlegar } from "@/lib/enlaces";
 import { crearClientePublico } from "@/lib/supabase/publico";
 import { exigirConfigSupabase } from "@/lib/supabase/config";
-import { enlaceRutaGoogle } from "@/lib/ubicacion";
+import { enlaceRutaGoogle, type Ubicacion } from "@/lib/ubicacion";
 import { normalizar } from "@/lib/validacion/busqueda";
 import { FUENTES_CONFIABLES } from "./config";
 import type { ExternoPaumi, TarjetaPaumi } from "./tipos";
@@ -114,6 +115,15 @@ export const DEFINICIONES = [
     input_schema: { type: "object", properties: { ids: { type: "array", items: { type: "string" }, maxItems: 3 } }, required: ["ids"] },
   },
   {
+    name: "buscar_cerca",
+    description:
+      "Lo que hay CERCA de la persona (versión 8): negocios (abiertos ahora primero), eventos de esta semana y lugares para visitar de la Guía útil, ordenados por distancia, con su id o ruta. Solo funciona si la persona compartió su ubicación con el botón «Cerca de mí» del chat; tú no sabes dónde está.",
+    input_schema: {
+      type: "object",
+      properties: { que: { type: "string", enum: ["todo", "negocios", "eventos", "visitar"], description: "Qué buscar (por defecto, todo)" } },
+    },
+  },
+  {
     name: "abrir_pagina",
     description:
       "Propone llevar a la persona a una página de la guía: '/guayaquil' (todas las categorías), '/guayaquil/<categoria>', '/buscar?q=<palabras>', '/guayaquil/eventos', '/guayaquil/guia-util' o la ruta de un evento que devolvió buscar_eventos.",
@@ -144,6 +154,7 @@ const esquemaSitios = z.object({
 });
 const esquemaMostrarSitios = z.object({ ids: z.array(z.uuid()).min(1).max(3) });
 const esquemaAbrir = z.object({ ruta: z.string().max(120) });
+const esquemaCerca = z.object({ que: z.enum(["todo", "negocios", "eventos", "visitar"]).optional() });
 const esquemaExterno = z.object({
   nombre: z
     .string()
@@ -182,6 +193,8 @@ export type Estado = {
   eventos?: Set<string>;
   /** Sitios de la Guía útil que devolvió buscar_sitios en esta respuesta (versión 5, fase 23). */
   sitios?: Map<string, ExternoPaumi>;
+  /** Versión 8: ubicación que la persona compartió con «Cerca de mí» (redondeada). La IA nunca la ve. */
+  ubicacion?: Ubicacion | null;
 };
 
 function db() {
@@ -390,6 +403,38 @@ export async function ejecutar(nombre: string, entrada: unknown, e: Estado): Pro
           e.externos.push(s);
         }
         return { resultado: "Listo: se muestran sus tarjetas con Cómo llegar." };
+      }
+      case "buscar_cerca": {
+        const r = esquemaCerca.safeParse(entrada ?? {});
+        if (!r.success) return { resultado: "Pedido inválido", error: true };
+        if (!e.ubicacion) return { resultado: "La persona no compartió su ubicación: dile que toque el botón «Cerca de mí» del chat." };
+        const que = r.data.que ?? "todo";
+        const c = await buscarCerca(e.ubicacion, 6);
+        e.eventos ??= new Set();
+        e.sitios ??= new Map();
+        const negocios =
+          que === "todo" || que === "negocios"
+            ? c.lugares.map((l) => {
+                e.vistos.add(l.id);
+                return { id: l.id, nombre: l.nombre, categoria: l.categoria, sector: l.sector, distancia: textoDistancia(l.distancia), ahora: l.estado ?? "sin horario por día", precio: l.precio };
+              })
+            : [];
+        const eventos =
+          que === "todo" || que === "eventos"
+            ? c.eventos.map((x) => {
+                e.eventos!.add(x.ruta);
+                return { titulo: x.titulo, cuando: x.cuando, donde: x.donde, distancia: textoDistancia(x.distancia), precio: x.precio, ruta: x.ruta };
+              })
+            : [];
+        const visitar =
+          que === "todo" || que === "visitar"
+            ? c.sitios.map((x) => {
+                e.sitios!.set(x.id, { nombre: x.nombre, sector: x.direccion, mapa: x.comoLlegar, fuente: x.fuente, origen: "guia-util" });
+                return { id: x.id, nombre: x.nombre, tipo: x.tipo, distancia: textoDistancia(x.distancia) };
+              })
+            : [];
+        if (!negocios.length && !eventos.length && !visitar.length) return { resultado: `No hay nada en la guía a menos de ${c.radio / 1000} km.` };
+        return { resultado: { radio_km: c.radio / 1000, negocios, eventos, visitar } };
       }
       case "abrir_pagina": {
         const r = esquemaAbrir.safeParse(entrada);

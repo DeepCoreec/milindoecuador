@@ -73,6 +73,9 @@ export function Paumi() {
   const cierraPico = useRef<ReturnType<typeof setTimeout>>(undefined);
   const formulario = useRef<HTMLFormElement>(null);
   const enviando = useRef(false); // candado: una pregunta a la vez (aunque lleguen dos frases o dos Enter seguidos)
+  // Versión 8 (34.3): ubicación de "Cerca de mí", solo en memoria y por 15 minutos (para seguir preguntando "¿y cafés?")
+  const ubicacion = useRef<{ lat: number; lng: number; hasta: number } | null>(null);
+  const [buscandoUbicacion, setBuscandoUbicacion] = useState(false);
   const [notaVoz, setNotaVoz] = useState<string | null>(null);
   const textoDeVoz = useRef(""); // lo que quedó escrito desde la voz (si se envía tal cual, responde hablando)
   // Manos libres
@@ -326,12 +329,14 @@ export function Paumi() {
     setCuadro(false);
     setHablando(false);
     try {
+      const u = ubicacion.current && ubicacion.current.hasta > Date.now() ? ubicacion.current : null;
       const r = await fetch("/api/paumi", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           mensajes: historial.slice(-MAX_HISTORIAL).map(({ rol, texto, firma }) => ({ rol, texto, firma })),
           captcha: typeof captcha === "string" && captcha ? captcha : undefined,
+          ubicacion: u ? { lat: u.lat, lng: u.lng } : undefined,
         }),
       });
       const datos = (await r.json().catch(() => ({}))) as Partial<RespuestaPaumi> & { error?: string; mensaje?: string };
@@ -350,6 +355,36 @@ export function Paumi() {
       setIntento((n) => n + 1);
       campo.current?.focus();
     }
+  }
+
+  /** "Cerca de mí" en el chat: pide permiso SOLO al tocarlo, redondea en el teléfono y pregunta por lo de cerca. */
+  function cercaDeMi() {
+    if (pensando || buscandoUbicacion) return;
+    if (!("geolocation" in navigator)) {
+      decir({ rol: "paumi", texto: "Tu navegador no me deja saber dónde estás. Dime el barrio, por ejemplo «Urdesa», y te recomiendo.", aviso: true });
+      return;
+    }
+    setBuscandoUbicacion(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setBuscandoUbicacion(false);
+        const r3 = (n: number) => Math.round(n * 1000) / 1000;
+        ubicacion.current = { lat: r3(pos.coords.latitude), lng: r3(pos.coords.longitude), hasta: Date.now() + 15 * 60_000 };
+        void enviarTexto("¿Qué hay cerca de mí?");
+      },
+      (e) => {
+        setBuscandoUbicacion(false);
+        decir({
+          rol: "paumi",
+          texto:
+            e.code === e.PERMISSION_DENIED
+              ? "Sin permiso no sé dónde estás, ¡y está bien! Dime el barrio, por ejemplo «Urdesa» o «Samborondón», y te recomiendo."
+              : "No pude saber dónde estás. Revisa que el GPS esté prendido o dime el barrio.",
+          aviso: true,
+        });
+      },
+      { enableHighAccuracy: false, timeout: 15_000, maximumAge: 5 * 60_000 },
+    );
   }
 
   const cerrar = () => setAbierto(false);
@@ -495,6 +530,15 @@ export function Paumi() {
 
           <form ref={formulario} onSubmit={enviar} className="grid gap-2 border-t border-linea px-5 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
             {pideCaptcha && <Captcha reiniciar={intento} />}
+            <button
+              type="button"
+              onClick={cercaDeMi}
+              disabled={pensando || buscandoUbicacion}
+              className={clasesBoton("texto", "chico", "justify-self-start gap-1.5 [&_svg]:size-4")}
+            >
+              <IconoUbicacion />
+              {buscandoUbicacion ? "Buscando dónde estás…" : "¿Qué hay cerca de mí?"}
+            </button>
             <div className="flex items-end gap-2">
               <label htmlFor="paumi-texto" className="sr-only">
                 Escríbele a {NOMBRE}
