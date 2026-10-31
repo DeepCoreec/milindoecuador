@@ -14,9 +14,14 @@ describe("normalizarCelular", () => {
 });
 
 describe("esquemaSolicitud", () => {
-  const ok = { negocio: "Encebollados El Puerto", categoria: "restaurantes", sector: "Alborada", contacto: "Juan", whatsapp: "099 123 4567", descripcion: "", terminos: "on" };
+  const ok = { negocio: "Encebollados El Puerto", categoria: "restaurantes", sector: "Alborada", contacto: "Juan", whatsapp: "099 123 4567", descripcion: "Encebollado, bolón y café pasado desde las 6 de la mañana, como en casa.", terminos: "on" };
   it("acepta una solicitud normal y deja el celular en formato 593", () => {
     expect(esquemaSolicitud.parse(ok).whatsapp).toBe("593991234567");
+  });
+  it("exige una descripción de al menos 40 letras (versión 9)", () => {
+    expect(esquemaSolicitud.safeParse({ ...ok, descripcion: "" }).success).toBe(false);
+    expect(esquemaSolicitud.safeParse({ ...ok, descripcion: "Comida rica" }).success).toBe(false);
+    expect(esquemaSolicitud.safeParse({ ...ok, descripcion: undefined }).success).toBe(false);
   });
   it("exige aceptar los términos", () => {
     expect(esquemaSolicitud.safeParse({ ...ok, terminos: undefined }).success).toBe(false);

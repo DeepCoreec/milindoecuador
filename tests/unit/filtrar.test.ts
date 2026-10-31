@@ -19,6 +19,13 @@ describe("filtrarLugares", () => {
   it("destacados primero, luego verificados, luego por calificación; sin reseñas al final", () => {
     expect(nombres(filtrarLugares([...lista], base))).toEqual(["b", "d", "a", "c"]);
   });
+  it("a igualdad de destacado y verificado, primero los que tienen foto (versión 9)", () => {
+    const foto = { src: "x.jpg", alt: "x" };
+    const r = filtrarLugares([lugar("sin", { promedio: 5, cantidad: 9 }), lugar("con", { promedio: 3, cantidad: 1, foto })], base);
+    expect(nombres(r)).toEqual(["con", "sin"]);
+    // pero un destacado sin foto sigue antes que uno sin plan con foto
+    expect(nombres(filtrarLugares([lugar("foto", { foto }), lugar("dest", { destacado: true })], base))).toEqual(["dest", "foto"]);
+  });
   it("mejor calificados", () => {
     expect(nombres(filtrarLugares([...lista], { ...base, orden: "calificacion" }))).toEqual(["a", "d", "b", "c"]);
   });
