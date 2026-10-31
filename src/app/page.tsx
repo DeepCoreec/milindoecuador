@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { IlustracionCiudad } from "@/components/arte/IlustracionCiudad";
 import { Panorama } from "@/components/arte/Panorama";
 import { Buscador } from "@/components/busqueda/Buscador";
 import { IconoUbicacion } from "@/components/ui/iconos";
@@ -58,16 +59,17 @@ export default async function Inicio() {
     <>
       <Cabecera />
       <main className="flex-1 text-rio">
-        {/* Diseño de prueba 2 "Ciudad de fondo": la foto de la ciudad detrás del título, con un velo de noche para que
-            el texto se lea; sin foto, el fondo de noche de siempre. Las categorías suben sobre el borde de la foto. */}
+        {/* Diseño de prueba 2 "Ciudad de fondo": detrás del título, la ilustración de la ciudad (o su foto, con un velo
+            de noche para que el texto se lea); sin ninguna, el fondo de noche de siempre. Las categorías suben sobre el borde. */}
         <section data-theme="dark" className="relative isolate overflow-hidden bg-papel text-rio" aria-labelledby="t-inicio">
-          {fondo && (
+          {fondo?.tipo === "ilustracion" && <IlustracionCiudad ciudad="guayaquil" className="absolute inset-x-0 bottom-0 -z-10 aspect-[2/1] md:top-0 md:aspect-auto" />}
+          {fondo?.tipo === "foto" && (
             <>
               <Image src={fondo.src} alt={fondo.alt} fill priority sizes="100vw" className="-z-20 object-cover" />
               <div className="absolute inset-0 -z-10 bg-papel/75 md:bg-papel/65" aria-hidden="true" />
             </>
           )}
-          <div className={`${ancho} grid min-h-[520px] content-center justify-items-center gap-5 pt-12 pb-28 text-center md:min-h-[620px] md:pb-36`}>
+          <div className={`${ancho} grid content-center justify-items-center gap-5 pt-10 text-center md:min-h-[620px] md:pt-12 md:pb-36 ${fondo?.tipo === "ilustracion" ? "pb-[calc(50vw+8px)]" : "min-h-[520px] pb-28"}`}>
             <h1
               id="t-inicio"
               className="m-0 max-w-[16ch] font-rotulo text-[40px] leading-[46px] font-normal tracking-[-0.01em] text-balance md:text-[64px] md:leading-[70px] min-[1200px]:text-[76px] min-[1200px]:leading-[82px]"
@@ -88,7 +90,7 @@ export default async function Inicio() {
               </Link>
             </div>
           </div>
-          {fondo && (
+          {fondo?.tipo === "foto" && fondo.credito && (
             <small className="absolute right-3 bottom-[76px] text-xs leading-4 text-rio-suave md:right-6 md:bottom-[100px]">
               Foto: {fondo.credito},{" "}
               <a href={fondo.fuente} target="_blank" rel="noopener noreferrer" className="text-rio-suave">
@@ -98,7 +100,7 @@ export default async function Inicio() {
           )}
         </section>
 
-        <section className={`${ancho} relative -mt-16 pb-12 md:-mt-24 min-[900px]:pb-16`} aria-labelledby="t-cat">
+        <section className={`${ancho} relative -mt-8 pb-12 md:-mt-24 min-[900px]:pb-16`} aria-labelledby="t-cat">
           <h2 id="t-cat" className="sr-only">
             ¿Qué buscas hoy?
           </h2>
