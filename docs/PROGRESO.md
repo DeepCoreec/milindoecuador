@@ -467,6 +467,18 @@
 - [ ] 38.5 Textos ("Destacados", reseñas, "Sobre el lugar", nombres de las partes, "Adminístralo gratis", formulario del dueño, precio por rangos)
 - **Siguiente paso:** 36.2 — `generateStaticParams` (devolver `[]`) en las rutas de `src/app/[ciudad]/` para que su `revalidate` funcione; en la ficha, sacar la lectura de la sesión (mi reseña, guardado) a una parte que se carga aparte; comprobar con `curl -I` que respondan con caché
 
+## Versión 11 · Una buena guía de turismo
+
+> Plan: `docs/PLAN-V11.md`, **aprobado por el usuario el 2026-10-31 04:20** ("te doy el permiso de iniciar"). Sin
+> reseñas en los lugares de la guía (decisión del usuario), sin librerías nuevas ni migraciones.
+
+### Fase 39 · Cada lugar turístico con su página
+- [ ] 39.1 Página de cada lugar para visitar
+- [ ] 39.2 Qué hay cerca (lugares, negocios y eventos)
+- [ ] 39.3 Enlaces desde la Guía útil, las categorías, "Cerca de mí" y el mapa del sitio
+- [ ] 39.4 Google y WhatsApp (título, foto al compartir, TouristAttraction)
+- **Siguiente paso:** 39.1 — ruta `src/app/[ciudad]/visitar/[sitio]/page.tsx` y ayudas `rutaSitio`/`getSitioVisitar` en `src/lib/datos/sitios.ts`
+
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
 
 > Pedido del usuario del 2026-10-31 01:22: "quiero probar diseños así" (con una copia aparte y su vista previa en Vercel;
