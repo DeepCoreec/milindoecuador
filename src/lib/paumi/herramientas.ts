@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { buscarCerca, tramoDistancia } from "@/lib/cerca";
 import { agruparEventos, LISTA_TIPOS, textoFechas, textoPrecio } from "@/lib/eventos";
-import { enlaceOSM, NOMBRE_TIPO, TIPOS_SITIO, type TipoSitio } from "@/lib/osm";
+import { enlaceOSM, NOMBRE_TIPO, TIPOS_OCULTOS, TIPOS_SITIO, type TipoSitio } from "@/lib/osm";
 import { urlPublicaFoto } from "@/lib/fotos";
 import { estadoAhora, leerHorario, resumenHorario } from "@/lib/horario";
 import { enlaceComoLlegar } from "@/lib/enlaces";
@@ -99,7 +99,7 @@ export const DEFINICIONES = [
   {
     name: "buscar_sitios",
     description:
-      "Busca en la Guía útil: lugares de referencia que NO son negocios registrados (parques, museos, miradores, monumentos; talleres, celulares, electrónica, cerrajerías; hospitales, clínicas, farmacias; Metrovía, Aerovía, terminal). Úsala cuando buscar_lugares no traiga lo que piden. Devuelve hasta 6 con su id.",
+      "Busca en la Guía útil: lugares de referencia que NO son negocios registrados (parques, museos, miradores, atracciones; talleres, celulares, electrónica, cerrajerías; hospitales, clínicas, farmacias; Metrovía, Aerovía, terminal). Úsala cuando buscar_lugares no traiga lo que piden. Devuelve hasta 6 con su id.",
     input_schema: {
       type: "object",
       properties: {
@@ -377,6 +377,7 @@ export async function ejecutar(nombre: string, entrada: unknown, e: Estado): Pro
           .from("city_spots")
           .select("id, tipo, name, note, address, latitude, longitude, osm_type, osm_id, cities!inner(slug)")
           .eq("cities.slug", CIUDAD)
+          .not("tipo", "in", `(${TIPOS_OCULTOS.join(",")})`)
           .order("name")
           .limit(6);
         if (r.data.grupo) q = q.eq("grupo", r.data.grupo);

@@ -479,7 +479,8 @@
 - [x] Prueba 2, animación — 2026-10-31: el usuario preguntó si la imagen era animada y pidió animarla ("sí, hagamos eso"): la noria La Perla gira despacio, el haz del faro barre, la balandra cruza el río, titilan estrellas y se prenden y apagan algunas ventanas. Solo CSS (transform y opacity); se pausa fuera de pantalla (`PausaFueraDePantalla`) y queda quieta con "reducir movimiento" (comprobado con Playwright)
 - [x] **Aprobado por el usuario el 2026-10-31 03:46** ("quiero que la implementes, me gustó el modelo"): las pruebas 1 y 2 se juntan con `main` y se publican. `docs/DISENO.md` actualizado (sección "Versión 10: ciudad de fondo y postales")
 - [x] Ajuste tras publicar — 2026-10-31: el usuario vio en su computadora (modo claro) los cuadros de las categorías blancos sobre fondo blanco y los quería oscuros, como en las capturas: ahora la franja de las categorías es siempre de noche (en modo claro y oscuro). En pantallas anchas, "Cerca de mí" quedaba sobre la baranda del Malecón: el contenido sube según el ancho. Revisado a 390, 1280 y 1600 px
-- **Siguiente paso:** volver a la versión 10, paso 36.2 (páginas de Guayaquil en caché; ver arriba)
+- [x] Turismo sin estatuas — 2026-10-31: el usuario pidió quitar el carrete que se mueve y no mostrar estatuas ("la gente no va a un lugar solo por una estatua; mejor donde se pueden hacer actividades, espaciosos y divertidos"). Se quitó el carrete; los monumentos no se muestran al público (`TIPOS_OCULTOS` en `src/lib/osm.ts`: ni en la guía, ni en "Cerca de mí", ni en Paumi; siguen en la base y el panel); Turismo muestra atracciones, parques, áreas naturales, zoológicos, miradores y museos (sin iglesias); en cada tipo, primero los que tienen foto
+- **Siguiente paso:** el usuario decide si aprueba la propuesta de ficha con fotos y reseñas para los lugares turísticos (necesita una migración); si no, volver a la versión 10, paso 36.2
 
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)

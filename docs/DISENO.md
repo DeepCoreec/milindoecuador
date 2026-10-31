@@ -63,7 +63,7 @@ Las reglas de uso de cada uno están en el artefacto.
 ## Ilustración
 
 - Se usa tal cual: sin recolorear, deformar, recortar ni poner texto encima.
-- Animaciones automáticas: solo el Panorama, la ilustración de la ciudad y el carrete de postales (versión 10); todas se detienen fuera de pantalla o al tocarlas y quedan fijas con "reducir movimiento".
+- Animaciones automáticas: solo el Panorama y la ilustración de la ciudad (versión 10); todas se detienen fuera de pantalla o al tocarlas y quedan fijas con "reducir movimiento".
 - Tinta `on-color` (no cambia entre modos); blanco de cal `papel-alto` de día y `rio` de noche.
 - Nuevas ilustraciones: formas planas, tinta `on-color`, un color de categoría de fondo, grano y un objeto reconocible de Guayaquil.
 
@@ -85,13 +85,12 @@ Las reglas de uso de cada uno están en el artefacto.
   Cada ciudad tiene su fondo en `src/lib/fondos-ciudad.ts` (ilustración o foto con crédito; sin ninguno, el fondo de noche).
 - **Movimiento de la ilustración:** la noria gira, el faro barre, la balandra cruza, titilan estrellas y ventanas. Solo
   transform y opacity, se pausa fuera de pantalla y queda quieta con "reducir movimiento". Es la única animación
-  automática junto con el Panorama y el carrete de postales.
+  automática junto con el Panorama.
 - **Categorías de la portada:** en una franja siempre de noche (`data-theme="dark"`, también en modo claro), cuadros (`papel-alto`, radius 20 px) con el afiche y el nombre, que suben sobre el borde
   de la ilustración: 3 columnas en el celular y 6 en computadora; el último abre "Todas las categorías".
 - **Panorama:** pasa al cierre de la portada ("¿Tienes un negocio?").
-- **Postales:** en las categorías con Guía útil, un carrete de postales (marco `rio` sobre la franja de noche, nombre en
-  `rotulo`, levemente inclinadas) se desliza solo y se detiene al tocarlo; las tarjetas con foto de la Guía útil son
-  postales (marco blanco `papel-alto`, nombre en `rotulo`).
+- **Postales:** las tarjetas con foto de la Guía útil son postales (marco blanco `papel-alto`, nombre en `rotulo`). El
+  carrete de postales que se deslizaba solo se quitó el 2026-10-31 a pedido del usuario.
 
 ## Reglas que más se olvidan
 
