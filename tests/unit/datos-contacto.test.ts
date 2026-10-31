@@ -31,6 +31,7 @@ describe("datos puestos a mano", () => {
   it("acepta un horario en texto, una web https y un teléfono", () => {
     expect(esquemaDatosSitio.safeParse({ sitio: id, horario: "Todos los días de 07:00 a 24:00", web: "https://www.guayaquil.gob.ec", telefono: "04 259 9100" }).success).toBe(true);
     expect(esquemaDatosSitio.safeParse({ sitio: id }).success).toBe(true);
+    expect(esquemaDatosSitio.safeParse({ sitio: id, telefono: "(593) (4) 2833807" }).success).toBe(true);
   });
   it("rechaza enlaces en el horario, webs que no son http(s) y teléfonos con letras", () => {
     expect(esquemaDatosSitio.safeParse({ sitio: id, horario: "ver www.ejemplo.com" }).success).toBe(false);
