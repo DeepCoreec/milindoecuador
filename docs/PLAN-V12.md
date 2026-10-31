@@ -18,6 +18,10 @@
   "2 de 6", deslizar con el dedo y flechas del teclado; el crédito de cada foto debajo.
 - **40.5 Más información:** "Sobre el lugar" con un párrafo de Wikipedia (con su crédito) y "Datos rápidos" de Wikidata
   cuando existan (inauguración, superficie, patrimonio); la página oficial va en "Antes de ir".
+- **40.6 Horario, web y teléfono** (pedido del usuario del 2026-10-31 13:48: "en todos los lugares no hay horarios ni la
+  página web […] al menos ponle el horario para tener noción, y la página web de cada lugar"): botón en el panel que los
+  completa desde OpenStreetMap (por el Q de Wikidata o el id; solo llena lo que falta) y formulario en «Fotos y datos
+  del lugar» para ponerlos a mano desde fuentes oficiales. El aviso "confírmalo antes de ir" se mantiene.
 - **No se hace:** copiar fotos de Google, Instagram o TripAdvisor (tienen dueño).
 - **Puerta:** un lugar con varias fotos se recorre con las flechas en el celular y en la computadora; las fotos llevan
   su crédito; RLS probado; revisión de seguridad independiente sin hallazgos altos.

@@ -174,7 +174,7 @@ export function SitiosGuia({ sitios, estado }: { sitios: SitioAdmin[]; estado: s
               {s.grupo === "visitar" && (
                 <div className="pl-8">
                   <Link href={`/admin/guia/fotos/${s.id}`} className="text-sm">
-                    Fotos del lugar
+                    Fotos y datos del lugar
                   </Link>
                 </div>
               )}

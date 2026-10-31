@@ -162,3 +162,31 @@ export const esquemaFotoSitio = z.object({
   alt: texto(3, 160, "Descripción de la foto"),
 });
 export const esquemaIdFotoSitio = z.object({ foto: z.uuid("Foto inválida") });
+/**
+ * Horario, página web y teléfono de un lugar de la guía, puestos a mano por el admin (2026-10-31). El horario en
+ * texto simple ("Todos los días de 08:00 a 18:00") o como en OpenStreetMap; sin enlaces.
+ */
+export const esquemaDatosSitio = z.object({
+  sitio: z.uuid("Lugar inválido"),
+  horario: z
+    .string()
+    .trim()
+    .max(200, "Máximo 200 caracteres")
+    .refine((t) => !/(https?:|www\.|@)/i.test(t), "El horario no puede llevar enlaces ni correos")
+    .optional()
+    .default(""),
+  web: z
+    .string()
+    .trim()
+    .max(300, "Máximo 300 caracteres")
+    .refine((t) => t === "" || /^https?:\/\/[^\s]+\.[^\s]+$/i.test(t), "La página web debe empezar con https://")
+    .optional()
+    .default(""),
+  telefono: z
+    .string()
+    .trim()
+    .max(40, "Máximo 40 caracteres")
+    .refine((t) => t === "" || /^[+\d][\d\s()-]{5,}$/.test(t), "Escribe solo el número, por ejemplo 04 259 9100")
+    .optional()
+    .default(""),
+});

@@ -4,7 +4,8 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import type { EstadoAdmin } from "@/acciones/admin";
 import { requireAdmin } from "@/lib/auth";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
-import { esquemaBuscarFotosGuia, esquemaFotoSitio, esquemaIdFotoSitio, esquemaQuitarFotoSitio } from "@/lib/validacion/admin";
+import { esquemaBuscarFotosGuia, esquemaDatosSitio, esquemaFotoSitio, esquemaIdFotoSitio, esquemaQuitarFotoSitio } from "@/lib/validacion/admin";
+import { aDatosContacto, consultaDatosOSM, urlOverpass } from "@/lib/osm";
 import { enriquecerSitio } from "@/lib/guia/enriquecer";
 import { traerMasDeUnSitio, type FilaMas } from "@/lib/guia/mas-fotos";
 import { firmaValida } from "@/lib/firmaArchivo";
@@ -251,4 +252,84 @@ export async function borrarFotoSitio(_previo: EstadoAdmin, datos: FormData): Pr
   revalidateTag("sitios", { expire: 0 });
   revalidatePath("/admin/guia");
   return { estado: "ok", mensaje: "Foto borrada" };
+}
+
+/* ---------------------------------------------------------------------------------------------------------------
+ * Horario, página web y teléfono de los lugares para visitar (2026-10-31, pedido del usuario).
+ * ------------------------------------------------------------------------------------------------------------- */
+
+/**
+ * "Completar horario y web desde OpenStreetMap": para los lugares publicados para visitar a los que les falta el
+ * horario, la web o el teléfono, busca en OpenStreetMap (por su Q de Wikidata o su id) y llena SOLO lo que falta.
+ */
+export async function completarDatosOSM(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  if (!esquemaBuscarFotosGuia.safeParse(Object.fromEntries(datos)).success) return { estado: "error", mensaje: "Datos inválidos" };
+  await requireAdmin();
+  const db = crearClienteAdmin();
+  const { data: filas, error } = await db
+    .from("city_spots")
+    .select("id, osm_type, osm_id, wikidata, opening_hours, website, phone")
+    .eq("status", "publicado")
+    .eq("grupo", "visitar")
+    .or("opening_hours.is.null,website.is.null,phone.is.null")
+    .limit(300)
+    .returns<{ id: string; osm_type: string; osm_id: number; wikidata: string | null; opening_hours: string | null; website: string | null; phone: string | null }[]>();
+  if (error) return { estado: "error", mensaje: "No se pudieron leer los lugares" };
+  if (!filas?.length) return { estado: "ok", mensaje: "Todos los lugares publicados para visitar ya tienen horario, web y teléfono." };
+  const qids = [...new Set(filas.map((f) => f.wikidata).filter((q): q is string => !!q))];
+  const ids = filas.filter((f) => f.osm_type === "node" || f.osm_type === "way" || f.osm_type === "relation").map((f) => ({ tipo: f.osm_type as "node", id: f.osm_id }));
+  let json: unknown;
+  try {
+    const r = await fetch(urlOverpass(), {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": "MiLindoEcuador/1.0 (guia de Guayaquil)" },
+      body: new URLSearchParams({ data: consultaDatosOSM(qids, ids) }),
+      signal: AbortSignal.timeout(35_000),
+      redirect: "error",
+    });
+    if (!r.ok) return { estado: "error", mensaje: `OpenStreetMap no respondió (código ${r.status}). Inténtalo en unos minutos.` };
+    const texto = await r.text();
+    if (texto.length > 5_000_000) return { estado: "error", mensaje: "La respuesta fue demasiado grande." };
+    json = JSON.parse(texto);
+  } catch {
+    return { estado: "error", mensaje: "No se pudo conectar con OpenStreetMap. Inténtalo en unos minutos." };
+  }
+  const encontrados = aDatosContacto(json);
+  let horarios = 0;
+  let webs = 0;
+  let telefonos = 0;
+  for (const f of filas) {
+    const d = (f.wikidata && encontrados.get(f.wikidata)) || encontrados.get(`${f.osm_type}/${f.osm_id}`);
+    if (!d) continue;
+    const cambios: Record<string, string> = {};
+    if (!f.opening_hours && d.opening_hours) cambios.opening_hours = d.opening_hours;
+    if (!f.website && d.website) cambios.website = d.website;
+    if (!f.phone && d.phone) cambios.phone = d.phone;
+    if (!Object.keys(cambios).length) continue;
+    const { error: e } = await db.from("city_spots").update(cambios).eq("id", f.id);
+    if (e) continue;
+    if (cambios.opening_hours) horarios++;
+    if (cambios.website) webs++;
+    if (cambios.phone) telefonos++;
+  }
+  revalidateTag("sitios", { expire: 0 });
+  revalidatePath("/admin/guia");
+  return { estado: "ok", mensaje: `Se completaron ${horarios} horarios, ${webs} páginas web y ${telefonos} teléfonos desde OpenStreetMap. Lo que falte se puede poner a mano en «Fotos y datos del lugar».` };
+}
+
+/** Horario, web y teléfono puestos a mano por el admin. Vacío = se borra ese dato. */
+export async function editarDatosSitio(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaDatosSitio.safeParse({ sitio: datos.get("sitio"), horario: datos.get("horario") ?? undefined, web: datos.get("web") ?? undefined, telefono: datos.get("telefono") ?? undefined });
+  if (!r.success) return { estado: "error", mensaje: r.error.issues[0]?.message ?? "Datos inválidos" };
+  await requireAdmin();
+  const { data, error } = await crearClienteAdmin()
+    .from("city_spots")
+    .update({ opening_hours: r.data.horario || null, website: r.data.web || null, phone: r.data.telefono || null })
+    .eq("id", r.data.sitio)
+    .eq("grupo", "visitar")
+    .select("id");
+  if (error || !data?.length) return { estado: "error", mensaje: "No se pudo guardar" };
+  revalidateTag("sitios", { expire: 0 });
+  revalidatePath("/admin/guia");
+  return { estado: "ok", mensaje: "Guardado" };
 }
