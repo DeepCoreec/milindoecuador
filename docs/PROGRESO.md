@@ -526,12 +526,16 @@
 - [ ] (usuario) aplicar 0023 en Supabase; luego publicar
 
 ### Fase 42 · Recorridos de los guías
-- [ ] 42.1 a 42.4 (ver el plan)
+- [x] 42.1 Base (migración `0024_recorridos.sql`) — 2026-10-31: tablas `guide_tours` (nombre, descripción 40–800, duración 30–720 min, precio por persona o "a convenir", punto de encuentro, borrador/publicado; hasta 10 por guía con candado) y `guide_tour_stops` (de 1 a 8 paradas en orden, sin repetir, solo lugares para visitar publicados de la Guía útil). El público ve solo recorridos publicados de guías publicados y paradas de lugares publicados; solo escribe el servidor. Textos con el filtro de palabras, sin teléfonos ni enlaces. 20 pruebas RLS nuevas: 321 pasan. **(usuario) Falta aplicarla en Supabase**
+- [ ] 42.2 Crear recorridos desde «Mi negocio» (solo guías)
+- [ ] 42.3 Página del recorrido: paradas, Google Maps en orden y "Pedir este recorrido por WhatsApp"
+- [ ] 42.4 Paumi recomienda guías y recorridos
+- [ ] Revisión de seguridad independiente
 
 ### Fase 43 · "Guayaquil de misterio"
 - [ ] 43.1 a 43.3 (ver el plan)
 
-- **Siguiente paso:** (usuario) aplicar `supabase/migrations/0023_guias.sql` en el editor SQL de Supabase y avisar; Claude publica la rama `v13-guias` (antes NO: las páginas leen columnas nuevas). Después, la puerta de la fase 41 con un guía de prueba, y la fase 42 (recorridos).
+- **Siguiente paso (Claude):** 42.2, crear recorridos desde «Mi negocio». **(usuario):** aplicar `supabase/migrations/0023_guias.sql` y luego `0024_recorridos.sql` en el editor SQL de Supabase y avisar; Claude publica la rama `v13-guias` (antes NO: las páginas leen columnas nuevas). Después, la puerta de la fase 41 con un guía de prueba, y la fase 42 (recorridos).
 
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
 
