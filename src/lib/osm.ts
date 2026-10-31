@@ -225,3 +225,18 @@ export function aDatosContacto(respuesta: unknown): Map<string, DatosContacto> {
   }
   return r;
 }
+
+/**
+ * El primer número de un texto que puede traer varios ("04 2300500 2304999 2304998" → "04 2300500"): se juntan partes
+ * hasta tener un número completo (9 dígitos con el código de área, o 10 un celular).
+ */
+export function primerTelefono(texto: string): string {
+  const partes = texto.split(/[;,/]/)[0]!.trim().split(/\s+/);
+  let r = "";
+  for (const p of partes) {
+    r = r ? `${r} ${p}` : p;
+    if (r.replace(/\D/g, "").replace(/^593/, "0").length >= 9) break;
+  }
+  return r;
+}
+

@@ -13,7 +13,7 @@ import { IconoUbicacion } from "@/components/ui/iconos";
 import { buscarCerca, distanciaM, textoDistancia } from "@/lib/cerca";
 import { getFotosSitio, getSitios, getSitioVisitar, idDeRutaSitio, rutaSitio, type FotoGaleria, type Sitio } from "@/lib/datos/sitios";
 import { GaleriaSitio } from "@/components/guia/GaleriaSitio";
-import { horarioLegible, NOMBRE_TIPO } from "@/lib/osm";
+import { horarioLegible, NOMBRE_TIPO, primerTelefono } from "@/lib/osm";
 import { paraCompartir, urlSitio } from "@/lib/sitio";
 import { enlaceRutaGoogle, enlaceRutaWaze } from "@/lib/ubicacion";
 
@@ -26,6 +26,24 @@ import { enlaceRutaGoogle, enlaceRutaWaze } from "@/lib/ubicacion";
 type Props = PageProps<"/[ciudad]/visitar/[sitio]">;
 
 const CERCA_M = 3000;
+
+/** Enlaces del recuadro "Antes de ir": se ven como enlaces (azul y subrayado). */
+const claseEnlace = "font-semibold text-celeste-tinta underline underline-offset-2";
+
+/** "https://www.instagram.com/cceguayas/" → "@cceguayas"; "https://www.casadelacultura.gob.ec/x" → "casadelacultura.gob.ec". */
+function textoEnlace(url: string): string {
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+    if (host === "instagram.com") {
+      const cuenta = u.pathname.split("/").filter(Boolean)[0];
+      if (cuenta) return `@${cuenta}`;
+    }
+    return host;
+  } catch {
+    return "Página oficial";
+  }
+}
 
 const cargar = cache(async (ciudad: string, parte: string) => {
   // Por ahora la Guía útil es solo de Guayaquil
@@ -114,7 +132,8 @@ export default async function PaginaSitio({ params }: Props) {
   // Versión 12 (40.5): el párrafo de Wikipedia si lo hay; si no, la descripción corta. La frase de la guía va primero.
   const deWikipedia = s.parrafo ?? s.descripcion?.texto ?? null;
   const texto = s.nota ?? deWikipedia;
-  const telefono = s.telefono?.split(/[;,/]/)[0]!.replace(/[^\d+]/g, "");
+  const tel = s.telefono ? primerTelefono(s.telefono) : null;
+  const telefono = tel?.replace(/[^\d+]/g, "");
   // Solo enlaces web normales (defensa extra: la importación y el panel ya lo exigen)
   const web = s.web && /^https?:\/\//i.test(s.web) ? s.web : null;
 
@@ -147,7 +166,13 @@ export default async function PaginaSitio({ params }: Props) {
               <h1 className="m-0 font-rotulo text-[32px] leading-[38px] font-normal tracking-[-0.01em] text-balance md:text-[48px] md:leading-[54px]">{s.nombre}</h1>
               {s.direccion && <p className="m-0 text-base leading-6 text-rio-suave">{s.direccion}</p>}
               <div className="mt-2 flex flex-wrap gap-3">
-                <a href={enlaceRutaGoogle(s.ubicacion)} target="_blank" rel="noopener noreferrer" className={clasesBoton("principal")}>
+                {/* Pedido del usuario: "Cómo llegar" bien resaltado (más grande y a todo lo ancho en el celular) */}
+                <a
+                  href={enlaceRutaGoogle(s.ubicacion)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={clasesBoton("principal", "normal", "min-h-14 w-full px-8 text-lg shadow-flotante sm:w-auto [&_svg]:size-6")}
+                >
                   <IconoUbicacion />
                   Cómo llegar
                 </a>
@@ -206,11 +231,11 @@ export default async function PaginaSitio({ params }: Props) {
               )}
               <dt className="text-rio-suave">Ruta</dt>
               <dd className="m-0">
-                <a href={enlaceRutaGoogle(s.ubicacion)} target="_blank" rel="noopener noreferrer">
+                <a href={enlaceRutaGoogle(s.ubicacion)} target="_blank" rel="noopener noreferrer" className={claseEnlace}>
                   Google Maps
                 </a>
                 {" · "}
-                <a href={enlaceRutaWaze(s.ubicacion)} target="_blank" rel="noopener noreferrer">
+                <a href={enlaceRutaWaze(s.ubicacion)} target="_blank" rel="noopener noreferrer" className={claseEnlace}>
                   Waze
                 </a>
               </dd>
@@ -218,20 +243,46 @@ export default async function PaginaSitio({ params }: Props) {
                 <>
                   <dt className="text-rio-suave">Teléfono</dt>
                   <dd className="m-0">
-                    <a href={`tel:${telefono}`}>{s.telefono}</a>
-                  </dd>
-                </>
-              )}
-              {web && (
-                <>
-                  <dt className="text-rio-suave">Web</dt>
-                  <dd className="m-0">
-                    <a href={web} target="_blank" rel="noopener noreferrer nofollow" aria-label={`Página web de ${s.nombre}`}>
-                      Página oficial
+                    <a href={`tel:${telefono}`} className={claseEnlace}>
+                      {tel}
                     </a>
                   </dd>
                 </>
               )}
+              {/* 2026-10-31, pedido del usuario: el enlace se ve (azul, subrayado y con su dirección); sin web, Wikipedia */}
+              {web ? (
+                <>
+                  <dt className="text-rio-suave">{/instagram\.com/i.test(web) ? "Instagram" : "Web"}</dt>
+                  <dd className="m-0 min-w-0 break-words">
+                    <a href={web} target="_blank" rel="noopener noreferrer nofollow" className={claseEnlace} aria-label={`Página de ${s.nombre} (se abre en otra pestaña)`}>
+                      {textoEnlace(web)} ↗
+                    </a>
+                  </dd>
+                </>
+              ) : (
+                s.descripcion && (
+                  <>
+                    <dt className="text-rio-suave">Más info</dt>
+                    <dd className="m-0">
+                      <a href={s.descripcion.fuente} target="_blank" rel="noopener noreferrer" className={claseEnlace}>
+                        Wikipedia ↗
+                      </a>
+                    </dd>
+                  </>
+                )
+              )}
+              {/* Siempre hay a dónde ir: la ficha del lugar en Google Maps, con sus fotos, reseñas y horario de la gente */}
+              <dt className="text-rio-suave">En Google</dt>
+              <dd className="m-0">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${s.nombre}, Guayaquil`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={claseEnlace}
+                >
+                  Ver fotos y reseñas ↗
+                </a>
+              </dd>
             </dl>
             <p className="m-0 text-sm leading-5 text-rio-suave">
               Es un lugar de referencia de nuestra <Link href="/guayaquil/guia-util">Guía útil</Link>, no un negocio registrado.
