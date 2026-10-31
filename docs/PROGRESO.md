@@ -492,7 +492,8 @@
 - [x] 40.5 Más información — 2026-10-31: "Sobre el lugar" con el párrafo de Wikipedia (hasta 1200 letras, con su crédito) y en "Antes de ir" los datos rápidos (Desde, Tamaño, Patrimonio)
 - Revisión de seguridad independiente (2026-10-31): sin críticos ni altos. Arreglados: no se borra el archivo de una foto ya registrada (media); sin tope de 50 en el orden; candado por lugar para el tope de 8; las fotos de Wikimedia se revisan por sus primeros bytes. Queda (bajo): al borrar un lugar, sus fotos quedan en el almacenamiento (igual que la foto principal desde la versión 7)
 - [x] (usuario) 0022 aplicada en Supabase el 2026-10-31 12:38 ("Success. No rows returned", captura)
-- **Siguiente paso:** publicar la rama `v12-fotos`, tocar "Traer más fotos" en el panel hasta terminar y revisar las fotos (Claude, delegado)
+- [x] Publicado el 2026-10-31 (PR #51). "Traer más fotos" tocado 6 veces en el panel hasta terminar: 28 lugares revisados, 77 fotos nuevas y 23 con párrafo de Wikipedia
+- **Siguiente paso:** revisar las fotos nuevas lugar por lugar en `/admin/guia/fotos/<id>` (Claude, delegado) y borrar las que no sean del lugar o se vean mal; se cortó la conexión con el navegador antes de empezar
 
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
 
