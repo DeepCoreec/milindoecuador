@@ -52,3 +52,46 @@ describe("recorridos (versión 13, 42.2)", () => {
     expect(textoDuracion(150)).toBe("2 horas y 30 minutos");
   });
 });
+
+import { enlaceMapaRecorrido, enlacePedido, fechaEnPalabras, mensajePedido, textoPrecio } from "@/lib/recorridos";
+
+describe("mapa y pedido del recorrido (42.3)", () => {
+  const a = { lat: -2.19, lng: -79.88 };
+  const b = { lat: -2.18, lng: -79.875 };
+  const c = { lat: -2.181, lng: -79.874 };
+  it("Google Maps a pie, de la primera a la última, con las del medio en orden", () => {
+    const u = new URL(enlaceMapaRecorrido([a, b, c])!);
+    expect(u.hostname).toBe("www.google.com");
+    expect(u.searchParams.get("origin")).toBe("-2.190000,-79.880000");
+    expect(u.searchParams.get("destination")).toBe("-2.181000,-79.874000");
+    expect(u.searchParams.get("waypoints")).toBe("-2.180000,-79.875000");
+    expect(u.searchParams.get("travelmode")).toBe("walking");
+  });
+  it("sin mapa con menos de 2 paradas", () => {
+    expect(enlaceMapaRecorrido([a])).toBeNull();
+  });
+  it("fecha en palabras sin cambiar de día", () => {
+    expect(fechaEnPalabras("2026-11-07")).toBe("sábado, 7 de noviembre");
+    expect(fechaEnPalabras("2026-02-31")).toBeNull();
+    expect(fechaEnPalabras("mañana")).toBeNull();
+  });
+  it("el mensaje lleva el recorrido, la fecha y las personas", () => {
+    const m = mensajePedido("Centro a pie", "2026-11-07", 3);
+    expect(m).toContain("«Centro a pie»");
+    expect(m).toContain("7 de noviembre");
+    expect(m).toContain("3 personas");
+    expect(mensajePedido("X", "", 1)).toContain("para 1 persona");
+    expect(mensajePedido("X", "", 999)).toContain("50 personas");
+  });
+  it("el enlace solo con un WhatsApp válido y el texto codificado", () => {
+    expect(enlacePedido("0991234567", "X", "", 2)).toBeNull();
+    const e = enlacePedido("593991234567", "X & Y", "", 2)!;
+    expect(e.startsWith("https://wa.me/593991234567?text=")).toBe(true);
+    expect(e).not.toContain("&Y");
+  });
+  it("texto del precio", () => {
+    expect(textoPrecio(null)).toBe("Precio a convenir");
+    expect(textoPrecio(15)).toBe("15 $ por persona");
+    expect(textoPrecio(12.5)).toBe("12.50 $ por persona");
+  });
+});

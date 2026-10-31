@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { CATASTRO_MINTUR, enFrase } from "@/lib/guias";
+import { getRecorridosDeGuia } from "@/lib/datos/recorridos";
+import { textoPrecio } from "@/lib/recorridos";
+import { textoDuracion } from "@/lib/validacion/recorridos";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
@@ -70,6 +73,7 @@ export default async function FichaLugar({ params }: Props) {
   const esNegocio = !!lugar.whatsapp || !["turismo", "paseos", "naturaleza"].includes(categoria.slug);
   const ruta = `/${ciudad.slug}/${categoria.slug}/${lugar.slug}`;
   const usuario = await obtenerUsuario();
+  const recorridos = lugar.guia && lugar.id ? await getRecorridosDeGuia(lugar.id) : [];
   const [miResena, guardado] = usuario && lugar.id ? await Promise.all([getMiResena(lugar.id, usuario.id), esFavorito(lugar.id)]) : [null, false];
 
   return (
@@ -288,6 +292,28 @@ export default async function FichaLugar({ params }: Props) {
                       ¿El video no es apropiado? Entra para reportarlo
                     </Link>
                   ))}
+              </section>
+            )}
+            {recorridos.length > 0 && (
+              <section aria-labelledby="t-recorridos" className="grid gap-4">
+                <h2 id="t-recorridos" className="m-0 font-rotulo text-xl leading-[26px] font-normal md:text-2xl md:leading-[30px]">
+                  Sus recorridos
+                </h2>
+                <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2">
+                  {recorridos.map((rc) => (
+                    <li key={rc.id} className="relative grid gap-2 rounded-xl border border-linea bg-papel-alto p-4">
+                      <h3 className="m-0 text-lg leading-6 font-semibold">
+                        <Link href={`${ruta}/recorridos/${rc.id}`} className="text-celeste-tinta underline underline-offset-2 after:absolute after:inset-0">
+                          {rc.nombre}
+                        </Link>
+                      </h3>
+                      <p className="m-0 text-sm leading-5 text-rio-suave">
+                        {textoDuracion(rc.duracion)} · {textoPrecio(rc.precio)} · {rc.paradas.length} paradas
+                      </p>
+                      <p className="m-0 line-clamp-2 text-[15px] leading-[22px]">{rc.paradas.map((x) => x.nombre).join(" → ")}</p>
+                    </li>
+                  ))}
+                </ul>
               </section>
             )}
             <section aria-labelledby="t-hist" className="grid gap-3">
