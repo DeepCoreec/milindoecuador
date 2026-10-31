@@ -65,7 +65,8 @@ export function FilaSitio({ s }: { s: Sitio }) {
 export function SitiosPorTipo({ sitios, tipos, nivel = 3, vacio }: { sitios: Sitio[]; tipos: readonly TipoSitio[]; nivel?: 3 | 4; vacio?: string }) {
   const H = nivel === 3 ? "h3" : "h4";
   const hay = tipos
-    .map((tipo) => ({ t: TIPOS_SITIO.find((x) => x.tipo === tipo)!, lista: sitios.filter((s) => s.tipo === tipo) }))
+    // Primero los que tienen foto (los mejor documentados), como en los negocios (versión 9, 35.3)
+    .map((tipo) => ({ t: TIPOS_SITIO.find((x) => x.tipo === tipo)!, lista: sitios.filter((s) => s.tipo === tipo).sort((a, b) => Number(!!b.foto) - Number(!!a.foto)) }))
     .filter((x) => x.lista.length > 0);
   if (!hay.length) return vacio ? <p className="m-0 text-rio-suave">{vacio}</p> : null;
   return (

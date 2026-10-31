@@ -132,12 +132,19 @@ export function enlaceOSM(tipo: string, id: number | string): string {
   return `https://www.openstreetmap.org/${encodeURIComponent(tipo)}/${encodeURIComponent(String(id))}`;
 }
 
+/**
+ * Tipos de la Guía útil que no se muestran al público (2026-10-31, pedido del usuario: "no pongas estatuas, la gente no va
+ * a un lugar solo por una estatua"). Siguen en la base y en el panel del admin.
+ */
+export const TIPOS_OCULTOS: readonly TipoSitio[] = ["monumento"];
+
 /** Tipos de la Guía útil que acompañan a cada categoría de negocios (versión 5, fase 24): así ninguna queda vacía. */
 export const TIPOS_POR_CATEGORIA: Record<string, readonly TipoSitio[]> = {
   reparaciones: ["celulares", "electronica", "taller", "cerrajeria"],
-  turismo: ["atraccion", "monumento", "mirador", "museo", "iglesia"],
+  // 2026-10-31, pedido del usuario: en Turismo, lugares espaciosos y con actividades (sin estatuas ni iglesias)
+  turismo: ["atraccion", "parque", "reserva", "zoologico", "mirador", "museo"],
   paseos: ["parque", "mirador"],
-  museos: ["museo", "monumento"],
+  museos: ["museo"],
   naturaleza: ["reserva", "zoologico", "parque"],
   ejercicio: ["parque"],
   ninos: ["parque", "zoologico"],

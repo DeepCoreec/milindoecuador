@@ -1,7 +1,7 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
 import { cache } from "react";
-import type { Grupo, TipoSitio } from "@/lib/osm";
+import { TIPOS_OCULTOS, type Grupo, type TipoSitio } from "@/lib/osm";
 import { urlPublicaFoto } from "@/lib/fotos";
 import { crearClientePublico } from "@/lib/supabase/publico";
 
@@ -83,6 +83,7 @@ const leerSitiosEnCache = unstable_cache(async (): Promise<Sitio[]> => {
       .select("id, grupo, tipo, name, note, address, phone, website, opening_hours, latitude, longitude, osm_type, osm_id, photo_path, photo_credit, photo_license, photo_source, description, description_source, cities!inner(slug)")
       .eq("cities.slug", "guayaquil")
       .order("tipo")
+      .not("tipo", "in", `(${TIPOS_OCULTOS.join(",")})`)
       .order("name")
       .order("id")
       .range(desde, desde + 999)
