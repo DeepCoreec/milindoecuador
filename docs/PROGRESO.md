@@ -480,6 +480,18 @@
 - Revisión de seguridad independiente (2026-10-31): sin hallazgos críticos ni altos. Bajos: los monumentos solo se esconden en la página (la base los entrega con la clave pública; no son datos secretos); si Supabase falla, la página da 500 (lo resuelve 36.3, páginas de error); texto por defecto si falta el nombre del tipo (arreglado). Prueba unitaria nueva (direcciones y Turismo sin estatuas): 190 pasan
 - **Siguiente paso:** el usuario revisa en su celular la página de un lugar (desde Turismo) y aprueba la puerta de la fase 39; luego volver a la versión 10, paso 36.2
 
+## Versión 12 · Más fotos y más información de cada lugar
+
+> Plan: `docs/PLAN-V12.md`, **aprobado por el usuario el 2026-10-31 12:24** ("sí, me parece bien, hazlo así").
+
+### Fase 40 · Galería y más información
+- [x] 40.1 Base (migración `0022_mas_fotos_guia.sql`) — 2026-10-31: tabla `city_spot_photos` (hasta 8 por lugar; de Commons con autor, licencia y enlace, o propias sin ellos; filtro de palabras; solo escribe el servidor; el público ve las de lugares publicados) y en `city_spots` `description_long` (≤1200, con fuente de Wikipedia), `facts` (objeto pequeño) y `photos_at`. 20 pruebas RLS nuevas: 280 pasan. **(usuario) Falta aplicarla en Supabase** antes de publicar el código de la fase 40
+- [ ] 40.2 Más fotos de Wikimedia Commons
+- [ ] 40.3 Fotos propias desde el panel
+- [ ] 40.4 Galería con flechas
+- [ ] 40.5 Más información (párrafo y datos rápidos)
+- **Siguiente paso:** 40.2 — en `src/lib/wikimedia.ts`, buscar en la categoría de Commons (P373 de Wikidata) y en las P18 extra hasta 6 fotos libres; acción del panel "Traer más fotos" por tandas
+
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
 
 > Pedido del usuario del 2026-10-31 01:22: "quiero probar diseños así" (con una copia aparte y su vista previa en Vercel;
