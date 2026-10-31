@@ -11,7 +11,8 @@ import { BotonCompartir } from "@/components/lugares/BotonCompartir";
 import { clasesBoton } from "@/components/ui/Boton";
 import { IconoUbicacion } from "@/components/ui/iconos";
 import { buscarCerca, distanciaM, textoDistancia } from "@/lib/cerca";
-import { getSitios, getSitioVisitar, idDeRutaSitio, rutaSitio, type Sitio } from "@/lib/datos/sitios";
+import { getFotosSitio, getSitios, getSitioVisitar, idDeRutaSitio, rutaSitio, type FotoGaleria, type Sitio } from "@/lib/datos/sitios";
+import { GaleriaSitio } from "@/components/guia/GaleriaSitio";
 import { horarioLegible, NOMBRE_TIPO } from "@/lib/osm";
 import { paraCompartir, urlSitio } from "@/lib/sitio";
 import { enlaceRutaGoogle, enlaceRutaWaze } from "@/lib/ubicacion";
@@ -98,7 +99,11 @@ export default async function PaginaSitio({ params }: Props) {
   // Si el nombre de la dirección no coincide (por ejemplo, el lugar cambió de nombre), se lleva a la correcta
   if (`/${p.ciudad}/visitar/${p.sitio}` !== ruta) permanentRedirect(ruta);
 
-  const [todos, cerca] = await Promise.all([getSitios(), buscarCerca(s.ubicacion, 4).catch(() => null)]);
+  const [todos, cerca, mas] = await Promise.all([getSitios(), buscarCerca(s.ubicacion, 4).catch(() => null), getFotosSitio(s.id).catch(() => [])]);
+  const galeria: FotoGaleria[] = [
+    ...(s.foto ? [{ src: s.foto.src, alt: `Foto de ${s.nombre}`, credito: s.foto.credito, licencia: s.foto.licencia, fuente: s.foto.fuente }] : []),
+    ...mas,
+  ];
   // Más para visitar cerca: primero los que tienen foto, luego el más cercano
   const masCerca = todos
     .filter((x) => x.grupo === "visitar" && x.id !== s.id && distanciaM(s.ubicacion, x.ubicacion) <= CERCA_M)
@@ -106,7 +111,9 @@ export default async function PaginaSitio({ params }: Props) {
     .slice(0, 4);
   const negocios = cerca && cerca.radio <= CERCA_M ? cerca.lugares : [];
   const eventos = cerca && cerca.radio <= CERCA_M ? cerca.eventos : [];
-  const texto = s.nota ?? s.descripcion?.texto ?? null;
+  // Versión 12 (40.5): el párrafo de Wikipedia si lo hay; si no, la descripción corta. La frase de la guía va primero.
+  const deWikipedia = s.parrafo ?? s.descripcion?.texto ?? null;
+  const texto = s.nota ?? deWikipedia;
   const telefono = s.telefono?.split(/[;,/]/)[0]!.replace(/[^\d+]/g, "");
   // Solo enlaces web normales (defensa extra: la importación y el panel ya lo exigen)
   const web = s.web && /^https?:\/\//i.test(s.web) ? s.web : null;
@@ -124,20 +131,13 @@ export default async function PaginaSitio({ params }: Props) {
           ]}
         />
 
-        <div className="relative aspect-[4/3] overflow-hidden rounded-[20px] bg-celeste-suave sm:aspect-[16/9] lg:aspect-[21/9]">
-          {s.foto ? (
-            <Image src={s.foto.src} alt={`Foto de ${s.nombre}`} fill priority sizes="(min-width: 1280px) 1216px, 100vw" className="object-cover" />
-          ) : (
+        {/* Versión 12 (40.4): galería con flechas (la foto principal y las más); sin ninguna, el afiche de Turismo */}
+        {galeria.length > 0 ? (
+          <GaleriaSitio nombre={s.nombre} fotos={galeria} />
+        ) : (
+          <div className="relative aspect-[4/3] overflow-hidden rounded-[20px] bg-celeste-suave sm:aspect-[16/9] lg:aspect-[21/9]">
             <Afiche slug="turismo" className="absolute inset-0 m-auto size-40 md:size-56" />
-          )}
-        </div>
-        {s.foto && (
-          <p className="mt-2 mb-0 text-[13px] leading-[18px] text-rio-suave">
-            Foto: {s.foto.credito},{" "}
-            <a href={s.foto.fuente} target="_blank" rel="noopener noreferrer" className="text-rio-suave">
-              {s.foto.licencia}
-            </a>
-          </p>
+          </div>
         )}
 
         <div className="grid grid-cols-[minmax(0,1fr)] gap-8 pt-8 min-[900px]:grid-cols-[minmax(0,1fr)_360px] min-[900px]:items-start min-[900px]:gap-x-16">
@@ -160,8 +160,9 @@ export default async function PaginaSitio({ params }: Props) {
                 <h2 id="t-sobre" className="m-0 font-rotulo text-xl leading-[26px] font-normal md:text-2xl md:leading-[30px]">
                   Sobre el lugar
                 </h2>
-                <p className="m-0 max-w-[62ch] font-historia text-lg leading-[30px]">{texto}</p>
-                {!s.nota && s.descripcion && (
+                {s.nota && <p className="m-0 max-w-[62ch] font-historia text-lg leading-[30px]">{s.nota}</p>}
+                {deWikipedia && <p className="m-0 max-w-[62ch] font-historia text-lg leading-[30px]">{deWikipedia}</p>}
+                {deWikipedia && s.descripcion && (
                   <p className="m-0 text-[13px] leading-[18px] text-rio-suave">
                     <a href={s.descripcion.fuente} target="_blank" rel="noopener noreferrer" className="text-rio-suave">
                       Extracto de Wikipedia (CC BY-SA 4.0)
@@ -177,6 +178,24 @@ export default async function PaginaSitio({ params }: Props) {
               Antes de ir
             </h2>
             <dl className="m-0 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2.5 text-[15px] leading-[22px]">
+              {s.datos.inaugurado && (
+                <>
+                  <dt className="text-rio-suave">Desde</dt>
+                  <dd className="m-0">{s.datos.inaugurado}</dd>
+                </>
+              )}
+              {s.datos.superficie && (
+                <>
+                  <dt className="text-rio-suave">Tamaño</dt>
+                  <dd className="m-0">{s.datos.superficie}</dd>
+                </>
+              )}
+              {s.datos.patrimonio && (
+                <>
+                  <dt className="text-rio-suave">Patrimonio</dt>
+                  <dd className="m-0">{s.datos.patrimonio}</dd>
+                </>
+              )}
               <dt className="text-rio-suave">Horario</dt>
               <dd className="m-0">{s.horario ? horarioLegible(s.horario) : "Confírmalo antes de ir"}</dd>
               {s.direccion && (

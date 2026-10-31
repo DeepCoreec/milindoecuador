@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { importarOSM } from "@/acciones/admin";
 import { pedirRevisionAgente, reiniciarRecomendacionesReglas } from "@/acciones/agente";
-import { buscarFotosGuia, reiniciarBusquedaFotos } from "@/acciones/fotos-guia";
+import { buscarFotosGuia, reiniciarBusquedaFotos, traerMasFotosGuia } from "@/acciones/fotos-guia";
 import { importarWikidata } from "@/acciones/lugares-wikidata";
 import { AgregarSitio } from "@/components/admin/AgregarSitio";
 import { BotonAccion } from "@/components/admin/BotonAccion";
@@ -62,6 +62,14 @@ export default async function PaginaGuiaAdmin({ searchParams }: PageProps<"/admi
             </p>
             <div>
               <BotonAccion accion={buscarFotosGuia} campos={{}} texto="Buscar fotos y descripción" />
+            </div>
+            {/* Versión 12 (40.2) */}
+            <p className="m-0 max-w-[68ch] text-sm text-rio-suave">
+              Para los lugares para visitar con ficha en Wikidata: hasta 6 fotos libres más de su carpeta en Commons, un párrafo de Wikipedia y datos
+              rápidos (inauguración, superficie, patrimonio). 5 lugares por clic. Revisa las fotos en «Fotos del lugar» y borra las que no sirvan.
+            </p>
+            <div>
+              <BotonAccion accion={traerMasFotosGuia} campos={{}} texto="Traer más fotos" />
             </div>
             <div>
               <BotonAccion

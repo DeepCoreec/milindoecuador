@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useActionState } from "react";
 import { decidirSitios, editarSitio, type EstadoAdmin } from "@/acciones/admin";
 import { quitarFotoSitio } from "@/acciones/fotos-guia";
@@ -169,6 +170,14 @@ export function SitiosGuia({ sitios, estado }: { sitios: SitioAdmin[]; estado: s
                 </a>
               </span>
               <FotoYTexto s={s} />
+              {/* Versión 12 (40.3): más fotos (de Commons o propias) de los lugares para visitar */}
+              {s.grupo === "visitar" && (
+                <div className="pl-8">
+                  <Link href={`/admin/guia/fotos/${s.id}`} className="text-sm">
+                    Fotos del lugar
+                  </Link>
+                </div>
+              )}
               <div className="pl-8">
                 <Corregir s={s} />
               </div>

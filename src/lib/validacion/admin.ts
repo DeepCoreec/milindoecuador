@@ -155,3 +155,10 @@ export const esquemaQuitarFotoSitio = z.object({ sitio: z.uuid("Lugar inválido"
 export const esquemaAgregarSitio = z.object({ enlace: z.string().trim().min(2, "Pega un enlace").max(300, "El enlace es demasiado largo") });
 /** "regla": borra solo lo de las reglas; "todas": también lo de la IA (cuando cambia el criterio del dueño). */
 export const esquemaReinicioAgente = esquemaAgenteGuia.extend({ fuente: z.enum(["regla", "todas"]).default("regla") });
+/** Más fotos de un lugar de la Guía útil (versión 12, fase 40): botón "Traer más fotos" (sin datos), fotos propias y borrar. */
+export const esquemaFotoSitio = z.object({
+  sitio: z.uuid("Lugar inválido"),
+  camino: z.string().regex(/^guia\/[0-9a-f-]{36}\/[0-9a-f-]{36}\.(webp|jpg)$/, "Camino de foto inválido"),
+  alt: texto(3, 160, "Descripción de la foto"),
+});
+export const esquemaIdFotoSitio = z.object({ foto: z.uuid("Foto inválida") });

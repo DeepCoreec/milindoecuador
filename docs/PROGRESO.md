@@ -486,11 +486,11 @@
 
 ### Fase 40 · Galería y más información
 - [x] 40.1 Base (migración `0022_mas_fotos_guia.sql`) — 2026-10-31: tabla `city_spot_photos` (hasta 8 por lugar; de Commons con autor, licencia y enlace, o propias sin ellos; filtro de palabras; solo escribe el servidor; el público ve las de lugares publicados) y en `city_spots` `description_long` (≤1200, con fuente de Wikipedia), `facts` (objeto pequeño) y `photos_at`. 20 pruebas RLS nuevas: 280 pasan. **(usuario) Falta aplicarla en Supabase** antes de publicar el código de la fase 40
-- [ ] 40.2 Más fotos de Wikimedia Commons
-- [ ] 40.3 Fotos propias desde el panel
-- [ ] 40.4 Galería con flechas
-- [ ] 40.5 Más información (párrafo y datos rápidos)
-- **Siguiente paso:** 40.2 — en `src/lib/wikimedia.ts`, buscar en la categoría de Commons (P373 de Wikidata) y en las P18 extra hasta 6 fotos libres; acción del panel "Traer más fotos" por tandas
+- [x] 40.2 Más fotos de Wikimedia Commons — 2026-10-31: `buscarMasEnWikimedia` (`src/lib/wikimedia.ts`): las otras P18 de la ficha y la carpeta de Commons (P373), solo libres, de 1000×600 o más, sin mapas, logos, escudos ni planos, sin repetir la principal, hasta 6; `traerMasDeUnSitio` (`src/lib/guia/mas-fotos.ts`) las copia a `guia/<lugar>/<uuid>` con su crédito. Botón "Traer más fotos" en el panel (5 lugares por clic). Pruebas unitarias con respuestas simuladas
+- [x] 40.3 Fotos propias desde el panel — 2026-10-31: "Fotos del lugar" en cada lugar para visitar del panel → `/admin/guia/fotos/<id>`: ver la principal y las más, subir propias (WebP sin datos del celular, permiso de subida de un solo uso, se comprueba que sea una foto) y borrar cualquiera. Tope de 8
+- [x] 40.4 Galería con flechas — 2026-10-31: `GaleriaSitio`: flechas ‹ ›, "3 de 6", deslizar con el dedo, flechas del teclado, miniaturas para saltar y el crédito de la foto que se ve. Probado con Playwright a 390 y 1280 px
+- [x] 40.5 Más información — 2026-10-31: "Sobre el lugar" con el párrafo de Wikipedia (hasta 1200 letras, con su crédito) y en "Antes de ir" los datos rápidos (Desde, Tamaño, Patrimonio)
+- **Siguiente paso:** (usuario) aplicar `supabase/migrations/0022_mas_fotos_guia.sql` en Supabase; después publicar la rama `v12-fotos`, tocar "Traer más fotos" en el panel hasta terminar y revisar las fotos (Claude, delegado)
 
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
 

@@ -182,15 +182,18 @@ async function buscarCerca(l: LugarParaBuscar, c: Ctx): Promise<{ titulo: string
   return { titulo: null, detalle: vistos.length ? `cerca solo hay ${vistos.join(", ")}` : "ningún artículo a menos de 300 m" };
 }
 
-/** La foto en Commons: copia de 960 px, licencia libre, autor y enlace. Si algo no cuadra, el motivo (texto). */
-async function leerFoto(archivo: string, c: Ctx): Promise<FotoWikimedia | string> {
-  const url = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(`File:${archivo}`)}&prop=imageinfo&iiprop=url%7Cextmetadata%7Cmime&iiurlwidth=960&format=json`;
-  const j = (await pedirJSON(url, c)) as {
-    query?: { pages?: Record<string, { missing?: string; imageinfo?: { thumburl?: unknown; thumbmime?: unknown; mime?: unknown; descriptionurl?: unknown; extmetadata?: Record<string, { value?: unknown }> }[] }> };
-  } | null;
-  const pagina = Object.values(j?.query?.pages ?? {})[0];
-  const ii = pagina && !("missing" in pagina) ? pagina.imageinfo?.[0] : undefined;
-  if (!ii) return j ? `Commons no tiene el archivo «${archivo.slice(0, 40)}»` : "Commons no respondió el archivo";
+type InfoImagen = {
+  thumburl?: unknown;
+  thumbmime?: unknown;
+  mime?: unknown;
+  descriptionurl?: unknown;
+  width?: unknown;
+  height?: unknown;
+  extmetadata?: Record<string, { value?: unknown }>;
+};
+
+/** De la respuesta de Commons a una foto usable: copia web, licencia libre, autor y enlace; si algo no cuadra, el motivo. */
+function fotoDeInfo(ii: InfoImagen): FotoWikimedia | string {
   const mime = typeof ii.thumbmime === "string" ? ii.thumbmime : ii.mime;
   if (mime !== "image/jpeg" && mime !== "image/png" && mime !== "image/webp") return `tipo de archivo ${String(mime).slice(0, 30)}`;
   const foto = typeof ii.thumburl === "string" ? ii.thumburl : null;
@@ -202,6 +205,16 @@ async function leerFoto(archivo: string, c: Ctx): Promise<FotoWikimedia | string
   if (!licenciaLibre(licencia)) return `licencia no libre o desconocida «${licencia || "sin dato"}»`;
   const autor = typeof meta.Artist?.value === "string" ? textoPlano(meta.Artist.value, 150) : "";
   return { url: foto, credito: autor || "Autor en Wikimedia Commons", licencia, fuente };
+}
+
+/** La foto en Commons: copia de 960 px, licencia libre, autor y enlace. Si algo no cuadra, el motivo (texto). */
+async function leerFoto(archivo: string, c: Ctx): Promise<FotoWikimedia | string> {
+  const url = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(`File:${archivo}`)}&prop=imageinfo&iiprop=url%7Cextmetadata%7Cmime&iiurlwidth=960&format=json`;
+  const j = (await pedirJSON(url, c)) as { query?: { pages?: Record<string, { missing?: string; imageinfo?: InfoImagen[] }> } } | null;
+  const pagina = Object.values(j?.query?.pages ?? {})[0];
+  const ii = pagina && !("missing" in pagina) ? pagina.imageinfo?.[0] : undefined;
+  if (!ii) return j ? `Commons no tiene el archivo «${archivo.slice(0, 40)}»` : "Commons no respondió el archivo";
+  return fotoDeInfo(ii);
 }
 
 /**
@@ -305,4 +318,139 @@ export async function descargarFoto(
     pos += p.byteLength;
   }
   return { datos, tipo: tipo as "image/jpeg", extension };
+}
+
+/* ---------------------------------------------------------------------------------------------------------------
+ * Versión 12 (fase 40; plan en docs/PLAN-V12.md): más fotos y más información de un lugar que YA tiene su ficha de
+ * Wikidata confirmada (lo hizo buscarEnWikimedia, con sus controles de distancia y nombre).
+ * - Fotos: las otras imágenes (P18) de la ficha y las de su carpeta en Commons (P373), solo libres, de buen tamaño y
+ *   que no sean mapas, logos, escudos ni planos. Como mucho `max`, sin repetir la foto principal.
+ * - Párrafo: las primeras frases de la introducción del artículo en español (hasta 1200 letras), tal cual.
+ * - Datos rápidos: año de inauguración (P571), superficie (P2046) y patrimonio (P1435); y la página oficial (P856).
+ * ------------------------------------------------------------------------------------------------------------- */
+
+export const MAX_PARRAFO = 1200;
+const NO_ES_FOTO_DEL_LUGAR = /(mapa|map|logo|plano|escudo|bandera|flag|coat[_ ]of[_ ]arms|diagram|ubicaci[oó]n|location|\.svg|\.tiff?$|\.pdf$|\.gif$)/i;
+const UNIDADES_SUPERFICIE: Record<string, (n: number) => string> = {
+  Q712226: (n) => `${formatoNumero(n)} km²`,
+  Q35852: (n) => `${formatoNumero(n)} hectáreas`,
+  Q25343: (n) => (n >= 10_000 ? `${formatoNumero(n / 10_000)} hectáreas` : `${formatoNumero(n)} m²`),
+};
+const formatoNumero = (n: number) => n.toLocaleString("es-EC", { maximumFractionDigits: 1 });
+
+export type DatosRapidos = { inaugurado?: string; superficie?: string; patrimonio?: string };
+export type MasDeWikimedia = {
+  fotos: FotoWikimedia[];
+  parrafo: { texto: string; fuente: string } | null;
+  datos: DatosRapidos;
+  web: string | null;
+};
+
+type Afirmacion = { mainsnak?: { datavalue?: { value?: unknown } }; rank?: unknown };
+
+async function leerEtiquetaEs(qid: string, c: Ctx): Promise<string | null> {
+  if (!QID.test(qid)) return null;
+  const j = (await pedirJSON(`https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${qid}&props=labels&languages=es&format=json`, c)) as {
+    entities?: Record<string, { labels?: { es?: { value?: unknown } } }>;
+  } | null;
+  const v = j?.entities?.[qid]?.labels?.es?.value;
+  return typeof v === "string" ? textoPlano(v, 120) || null : null;
+}
+
+/** Datos rápidos de los "claims" de Wikidata (todo validado; lo raro se ignora). */
+async function datosDeClaims(claims: Record<string, Afirmacion[]>, c: Ctx): Promise<{ datos: DatosRapidos; web: string | null }> {
+  const valor = (p: string) => claims[p]?.find((x) => x.rank !== "deprecated")?.mainsnak?.datavalue?.value;
+  const datos: DatosRapidos = {};
+  const inicio = valor("P571") as { time?: unknown } | undefined;
+  const anio = typeof inicio?.time === "string" ? /^\+(\d{3,4})-/.exec(inicio.time)?.[1] : undefined;
+  if (anio && Number(anio) > 1500 && Number(anio) <= new Date().getFullYear()) datos.inaugurado = anio;
+  const area = valor("P2046") as { amount?: unknown; unit?: unknown } | undefined;
+  const unidad = typeof area?.unit === "string" ? area.unit.split("/").pop() : undefined;
+  const cantidad = typeof area?.amount === "string" ? Number(area.amount) : NaN;
+  if (unidad && UNIDADES_SUPERFICIE[unidad] && Number.isFinite(cantidad) && cantidad > 0 && cantidad < 1e7) datos.superficie = UNIDADES_SUPERFICIE[unidad](cantidad);
+  const patrimonio = valor("P1435") as { id?: unknown } | undefined;
+  if (typeof patrimonio?.id === "string") {
+    const etiqueta = await leerEtiquetaEs(patrimonio.id, c);
+    if (etiqueta) datos.patrimonio = etiqueta;
+  }
+  const web = valor("P856");
+  const webOk = typeof web === "string" && web.length <= 300 && /^https?:\/\/[^\s]+\.[^\s]+$/i.test(web) ? web : null;
+  return { datos, web: webOk };
+}
+
+/** Fotos de varios archivos de Commons a la vez (hasta 50 por pedido), en el orden pedido. */
+async function leerFotos(archivos: string[], c: Ctx): Promise<{ archivo: string; foto: FotoWikimedia; ancho: number; alto: number }[]> {
+  if (!archivos.length) return [];
+  const titulos = archivos.map((a) => `File:${a}`).join("|");
+  const url = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(titulos)}&prop=imageinfo&iiprop=url%7Cextmetadata%7Cmime%7Csize&iiurlwidth=1280&format=json`;
+  const j = (await pedirJSON(url, c)) as { query?: { pages?: Record<string, { title?: unknown; missing?: string; imageinfo?: InfoImagen[] }> } } | null;
+  const porTitulo = new Map<string, InfoImagen>();
+  for (const p of Object.values(j?.query?.pages ?? {})) {
+    if (typeof p.title === "string" && !("missing" in p) && p.imageinfo?.[0]) porTitulo.set(p.title.replace(/^File:/, "").replace(/_/g, " "), p.imageinfo[0]);
+  }
+  const r: { archivo: string; foto: FotoWikimedia; ancho: number; alto: number }[] = [];
+  for (const a of archivos) {
+    const ii = porTitulo.get(a.replace(/_/g, " "));
+    if (!ii) continue;
+    const f = fotoDeInfo(ii);
+    if (typeof f !== "string") r.push({ archivo: a, foto: f, ancho: Number(ii.width) || 0, alto: Number(ii.height) || 0 });
+  }
+  return r;
+}
+
+/** Archivos de la carpeta del lugar en Commons (solo archivos, sin subcarpetas). */
+async function archivosDeCategoria(categoria: string, c: Ctx): Promise<string[]> {
+  if (categoria.length > 200) return [];
+  const url = `https://commons.wikimedia.org/w/api.php?action=query&list=categorymembers&cmtitle=${encodeURIComponent(`Category:${categoria}`)}&cmtype=file&cmlimit=40&format=json`;
+  const j = (await pedirJSON(url, c)) as { query?: { categorymembers?: { title?: unknown }[] } } | null;
+  return (j?.query?.categorymembers ?? []).map((m) => (typeof m.title === "string" ? m.title.replace(/^File:/, "") : "")).filter((t) => t && t.length <= 250);
+}
+
+/** Las primeras frases de la introducción del artículo en español, hasta 1200 letras. */
+async function leerParrafo(titulo: string, c: Ctx): Promise<{ texto: string; fuente: string } | null> {
+  const url = `https://es.wikipedia.org/w/api.php?action=query&prop=extracts%7Cinfo&exintro=1&explaintext=1&exsentences=8&inprop=url&redirects=1&titles=${encodeURIComponent(titulo)}&format=json`;
+  const j = (await pedirJSON(url, c)) as { query?: { pages?: Record<string, { missing?: string; extract?: unknown; fullurl?: unknown }> } } | null;
+  const p = Object.values(j?.query?.pages ?? {})[0];
+  if (!p || "missing" in p || typeof p.extract !== "string" || typeof p.fullurl !== "string") return null;
+  if (!p.fullurl.startsWith("https://es.wikipedia.org/") || p.fullurl.length > 400) return null;
+  // Párrafos separados por salto de línea: se juntan con espacio (la página los muestra como un solo texto)
+  const texto = primerasFrases(p.extract.replace(/\n+/g, " "), MAX_PARRAFO);
+  return texto.length >= 80 ? { texto, fuente: p.fullurl } : null;
+}
+
+/**
+ * Más fotos, un párrafo y datos rápidos de la ficha `qid` (ya confirmada como este lugar). `principal`: el enlace de
+ * Commons de la foto que el lugar ya tiene, para no repetirla. Lanza ErrorWikimedia si Wikimedia falla.
+ */
+export async function buscarMasEnWikimedia(qid: string, principal: string | null, max = 6, pedir: typeof fetch = fetch, corte?: AbortSignal): Promise<MasDeWikimedia> {
+  const c: Ctx = { pedir, corte };
+  const vacio: MasDeWikimedia = { fotos: [], parrafo: null, datos: {}, web: null };
+  if (!QID.test(qid)) return vacio;
+  const url = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${qid}&props=claims%7Csitelinks&sitefilter=eswiki&format=json`;
+  const j = (await pedirJSON(url, c)) as { entities?: Record<string, { missing?: string; claims?: Record<string, Afirmacion[]>; sitelinks?: { eswiki?: { title?: unknown } } }> } | null;
+  const e = j?.entities?.[qid];
+  if (!e || "missing" in e) return vacio;
+  const claims = e.claims ?? {};
+  const esPersona = (claims.P31 ?? []).some((x) => (x.mainsnak?.datavalue?.value as { id?: unknown } | undefined)?.id === "Q5");
+  if (esPersona) return vacio;
+
+  // Fotos: primero las de la ficha, luego las de la carpeta de Commons
+  const deFicha = (claims.P18 ?? []).map((x) => x.mainsnak?.datavalue?.value).filter((v): v is string => typeof v === "string" && v.length <= 250);
+  const carpeta = (claims.P373 ?? [])[0]?.mainsnak?.datavalue?.value;
+  const deCarpeta = typeof carpeta === "string" ? await archivosDeCategoria(carpeta, c) : [];
+  const candidatos = [...new Set([...deFicha, ...deCarpeta].map((a) => a.replace(/_/g, " ")))].filter((a) => !NO_ES_FOTO_DEL_LUGAR.test(a)).slice(0, 30);
+  const leidas = await leerFotos(candidatos, c);
+  const fotos: FotoWikimedia[] = [];
+  for (const l of leidas) {
+    if (fotos.length >= max) break;
+    // Buen tamaño y no una tira ni un recorte raro
+    if (l.ancho < 1000 || l.alto < 600 || l.ancho / l.alto > 2.6 || l.alto / l.ancho > 1.6) continue;
+    if (principal && l.foto.fuente === principal) continue;
+    fotos.push(l.foto);
+  }
+
+  const titulo = e.sitelinks?.eswiki?.title;
+  const parrafo = typeof titulo === "string" && titulo.length <= 250 ? await leerParrafo(titulo, c) : null;
+  const { datos, web } = await datosDeClaims(claims, c);
+  return { fotos, parrafo, datos, web };
 }

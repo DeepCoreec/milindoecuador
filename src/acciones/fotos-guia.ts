@@ -4,8 +4,12 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import type { EstadoAdmin } from "@/acciones/admin";
 import { requireAdmin } from "@/lib/auth";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
-import { esquemaBuscarFotosGuia, esquemaQuitarFotoSitio } from "@/lib/validacion/admin";
+import { esquemaBuscarFotosGuia, esquemaFotoSitio, esquemaIdFotoSitio, esquemaQuitarFotoSitio } from "@/lib/validacion/admin";
 import { enriquecerSitio } from "@/lib/guia/enriquecer";
+import { traerMasDeUnSitio, type FilaMas } from "@/lib/guia/mas-fotos";
+import { firmaValida } from "@/lib/firmaArchivo";
+import { urlPublicaFoto } from "@/lib/fotos";
+import { exigirConfigSupabase } from "@/lib/supabase/config";
 
 /*
  * "Buscar fotos y descripción" en /admin/guia (versión 7, fase 29.3; plan en docs/PLAN-V7.md).
@@ -123,4 +127,124 @@ export async function quitarFotoSitio(_previo: EstadoAdmin, datos: FormData): Pr
   revalidateTag("sitios", { expire: 0 });
   revalidatePath("/admin/guia");
   return { estado: "ok", mensaje: "Foto y descripción quitadas" };
+}
+
+/* ---------------------------------------------------------------------------------------------------------------
+ * Versión 12 (fase 40; plan en docs/PLAN-V12.md): más fotos de cada lugar.
+ * ------------------------------------------------------------------------------------------------------------- */
+
+/** Lugares por clic en "Traer más fotos": cada uno baja hasta 6 fotos (dentro de los 60 s de Vercel). */
+const MAS_POR_CLIC = 5;
+
+/**
+ * "Traer más fotos" (40.2): para los lugares PUBLICADOS para visitar que tienen su ficha de Wikidata y todavía no se
+ * revisaron (photos_at vacío), hasta 6 fotos libres más, el párrafo de Wikipedia y los datos rápidos.
+ */
+export async function traerMasFotosGuia(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  if (!esquemaBuscarFotosGuia.safeParse(Object.fromEntries(datos)).success) return { estado: "error", mensaje: "Datos inválidos" };
+  await requireAdmin();
+  const inicio = Date.now();
+  const db = crearClienteAdmin();
+  const { data: filas, error } = await db
+    .from("city_spots")
+    .select("id, name, wikidata, photo_source, description_source")
+    .eq("status", "publicado")
+    .eq("grupo", "visitar")
+    .not("wikidata", "is", null)
+    .is("photos_at", null)
+    // Primero los que ya tienen foto principal (los mejor documentados)
+    .order("photo_path", { nullsFirst: false })
+    .limit(MAS_POR_CLIC)
+    .returns<FilaMas[]>();
+  if (error) return { estado: "error", mensaje: "No se pudieron leer los lugares" };
+  if (!filas?.length) return { estado: "ok", mensaje: "Ya se buscaron más fotos en todos los lugares publicados que tienen ficha en Wikidata." };
+
+  const corte = AbortSignal.timeout(Math.max(LIMITE_MS + 10_000 - (Date.now() - inicio), 5_000));
+  let revisados = 0;
+  let fotos = 0;
+  let parrafos = 0;
+  let fallas = 0;
+  for (const f of filas) {
+    if (Date.now() - inicio > LIMITE_MS) break;
+    const r = await traerMasDeUnSitio(db, f, 6, corte);
+    if (r.estado === "pasajero") fallas++;
+    else if (r.estado === "listo") {
+      revisados++;
+      fotos += r.fotos;
+      if (r.parrafo) parrafos++;
+    }
+  }
+  revalidateTag("sitios", { expire: 0 });
+  revalidatePath("/admin/guia");
+  return {
+    estado: "ok",
+    mensaje: [
+      `Se revisaron ${revisados} lugares: ${fotos} fotos nuevas y ${parrafos} con párrafo de Wikipedia.`,
+      filas.length === MAS_POR_CLIC ? "Puede que queden más: vuelve a tocar el botón." : null,
+      fallas ? `${fallas} no se pudieron revisar ahora (Wikimedia no respondió): vuelve a tocar el botón.` : null,
+    ]
+      .filter(Boolean)
+      .join(" "),
+  };
+}
+
+/**
+ * Fotos propias de un lugar de la guía (40.3), paso 1: permiso de subida firmado, de un solo uso, a un camino que elige
+ * el servidor (guia/<lugar>/<uuid>.webp|jpg). El navegador sube la foto ya preparada (WebP, sin datos del celular).
+ */
+export async function pedirSubidaFotoSitio(sitio: string, formato: "webp" | "jpg" = "webp"): Promise<{ camino: string; token: string } | { error: string }> {
+  const r = esquemaQuitarFotoSitio.safeParse({ sitio });
+  if (!r.success || (formato !== "webp" && formato !== "jpg")) return { error: "Datos inválidos" };
+  await requireAdmin();
+  const db = crearClienteAdmin();
+  const { data: lugar } = await db.from("city_spots").select("id").eq("id", r.data.sitio).eq("grupo", "visitar").maybeSingle();
+  if (!lugar) return { error: "No se encontró el lugar" };
+  const { count } = await db.from("city_spot_photos").select("id", { count: "exact", head: true }).eq("spot_id", r.data.sitio);
+  if ((count ?? 0) >= 8) return { error: "Este lugar ya tiene 8 fotos más. Borra una para subir otra." };
+  const camino = `guia/${r.data.sitio}/${crypto.randomUUID()}.${formato}`;
+  const { data, error } = await db.storage.from("fotos-lugares").createSignedUploadUrl(camino);
+  if (error || !data) return { error: "No se pudo preparar la subida. Inténtalo de nuevo." };
+  return { camino, token: data.token };
+}
+
+/** Fotos propias (40.3), paso 2: revisa que de verdad sea una foto y la guarda (sin licencia ni enlace: es de la guía). */
+export async function registrarFotoSitio(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaFotoSitio.safeParse({ sitio: datos.get("sitio"), camino: datos.get("camino"), alt: datos.get("alt") });
+  if (!r.success) return { estado: "error", mensaje: r.error.issues[0]?.message ?? "Datos inválidos" };
+  if (!r.data.camino.startsWith(`guia/${r.data.sitio}/`)) return { estado: "error", mensaje: "La foto no es de este lugar" };
+  await requireAdmin();
+  const db = crearClienteAdmin();
+  const bucket = db.storage.from("fotos-lugares");
+  if (!(await firmaValida(urlPublicaFoto(exigirConfigSupabase().url, r.data.camino), ["webp", "jpeg"]))) {
+    await bucket.remove([r.data.camino]);
+    return { estado: "error", mensaje: "Ese archivo no es una foto válida. Vuelve a elegirla." };
+  }
+  const { data: ultima } = await db.from("city_spot_photos").select("sort_order").eq("spot_id", r.data.sitio).order("sort_order", { ascending: false }).limit(1).maybeSingle();
+  const { error } = await db
+    .from("city_spot_photos")
+    .insert({ spot_id: r.data.sitio, storage_path: r.data.camino, alt_text: r.data.alt, sort_order: (ultima?.sort_order ?? 0) + 1 });
+  if (error) {
+    await bucket.remove([r.data.camino]);
+    if (error.message.includes("tope_fotos")) return { estado: "error", mensaje: "Este lugar ya tiene 8 fotos más." };
+    if (error.message.includes("texto_no_permitido")) return { estado: "error", mensaje: "La descripción de la foto no se permite (sin teléfonos, enlaces ni groserías)." };
+    return { estado: "error", mensaje: "No se pudo guardar la foto. Inténtalo de nuevo." };
+  }
+  revalidateTag("sitios", { expire: 0 });
+  revalidatePath("/admin/guia");
+  return { estado: "ok", mensaje: "Foto agregada" };
+}
+
+/** Borra una de las fotos más de un lugar (de Commons o propia): la fila y el archivo. */
+export async function borrarFotoSitio(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaIdFotoSitio.safeParse({ foto: datos.get("foto") });
+  if (!r.success) return { estado: "error", mensaje: "Foto inválida" };
+  await requireAdmin();
+  const db = crearClienteAdmin();
+  const { data } = await db.from("city_spot_photos").delete().eq("id", r.data.foto).select("storage_path");
+  const camino = data?.[0]?.storage_path;
+  if (!camino) return { estado: "error", mensaje: "La foto ya no existe" };
+  await db.storage.from("fotos-lugares").remove([camino]);
+  revalidateTag("sitios", { expire: 0 });
+  revalidatePath("/admin/guia");
+  return { estado: "ok", mensaje: "Foto borrada" };
 }
