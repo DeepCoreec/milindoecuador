@@ -445,7 +445,7 @@
 > independientes (diseño, contenido, técnico) del 2026-10-30, filtradas por Claude. Orden: 38.1 primero (urgente), luego 36, 37 y 38.
 
 ### Fase 36 · Rápida y sólida
-- [ ] 36.1 Ficha sin la librería de validación en el navegador
+- [x] 36.1 Ficha sin la librería de validación en el navegador — 2026-10-31: los motivos de reporte pasan a `src/lib/motivos.ts` (sin Zod); las ventanas de reporte lo importan de ahí y la validación del servidor usa las mismas listas. Medido con Playwright (copia local): JavaScript de la ficha de 992 KB a 609 KB sin comprimir (−39 %), ya sin Zod; el resto de páginas, igual (585 KB)
 - [ ] 36.2 Páginas de Guayaquil en caché; lo personal de la ficha aparte
 - [ ] 36.3 Páginas de error y de "cargando" en español
 - [ ] 36.4 Imagen al compartir por WhatsApp
@@ -465,7 +465,7 @@
 - [ ] 38.3 "Mi negocio" ofrece el Destacado
 - [ ] 38.4 "Verificado" explicado
 - [ ] 38.5 Textos ("Destacados", reseñas, "Sobre el lugar", nombres de las partes, "Adminístralo gratis", formulario del dueño, precio por rangos)
-- **Siguiente paso:** 36.1 — mover `MOTIVOS` (y su tipo) de `src/lib/validacion/resenas.ts` a un archivo sin Zod (`src/lib/motivos.ts`) e importarlo desde `ReportarLugar.tsx`, `ReportarResena.tsx` y la validación; medir el JavaScript de la ficha antes y después
+- **Siguiente paso:** 36.2 — `generateStaticParams` (devolver `[]`) en las rutas de `src/app/[ciudad]/` para que su `revalidate` funcione; en la ficha, sacar la lectura de la sesión (mi reseña, guardado) a una parte que se carga aparte; comprobar con `curl -I` que respondan con caché
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 

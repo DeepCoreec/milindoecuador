@@ -6,7 +6,7 @@ import { reportarLugar, type EstadoReporte } from "@/acciones/reportes";
 import { clasesBoton } from "@/components/ui/Boton";
 import { claseEntrada, claseEtiqueta } from "@/components/ui/clasesFormulario";
 import { IconoCerrar } from "@/components/ui/iconos";
-import { motivosDe } from "@/lib/validacion/resenas";
+import { motivosDe } from "@/lib/motivos";
 
 const inicial: EstadoReporte = { estado: "inicio" };
 const botonChico = "cursor-pointer border-0 bg-transparent p-0 text-[13px] leading-5 font-medium text-rio-suave underline underline-offset-2";
