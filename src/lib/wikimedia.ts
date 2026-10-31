@@ -208,8 +208,8 @@ function fotoDeInfo(ii: InfoImagen): FotoWikimedia | string {
 }
 
 /** La foto en Commons: copia de 960 px, licencia libre, autor y enlace. Si algo no cuadra, el motivo (texto). */
-async function leerFoto(archivo: string, c: Ctx): Promise<FotoWikimedia | string> {
-  const url = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(`File:${archivo}`)}&prop=imageinfo&iiprop=url%7Cextmetadata%7Cmime&iiurlwidth=960&format=json`;
+async function leerFoto(archivo: string, c: Ctx, ancho = 960): Promise<FotoWikimedia | string> {
+  const url = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(`File:${archivo}`)}&prop=imageinfo&iiprop=url%7Cextmetadata%7Cmime&iiurlwidth=${ancho}&format=json`;
   const j = (await pedirJSON(url, c)) as { query?: { pages?: Record<string, { missing?: string; imageinfo?: InfoImagen[] }> } } | null;
   const pagina = Object.values(j?.query?.pages ?? {})[0];
   const ii = pagina && !("missing" in pagina) ? pagina.imageinfo?.[0] : undefined;
@@ -453,4 +453,22 @@ export async function buscarMasEnWikimedia(qid: string, principal: string | null
   const parrafo = typeof titulo === "string" && titulo.length <= 250 ? await leerParrafo(titulo, c) : null;
   const { datos, web } = await datosDeClaims(claims, c);
   return { fotos, parrafo, datos, web };
+}
+
+/**
+ * Una foto de Commons elegida a mano por el admin (2026-10-31): a partir del enlace a su página
+ * (https://commons.wikimedia.org/wiki/File:...). Misma revisión que las demás: licencia libre, autor y copia web.
+ * Devuelve el motivo (texto) si no sirve.
+ */
+export async function leerFotoPorEnlace(enlace: string, pedir: typeof fetch = fetch, corte?: AbortSignal): Promise<FotoWikimedia | string> {
+  const m = /^https:\/\/commons\.(?:m\.)?wikimedia\.org\/wiki\/(?:File|Archivo):([^?#]{1,250})$/.exec(enlace.trim());
+  if (!m) return "El enlace debe ser de una página de archivo de Wikimedia Commons (https://commons.wikimedia.org/wiki/File:...)";
+  let archivo: string;
+  try {
+    archivo = decodeURIComponent(m[1]!).replace(/_/g, " ");
+  } catch {
+    return "Enlace inválido";
+  }
+  if (/[|\[\]{}<>]/.test(archivo)) return "Enlace inválido";
+  return leerFoto(archivo, { pedir, corte }, 1280);
 }

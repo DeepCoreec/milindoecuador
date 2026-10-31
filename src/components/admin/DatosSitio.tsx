@@ -9,18 +9,22 @@ import { claseAyuda, claseEntrada, claseEtiqueta } from "@/components/ui/clasesF
 const inicial: EstadoAdmin = { estado: "inicio" };
 
 /** Horario, página web y teléfono de un lugar de la guía (2026-10-31): se ven en "Antes de ir" de su página. */
-export function DatosSitio({ sitio, horario, web, telefono }: { sitio: string; horario: string | null; web: string | null; telefono: string | null }) {
+export function DatosSitio({ sitio, nota, horario, web, telefono }: { sitio: string; nota: string | null; horario: string | null; web: string | null; telefono: string | null }) {
   const [r, accion, ocupado] = useActionState(editarDatosSitio, inicial);
   return (
     <section aria-labelledby="t-datos" className="grid gap-4 rounded-xl border border-linea bg-papel-alto p-6">
       <div className="grid gap-1">
         <h2 id="t-datos" className="m-0 text-xl leading-[26px] font-semibold">
-          Horario, web y teléfono
+          Frase, horario, web y teléfono
         </h2>
         <p className={`m-0 ${claseAyuda}`}>Se ven en «Antes de ir». Pon solo datos de fuentes oficiales (la página del lugar o del Municipio). Deja vacío lo que no sepas.</p>
       </div>
       <form action={accion} className="grid gap-3 sm:max-w-[560px]">
         <input type="hidden" name="sitio" value={sitio} />
+        <label className="grid gap-1.5">
+          <span className={claseEtiqueta}>Frase de la guía</span>
+          <textarea name="nota" defaultValue={nota ?? ""} maxLength={300} rows={2} placeholder="Qué es y qué se puede hacer, en una o dos frases" className={claseEntrada} />
+        </label>
         <label className="grid gap-1.5">
           <span className={claseEtiqueta}>Horario</span>
           <input name="horario" defaultValue={horario ?? ""} maxLength={200} placeholder="Todos los días de 07:00 a 24:00" className={claseEntrada} />

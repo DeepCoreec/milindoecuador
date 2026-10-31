@@ -4,11 +4,12 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import type { EstadoAdmin } from "@/acciones/admin";
 import { requireAdmin } from "@/lib/auth";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
-import { esquemaBuscarFotosGuia, esquemaDatosSitio, esquemaFotoSitio, esquemaIdFotoSitio, esquemaQuitarFotoSitio } from "@/lib/validacion/admin";
+import { esquemaBuscarFotosGuia, esquemaDatosSitio, esquemaFotoCommons, esquemaFotoSitio, esquemaIdFotoSitio, esquemaQuitarFotoSitio } from "@/lib/validacion/admin";
 import { aDatosContacto, consultaDatosOSM, urlOverpass } from "@/lib/osm";
 import { enriquecerSitio } from "@/lib/guia/enriquecer";
 import { traerMasDeUnSitio, type FilaMas } from "@/lib/guia/mas-fotos";
-import { firmaValida } from "@/lib/firmaArchivo";
+import { firmaDeDatos, firmaValida } from "@/lib/firmaArchivo";
+import { descargarFoto, leerFotoPorEnlace } from "@/lib/wikimedia";
 import { urlPublicaFoto } from "@/lib/fotos";
 import { exigirConfigSupabase } from "@/lib/supabase/config";
 
@@ -319,17 +320,118 @@ export async function completarDatosOSM(_previo: EstadoAdmin, datos: FormData): 
 
 /** Horario, web y teléfono puestos a mano por el admin. Vacío = se borra ese dato. */
 export async function editarDatosSitio(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
-  const r = esquemaDatosSitio.safeParse({ sitio: datos.get("sitio"), horario: datos.get("horario") ?? undefined, web: datos.get("web") ?? undefined, telefono: datos.get("telefono") ?? undefined });
+  const r = esquemaDatosSitio.safeParse({
+    sitio: datos.get("sitio"),
+    nota: datos.get("nota") ?? undefined,
+    horario: datos.get("horario") ?? undefined,
+    web: datos.get("web") ?? undefined,
+    telefono: datos.get("telefono") ?? undefined,
+  });
   if (!r.success) return { estado: "error", mensaje: r.error.issues[0]?.message ?? "Datos inválidos" };
   await requireAdmin();
   const { data, error } = await crearClienteAdmin()
     .from("city_spots")
-    .update({ opening_hours: r.data.horario || null, website: r.data.web || null, phone: r.data.telefono || null })
+    .update({ note: r.data.nota || null, opening_hours: r.data.horario || null, website: r.data.web || null, phone: r.data.telefono || null })
     .eq("id", r.data.sitio)
     .eq("grupo", "visitar")
     .select("id");
+  if (error?.message?.includes("texto_no_permitido")) return { estado: "error", mensaje: "La frase no se permite (sin enlaces, teléfonos ni groserías)." };
   if (error || !data?.length) return { estado: "error", mensaje: "No se pudo guardar" };
   revalidateTag("sitios", { expire: 0 });
   revalidatePath("/admin/guia");
   return { estado: "ok", mensaje: "Guardado" };
+}
+
+/**
+ * Agregar una foto de Commons por su enlace (2026-10-31): si el lugar no tiene foto principal, pasa a ser la principal
+ * (guia/<id>.<ext>); si ya tiene, va a las fotos más. Siempre con su autor, licencia y enlace.
+ */
+export async function agregarFotoCommons(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaFotoCommons.safeParse({ sitio: datos.get("sitio"), enlace: datos.get("enlace") });
+  if (!r.success) return { estado: "error", mensaje: r.error.issues[0]?.message ?? "Datos inválidos" };
+  await requireAdmin();
+  const db = crearClienteAdmin();
+  const { data: s } = await db.from("city_spots").select("id, name, grupo, photo_path, photo_source").eq("id", r.data.sitio).maybeSingle();
+  if (!s || s.grupo !== "visitar") return { estado: "error", mensaje: "No se encontró el lugar" };
+  const corte = AbortSignal.timeout(40_000);
+  let foto;
+  try {
+    foto = await leerFotoPorEnlace(r.data.enlace, fetch, corte);
+  } catch {
+    return { estado: "error", mensaje: "Wikimedia no respondió. Inténtalo de nuevo." };
+  }
+  if (typeof foto === "string") return { estado: "error", mensaje: `No sirve: ${foto}` };
+  if (s.photo_source === foto.fuente) return { estado: "error", mensaje: "Esa ya es la foto principal." };
+  let d;
+  try {
+    d = await descargarFoto(foto.url, fetch, corte);
+  } catch {
+    return { estado: "error", mensaje: "No se pudo descargar la foto. Inténtalo de nuevo." };
+  }
+  if (!firmaDeDatos(d.datos, [d.extension === "jpg" ? "jpeg" : d.extension])) return { estado: "error", mensaje: "El archivo no es una foto." };
+  const bucket = db.storage.from("fotos-lugares");
+  const principal = !s.photo_path;
+  const camino = principal ? `guia/${s.id}.${d.extension}` : `guia/${s.id}/${crypto.randomUUID()}.${d.extension}`;
+  const { error: e } = await bucket.upload(camino, d.datos, { contentType: d.tipo, upsert: principal, cacheControl: "604800" });
+  if (e) return { estado: "error", mensaje: "No se pudo guardar la foto." };
+  let error;
+  if (principal) {
+    ({ error } = await db
+      .from("city_spots")
+      .update({ photo_path: camino, photo_credit: foto.credito, photo_license: foto.licencia, photo_source: foto.fuente })
+      .eq("id", s.id));
+  } else {
+    const { data: ultima } = await db.from("city_spot_photos").select("sort_order").eq("spot_id", s.id).order("sort_order", { ascending: false }).limit(1).maybeSingle();
+    ({ error } = await db.from("city_spot_photos").insert({
+      spot_id: s.id,
+      storage_path: camino,
+      alt_text: `Foto de ${s.name}`.slice(0, 160),
+      credit: foto.credito,
+      license: foto.licencia,
+      source: foto.fuente,
+      sort_order: (ultima?.sort_order ?? 0) + 1,
+    }));
+  }
+  if (error) {
+    await bucket.remove([camino]);
+    if (error.message.includes("tope_fotos")) return { estado: "error", mensaje: "Este lugar ya tiene 8 fotos más." };
+    if (error.code === "23505") return { estado: "error", mensaje: "Esa foto ya está en este lugar." };
+    if (error.message.includes("texto_no_permitido")) return { estado: "error", mensaje: "El autor de la foto no pasó el filtro de palabras." };
+    return { estado: "error", mensaje: "No se pudo guardar la foto." };
+  }
+  revalidateTag("sitios", { expire: 0 });
+  revalidatePath("/admin/guia");
+  return { estado: "ok", mensaje: principal ? "Foto principal agregada" : "Foto agregada" };
+}
+
+/**
+ * Pasar una de las fotos más (de Commons) a foto principal, cuando el lugar no tiene una (2026-10-31): las tarjetas de
+ * la guía muestran solo la principal. Las fotos propias no pueden ser la principal (la base exige licencia y enlace).
+ */
+export async function hacerPrincipalFotoSitio(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaIdFotoSitio.safeParse({ foto: datos.get("foto") });
+  if (!r.success) return { estado: "error", mensaje: "Foto inválida" };
+  await requireAdmin();
+  const db = crearClienteAdmin();
+  const { data: f } = await db.from("city_spot_photos").select("id, spot_id, storage_path, credit, license, source").eq("id", r.data.foto).maybeSingle();
+  if (!f) return { estado: "error", mensaje: "La foto ya no existe" };
+  if (!f.source || !f.license) return { estado: "error", mensaje: "Solo una foto de Wikimedia Commons puede ser la principal." };
+  const { data: s } = await db.from("city_spots").select("id, photo_path").eq("id", f.spot_id).maybeSingle();
+  if (!s) return { estado: "error", mensaje: "No se encontró el lugar" };
+  if (s.photo_path) return { estado: "error", mensaje: "Este lugar ya tiene foto principal. Quítala primero en la lista de la guía." };
+  const extension = f.storage_path.split(".").pop();
+  const camino = `guia/${s.id}.${extension}`;
+  const bucket = db.storage.from("fotos-lugares");
+  const { error: e } = await bucket.copy(f.storage_path, camino);
+  if (e) return { estado: "error", mensaje: "No se pudo mover la foto." };
+  const { error } = await db.from("city_spots").update({ photo_path: camino, photo_credit: f.credit ?? "Autor en Wikimedia Commons", photo_license: f.license, photo_source: f.source }).eq("id", s.id);
+  if (error) {
+    await bucket.remove([camino]);
+    return { estado: "error", mensaje: "No se pudo guardar." };
+  }
+  await db.from("city_spot_photos").delete().eq("id", f.id);
+  await bucket.remove([f.storage_path]);
+  revalidateTag("sitios", { expire: 0 });
+  revalidatePath("/admin/guia");
+  return { estado: "ok", mensaje: "Ahora es la foto principal" };
 }

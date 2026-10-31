@@ -16,7 +16,7 @@ export default async function PaginaFotosSitio({ params }: PageProps<"/admin/gui
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(sitio)) notFound();
   const db = crearClienteAdmin();
   const [{ data: s }, { data: fotos }] = await Promise.all([
-    db.from("city_spots").select("id, name, status, grupo, photo_path, photo_credit, photo_license, opening_hours, website, phone").eq("id", sitio).maybeSingle(),
+    db.from("city_spots").select("id, name, status, grupo, photo_path, photo_credit, photo_license, note, opening_hours, website, phone").eq("id", sitio).maybeSingle(),
     db.from("city_spot_photos").select("id, storage_path, alt_text, credit, license, source").eq("spot_id", sitio).order("sort_order").order("created_at"),
   ]);
   if (!s || s.grupo !== "visitar") notFound();
@@ -49,9 +49,10 @@ export default async function PaginaFotosSitio({ params }: PageProps<"/admin/gui
           <p className="m-0 text-sm text-rio-suave">Sin foto principal. La primera foto propia que subas se usará como principal en la galería.</p>
         )}
       </section>
-      <DatosSitio sitio={s.id} horario={s.opening_hours} web={s.website} telefono={s.phone} />
+      <DatosSitio sitio={s.id} nota={s.note} horario={s.opening_hours} web={s.website} telefono={s.phone} />
       <FotosSitio
         sitio={s.id}
+        tienePrincipal={!!s.photo_path}
         fotos={(fotos ?? []).map((f) => ({ id: f.id, src: urlPublicaFoto(base, f.storage_path), alt: f.alt_text, credito: f.credit, licencia: f.license, fuente: f.source }))}
       />
     </div>

@@ -112,3 +112,18 @@ describe("40.2 · más fotos, párrafo y datos rápidos", () => {
     await expect(buscarMasEnWikimedia(Q, null, 6, ocupado.pedir)).rejects.toBeInstanceOf(ErrorWikimedia);
   });
 });
+
+describe("foto de Commons por su enlace (2026-10-31)", () => {
+  it("solo acepta páginas de archivo de Commons y revisa la licencia", async () => {
+    const { leerFotoPorEnlace } = await import("@/lib/wikimedia");
+    const ok = simulador({ "prop=imageinfo": { query: { pages: { "1": info("Torre Morisca.jpg") } } } });
+    const f = await leerFotoPorEnlace("https://commons.wikimedia.org/wiki/File:Torre_Morisca.jpg", ok.pedir);
+    expect(typeof f).toBe("object");
+    expect(ok.pedidas[0]).toContain("iiurlwidth=1280");
+    expect(typeof (await leerFotoPorEnlace("https://ejemplo.com/wiki/File:X.jpg", ok.pedir))).toBe("string");
+    expect(typeof (await leerFotoPorEnlace("https://commons.wikimedia.org/wiki/Category:Guayaquil", ok.pedir))).toBe("string");
+    expect(typeof (await leerFotoPorEnlace("https://commons.wikimedia.org/wiki/File:A%7CB.jpg", ok.pedir))).toBe("string");
+    const noLibre = simulador({ "prop=imageinfo": { query: { pages: { "1": info("X.jpg", { licencia: "All rights reserved" }) } } } });
+    expect(typeof (await leerFotoPorEnlace("https://commons.wikimedia.org/wiki/File:X.jpg", noLibre.pedir))).toBe("string");
+  });
+});
