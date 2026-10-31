@@ -530,12 +530,12 @@
 - [x] 42.2 Crear recorridos — 2026-10-31: en «Mi negocio», solo para guías, "Tus recorridos (n de 10)": crear, cambiar y borrar. Nombre, qué se hace, duración (lista), precio por persona o "a convenir", punto de encuentro, de 2 a 8 paradas elegidas de los lugares para visitar de la guía (en orden) y publicado o borrador. Acciones `guardarRecorrido` y `borrarRecorrido`: Zod → sesión y dueño → que sea guía → paradas que hoy se muestran → límite diario → `admin.ts`. Pruebas unitarias: 219 pasan
 - [x] 42.3 Página del recorrido — 2026-10-31: `/guayaquil/guias/<guía>/recorridos/<id>` (solo si el recorrido es de ese guía): duración, precio, descripción, punto de encuentro, paradas numeradas con foto que llevan a la página de cada lugar, "Ver la ruta en Google Maps" (a pie, con las paradas en orden) y "Pedir este recorrido por WhatsApp" con la fecha y las personas ya escritas (no se guarda nada; cuenta como toque de WhatsApp). En la ficha del guía, "Sus recorridos". Probado con Playwright a 390 y 1280 px, claro y oscuro, con datos de ejemplo temporales ya quitados. Pruebas unitarias: 225 pasan
 - [x] 42.4 Paumi recomienda guías y recorridos — 2026-10-31: herramienta nueva `buscar_recorridos` (solo lee lo público; acreditados primero; devuelve guía, duración, precio, paradas y la ruta, que solo así puede abrir). `buscar_lugares` dice si un guía está acreditado. Instrucciones: ante "guía", "tour" o "recorrido", recomendar primero a los acreditados, mostrar al guía y abrir el recorrido; no inventar precios ni cupos; nunca recomendar entrar a lugares abandonados o cerrados. Pruebas unitarias: 228 pasan
-- [ ] Revisión de seguridad independiente
+- [x] Revisión de seguridad independiente — 2026-10-31: sin críticos ni altos. Arreglados: (medio) las paradas se reemplazan en una sola transacción con candado (función `guardar_paradas` en 0024; si falla, quedan las de antes); (bajos) Paumi ya no recibe la descripción que escribe el guía (solo la usa para buscar) y no nombra monumentos; la base no acepta monumentos como parada; nombre y punto de encuentro sin saltos de línea. Queda (bajo): los cambios de recorridos cuentan en el mismo límite diario que la ficha (40). 6 pruebas RLS más
 
 ### Fase 43 · "Guayaquil de misterio"
 - [ ] 43.1 a 43.3 (ver el plan)
 
-- **Siguiente paso (Claude):** revisión de seguridad independiente de la fase 42. **(usuario):** aplicar `supabase/migrations/0023_guias.sql` y luego `0024_recorridos.sql` en el editor SQL de Supabase y avisar; Claude publica la rama `v13-guias` (antes NO: las páginas leen columnas nuevas). Después, la puerta de la fase 41 con un guía de prueba, y la fase 42 (recorridos).
+- **Siguiente paso:** (usuario) aplicar `0023_guias.sql` y `0024_recorridos.sql` en Supabase y avisar; Claude publica la rama `v13-guias` y se prueban las puertas 41 y 42 con un guía de prueba. Después, fase 43 ("Guayaquil de misterio"). **(usuario):** aplicar `supabase/migrations/0023_guias.sql` y luego `0024_recorridos.sql` en el editor SQL de Supabase y avisar; Claude publica la rama `v13-guias` (antes NO: las páginas leen columnas nuevas). Después, la puerta de la fase 41 con un guía de prueba, y la fase 42 (recorridos).
 
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
 
@@ -555,6 +555,7 @@
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
+- (2026-10-31, revisión de la fase 42) Que el admin pueda ocultar un solo recorrido de un guía (hoy oculta la ficha entera)
 - (2026-10-28, fase 33) Enlazar **La Guayaca** (laguayacagye.com, tarjeta y subsidio de la Metrovía) cuando su sitio salga de mantenimiento. ¿Enlazar Moovit (app gratuita de terceros con rutas de la Metrovía)? Lo decide el usuario: no es oficial
 
 - (2026-10-28, del usuario) **Espacio publicitario en la portada** para quien pague aparte (un anuncio pequeño). Lo decide el usuario más adelante

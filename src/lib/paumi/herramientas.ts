@@ -465,7 +465,7 @@ export async function ejecutar(nombre: string, entrada: unknown, e: Estado): Pro
         // La base solo deja ver recorridos publicados de guías publicados, y paradas de lugares publicados (0024)
         const { data } = await db()
           .from("guide_tours")
-          .select("id, name, description, duration_minutes, price_usd, places!inner(id, slug, name, accredited_at, status, cities!inner(slug)), guide_tour_stops(position, city_spots(name))")
+          .select("id, name, description, duration_minutes, price_usd, places!inner(id, slug, name, accredited_at, status, cities!inner(slug)), guide_tour_stops(position, city_spots(name, tipo))")
           .eq("status", "publicado")
           .eq("places.status", "publicado")
           .eq("places.cities.slug", CIUDAD)
@@ -478,13 +478,19 @@ export async function ejecutar(nombre: string, entrada: unknown, e: Estado): Pro
               duration_minutes: number;
               price_usd: number | string | null;
               places: { id: string; slug: string; name: string; accredited_at: string | null } | null;
-              guide_tour_stops: { position: number; city_spots: { name: string } | null }[];
+              guide_tour_stops: { position: number; city_spots: { name: string; tipo: string } | null }[];
             }[]
           >();
         const t = r.data.texto ? normalizar(r.data.texto) : "";
         const lista = (data ?? [])
           .filter((x) => x.places)
-          .map((x) => ({ x, paradas: [...x.guide_tour_stops].sort((a, b) => a.position - b.position).flatMap((p) => (p.city_spots ? [p.city_spots.name] : [])) }))
+          .map((x) => ({
+            x,
+            paradas: [...x.guide_tour_stops]
+              .sort((a, b) => a.position - b.position)
+              .flatMap((p) => (p.city_spots && p.city_spots.tipo !== "monumento" ? [p.city_spots.name] : [])),
+          }))
+          // La descripción la escribe el guía: se usa para buscar, pero no se le pasa a la IA (revisión 2026-10-31)
           .filter(({ x, paradas }) => paradas.length >= 2 && (!t || normalizar(`${x.name} ${x.description} ${paradas.join(" ")}`).includes(t)))
           .sort((a, b) => Number(!!b.x.places!.accredited_at) - Number(!!a.x.places!.accredited_at))
           .slice(0, 6);
@@ -502,7 +508,6 @@ export async function ejecutar(nombre: string, entrada: unknown, e: Estado): Pro
             duracion: textoDuracion(x.duration_minutes),
             precio: precioRecorrido(x.price_usd == null ? null : Number(x.price_usd)),
             paradas,
-            descripcion: x.description.slice(0, 300),
             ruta,
           };
         });

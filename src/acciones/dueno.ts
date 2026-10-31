@@ -470,11 +470,11 @@ export async function guardarRecorrido(_previo: EstadoDueno, datos: FormData): P
     await quitar(anotado);
     return fallo(guardado.error);
   }
-  await db.from("guide_tour_stops").delete().eq("tour_id", id);
-  const { error: e2 } = await db.from("guide_tour_stops").insert(r.data.paradas.map((spot_id, i) => ({ tour_id: id, spot_id, position: i + 1 })));
+  // Todas las paradas se reemplazan en una sola transacción de la base (0024): si falla, quedan las que había
+  const { error: e2 } = await db.rpc("guardar_paradas", { recorrido: id, lugares: r.data.paradas });
   if (e2) {
-    // Sin sus paradas no se publica: queda en borrador para que el guía las vuelva a elegir
-    await db.from("guide_tours").update({ status: "borrador" }).eq("id", id);
+    // Un recorrido nuevo sin paradas no se publica
+    if (!r.data.recorrido) await db.from("guide_tours").update({ status: "borrador" }).eq("id", id);
     return {
       estado: "error",
       mensaje: e2.message.includes("parada_no_valida") ? "Una de las paradas ya no está en la guía. Elige otra y vuelve a guardar." : "No se pudieron guardar las paradas. Vuelve a intentarlo.",

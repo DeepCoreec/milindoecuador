@@ -82,7 +82,7 @@ revoke execute on function public.revisar_recorrido() from public, anon, authent
 create trigger revisar_recorrido before insert or update on public.guide_tours
   for each row execute function public.revisar_recorrido();
 
--- Las paradas solo pueden ser lugares de la guía publicados del grupo "visitar"
+-- Las paradas solo pueden ser lugares de la guía publicados del grupo "visitar" (sin los tipos ocultos, como monumento)
 create function public.revisar_parada()
 returns trigger
 language plpgsql
@@ -90,7 +90,7 @@ security definer
 set search_path = ''
 as $$
 begin
-  if not exists (select 1 from public.city_spots s where s.id = new.spot_id and s.status = 'publicado' and s.grupo = 'visitar') then
+  if not exists (select 1 from public.city_spots s where s.id = new.spot_id and s.status = 'publicado' and s.grupo = 'visitar' and s.tipo <> 'monumento') then
     raise exception 'parada_no_valida' using hint = 'Elige un lugar para visitar de la guía';
   end if;
   return new;
@@ -99,3 +99,23 @@ $$;
 revoke execute on function public.revisar_parada() from public, anon, authenticated;
 create trigger revisar_parada before insert or update on public.guide_tour_stops
   for each row execute function public.revisar_parada();
+
+-- Reemplazar todas las paradas de un recorrido en UNA transacción (revisión independiente 2026-10-31, hallazgo 1):
+-- si algo falla, quedan las paradas que había. El candado por recorrido evita que dos guardados a la vez se mezclen.
+create function public.guardar_paradas(recorrido uuid, lugares uuid[])
+returns void
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if cardinality(lugares) not between 2 and 8 then
+    raise exception 'paradas_cantidad' using hint = 'De 2 a 8 paradas';
+  end if;
+  perform pg_advisory_xact_lock(hashtext('paradas:' || recorrido::text));
+  delete from public.guide_tour_stops where tour_id = recorrido;
+  insert into public.guide_tour_stops (tour_id, spot_id, position)
+    select recorrido, l.spot, l.n::smallint from unnest(lugares) with ordinality as l(spot, n);
+end;
+$$;
+revoke execute on function public.guardar_paradas(uuid, uuid[]) from public, anon, authenticated;
+grant execute on function public.guardar_paradas(uuid, uuid[]) to service_role;

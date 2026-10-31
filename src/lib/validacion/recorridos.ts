@@ -5,6 +5,8 @@ import { z } from "zod";
  */
 
 const sinInvisibles = (v: string) => !/[\p{Cc}\p{Cf}]/u.test(v.replace(/\r?\n/g, ""));
+/** Para campos de una sola línea (nombre y punto de encuentro): tampoco saltos de línea. */
+const unaLinea = (v: string) => !/[\p{Cc}\p{Cf}]/u.test(v);
 
 /** Duraciones que se ofrecen en la lista (en minutos). */
 export const DURACIONES = [30, 60, 90, 120, 150, 180, 240, 300, 360, 480, 600, 720] as const;
@@ -20,7 +22,7 @@ export function textoDuracion(minutos: number): string {
 export const esquemaRecorrido = z.object({
   lugar: z.uuid(),
   recorrido: z.union([z.literal(""), z.uuid()]).transform((v) => v || null),
-  nombre: z.string().trim().min(3, "El nombre: al menos 3 letras").max(80, "El nombre: máximo 80 caracteres").refine(sinInvisibles, "El nombre: usa solo letras, números y signos comunes"),
+  nombre: z.string().trim().min(3, "El nombre: al menos 3 letras").max(80, "El nombre: máximo 80 caracteres").refine(unaLinea, "El nombre: usa solo letras, números y signos comunes"),
   descripcion: z
     .string()
     .trim()
@@ -35,7 +37,7 @@ export const esquemaRecorrido = z.object({
     .refine((v) => v === "" || /^\d{1,4}(\.\d{1,2})?$/.test(v), "El precio: solo el número en dólares, por ejemplo 15 o 12.50")
     .transform((v) => (v === "" ? null : Number(v)))
     .refine((v) => v === null || v <= 1000, "El precio: máximo 1000 dólares por persona"),
-  encuentro: z.string().trim().min(3, "Escribe el punto de encuentro").max(160, "El punto de encuentro: máximo 160 caracteres").refine(sinInvisibles, "El punto de encuentro: usa solo letras, números y signos comunes"),
+  encuentro: z.string().trim().min(3, "Escribe el punto de encuentro").max(160, "El punto de encuentro: máximo 160 caracteres").refine(unaLinea, "El punto de encuentro: usa solo letras, números y signos comunes"),
   paradas: z
     .array(z.union([z.literal(""), z.uuid("Elige las paradas de la lista")]))
     .max(8, "Máximo 8 paradas")
