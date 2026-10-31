@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { rutaSitio, type Sitio } from "@/lib/datos/sitios";
-import { horarioLegible, TIPOS_SITIO, type TipoSitio } from "@/lib/osm";
+import { horarioLegible, primerTelefono, TIPOS_SITIO, type TipoSitio } from "@/lib/osm";
 import { enlaceRutaGoogle } from "@/lib/ubicacion";
 
 const MOSTRAR = 9;
@@ -12,7 +12,7 @@ const MOSTRAR = 9;
  * descripción de Wikipedia, y esta sobre la dirección.
  */
 export function FilaSitio({ s }: { s: Sitio }) {
-  const telefono = s.telefono?.split(/[;,/]/)[0]!.replace(/[^\d+]/g, "");
+  const telefono = s.telefono ? primerTelefono(s.telefono).replace(/[^\d+]/g, "") : undefined;
   const texto = s.nota ?? s.descripcion?.texto ?? s.direccion;
   const usaWikipedia = !s.nota && !!s.descripcion;
   const visitar = s.grupo === "visitar";

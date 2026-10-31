@@ -40,3 +40,13 @@ describe("datos puestos a mano", () => {
     expect(esquemaDatosSitio.safeParse({ sitio: "x", horario: "" }).success).toBe(false);
   });
 });
+
+describe("primer teléfono de un texto con varios", () => {
+  it("toma solo el primer número completo", async () => {
+    const { primerTelefono } = await import("@/lib/osm");
+    expect(primerTelefono("04 2300500 2304999 2304998")).toBe("04 2300500");
+    expect(primerTelefono("04 371 4840")).toBe("04 371 4840");
+    expect(primerTelefono("+593 4 259 9100; 042")).toBe("+593 4 259 9100");
+    expect(primerTelefono("0991234567 0987654321")).toBe("0991234567");
+  });
+});
