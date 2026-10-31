@@ -491,7 +491,8 @@
 - [x] 40.4 Galería con flechas — 2026-10-31: `GaleriaSitio`: flechas ‹ ›, "3 de 6", deslizar con el dedo, flechas del teclado, miniaturas para saltar y el crédito de la foto que se ve. Probado con Playwright a 390 y 1280 px
 - [x] 40.5 Más información — 2026-10-31: "Sobre el lugar" con el párrafo de Wikipedia (hasta 1200 letras, con su crédito) y en "Antes de ir" los datos rápidos (Desde, Tamaño, Patrimonio)
 - Revisión de seguridad independiente (2026-10-31): sin críticos ni altos. Arreglados: no se borra el archivo de una foto ya registrada (media); sin tope de 50 en el orden; candado por lugar para el tope de 8; las fotos de Wikimedia se revisan por sus primeros bytes. Queda (bajo): al borrar un lugar, sus fotos quedan en el almacenamiento (igual que la foto principal desde la versión 7)
-- **Siguiente paso:** (usuario) aplicar `supabase/migrations/0022_mas_fotos_guia.sql` en Supabase; después publicar la rama `v12-fotos`, tocar "Traer más fotos" en el panel hasta terminar y revisar las fotos (Claude, delegado)
+- [x] (usuario) 0022 aplicada en Supabase el 2026-10-31 12:38 ("Success. No rows returned", captura)
+- **Siguiente paso:** publicar la rama `v12-fotos`, tocar "Traer más fotos" en el panel hasta terminar y revisar las fotos (Claude, delegado)
 
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
 
