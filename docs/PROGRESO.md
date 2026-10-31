@@ -437,7 +437,49 @@
 - [ ] 35.4 (usuario) Crear cuenta con correo: dominio + Resend + plantillas (pasos 6.3 a 6.5)
 - [ ] 35.5 (usuario) Captcha y confirmación por correo en Supabase Auth
 - [ ] 35.6 (usuario) Datos legales del responsable en Términos y Privacidad
-- **Siguiente paso:** guiar al usuario en 35.4 (empezar por el dominio: comprarlo y conectarlo en Vercel, PUESTA-EN-MARCHA)
+- **Siguiente paso:** 35.4 queda para después de la versión 10 (el usuario: "aún no compramos nada, primero debe estar todo listo")
+
+## Versión 10 · Más calidad antes de abrir a los negocios
+
+> Plan: `docs/PLAN-V10.md`, **aprobado por el usuario el 2026-10-31 00:14** ("me parece"). Ideas de tres revisores
+> independientes (diseño, contenido, técnico) del 2026-10-30, filtradas por Claude. Orden: 38.1 primero (urgente), luego 36, 37 y 38.
+
+### Fase 36 · Rápida y sólida
+- [x] 36.1 Ficha sin la librería de validación en el navegador — 2026-10-31: los motivos de reporte pasan a `src/lib/motivos.ts` (sin Zod); las ventanas de reporte lo importan de ahí y la validación del servidor usa las mismas listas. Medido con Playwright (copia local): JavaScript de la ficha de 992 KB a 609 KB sin comprimir (−39 %), ya sin Zod; el resto de páginas, igual (585 KB)
+- [ ] 36.2 Páginas de Guayaquil en caché; lo personal de la ficha aparte
+- [ ] 36.3 Páginas de error y de "cargando" en español
+- [ ] 36.4 Imagen al compartir por WhatsApp
+- [ ] 36.5 Google: canonical, noindex, robots, sitemap con fechas, JSON-LD
+- [ ] 36.6 Paumi se descarga al tocarla
+- [ ] 36.7 "Saltar al contenido" y enlaces del pie de 44 px
+
+### Fase 37 · Retoques visuales
+- [ ] 37.1 Ficha sin foto con la ilustración de la categoría
+- [ ] 37.2 Tarjetas sin foto más bajas en computadora
+- [ ] 37.3 Guía útil sin secciones vacías y títulos iguales
+- [ ] 37.4 Detalles (cabecera, comillas, hueco, fila de categorías, "Cómo llegar", insignias)
+
+### Fase 38 · Para que los negocios se registren
+- [x] 38.1 "Continuar con Google" en Crear cuenta — 2026-10-31: el botón de Google pasa a un componente común (`src/components/sesion/BotonGoogle.tsx`) que usan Entrar ("Entrar con Google") y Crear cuenta ("Continuar con Google", arriba del correo). Revisado a 390 px claro y 1280 px oscuro
+- [ ] 38.2 Registro con precio, 3 pasos y contador de letras
+- [ ] 38.3 "Mi negocio" ofrece el Destacado
+- [ ] 38.4 "Verificado" explicado
+- [ ] 38.5 Textos ("Destacados", reseñas, "Sobre el lugar", nombres de las partes, "Adminístralo gratis", formulario del dueño, precio por rangos)
+- **Siguiente paso:** 36.2 — `generateStaticParams` (devolver `[]`) en las rutas de `src/app/[ciudad]/` para que su `revalidate` funcione; en la ficha, sacar la lectura de la sesión (mi reseña, guardado) a una parte que se carga aparte; comprobar con `curl -I` que respondan con caché
+
+## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
+
+> Pedido del usuario del 2026-10-31 01:22: "quiero probar diseños así" (con una copia aparte y su vista previa en Vercel;
+> si no gusta, se descarta y la página queda igual). Cada prueba vive en su propia rama y **no se junta con `main`
+> hasta que el usuario la apruebe**. Sin librerías nuevas: las animaciones son de CSS.
+
+- [x] Prueba 1 "Postales" (rama `diseno-prueba-1`) — 2026-10-31: en la portada, las categorías en mosaico (Restaurantes grande, las otras 4 en cuadros y "Todas las categorías" debajo) en vez de la fila que se corta; en las categorías con Guía útil, un carrete de postales de los lugares con foto que se desliza solo y despacio bajo el título (se detiene al tocarlo; quieto con "reducir movimiento"); las tarjetas con foto de la Guía útil, como postales (marco blanco y nombre en letra de rótulo). Revisado a 390 px y 1280 px, claro y oscuro, con fotos de prueba
+- [x] Prueba 2 "Ciudad de fondo" (rama `diseno-prueba-2`, encima de la prueba 1) — 2026-10-31: el usuario mostró la plantilla "Dorne" de Colorlib (foto de la ciudad de fondo, buscador al centro y categorías en cuadros que suben sobre el borde de la foto) y pidió algo así con sus ideas, y que cuando haya más ciudades de Ecuador cada una tenga su foto. Portada: foto del Malecón 2000 (de la Guía útil, Freddy eduardo, CC BY-SA 4.0, con su crédito) con velo de noche, título y buscador al centro; las 5 categorías y "Todas" en cuadros con sus afiches sobre el borde; el Panorama del Cerro Santa Ana pasa al cierre "¿Tienes un negocio?". Fotos por ciudad en `src/lib/fondos-ciudad.ts` (hoy solo Guayaquil; sin foto, el fondo de noche de siempre). Revisado a 390 px y 1280 px con una foto de prueba
+- [x] Prueba 2, cambio — 2026-10-31: al usuario le gustó más cómo se veía con los dibujos planos de las capturas de prueba que con la foto real ("tú eres el genio aquí, hazlo"), y preguntó si después se puede cambiar por fotos profesionales (sí: es cambiar una línea en `src/lib/fondos-ciudad.ts`). Ilustración propia de Guayaquil de noche en el estilo de los afiches (`docs/arte/ciudad.py` → `src/components/arte/ciudades.tsx`): La Perla, torres del centro con The Point, Malecón con palmeras, río Guayas con balandra y el Cerro Santa Ana con sus casas, escalinata, faro y capilla. En computadora llena el fondo; en el celular va como franja abajo, entera. Revisado a 390 px y 1280 px, claro y oscuro
+- [x] Prueba 2, animación — 2026-10-31: el usuario preguntó si la imagen era animada y pidió animarla ("sí, hagamos eso"): la noria La Perla gira despacio, el haz del faro barre, la balandra cruza el río, titilan estrellas y se prenden y apagan algunas ventanas. Solo CSS (transform y opacity); se pausa fuera de pantalla (`PausaFueraDePantalla`) y queda quieta con "reducir movimiento" (comprobado con Playwright)
+- [x] **Aprobado por el usuario el 2026-10-31 03:46** ("quiero que la implementes, me gustó el modelo"): las pruebas 1 y 2 se juntan con `main` y se publican. `docs/DISENO.md` actualizado (sección "Versión 10: ciudad de fondo y postales")
+- **Siguiente paso:** volver a la versión 10, paso 36.2 (páginas de Guayaquil en caché; ver arriba)
+
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
@@ -475,6 +517,7 @@
 - Pagos automáticos (Payphone o Kushki)
 - Apps en Google Play y App Store
 - Otras ciudades e inglés
+- Accesibilidad (rampa, baño adaptado) y formas de pago en la ficha (revisión del 2026-10-30; necesita migración)
 
 ## Registro de sesiones
 

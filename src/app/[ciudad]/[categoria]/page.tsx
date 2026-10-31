@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Afiche } from "@/components/arte/Afiche";
+import { CarretePostales } from "@/components/guia/CarretePostales";
 import { SitiosPorTipo } from "@/components/guia/ListaSitios";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -110,6 +111,10 @@ export default async function PaginaCategoria({ params, searchParams }: PageProp
               <p className="m-0 max-w-[60ch] text-lg leading-7 text-rio-suave">{categoria.bajada}</p>
             </div>
             <Afiche slug={categoria.slug} className="size-28 max-md:hidden md:size-44 lg:size-52" />
+          </div>
+          {/* Diseño de prueba 1 "Postales": carrete de postales de los lugares de la guía con foto */}
+          <div className="mx-auto w-full max-w-[1600px] pb-8 md:pb-12">
+            <CarretePostales sitios={referencia} />
           </div>
         </section>
 

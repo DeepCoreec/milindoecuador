@@ -20,6 +20,34 @@ export function BarraCategorias({ categorias, activa, grande = false }: { catego
   const idPanel = useId();
   const principales = categorias.filter((c) => c.principal);
 
+  // Diseño de prueba 2 "Ciudad de fondo": en la portada, cuadros que suben sobre el borde de la foto de la ciudad
+  if (grande) {
+    const cuadro = "grid content-start justify-items-center gap-2 rounded-[20px] border border-linea bg-papel-alto p-3 text-center text-[15px] leading-5 font-semibold text-rio no-underline md:p-4 md:text-base md:leading-6";
+    return (
+      <nav aria-label="Categorías" className="min-w-0">
+        <div className="mx-auto grid max-w-[1040px] grid-cols-3 gap-3 md:grid-cols-6 md:gap-4">
+          {principales.map((c) => (
+            <Link key={c.slug} href={c.href} className={cuadro}>
+              <Afiche slug={c.slug} className="aspect-square w-full" />
+              <span>{c.nombreCorto ?? c.nombre}</span>
+            </Link>
+          ))}
+          <button
+            type="button"
+            aria-expanded={abierto}
+            aria-controls={idPanel}
+            onClick={() => setAbierto((v) => !v)}
+            className={`${cuadro} cursor-pointer aria-expanded:border-celeste-tinta`}
+          >
+            <Afiche slug="todas" className="aspect-square w-full shadow-[inset_0_0_0_1px_var(--linea)]" />
+            <span>Todas</span>
+          </button>
+        </div>
+        <Panel id={idPanel} abierto={abierto} categorias={categorias} activa={activa} />
+      </nav>
+    );
+  }
+
   return (
     <nav aria-label="Categorías" className="min-w-0">
       <div className="sin-barra -mx-2 flex gap-4 overflow-x-auto px-2 pt-2 pb-3">
@@ -48,22 +76,28 @@ export function BarraCategorias({ categorias, activa, grande = false }: { catego
           <span>Todas las categorías</span>
         </button>
       </div>
-      <div id={idPanel} hidden={!abierto} className="mt-1 rounded-lg border border-linea bg-papel-alto px-4 pt-6 pb-4">
-        <h2 className="m-0 mb-4 font-rotulo text-lg leading-6 font-normal">Todas las categorías</h2>
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(96px,1fr))] gap-x-3 gap-y-4">
-          {categorias.map((c) => (
-            <Link
-              key={c.slug}
-              href={c.href}
-              aria-current={c.slug === activa ? "page" : undefined}
-              className="grid justify-items-center gap-2 text-center text-[13px] leading-[18px] font-medium text-rio no-underline aria-[current=page]:font-bold"
-            >
-              <Afiche slug={c.slug} className="size-[72px]" />
-              <span>{c.nombre}</span>
-            </Link>
-          ))}
-        </div>
-      </div>
+      <Panel id={idPanel} abierto={abierto} categorias={categorias} activa={activa} />
     </nav>
   );
+}
+
+/** Panel con todas las categorías, que se despliega con el botón "Todas las categorías". */
+function Panel({ id, abierto, categorias, activa }: { id: string; abierto: boolean; categorias: CategoriaBarra[]; activa?: string }) {
+  return (
+    <div id={id} hidden={!abierto} className="mt-1 rounded-lg border border-linea bg-papel-alto px-4 pt-6 pb-4">
+      <h2 className="m-0 mb-4 font-rotulo text-lg leading-6 font-normal">Todas las categorías</h2>
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(96px,1fr))] gap-x-3 gap-y-4">
+        {categorias.map((c) => (
+          <Link
+            key={c.slug}
+            href={c.href}
+            aria-current={c.slug === activa ? "page" : undefined}
+            className="grid justify-items-center gap-2 text-center text-[13px] leading-[18px] font-medium text-rio no-underline aria-[current=page]:font-bold"
+          >
+            <Afiche slug={c.slug} className="size-[72px]" />
+            <span>{c.nombre}</span>
+          </Link>
+        ))}
+      </div>
+    </div>  );
 }

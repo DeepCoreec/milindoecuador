@@ -1,5 +1,7 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { IlustracionCiudad } from "@/components/arte/IlustracionCiudad";
 import { Panorama } from "@/components/arte/Panorama";
 import { Buscador } from "@/components/busqueda/Buscador";
 import { IconoUbicacion } from "@/components/ui/iconos";
@@ -10,6 +12,7 @@ import { TarjetaEvento } from "@/components/eventos/TarjetaEvento";
 import { FranjaGuiaUtil } from "@/components/guia/FranjaGuiaUtil";
 import { TarjetaResumen } from "@/components/lugares/TarjetaResumen";
 import { getEventos } from "@/lib/datos/eventos";
+import { fondoDeCiudad } from "@/lib/fondos-ciudad";
 import { deEstaSemana } from "@/lib/eventos";
 import { getCategoriasBarra, getSeccionesInicio } from "@/lib/datos/lugares";
 import type { LugarResumen } from "@/lib/datos/tipos";
@@ -50,41 +53,57 @@ export default async function Inicio() {
   ]);
   // Versión 5: lo que pasa en los próximos 7 días
   const estaSemana = deEstaSemana(eventos);
+  const fondo = fondoDeCiudad("guayaquil");
 
   return (
     <>
       <Cabecera />
       <main className="flex-1 text-rio">
-        {/* Entrada de noche (versión 4, opción B): mismos colores del modo oscuro, el Panorama a todo lo ancho */}
-        <section data-theme="dark" className="bg-papel text-rio" aria-labelledby="t-inicio">
-          <div className={`${ancho} grid grid-cols-[minmax(0,1fr)] gap-6 pt-10 md:pt-16`}>
+        {/* Diseño de prueba 2 "Ciudad de fondo": detrás del título, la ilustración de la ciudad (o su foto, con un velo
+            de noche para que el texto se lea); sin ninguna, el fondo de noche de siempre. Las categorías suben sobre el borde. */}
+        <section data-theme="dark" className="relative isolate overflow-hidden bg-papel text-rio" aria-labelledby="t-inicio">
+          {fondo?.tipo === "ilustracion" && <IlustracionCiudad ciudad="guayaquil" className="absolute inset-x-0 bottom-0 -z-10 aspect-[2/1] md:top-0 md:aspect-auto" />}
+          {fondo?.tipo === "foto" && (
+            <>
+              <Image src={fondo.src} alt={fondo.alt} fill priority sizes="100vw" className="-z-20 object-cover" />
+              <div className="absolute inset-0 -z-10 bg-papel/75 md:bg-papel/65" aria-hidden="true" />
+            </>
+          )}
+          <div className={`${ancho} grid content-center justify-items-center gap-5 pt-10 text-center md:min-h-[620px] md:pt-12 md:pb-36 ${fondo?.tipo === "ilustracion" ? "pb-[calc(50vw+8px)]" : "min-h-[520px] pb-28"}`}>
             <h1
               id="t-inicio"
-              className="m-0 max-w-[16ch] font-rotulo text-[40px] leading-[46px] font-normal tracking-[-0.01em] text-balance md:text-[64px] md:leading-[70px] min-[1200px]:text-[80px] min-[1200px]:leading-[86px]"
+              className="m-0 max-w-[16ch] font-rotulo text-[40px] leading-[46px] font-normal tracking-[-0.01em] text-balance md:text-[64px] md:leading-[70px] min-[1200px]:text-[76px] min-[1200px]:leading-[82px]"
             >
               Guayaquil, de punta a punta
             </h1>
-            <div className="grid items-center gap-5 min-[1000px]:grid-cols-[minmax(0,1fr)_minmax(0,560px)] min-[1000px]:gap-10">
-              <p className="m-0 max-w-[48ch] text-lg leading-7 text-rio-suave">
-                Dónde comer, dónde dormir y qué visitar, recomendado por la gente de aquí. Escríbele directo al negocio por WhatsApp.
-              </p>
-              <div className="grid justify-items-start gap-3">
+            <p className="m-0 max-w-[48ch] text-lg leading-7">
+              Dónde comer, dónde dormir y qué visitar, recomendado por la gente de aquí. Escríbele directo al negocio por WhatsApp.
+            </p>
+            <div className="grid w-full max-w-[560px] justify-items-center gap-3 text-left">
+              <div className="w-full">
                 <Buscador />
-                {/* Versión 8 (34.2): lugares, eventos y cosas para visitar cerca de donde estás */}
-                <Link href="/buscar?cerca=1" className="inline-flex min-h-11 items-center gap-2 font-semibold [&_svg]:size-5">
-                  <IconoUbicacion />
-                  Cerca de mí
-                </Link>
               </div>
+              {/* Versión 8 (34.2): lugares, eventos y cosas para visitar cerca de donde estás */}
+              <Link href="/buscar?cerca=1" className="inline-flex min-h-11 items-center gap-2 font-semibold text-rio [&_svg]:size-5">
+                <IconoUbicacion />
+                Cerca de mí
+              </Link>
             </div>
           </div>
-          <div className="mx-auto mt-10 w-full max-w-[1600px] md:mt-14">
-            <Panorama />
-          </div>
+          {fondo?.tipo === "foto" && fondo.credito && (
+            <small className="absolute right-3 bottom-[76px] text-xs leading-4 text-rio-suave md:right-6 md:bottom-[100px]">
+              Foto: {fondo.credito},{" "}
+              <a href={fondo.fuente} target="_blank" rel="noopener noreferrer" className="text-rio-suave">
+                {fondo.licencia}
+              </a>
+            </small>
+          )}
         </section>
 
-        <section className={`${ancho} ${seccion}`} aria-labelledby="t-cat">
-          <CabezaSeccion id="t-cat" titulo="¿Qué buscas hoy?" />
+        <section className={`${ancho} relative -mt-8 pb-12 md:-mt-24 min-[900px]:pb-16`} aria-labelledby="t-cat">
+          <h2 id="t-cat" className="sr-only">
+            ¿Qué buscas hoy?
+          </h2>
           <BarraCategorias categorias={categorias} grande />
         </section>
 
@@ -131,6 +150,10 @@ export default async function Inicio() {
         </div>
 
         <section data-theme="dark" className="bg-papel text-rio" aria-labelledby="t-neg">
+          {/* Diseño de prueba 2: el Panorama del Cerro Santa Ana pasa al cierre de la portada */}
+          <div className="mx-auto w-full max-w-[1600px]">
+            <Panorama />
+          </div>
           <div className={`${ancho} ${seccion} grid items-center gap-6 min-[900px]:grid-cols-[minmax(0,1fr)_auto]`}>
             <div>
               <h2 id="t-neg" className="m-0 max-w-[20ch] font-rotulo text-[28px] leading-9 font-normal text-balance md:text-[40px] md:leading-[48px]">

@@ -100,6 +100,40 @@ body {
 .mle-velo[data-state="open"] { animation: mle-aparece 220ms ease-out; }
 .mle-velo[data-state="closed"] { animation: mle-desaparece 160ms ease-in; }
 
+/* Diseño de prueba 1 "Postales": el carrete de postales se desliza solo, despacio, y se detiene al pasar el dedo o el
+   ratón, o al recibir el foco. Con "reducir movimiento" queda quieto y se desliza a mano. */
+@keyframes mle-carrete { to { transform: translateX(-50%); } }
+.mle-carrete-pista { animation: mle-carrete 70s linear infinite; }
+.mle-carrete:hover .mle-carrete-pista,
+.mle-carrete:focus-within .mle-carrete-pista { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .mle-carrete { overflow-x: auto; }
+  .mle-carrete-pista { animation: none !important; }
+  .mle-carrete-copia { display: none; }
+}
+
+/* Diseño de prueba 2: la ilustración de Guayaquil se mueve despacio (la noria gira, el faro barre, la balandra cruza
+   el río, titilan estrellas y se prenden ventanas). Se pausa fuera de pantalla (data-pausa, IlustracionCiudad) y queda
+   quieta con "reducir movimiento". Solo transform y opacity: no recalcula la página. */
+@keyframes mle-gira { to { transform: rotate(360deg); } }
+@keyframes mle-barre { from { transform: rotate(-14deg); } to { transform: rotate(10deg); } }
+@keyframes mle-navega { from { transform: translateX(-920px); } to { transform: translateX(900px); } }
+@keyframes mle-titila { 0%, 100% { opacity: 0.85; } 50% { opacity: 0.15; } }
+@keyframes mle-luz { 0%, 46% { opacity: 0.9; } 50%, 96% { opacity: 0; } 100% { opacity: 0.9; } }
+.mle-ciudad .mle-noria { transform-box: view-box; transform-origin: 250px 420px; animation: mle-gira 80s linear infinite; }
+.mle-ciudad .mle-haz { transform-box: view-box; transform-origin: 1413px 281px; animation: mle-barre 7s ease-in-out infinite alternate; }
+.mle-ciudad .mle-balandra { animation: mle-navega 120s linear -60s infinite; }
+.mle-ciudad .mle-titila-1 { animation: mle-titila 3.2s ease-in-out infinite; }
+.mle-ciudad .mle-titila-2 { animation: mle-titila 4.4s ease-in-out -1.5s infinite; }
+.mle-ciudad .mle-titila-3 { animation: mle-titila 5.6s ease-in-out -3s infinite; }
+.mle-ciudad .mle-luz-1 { animation: mle-luz 14s steps(1) infinite; }
+.mle-ciudad .mle-luz-2 { animation: mle-luz 19s steps(1) -6s infinite; }
+.mle-ciudad .mle-luz-3 { animation: mle-luz 23s steps(1) -11s infinite; }
+.mle-ciudad[data-pausa] * { animation-play-state: paused !important; }
+@media (prefers-reduced-motion: reduce) {
+  .mle-ciudad * { animation: none !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
