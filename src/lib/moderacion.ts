@@ -23,6 +23,7 @@ const CAMPOS: Record<string, string> = {
   lugar: "El lugar",
   organizador: "El organizador",
   afiche: "La descripción del afiche",
+  zonas: "Las zonas donde trabajas",
 };
 
 const MOTIVOS: Record<string, string> = {

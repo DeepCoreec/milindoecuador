@@ -208,6 +208,17 @@ r.append('<path class="trazo" stroke-width="3.4" d="M94,86 L64,56"/>')
 r.append('<path class="mango" stroke="var(--on-color)" stroke-width="1.6" d="M86,74 l14,14 q4,4 0,8 l-2,2 q-4,4 -8,0 l-14,-14 z"/>')
 reparaciones = afiche("rep", "celeste", "".join(r), "Reparaciones y servicios")
 
+# ---------- Guías turísticos: el banderín del guía y la ruta de puntos que sube al faro del cerro ----------
+r = []
+r.append('<path class="tinta" d="M0,112 V78 q30,-30 56,-34 q30,4 56,30 V112 z"/>')                      # cerro
+r.append('<rect class="cal" x="52" y="24" width="8" height="22"/>')                                      # faro
+r.append('<path class="mango" d="M50,24 h12 l-2,-6 h-8 z"/>')                                            # luz del faro
+r.append('<path class="cal-trazo" stroke-width="2.6" stroke-dasharray="1 6" d="M18,104 q18,-6 26,-22 t14,-30"/>')  # ruta
+r.append('<path class="cal-trazo" stroke-width="3" d="M84,104 V40"/>')                                       # asta
+r.append('<path class="mango" stroke="var(--on-color)" stroke-width="1.6" d="M85,41 l20,8 l-20,9 z"/>')     # banderín
+r.append('<circle class="cal" cx="18" cy="104" r="4"/>')                                                 # punto de encuentro
+guias = afiche("gui", "manglar", "".join(r), "Guías turísticos")
+
 # ---------- "Todas las categorías": mosaico con los colores de la guía ----------
 t2 = []
 cols = ["mango", "celeste", "faro", "manglar", "buganvilla", "celeste-tinta", "tinta", "mango", "faro"]
@@ -218,5 +229,5 @@ todas = afiche("tod", "cal", "".join(t2), "Todas las categorías")
 
 import json, sys
 json.dump({"todas": todas, "restaurantes": restaurantes, "hoteles": hoteles, "turismo": turismo, "ejercicio": ejercicio, "paseos": paseos,
-           "cafes": cafes, "nocturna": nocturna, "museos": museos, "compras": compras, "ninos": ninos, "naturaleza": naturaleza, "reparaciones": reparaciones},
+           "cafes": cafes, "nocturna": nocturna, "museos": museos, "compras": compras, "ninos": ninos, "naturaleza": naturaleza, "reparaciones": reparaciones, "guias": guias},
           open(sys.argv[1] if len(sys.argv) > 1 else "afiches.json", "w"), ensure_ascii=False)

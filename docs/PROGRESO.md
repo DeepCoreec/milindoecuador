@@ -516,7 +516,7 @@
 > Rama `v13-guias`. Cada fase lleva su migración (la aplica el usuario en Supabase antes de publicar).
 
 ### Fase 41 · Guías turísticos
-- [ ] 41.1 Base (migración `0023_guias.sql`): categoría `guias`; idiomas, especialidades, zonas, credencial (privada) y acreditación en `places`
+- [x] 41.1 Base (migración `0023_guias.sql`) — 2026-10-31: categoría `guias` ("Guías turísticos", con su afiche: el banderín y la ruta de puntos al faro del cerro); en `places`: idiomas y especialidades de una lista fija, zonas (≤160, filtro de palabras sin teléfonos ni enlaces), número de credencial del MINTUR (**no se da permiso de lectura al público**) y `accredited_at` (sin credencial no hay insignia; si cambia el número, se quita sola). Nadie escribe estas columnas con la clave pública. 15 pruebas RLS nuevas: 295 pasan. **(usuario) Falta aplicarla en Supabase** antes de publicar
 - [ ] 41.2 Registro y "Tu perfil de guía" en «Mi negocio»
 - [ ] 41.3 Insignia "Guía acreditado" desde el panel (con el número y el enlace al catastro del MINTUR)
 - [ ] 41.4 Ficha del guía con insignia, idiomas, especialidades y zonas
@@ -531,7 +531,7 @@
 ### Fase 43 · "Guayaquil de misterio"
 - [ ] 43.1 a 43.3 (ver el plan)
 
-- **Siguiente paso:** 41.1, migración `0023_guias.sql` siguiendo el modelo de permisos por columnas de 0005 (la credencial no se da al público) y pruebas RLS.
+- **Siguiente paso:** 41.2, "Tu perfil de guía" en «Mi negocio» (solo fichas de la categoría `guias`): acción de servidor con Zod que guarda idiomas, especialidades, zonas y credencial con `admin.ts` después de comprobar que la ficha es de la cuenta.
 
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
 

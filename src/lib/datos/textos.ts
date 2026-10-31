@@ -16,6 +16,7 @@ const SINGULAR: Record<string, string> = {
   ninos: "Plan para niños",
   naturaleza: "Naturaleza",
   reparaciones: "Servicio técnico",
+  guias: "Guía turístico",
 };
 
 /** Sectores que en una frase llevan artículo: "en el centro", "en la Alborada". */
@@ -39,4 +40,5 @@ export const TEXTO_CATEGORIA: Record<string, { nombreCorto?: string; bajada: str
   ninos: { bajada: "Planes para ir con los más pequeños." },
   naturaleza: { bajada: "Manglares, bosques secos y aire libre cerca de la ciudad." },
   reparaciones: { nombreCorto: "Reparaciones", bajada: "¿Se te dañó algo? Talleres, técnicos de celulares y electrónica, cerrajerías y más." },
+  guias: { nombreCorto: "Guías", bajada: "Guías de turismo de Guayaquil para recorrer la ciudad con alguien que la conoce. Los acreditados, primero." },
 };
