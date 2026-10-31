@@ -15,16 +15,17 @@ export function FilaSitio({ s }: { s: Sitio }) {
   const texto = s.nota ?? s.descripcion?.texto ?? s.direccion;
   const usaWikipedia = !s.nota && !!s.descripcion;
   return (
-    <li className="grid content-start gap-1 overflow-hidden rounded-xl border border-linea bg-papel-alto p-4">
+    // Diseño de prueba 1 "Postales": con foto, la tarjeta es una postal (marco blanco y el nombre en letra de rótulo)
+    <li className={`grid content-start gap-1 overflow-hidden border border-linea bg-papel-alto ${s.foto ? "rounded-sm p-2.5 pb-4" : "rounded-xl p-4"}`}>
       {s.foto && (
-        <div className="relative -mx-4 -mt-4 mb-2 aspect-[4/3] bg-celeste-suave">
+        <div className="relative mb-2 aspect-[4/3] overflow-hidden rounded-[2px] bg-celeste-suave">
           <Image src={s.foto.src} alt={`Foto de ${s.nombre}`} fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
         </div>
       )}
-      <b className="text-base leading-6">{s.nombre}</b>
-      {texto && <span className="text-[15px] leading-[22px] text-rio-suave">{texto}</span>}
-      {s.horario && <span className="text-sm leading-5 text-rio-suave">Horario: {horarioLegible(s.horario)}</span>}
-      <span className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[15px]">
+      <b className={s.foto ? "px-1.5 font-rotulo text-[17px] leading-6 font-normal" : "text-base leading-6"}>{s.nombre}</b>
+      {texto && <span className={`text-[15px] leading-[22px] text-rio-suave ${s.foto ? "px-1.5" : ""}`}>{texto}</span>}
+      {s.horario && <span className={`text-sm leading-5 text-rio-suave ${s.foto ? "px-1.5" : ""}`}>Horario: {horarioLegible(s.horario)}</span>}
+      <span className={`mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[15px] ${s.foto ? "px-1.5" : ""}`}>
         <a href={enlaceRutaGoogle(s.ubicacion)} target="_blank" rel="noopener noreferrer" aria-label={`Cómo llegar a ${s.nombre}`}>
           Cómo llegar
         </a>
@@ -36,7 +37,7 @@ export function FilaSitio({ s }: { s: Sitio }) {
         )}
       </span>
       {(s.foto || usaWikipedia) && (
-        <small className="mt-1 text-[13px] leading-[18px] text-rio-suave">
+        <small className={`mt-1 text-[13px] leading-[18px] text-rio-suave ${s.foto ? "px-1.5" : ""}`}>
           {s.foto && (
             <>
               Foto: {s.foto.credito},{" "}

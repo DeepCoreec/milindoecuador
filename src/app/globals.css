@@ -100,6 +100,18 @@ body {
 .mle-velo[data-state="open"] { animation: mle-aparece 220ms ease-out; }
 .mle-velo[data-state="closed"] { animation: mle-desaparece 160ms ease-in; }
 
+/* Diseño de prueba 1 "Postales": el carrete de postales se desliza solo, despacio, y se detiene al pasar el dedo o el
+   ratón, o al recibir el foco. Con "reducir movimiento" queda quieto y se desliza a mano. */
+@keyframes mle-carrete { to { transform: translateX(-50%); } }
+.mle-carrete-pista { animation: mle-carrete 70s linear infinite; }
+.mle-carrete:hover .mle-carrete-pista,
+.mle-carrete:focus-within .mle-carrete-pista { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .mle-carrete { overflow-x: auto; }
+  .mle-carrete-pista { animation: none !important; }
+  .mle-carrete-copia { display: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

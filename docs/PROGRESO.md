@@ -467,6 +467,15 @@
 - [ ] 38.5 Textos ("Destacados", reseñas, "Sobre el lugar", nombres de las partes, "Adminístralo gratis", formulario del dueño, precio por rangos)
 - **Siguiente paso:** 36.2 — `generateStaticParams` (devolver `[]`) en las rutas de `src/app/[ciudad]/` para que su `revalidate` funcione; en la ficha, sacar la lectura de la sesión (mi reseña, guardado) a una parte que se carga aparte; comprobar con `curl -I` que respondan con caché
 
+## Pruebas de diseño (rama aparte, no publicadas)
+
+> Pedido del usuario del 2026-10-31 01:22: "quiero probar diseños así" (con una copia aparte y su vista previa en Vercel;
+> si no gusta, se descarta y la página queda igual). Cada prueba vive en su propia rama y **no se junta con `main`
+> hasta que el usuario la apruebe**. Sin librerías nuevas: las animaciones son de CSS.
+
+- [x] Prueba 1 "Postales" (rama `diseno-prueba-1`) — 2026-10-31: en la portada, las categorías en mosaico (Restaurantes grande, las otras 4 en cuadros y "Todas las categorías" debajo) en vez de la fila que se corta; en las categorías con Guía útil, un carrete de postales de los lugares con foto que se desliza solo y despacio bajo el título (se detiene al tocarlo; quieto con "reducir movimiento"); las tarjetas con foto de la Guía útil, como postales (marco blanco y nombre en letra de rótulo). Revisado a 390 px y 1280 px, claro y oscuro, con fotos de prueba
+- **Siguiente paso:** el usuario mira la vista previa de la rama y decide: se queda, se cambia algo o se descarta
+
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
 - (2026-10-28, fase 33) Enlazar **La Guayaca** (laguayacagye.com, tarjeta y subsidio de la Metrovía) cuando su sitio salga de mantenimiento. ¿Enlazar Moovit (app gratuita de terceros con rutas de la Metrovía)? Lo decide el usuario: no es oficial
