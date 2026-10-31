@@ -535,7 +535,8 @@
 ### Fase 43 · "Guayaquil de misterio"
 - [ ] 43.1 a 43.3 (ver el plan)
 
-- **Siguiente paso:** publicar la rama `v13-guias` (PR a `main`) y probar las puertas 41 y 42 en la página real con un guía de prueba. Después, fase 43 ("Guayaquil de misterio"). **(usuario):** aplicar `supabase/migrations/0023_guias.sql` y luego `0024_recorridos.sql` en el editor SQL de Supabase y avisar; Claude publica la rama `v13-guias` (antes NO: las páginas leen columnas nuevas). Después, la puerta de la fase 41 con un guía de prueba, y la fase 42 (recorridos).
+- [x] Publicado el 2026-10-31 (PR #58). Comprobado en la página real: Turismo muestra "Guías turísticos" con la invitación a registrarse, `/guayaquil/guias` y el registro (con el aviso para guías) cargan, y un recorrido que no existe da 404
+- **Siguiente paso:** puertas 41 y 42 con un guía de prueba en la página real (registrarse como guía, llenar el perfil, poner la insignia desde el panel, crear un recorrido de 3 paradas y abrir su mapa y su WhatsApp); lo aprueba el usuario. Después, fase 43 ("Guayaquil de misterio"). Después, fase 43 ("Guayaquil de misterio"). **(usuario):** aplicar `supabase/migrations/0023_guias.sql` y luego `0024_recorridos.sql` en el editor SQL de Supabase y avisar; Claude publica la rama `v13-guias` (antes NO: las páginas leen columnas nuevas). Después, la puerta de la fase 41 con un guía de prueba, y la fase 42 (recorridos).
 
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
 
