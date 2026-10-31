@@ -215,6 +215,9 @@ export async function registrarFotoSitio(_previo: EstadoAdmin, datos: FormData):
   await requireAdmin();
   const db = crearClienteAdmin();
   const bucket = db.storage.from("fotos-lugares");
+  // Un camino que ya está registrado no se vuelve a registrar ni se borra (revisión independiente 2026-10-31, hallazgo 1)
+  const { data: yaEsta } = await db.from("city_spot_photos").select("id").eq("storage_path", r.data.camino).maybeSingle();
+  if (yaEsta) return { estado: "error", mensaje: "Esa foto ya está guardada." };
   if (!(await firmaValida(urlPublicaFoto(exigirConfigSupabase().url, r.data.camino), ["webp", "jpeg"]))) {
     await bucket.remove([r.data.camino]);
     return { estado: "error", mensaje: "Ese archivo no es una foto válida. Vuelve a elegirla." };
@@ -224,7 +227,8 @@ export async function registrarFotoSitio(_previo: EstadoAdmin, datos: FormData):
     .from("city_spot_photos")
     .insert({ spot_id: r.data.sitio, storage_path: r.data.camino, alt_text: r.data.alt, sort_order: (ultima?.sort_order ?? 0) + 1 });
   if (error) {
-    await bucket.remove([r.data.camino]);
+    // Si el camino ya existía (código 23505), el archivo es de otra foto: no se borra
+    if (error.code !== "23505") await bucket.remove([r.data.camino]);
     if (error.message.includes("tope_fotos")) return { estado: "error", mensaje: "Este lugar ya tiene 8 fotos más." };
     if (error.message.includes("texto_no_permitido")) return { estado: "error", mensaje: "La descripción de la foto no se permite (sin teléfonos, enlaces ni groserías)." };
     return { estado: "error", mensaje: "No se pudo guardar la foto. Inténtalo de nuevo." };

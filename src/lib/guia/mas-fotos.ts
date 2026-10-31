@@ -1,6 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import type { crearClienteAdmin } from "@/lib/supabase/admin";
+import { firmaDeDatos } from "@/lib/firmaArchivo";
 import { buscarMasEnWikimedia, descargarFoto, ErrorWikimedia } from "@/lib/wikimedia";
 
 /*
@@ -44,6 +45,8 @@ export async function traerMasDeUnSitio(db: Db, f: FilaMas, maximo: number, cort
     let camino: string | null = null;
     try {
       const d = await descargarFoto(foto.url, fetch, corte);
+      // Que de verdad sea una foto (no solo lo que dice el servidor)
+      if (!firmaDeDatos(d.datos, [d.extension === "jpg" ? "jpeg" : d.extension])) throw new ErrorWikimedia("el archivo no es una foto", true);
       camino = `guia/${f.id}/${crypto.randomUUID()}.${d.extension}`;
       const { error: e } = await bucket.upload(camino, d.datos, { contentType: d.tipo, cacheControl: "604800" });
       if (e) throw new ErrorWikimedia("no se pudo guardar en el bucket");

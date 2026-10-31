@@ -16,7 +16,7 @@ create table public.city_spot_photos (
   credit       text check (char_length(credit) <= 150),
   license      text check (char_length(license) <= 60),
   source       text check (char_length(source) <= 400 and source ~ '^https://commons\.wikimedia\.org/'),
-  sort_order   smallint not null default 0 check (sort_order between 0 and 50),
+  sort_order   smallint not null default 0 check (sort_order >= 0),
   created_at   timestamptz not null default now(),
   -- Una foto de Commons siempre con su licencia y su enlace; una propia, sin ninguno de los dos
   constraint licencia_con_fuente check ((license is null) = (source is null))
@@ -39,6 +39,8 @@ security definer
 set search_path = ''
 as $$
 begin
+  -- Un candado por lugar: dos fotos al mismo tiempo no se saltan el tope (revisión independiente 2026-10-31, hallazgo 3)
+  if tg_op = 'INSERT' then perform pg_advisory_xact_lock(hashtext(new.spot_id::text)); end if;
   if tg_op = 'INSERT' and (select count(*) from public.city_spot_photos p where p.spot_id = new.spot_id) >= 8 then
     raise exception 'tope_fotos' using hint = 'Cada lugar tiene como mucho 8 fotos más';
   end if;

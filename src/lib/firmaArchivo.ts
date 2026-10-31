@@ -6,7 +6,7 @@ import "server-only";
  * (la "firma" de cada formato) antes de registrarlo. Si no coincide, el archivo se borra.
  */
 
-export type Formato = "webp" | "jpeg" | "iso" | "webm";
+export type Formato = "webp" | "jpeg" | "png" | "iso" | "webm";
 
 function coincide(b: Uint8Array, f: Formato): boolean {
   const texto = (desde: number, largo: number) => String.fromCharCode(...b.slice(desde, desde + largo));
@@ -15,6 +15,8 @@ function coincide(b: Uint8Array, f: Formato): boolean {
       return texto(0, 4) === "RIFF" && texto(8, 4) === "WEBP";
     case "jpeg":
       return b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff;
+    case "png":
+      return b[0] === 0x89 && texto(1, 3) === "PNG";
     case "iso": // MP4 y MOV
       return ["ftyp", "moov", "mdat", "wide", "free", "skip"].includes(texto(4, 4));
     case "webm":
@@ -40,4 +42,9 @@ export async function firmaValida(url: string, formatos: Formato[]): Promise<boo
   } catch {
     return false;
   }
+}
+
+/** La misma revisión para un archivo ya descargado en memoria (fotos de Wikimedia, versión 12; revisión 2026-10-31). */
+export function firmaDeDatos(datos: Uint8Array, formatos: Formato[]): boolean {
+  return datos.length >= 12 && formatos.some((f) => coincide(datos.slice(0, 16), f));
 }
