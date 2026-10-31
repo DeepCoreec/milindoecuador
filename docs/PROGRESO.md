@@ -523,7 +523,7 @@
 - [x] 41.5 Sección "Guías turísticos" en Turismo — 2026-10-31: debajo de los lugares, hasta 3 guías (acreditados y con foto primero) y "Ver los N guías"; sin guías, una invitación a registrarse. Probado con Playwright a 390 y 1280 px, claro y oscuro (con dos guías de ejemplo temporales, ya quitados)
 - [x] 41.6 Política de privacidad — 2026-10-31: párrafo "Si eres guía de turismo" (qué es público y que la credencial no se publica); fecha al 31 de octubre
 - [x] Revisión de seguridad independiente — 2026-10-31: sin críticos ni altos. Arreglados: (medio) la insignia solo se pone al número que vio el admin (si el guía lo cambió mientras se revisaba, no se acredita); (bajos) la insignia se quita también si la ficha cambia de categoría o de dueño; idiomas y especialidades repetidos se quitan; 6 pruebas RLS más (301 pasan) y 211 unitarias
-- [ ] (usuario) aplicar 0023 en Supabase; luego publicar
+- [x] (usuario) 0023 y 0024 aplicadas en Supabase el 2026-10-31 18:29 ("los dos funcionaron"; el aviso de "operaciones destructivas" de 0024 era por el `delete` dentro de `guardar_paradas` y los `revoke`)
 
 ### Fase 42 · Recorridos de los guías
 - [x] 42.1 Base (migración `0024_recorridos.sql`) — 2026-10-31: tablas `guide_tours` (nombre, descripción 40–800, duración 30–720 min, precio por persona o "a convenir", punto de encuentro, borrador/publicado; hasta 10 por guía con candado) y `guide_tour_stops` (de 1 a 8 paradas en orden, sin repetir, solo lugares para visitar publicados de la Guía útil). El público ve solo recorridos publicados de guías publicados y paradas de lugares publicados; solo escribe el servidor. Textos con el filtro de palabras, sin teléfonos ni enlaces. 20 pruebas RLS nuevas: 321 pasan. **(usuario) Falta aplicarla en Supabase**
@@ -535,7 +535,7 @@
 ### Fase 43 · "Guayaquil de misterio"
 - [ ] 43.1 a 43.3 (ver el plan)
 
-- **Siguiente paso:** (usuario) aplicar `0023_guias.sql` y `0024_recorridos.sql` en Supabase y avisar; Claude publica la rama `v13-guias` y se prueban las puertas 41 y 42 con un guía de prueba. Después, fase 43 ("Guayaquil de misterio"). **(usuario):** aplicar `supabase/migrations/0023_guias.sql` y luego `0024_recorridos.sql` en el editor SQL de Supabase y avisar; Claude publica la rama `v13-guias` (antes NO: las páginas leen columnas nuevas). Después, la puerta de la fase 41 con un guía de prueba, y la fase 42 (recorridos).
+- **Siguiente paso:** publicar la rama `v13-guias` (PR a `main`) y probar las puertas 41 y 42 en la página real con un guía de prueba. Después, fase 43 ("Guayaquil de misterio"). **(usuario):** aplicar `supabase/migrations/0023_guias.sql` y luego `0024_recorridos.sql` en el editor SQL de Supabase y avisar; Claude publica la rama `v13-guias` (antes NO: las páginas leen columnas nuevas). Después, la puerta de la fase 41 con un guía de prueba, y la fase 42 (recorridos).
 
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
 
