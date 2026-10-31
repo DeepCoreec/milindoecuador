@@ -474,7 +474,8 @@
 > hasta que el usuario la apruebe**. Sin librerías nuevas: las animaciones son de CSS.
 
 - [x] Prueba 1 "Postales" (rama `diseno-prueba-1`) — 2026-10-31: en la portada, las categorías en mosaico (Restaurantes grande, las otras 4 en cuadros y "Todas las categorías" debajo) en vez de la fila que se corta; en las categorías con Guía útil, un carrete de postales de los lugares con foto que se desliza solo y despacio bajo el título (se detiene al tocarlo; quieto con "reducir movimiento"); las tarjetas con foto de la Guía útil, como postales (marco blanco y nombre en letra de rótulo). Revisado a 390 px y 1280 px, claro y oscuro, con fotos de prueba
-- **Siguiente paso:** el usuario mira la vista previa de la rama y decide: se queda, se cambia algo o se descarta
+- [x] Prueba 2 "Ciudad de fondo" (rama `diseno-prueba-2`, encima de la prueba 1) — 2026-10-31: el usuario mostró la plantilla "Dorne" de Colorlib (foto de la ciudad de fondo, buscador al centro y categorías en cuadros que suben sobre el borde de la foto) y pidió algo así con sus ideas, y que cuando haya más ciudades de Ecuador cada una tenga su foto. Portada: foto del Malecón 2000 (de la Guía útil, Freddy eduardo, CC BY-SA 4.0, con su crédito) con velo de noche, título y buscador al centro; las 5 categorías y "Todas" en cuadros con sus afiches sobre el borde; el Panorama del Cerro Santa Ana pasa al cierre "¿Tienes un negocio?". Fotos por ciudad en `src/lib/fondos-ciudad.ts` (hoy solo Guayaquil; sin foto, el fondo de noche de siempre). Revisado a 390 px y 1280 px con una foto de prueba
+- **Siguiente paso:** el usuario mira las vistas previas de las ramas `diseno-prueba-1` y `diseno-prueba-2` y decide: se queda, se cambia algo o se descarta. Pendiente: una foto de Guayaquil de más resolución (la de hoy mide 960 px de ancho)
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 

@@ -20,24 +20,16 @@ export function BarraCategorias({ categorias, activa, grande = false }: { catego
   const idPanel = useId();
   const principales = categorias.filter((c) => c.principal);
 
-  // Diseño de prueba 1 "Postales": en la portada, un mosaico en vez de la fila que se desliza (nada queda cortado)
+  // Diseño de prueba 2 "Ciudad de fondo": en la portada, cuadros que suben sobre el borde de la foto de la ciudad
   if (grande) {
-    const tarjeta = "rounded-[20px] border border-linea bg-papel-alto text-rio no-underline font-semibold";
+    const cuadro = "grid content-start justify-items-center gap-2 rounded-[20px] border border-linea bg-papel-alto p-3 text-center text-[15px] leading-5 font-semibold text-rio no-underline md:p-4 md:text-base md:leading-6";
     return (
       <nav aria-label="Categorías" className="min-w-0">
-        <div className="grid grid-cols-2 gap-3 md:max-w-[880px] md:grid-cols-4 md:gap-4">
-          {principales.map((c, i) => (
-            <Link
-              key={c.slug}
-              href={c.href}
-              className={`${tarjeta} ${
-                i === 0
-                  ? "col-span-2 flex items-center gap-4 p-3 text-xl leading-7 md:row-span-2 md:grid md:content-start md:gap-4 md:p-4 md:text-2xl md:leading-8"
-                  : "grid content-start gap-2 p-3 text-base leading-6"
-              }`}
-            >
-              <Afiche slug={c.slug} className={i === 0 ? "size-28 flex-none md:size-auto md:aspect-square md:w-full" : "aspect-square w-full"} />
-              <span className={i === 0 ? "font-rotulo font-normal" : ""}>{c.nombreCorto ?? c.nombre}</span>
+        <div className="mx-auto grid max-w-[1040px] grid-cols-3 gap-3 md:grid-cols-6 md:gap-4">
+          {principales.map((c) => (
+            <Link key={c.slug} href={c.href} className={cuadro}>
+              <Afiche slug={c.slug} className="aspect-square w-full" />
+              <span>{c.nombreCorto ?? c.nombre}</span>
             </Link>
           ))}
           <button
@@ -45,11 +37,10 @@ export function BarraCategorias({ categorias, activa, grande = false }: { catego
             aria-expanded={abierto}
             aria-controls={idPanel}
             onClick={() => setAbierto((v) => !v)}
-            className={`${tarjeta} col-span-2 flex min-h-14 cursor-pointer items-center gap-3 p-3 text-left text-base md:col-span-4 aria-expanded:border-celeste-tinta`}
+            className={`${cuadro} cursor-pointer aria-expanded:border-celeste-tinta`}
           >
-            <Afiche slug="todas" className="size-10 flex-none shadow-[inset_0_0_0_1px_var(--linea)]" />
-            <span className="flex-1">Todas las categorías</span>
-            <span aria-hidden="true" className="text-xl">{abierto ? "⌃" : "⌄"}</span>
+            <Afiche slug="todas" className="aspect-square w-full shadow-[inset_0_0_0_1px_var(--linea)]" />
+            <span>Todas</span>
           </button>
         </div>
         <Panel id={idPanel} abierto={abierto} categorias={categorias} activa={activa} />
