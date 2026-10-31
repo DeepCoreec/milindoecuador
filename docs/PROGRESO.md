@@ -403,7 +403,15 @@
 
 - [x] 33.1 Enlaces comprobados — 2026-10-28 20:10 (abiertos uno por uno en el navegador): la ATM **sigue activa** (atm.gob.ec, "Autoridad de Tránsito y Movilidad", tarifario 2026) y publica el **mapa oficial de la Metrovía 2026** (PDF, octubre 2026), la página de Metrovía y la de Aerovía; Terminal Terrestre (ttg.ec); aeropuerto (tagsa.aero, vuelos en vivo); ECU 911 (ecu911.gob.ec). **No se puso:** laguayacagye.com (la tarjeta de la Metrovía) estaba "en mantenimiento"; app de la Metrovía (no hay una oficial vigente: la de 2015 ya no existe y Moovit es de terceros)
 - [x] 33.2 Sección "Enlaces oficiales" en Información útil — 2026-10-28: `src/lib/enlaces-utiles.ts` (lista con fecha de comprobación) y `src/components/guia/EnlacesUtiles.tsx` (filas grandes para tocar en el celular, dicen a qué sitio llevan, se abren en otra pestaña), agrupadas en Moverse por la ciudad, Viajar y Emergencias. La tarjeta "Moverse por la ciudad" ahora manda a esos enlaces. Prueba unitaria: solo HTTPS y solo dominios oficiales de la lista
-- **Siguiente paso:** publicar y revisar; puerta de la fase 33 (el usuario abre los enlaces); luego fase 34 "Cerca de mí"
+- [x] **Puertas de las fases 32 y 33** — 2026-10-30 21:24: el usuario respondió "continua" tras el resumen; se toman como aprobadas (pendiente que mire el celular)
+
+### Fase 34 · "Cerca de mí"
+
+- [x] 34.1 Búsqueda por cercanía — 2026-10-30: `src/lib/cerca.ts` (solo lo público): negocios publicados (abiertos ahora primero), eventos de esta semana con dirección y lugares de la Guía útil "para visitar" (con foto primero), ordenados por distancia, a 3 km y si hay muy poco a 8 km. La ubicación solo se acepta dentro de Ecuador y redondeada a 3 decimales (~110 m). Ruta `POST /api/cerca` (solo desde nuestras páginas, cuerpo de 200 bytes, Zod; la ubicación va en el cuerpo, no en la dirección, y no se escribe en los registros). 3 pruebas unitarias
+- [ ] 34.2 Botón "Cerca de mí" en el buscador
+- [ ] 34.3 Paumi con "Cerca de mí"
+- [ ] 34.4 Revisión de seguridad y prueba en la página
+- **Siguiente paso:** 34.2
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
