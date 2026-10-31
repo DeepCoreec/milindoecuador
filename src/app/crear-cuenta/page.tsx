@@ -3,13 +3,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
+import { BotonGoogle } from "@/components/sesion/BotonGoogle";
 import { FormCrearCuenta } from "@/components/sesion/FormCrearCuenta";
 import { obtenerUsuario } from "@/lib/auth";
 import { rutaSegura } from "@/lib/validacion/sesion";
 
 export const metadata: Metadata = { title: "Crear cuenta · Mi Lindo Ecuador", robots: { index: false, follow: false } };
 
-/** Crear cuenta con correo y contraseña (versión 2, paso 6.2). */
+/** Crear cuenta con Google (versión 10, 38.1) o con correo y contraseña (versión 2, paso 6.2). */
 export default async function PaginaCrearCuenta({ searchParams }: PageProps<"/crear-cuenta">) {
   const p = await searchParams;
   const siguiente = rutaSegura(p.siguiente);
@@ -23,6 +24,7 @@ export default async function PaginaCrearCuenta({ searchParams }: PageProps<"/cr
           <h1 className="m-0 font-rotulo text-[28px] leading-[34px] font-normal">Crear cuenta</h1>
           <p className="m-0 text-rio-suave">Con tu cuenta puedes escribir reseñas y registrar tu negocio.</p>
         </div>
+        <BotonGoogle siguiente={siguiente} texto="Continuar con Google" />
         <FormCrearCuenta siguiente={siguiente} />
         <p className="m-0 text-center text-rio-suave">
           ¿Ya tienes cuenta? <Link href={`/entrar?siguiente=${encodeURIComponent(siguiente)}`}>Entra</Link>

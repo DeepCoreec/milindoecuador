@@ -460,12 +460,12 @@
 - [ ] 37.4 Detalles (cabecera, comillas, hueco, fila de categorías, "Cómo llegar", insignias)
 
 ### Fase 38 · Para que los negocios se registren
-- [ ] 38.1 "Continuar con Google" en Crear cuenta
+- [x] 38.1 "Continuar con Google" en Crear cuenta — 2026-10-31: el botón de Google pasa a un componente común (`src/components/sesion/BotonGoogle.tsx`) que usan Entrar ("Entrar con Google") y Crear cuenta ("Continuar con Google", arriba del correo). Revisado a 390 px claro y 1280 px oscuro
 - [ ] 38.2 Registro con precio, 3 pasos y contador de letras
 - [ ] 38.3 "Mi negocio" ofrece el Destacado
 - [ ] 38.4 "Verificado" explicado
 - [ ] 38.5 Textos ("Destacados", reseñas, "Sobre el lugar", nombres de las partes, "Adminístralo gratis", formulario del dueño, precio por rangos)
-- **Siguiente paso:** 38.1 — agregar el botón de Google (el mismo de `/entrar`) arriba del formulario en `src/app/crear-cuenta/page.tsx`
+- **Siguiente paso:** 36.1 — mover `MOTIVOS` (y su tipo) de `src/lib/validacion/resenas.ts` a un archivo sin Zod (`src/lib/motivos.ts`) e importarlo desde `ReportarLugar.tsx`, `ReportarResena.tsx` y la validación; medir el JavaScript de la ficha antes y después
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
