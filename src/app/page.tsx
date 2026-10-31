@@ -69,7 +69,7 @@ export default async function Inicio() {
               <div className="absolute inset-0 -z-10 bg-papel/75 md:bg-papel/65" aria-hidden="true" />
             </>
           )}
-          <div className={`${ancho} grid content-center justify-items-center gap-5 pt-10 text-center md:min-h-[620px] md:pt-12 md:pb-36 ${fondo?.tipo === "ilustracion" ? "pb-[calc(50vw+8px)]" : "min-h-[520px] pb-28"}`}>
+          <div className={`${ancho} grid content-center justify-items-center gap-5 pt-10 text-center md:min-h-[620px] md:pt-12 md:pb-[calc(12.5vw+48px)] ${fondo?.tipo === "ilustracion" ? "pb-[calc(50vw+8px)]" : "min-h-[520px] pb-28"}`}>
             <h1
               id="t-inicio"
               className="m-0 max-w-[16ch] font-rotulo text-[40px] leading-[46px] font-normal tracking-[-0.01em] text-balance md:text-[64px] md:leading-[70px] min-[1200px]:text-[76px] min-[1200px]:leading-[82px]"
@@ -100,11 +100,14 @@ export default async function Inicio() {
           )}
         </section>
 
-        <section className={`${ancho} relative -mt-8 pb-12 md:-mt-24 min-[900px]:pb-16`} aria-labelledby="t-cat">
+        {/* Los cuadros de las categorías siguen la noche de la portada (en modo claro y oscuro), como pidió el usuario */}
+        <section data-theme="dark" className="bg-papel text-rio" aria-labelledby="t-cat">
+          <div className={`${ancho} relative -mt-8 pb-12 md:-mt-24 min-[900px]:pb-16`}>
           <h2 id="t-cat" className="sr-only">
             ¿Qué buscas hoy?
           </h2>
           <BarraCategorias categorias={categorias} grande />
+          </div>
         </section>
 
         {/* Versión 8 (32.1): solo negocios con el plan Destacado pagado; sin ninguno, la sección no aparece */}

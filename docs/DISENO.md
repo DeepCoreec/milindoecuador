@@ -86,7 +86,7 @@ Las reglas de uso de cada uno están en el artefacto.
 - **Movimiento de la ilustración:** la noria gira, el faro barre, la balandra cruza, titilan estrellas y ventanas. Solo
   transform y opacity, se pausa fuera de pantalla y queda quieta con "reducir movimiento". Es la única animación
   automática junto con el Panorama y el carrete de postales.
-- **Categorías de la portada:** cuadros (`papel-alto`, radius 20 px) con el afiche y el nombre, que suben sobre el borde
+- **Categorías de la portada:** en una franja siempre de noche (`data-theme="dark"`, también en modo claro), cuadros (`papel-alto`, radius 20 px) con el afiche y el nombre, que suben sobre el borde
   de la ilustración: 3 columnas en el celular y 6 en computadora; el último abre "Todas las categorías".
 - **Panorama:** pasa al cierre de la portada ("¿Tienes un negocio?").
 - **Postales:** en las categorías con Guía útil, un carrete de postales (marco `rio` sobre la franja de noche, nombre en
