@@ -408,10 +408,10 @@
 ### Fase 34 · "Cerca de mí"
 
 - [x] 34.1 Búsqueda por cercanía — 2026-10-30: `src/lib/cerca.ts` (solo lo público): negocios publicados (abiertos ahora primero), eventos de esta semana con dirección y lugares de la Guía útil "para visitar" (con foto primero), ordenados por distancia, a 3 km y si hay muy poco a 8 km. La ubicación solo se acepta dentro de Ecuador y redondeada a 3 decimales (~110 m). Ruta `POST /api/cerca` (solo desde nuestras páginas, cuerpo de 200 bytes, Zod; la ubicación va en el cuerpo, no en la dirección, y no se escribe en los registros). 3 pruebas unitarias
-- [ ] 34.2 Botón "Cerca de mí" en el buscador
+- [x] 34.2 Botón "Cerca de mí" — 2026-10-30: `src/components/busqueda/CercaDeMi.tsx` en `/buscar` (pide permiso solo al tocarlo; sin permiso, un mensaje y todo sigue igual) y enlace "Cerca de mí" bajo el buscador de la portada (`/buscar?cerca=1`, arranca solo porque la persona ya lo tocó). Resultados en tres grupos: Negocios (abiertos primero), Eventos de esta semana y Para visitar, con "a 350 m" y "Cómo llegar". **Probado con Playwright** (página compilada en la nube de Claude, sin datos reales, ubicación simulada en el Malecón): a 390 px claro y oscuro y a 1366 px, sin desplazamiento lateral; sin permiso muestra el aviso
 - [ ] 34.3 Paumi con "Cerca de mí"
 - [ ] 34.4 Revisión de seguridad y prueba en la página
-- **Siguiente paso:** 34.2
+- **Siguiente paso:** 34.3
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
