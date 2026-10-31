@@ -1,4 +1,5 @@
 import "server-only";
+import { ESPECIALIDADES, IDIOMAS, leerLista, type Especialidad, type Idioma } from "@/lib/guias";
 import { notFound } from "next/navigation";
 import { requireUsuario, type Usuario } from "@/lib/auth";
 import { urlPublicaFoto } from "@/lib/fotos";
@@ -62,6 +63,14 @@ export async function requireDueno(lugarId: string, siguiente = "/mi-negocio"): 
   return usuario;
 }
 
+export type PerfilGuiaPrivado = {
+  idiomas: Idioma[];
+  especialidades: Especialidad[];
+  zonas: string | null;
+  credencial: string | null;
+  acreditado: boolean;
+};
+
 export type MiNegocio = {
   id: string;
   nombre: string;
@@ -79,6 +88,8 @@ export type MiNegocio = {
   precio: number | null;
   whatsapp: string | null;
   enlaces: Enlaces;
+  /** Solo para las fichas de la categoría "Guías turísticos" (versión 13). La credencial la ve solo su dueño. */
+  guia: PerfilGuiaPrivado | null;
   fotos: { id: string; src: string; alt: string }[];
   resenas: {
     id: string;
@@ -97,7 +108,7 @@ export async function getMiNegocio(usuario: Usuario, lugarId: string): Promise<M
   const { data: l } = await db
     .from("places")
     .select(
-      "id, slug, name, status, sector, description, short_fact, hours, address, latitude, longitude, opening_hours, price_level, whatsapp, website, facebook, instagram, tiktok, youtube, categories(slug, name), cities(slug)",
+      "id, slug, name, status, sector, description, short_fact, hours, address, latitude, longitude, opening_hours, price_level, whatsapp, website, facebook, instagram, tiktok, youtube, guide_languages, guide_specialties, guide_zones, guide_license, accredited_at, categories(slug, name), cities(slug)",
     )
     .eq("id", lugarId)
     .eq("owner_id", usuario.id)
@@ -122,6 +133,11 @@ export async function getMiNegocio(usuario: Usuario, lugarId: string): Promise<M
         instagram: string | null;
         tiktok: string | null;
         youtube: string | null;
+        guide_languages: string[] | null;
+        guide_specialties: string[] | null;
+        guide_zones: string | null;
+        guide_license: string | null;
+        accredited_at: string | null;
         categories: { slug: string; name: string } | null;
         cities: { slug: string } | null;
       }[]
@@ -167,6 +183,16 @@ export async function getMiNegocio(usuario: Usuario, lugarId: string): Promise<M
     precio: l.price_level,
     whatsapp: l.whatsapp,
     enlaces: enlacesDeFila(l),
+    guia:
+      l.categories?.slug === "guias"
+        ? {
+            idiomas: leerLista(l.guide_languages, IDIOMAS),
+            especialidades: leerLista(l.guide_specialties, ESPECIALIDADES),
+            zonas: l.guide_zones,
+            credencial: l.guide_license,
+            acreditado: !!l.accredited_at,
+          }
+        : null,
     fotos: (fotos.data ?? []).map((f) => ({
       id: f.id as string,
       src: urlPublicaFoto(url, f.storage_path as string),

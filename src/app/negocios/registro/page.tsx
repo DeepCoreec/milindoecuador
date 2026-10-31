@@ -47,6 +47,10 @@ export default async function PaginaRegistro() {
                 </li>
               ))}
             </ul>
+            <p className="m-0 max-w-[60ch] rounded-lg border border-linea bg-papel-alto px-4 py-3 text-[15px] leading-[22px]">
+              <b>¿Eres guía de turismo?</b> Elige la categoría «Guías turísticos». Después, en «Mi negocio», llenas tus idiomas, tus
+              especialidades y tu número de credencial para llevar la insignia «Guía acreditado».
+            </p>
             <Boton href="/negocios/planes" variante="texto" className="justify-self-start">
               Ver planes para destacar tu negocio
             </Boton>

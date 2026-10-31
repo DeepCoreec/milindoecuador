@@ -10,7 +10,7 @@ import { urlPublicaFoto } from "@/lib/fotos";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { configSupabase, exigirConfigSupabase } from "@/lib/supabase/config";
 import { esEnlaceCorto } from "@/lib/ubicacion";
-import { DESCRIPCION_PENDIENTE, esquemaEstadoDueno, esquemaFotoDueno, esquemaNegocio, esquemaRespuestaDueno, esquemaSubidaDueno } from "@/lib/validacion/dueno";
+import { DESCRIPCION_PENDIENTE, esquemaEstadoDueno, esquemaFotoDueno, esquemaNegocio, esquemaPerfilGuia, esquemaRespuestaDueno, esquemaSubidaDueno } from "@/lib/validacion/dueno";
 import { esquemaIdFoto, esquemaMoverFoto } from "@/lib/validacion/admin";
 
 /*
@@ -362,5 +362,51 @@ export async function responderComoDueno(_previo: EstadoDueno, datos: FormData):
   return {
     estado: "ok",
     mensaje: r.data.respuesta ? "Respuesta publicada" : "Respuesta quitada",
+  };
+}
+
+/**
+ * "Tu perfil de guía" (versión 13, 41.2): idiomas, especialidades, zonas y número de credencial del MINTUR.
+ * Solo para fichas de la categoría "Guías turísticos". Si cambia el número, la base quita la insignia de acreditado
+ * hasta que el admin lo vuelva a revisar (migración 0023).
+ */
+export async function guardarPerfilGuia(_previo: EstadoDueno, datos: FormData): Promise<EstadoDueno> {
+  const r = esquemaPerfilGuia.safeParse({
+    lugar: datos.get("lugar"),
+    idiomas: datos.getAll("idiomas").slice(0, 20),
+    especialidades: datos.getAll("especialidades").slice(0, 20),
+    zonas: String(datos.get("zonas") ?? "").slice(0, 400),
+    credencial: String(datos.get("credencial") ?? "").slice(0, 80),
+  });
+  if (!r.success) return { estado: "error", mensaje: "Revisa los datos", errores: [...new Set(r.error.issues.map((i) => i.message))], intento: Date.now() };
+  const m = await miLugar(r.data.lugar);
+  if ("error" in m) return { estado: "error", mensaje: m.error, intento: Date.now() };
+
+  const db = crearClienteAdmin();
+  const { data: antes } = await db
+    .from("places")
+    .select("guide_license, accredited_at, categories(slug)")
+    .eq("id", m.lugar.id)
+    .returns<{ guide_license: string | null; accredited_at: string | null; categories: { slug: string } | null }[]>()
+    .single();
+  if (antes?.categories?.slug !== "guias") return { estado: "error", mensaje: "Este perfil es solo para guías turísticos.", intento: Date.now() };
+  const pierde = !!antes.accredited_at && antes.guide_license !== r.data.credencial;
+
+  const anotado = await reservar(m.usuario.id, m.lugar.id, "ficha", ["ficha", "estado"], LIMITES.ficha, pierde ? "Cambió su perfil de guía y su número de credencial: revisar en el catastro" : "Cambió su perfil de guía");
+  if (!anotado) return { estado: "error", mensaje: LIMITE_DIA, intento: Date.now() };
+  const { error } = await db
+    .from("places")
+    .update({ guide_languages: r.data.idiomas, guide_specialties: r.data.especialidades, guide_zones: r.data.zonas, guide_license: r.data.credencial })
+    .eq("id", m.lugar.id)
+    .eq("owner_id", m.usuario.id);
+  if (error) {
+    await quitar(anotado);
+    return { estado: "error", mensaje: mensajeModeracion(error) ?? "No se pudo guardar. Inténtalo de nuevo.", intento: Date.now() };
+  }
+  revalidatePath("/", "layout");
+  return {
+    estado: "ok",
+    mensaje: pierde ? "Perfil guardado. Como cambiaste el número de credencial, revisaremos otra vez tu acreditación." : "Perfil guardado",
+    intento: Date.now(),
   };
 }

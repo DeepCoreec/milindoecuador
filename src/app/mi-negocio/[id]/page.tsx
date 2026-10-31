@@ -4,6 +4,7 @@ import { FormLugar } from "@/components/admin/FormLugar";
 import { FotosLugar } from "@/components/admin/FotosLugar";
 import { VideoNegocio } from "@/components/admin/VideoNegocio";
 import { EstadoNegocio } from "@/components/dueno/EstadoNegocio";
+import { PerfilGuia } from "@/components/dueno/PerfilGuia";
 import { Estadisticas } from "@/components/dueno/Estadisticas";
 import { RespuestaDueno } from "@/components/dueno/RespuestaDueno";
 import { Cabecera } from "@/components/layout/Cabecera";
@@ -46,6 +47,8 @@ export default async function PaginaMiNegocio({ params }: PageProps<"/mi-negocio
         <EstadoNegocio lugar={n.id} estado={n.estado} listo={{ descripcion: !pendiente, fotos: n.fotos.length > 0 }} ruta={n.ruta} />
 
         {n.estado !== "borrador" && <Estadisticas semana={numeros.semana} mes={numeros.mes} conVideo={!!video} />}
+
+        {n.guia && <PerfilGuia lugar={n.id} perfil={n.guia} />}
 
         <section aria-labelledby="t-datos" className="grid gap-3">
           <h2 id="t-datos" className={titulo}>

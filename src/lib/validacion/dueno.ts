@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CODIGOS_ESPECIALIDAD, CODIGOS_IDIOMA } from "@/lib/guias";
 import { esquemaFoto, esquemaLugar, esquemaRespuesta } from "./admin";
 
 /** Las fichas recién aprobadas empiezan con este texto: hay que cambiarlo antes de publicar. */
@@ -16,3 +17,23 @@ export const esquemaEstadoDueno = z.object({ lugar: z.uuid(), estado: z.enum(["b
 export const esquemaSubidaDueno = z.object({ lugar: z.uuid(), formato: z.enum(["webp", "jpg"]) });
 export const esquemaFotoDueno = esquemaFoto;
 export const esquemaRespuestaDueno = esquemaRespuesta;
+
+// Perfil del guía turístico (versión 13, 41.2). La base vuelve a exigir las listas fijas (migración 0023).
+const sinInvisibles = (v: string) => !/[\p{Cc}\p{Cf}]/u.test(v);
+export const esquemaPerfilGuia = z.object({
+  lugar: z.uuid(),
+  idiomas: z.array(z.enum(CODIGOS_IDIOMA, "Elige idiomas de la lista")).min(1, "Elige al menos un idioma").max(8, "Máximo 8 idiomas"),
+  especialidades: z.array(z.enum(CODIGOS_ESPECIALIDAD, "Elige especialidades de la lista")).max(6, "Máximo 6 especialidades"),
+  zonas: z
+    .string()
+    .trim()
+    .max(160, "Las zonas: máximo 160 caracteres")
+    .refine(sinInvisibles, "Las zonas: usa solo letras, números y signos comunes")
+    .transform((v) => v || null)
+    .refine((v) => v === null || v.length >= 2, "Las zonas: escribe al menos 2 letras"),
+  credencial: z
+    .string()
+    .trim()
+    .transform((v) => v.toUpperCase() || null)
+    .refine((v) => v === null || /^[A-Z0-9][A-Z0-9 ./-]{2,39}$/.test(v), "El número de credencial: solo letras, números, puntos y guiones (3 a 40)"),
+});
