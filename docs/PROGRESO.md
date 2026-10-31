@@ -510,6 +510,29 @@
   - Se revisaron las webs en el navegador. No abrían las de la Casa de la Cultura, el Museo Presley Norton, el BAE Calderón (turismo.guayaquil.gob.ec) y La Perla: se cambiaron por su Instagram oficial, y en La Perla se quitó. El Cementerio ahora lleva a la Junta de Beneficencia, que lo administra; la Catedral, a su Instagram oficial; el Malecón y el Teatro, a la dirección que sí funciona
 - **Siguiente paso:** el usuario revisa en su celular y, si puede, sube fotos propias de los 4 lugares sin foto. Pendientes menores: el nombre "Guayaquil en la Historía", la ubicación de la Plaza Rodolfo Baquerizo y por qué Overpass falla desde Vercel. Después, volver a la versión 10, paso 36.2
 
+## Versión 13 · Guías turísticos, recorridos y "Guayaquil de misterio"
+
+> Plan: `docs/PLAN-V13.md`, **aprobado por el usuario el 2026-10-31** ("me parece increíble, agrégalo al plan y dale inicio").
+> Rama `v13-guias`. Cada fase lleva su migración (la aplica el usuario en Supabase antes de publicar).
+
+### Fase 41 · Guías turísticos
+- [ ] 41.1 Base (migración `0023_guias.sql`): categoría `guias`; idiomas, especialidades, zonas, credencial (privada) y acreditación en `places`
+- [ ] 41.2 Registro y "Tu perfil de guía" en «Mi negocio»
+- [ ] 41.3 Insignia "Guía acreditado" desde el panel (con el número y el enlace al catastro del MINTUR)
+- [ ] 41.4 Ficha del guía con insignia, idiomas, especialidades y zonas
+- [ ] 41.5 Sección "Guías turísticos" en Turismo
+- [ ] 41.6 Política de privacidad: datos del guía
+- [ ] Revisión de seguridad independiente
+- [ ] (usuario) aplicar 0023 en Supabase; luego publicar
+
+### Fase 42 · Recorridos de los guías
+- [ ] 42.1 a 42.4 (ver el plan)
+
+### Fase 43 · "Guayaquil de misterio"
+- [ ] 43.1 a 43.3 (ver el plan)
+
+- **Siguiente paso:** 41.1, migración `0023_guias.sql` siguiendo el modelo de permisos por columnas de 0005 (la credencial no se da al público) y pruebas RLS.
+
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
 
 > Pedido del usuario del 2026-10-31 01:22: "quiero probar diseños así" (con una copia aparte y su vista previa en Vercel;
