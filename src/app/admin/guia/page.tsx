@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { importarOSM } from "@/acciones/admin";
 import { pedirRevisionAgente, reiniciarRecomendacionesReglas } from "@/acciones/agente";
-import { buscarFotosGuia, reiniciarBusquedaFotos, traerMasFotosGuia } from "@/acciones/fotos-guia";
+import { buscarFotosGuia, completarDatosOSM, reiniciarBusquedaFotos, traerMasFotosGuia } from "@/acciones/fotos-guia";
 import { importarWikidata } from "@/acciones/lugares-wikidata";
 import { AgregarSitio } from "@/components/admin/AgregarSitio";
 import { BotonAccion } from "@/components/admin/BotonAccion";
@@ -70,6 +70,12 @@ export default async function PaginaGuiaAdmin({ searchParams }: PageProps<"/admi
             </p>
             <div>
               <BotonAccion accion={traerMasFotosGuia} campos={{}} texto="Traer más fotos" />
+            </div>
+            <p className="m-0 max-w-[68ch] text-sm text-rio-suave">
+              Horario, página web y teléfono de los lugares para visitar desde OpenStreetMap (solo llena lo que falta). Lo demás se pone a mano en «Fotos y datos del lugar».
+            </p>
+            <div>
+              <BotonAccion accion={completarDatosOSM} campos={{}} texto="Completar horario y web desde OpenStreetMap" />
             </div>
             <div>
               <BotonAccion

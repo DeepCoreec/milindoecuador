@@ -184,3 +184,44 @@ export function buscarEnSitios<T extends { nombre: string; tipo: TipoSitio }>(si
   );
   return sitios.filter((s) => tipos.has(s.tipo) || palabras.every((p) => sinTildes(s.nombre).includes(p))).slice(0, maximo);
 }
+
+/* ---------------------------------------------------------------------------------------------------------------
+ * Horario, página web y teléfono desde OpenStreetMap para lugares que ya están en la guía (2026-10-31, pedido del
+ * usuario: "al menos ponle el horario para tener noción, y la página web de cada lugar").
+ * ------------------------------------------------------------------------------------------------------------- */
+
+export type DatosContacto = { opening_hours: string | null; website: string | null; phone: string | null };
+
+/** Consulta de Overpass para elementos por su Q de Wikidata y por su id de OpenStreetMap (solo etiquetas). */
+export function consultaDatosOSM(qids: string[], ids: { tipo: "node" | "way" | "relation"; id: number }[]): string {
+  const q = qids.filter((x) => /^Q[1-9]\d{0,11}$/.test(x));
+  const partes: string[] = [];
+  if (q.length) partes.push(`nwr["wikidata"~"^(${q.join("|")})$"](${CAJA_GUAYAQUIL.join(",")});`);
+  for (const t of ["node", "way", "relation"] as const) {
+    const lista = ids.filter((x) => x.tipo === t && Number.isSafeInteger(x.id) && x.id > 0).map((x) => x.id);
+    if (lista.length) partes.push(`${t}(id:${lista.join(",")});`);
+  }
+  return `[out:json][timeout:25];(${partes.join("")});out tags 1000;`;
+}
+
+/** De la respuesta de Overpass: datos por "Q123" y por "node/123" (solo lo que tiene forma válida). */
+export function aDatosContacto(respuesta: unknown): Map<string, DatosContacto> {
+  const r = new Map<string, DatosContacto>();
+  const elementos = (respuesta as { elements?: unknown })?.elements;
+  if (!Array.isArray(elementos)) return r;
+  for (const e of elementos as Elemento[]) {
+    const tags = e.tags && typeof e.tags === "object" ? e.tags : {};
+    const web = limpio(tags.website ?? tags["contact:website"] ?? tags.url, 300);
+    const datos: DatosContacto = {
+      opening_hours: limpio(tags.opening_hours, 300),
+      website: web && /^https?:\/\/[^\s]+\.[^\s]+$/i.test(web) ? web : null,
+      phone: limpio(tags.phone ?? tags["contact:phone"], 40),
+    };
+    if (!datos.opening_hours && !datos.website && !datos.phone) continue;
+    const q = codigoWikidata(tags.wikidata);
+    if (q && !r.has(q)) r.set(q, datos);
+    const id = numero(e.id);
+    if ((e.type === "node" || e.type === "way" || e.type === "relation") && id) r.set(`${e.type}/${id}`, datos);
+  }
+  return r;
+}
