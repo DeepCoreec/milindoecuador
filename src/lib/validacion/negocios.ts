@@ -23,7 +23,13 @@ export const esquemaSolicitud = z.object({
     if (!n) ctx.addIssue({ code: "custom", message: "Escribe un celular de Ecuador, por ejemplo 099 123 4567" });
     return n ?? "";
   }),
-  descripcion: z.string().trim().max(1000, "Máximo 1000 caracteres").refine(sinInvisibles, "Usa solo letras, números y signos comunes").optional().default(""),
+  // Versión 9 (35.1): obligatoria, para que cada ficha nueva tenga una buena descripción desde el principio
+  descripcion: z
+    .string({ error: "Cuéntanos qué ofreces" })
+    .trim()
+    .min(40, "Cuéntanos qué ofreces en al menos 40 letras")
+    .max(1000, "Máximo 1000 caracteres")
+    .refine(sinInvisibles, "Usa solo letras, números y signos comunes"),
   terminos: z.literal("on", { error: "Debes aceptar los términos para enviar" }),
 });
 

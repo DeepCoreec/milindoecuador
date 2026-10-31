@@ -125,9 +125,11 @@ export function FormRegistro({ categorias, avisoWhatsApp }: { categorias: { slug
           id="r-descripcion"
           name="descripcion"
           rows={4}
+          required
+          minLength={40}
           maxLength={1000}
           defaultValue={v.descripcion}
-          placeholder="Cuéntale a la gente qué te hace especial"
+          placeholder="Cuéntale a la gente qué te hace especial: qué vendes, tu especialidad, para quién es (al menos 40 letras)"
           className={`${claseEntrada} min-h-[120px] resize-y`}
           {...a11y("descripcion")}
         />

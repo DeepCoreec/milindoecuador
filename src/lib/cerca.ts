@@ -190,8 +190,8 @@ export async function buscarCerca(u: Ubicacion, maximo = 8, ahora = new Date()):
 
   for (const radio of RADIOS_M) {
     const lugares = enRadio(todosLugares, radio, maximo);
-    // Abiertos ahora primero (a igual cercanía, mejor lo que se puede visitar ya)
-    lugares.sort((a, b) => Number(b.abierto === true) - Number(a.abierto === true) || a.distancia - b.distancia);
+    // Abiertos ahora primero; luego los que tienen foto (versión 9, 35.3); luego el más cercano
+    lugares.sort((a, b) => Number(b.abierto === true) - Number(a.abierto === true) || Number(!!b.foto) - Number(!!a.foto) || a.distancia - b.distancia);
     const eventos = enRadio(todosEventos, radio, maximo);
     const visitar = enRadio(todosSitios, radio, maximo);
     // Primero los que tienen foto (los mejor documentados), a igual cercanía

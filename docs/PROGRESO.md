@@ -425,6 +425,20 @@
 - **Puerta de la fase 34:** falta que el usuario lo pruebe en su celular (en la portada, "Cerca de mí"; y en Paumi, "¿qué hay cerca de mí?") y la apruebe
 - **Siguiente paso:** puerta de la fase 34. Pendientes del usuario en la versión 8: mirar en el celular la portada, Turismo y "Enlaces oficiales" (puertas 32 y 33); decidir si se enlaza Moovit
 
+## Versión 9 · Lista para que los negocios se registren
+
+> Plan: `docs/PLAN-V9.md`, **aprobado por el usuario el 2026-10-30 22:04** ("lo demás está bien"), **sin** la prueba completa con un negocio de ejemplo (el usuario no la quiere). Moovit: Claude recomendó no enlazarlo (no es oficial; el mapa de la ATM cubre rutas y estaciones); queda sin enlazar salvo que el usuario diga lo contrario.
+
+### Fase 35 · Listo para recibir negocios
+
+- [x] 35.1 Descripción obligatoria al registrarse — 2026-10-30: "¿Qué ofreces?" obligatoria, al menos 40 letras (Zod en el servidor y `required`/`minLength` en el formulario). Prueba unitaria
+- [x] 35.2 Solo se publica con foto y descripción — ya existía para los dueños (`src/acciones/dueno.ts`: al publicar pide al menos una foto y la descripción); sin cambios
+- [x] 35.3 Primero los que tienen foto — 2026-10-30: en categorías, después de destacados y verificados, primero con foto (`src/lib/datos/filtrar.ts`); en "Cerca de mí", abiertos ahora → con foto → más cercano. Prueba unitaria
+- [ ] 35.4 (usuario) Crear cuenta con correo: dominio + Resend + plantillas (pasos 6.3 a 6.5)
+- [ ] 35.5 (usuario) Captcha y confirmación por correo en Supabase Auth
+- [ ] 35.6 (usuario) Datos legales del responsable en Términos y Privacidad
+- **Siguiente paso:** guiar al usuario en 35.4 (empezar por el dominio: comprarlo y conectarlo en Vercel, PUESTA-EN-MARCHA)
+
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
 - (2026-10-28, fase 33) Enlazar **La Guayaca** (laguayacagye.com, tarjeta y subsidio de la Metrovía) cuando su sitio salga de mantenimiento. ¿Enlazar Moovit (app gratuita de terceros con rutas de la Metrovía)? Lo decide el usuario: no es oficial
