@@ -30,7 +30,8 @@ alter table public.places
 -- El público ve el perfil y si está acreditado; el número de credencial NO (solo el servidor y el admin)
 grant select (guide_languages, guide_specialties, guide_zones, accredited_at) on public.places to anon, authenticated;
 
--- Si cambia el número de credencial, la insignia se quita hasta que el admin la vuelva a revisar.
+-- Si cambia el número de credencial, la categoría o el dueño de la ficha, la insignia se quita hasta que el admin la
+-- vuelva a revisar (la credencial es de una persona y solo vale en la categoría guías; revisión independiente 2026-10-31).
 -- Las zonas pasan por el filtro de palabras (0006), como el resto de los textos de la ficha.
 create or replace function public.revisar_textos_lugar()
 returns trigger
@@ -51,7 +52,9 @@ begin
   if tg_op = 'INSERT' or new.tiktok is distinct from old.tiktok then perform public.revisar_campo('tiktok', new.tiktok, false); end if;
   if tg_op = 'INSERT' or new.youtube is distinct from old.youtube then perform public.revisar_campo('youtube', new.youtube, false); end if;
   if tg_op = 'INSERT' or new.guide_zones is distinct from old.guide_zones then perform public.revisar_campo('zonas', new.guide_zones, true); end if;
-  if tg_op = 'UPDATE' and new.guide_license is distinct from old.guide_license and new.accredited_at is not distinct from old.accredited_at then
+  if tg_op = 'UPDATE' and new.accredited_at is not distinct from old.accredited_at
+     and (new.guide_license is distinct from old.guide_license or new.category_id is distinct from old.category_id
+          or new.owner_id is distinct from old.owner_id) then
     new.accredited_at := null;
   end if;
   return new;

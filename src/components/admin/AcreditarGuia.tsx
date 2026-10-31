@@ -32,6 +32,7 @@ export function AcreditarGuia({ lugar, credencial, acreditadoDesde }: { lugar: s
       </p>
       <form action={accion} className="flex flex-wrap items-center gap-3">
         <input type="hidden" name="lugar" value={lugar} />
+        <input type="hidden" name="credencial" value={credencial ?? ""} />
         <Insignia variante={acreditadoDesde ? "acreditado" : "neutra"}>{acreditadoDesde ? "Guía acreditado" : "Sin acreditar"}</Insignia>
         {acreditadoDesde && <span className="text-sm leading-5 text-rio-suave">desde el {fechaLarga(acreditadoDesde)}</span>}
         {acreditadoDesde ? (

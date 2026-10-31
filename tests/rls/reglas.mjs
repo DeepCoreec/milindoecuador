@@ -819,7 +819,22 @@ r = await as("service_role", "", `update public.places set guide_license = 'GT-9
 check("cambiar la credencial quita la insignia hasta revisarla", r.rows?.[0]?.accredited_at === null, r);
 r = await as("service_role", "", `update public.places set guide_license = null, accredited_at = now() where id = $1`, [GU]);
 check("sin credencial no hay insignia", !!r.error, r);
-await as("service_role", "", `update public.places set guide_languages = '{}', guide_specialties = '{}', guide_zones = null, guide_license = null where id = $1`, [GU]);
+r = await as("service_role", "", `update public.places set guide_license = 'GT-1111', accredited_at = now() where id = $1 returning accredited_at`, [GU]);
+check("el servidor puede cambiar la credencial y acreditar a la vez (a propósito)", !!r.rows?.[0]?.accredited_at, r);
+r = await as("service_role", "", `update public.places set guide_license = null where id = $1 returning accredited_at`, [GU]);
+check("si el guía borra su credencial, pierde la insignia sin error", !r.error && r.rows?.[0]?.accredited_at === null, r);
+await as("service_role", "", `update public.places set guide_license = 'GT-1111', accredited_at = now() where id = $1`, [GU]);
+const otraCat = (await db.query(`select id from public.categories where slug = 'restaurantes'`)).rows[0].id;
+r = await as("service_role", "", `update public.places set category_id = $2 where id = $1 returning accredited_at`, [GU, otraCat]);
+check("si la ficha cambia de categoría, pierde la insignia", r.rows?.[0]?.accredited_at === null, r);
+await as("service_role", "", `update public.places set category_id = $2, accredited_at = now() where id = $1`, [GU, cat]);
+r = await as("service_role", "", `update public.places set owner_id = $2 where id = $1 returning accredited_at`, [GU, B]);
+check("si la ficha cambia de dueño, pierde la insignia", r.rows?.[0]?.accredited_at === null, r);
+r = await as("anon", "", `select * from public.places where id = $1`, [GU]);
+check("el público no puede leer todas las columnas (ni la credencial)", !!r.error, r);
+r = await as("authenticated", ADM, `insert into public.places (city_id, category_id, slug, name, sector, description, status, guide_license, accredited_at) values ($1, $2, 'guia-falso', 'Guía falso', 'Centro', 'Descripción de prueba suficientemente larga', 'borrador', 'GT-1', now())`, [gye, cat]);
+check("nadie crea una ficha ya acreditada desde el navegador", !!r.error, r);
+await as("service_role", "", `update public.places set guide_languages = '{}', guide_specialties = '{}', guide_zones = null, guide_license = null, owner_id = null where id = $1`, [GU]);
 
 console.log("\nDatos iniciales (supabase/seed.sql)");
 const seed = readFileSync(new URL("../../supabase/seed.sql", import.meta.url), "utf8");

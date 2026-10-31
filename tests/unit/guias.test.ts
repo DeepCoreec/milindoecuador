@@ -48,3 +48,11 @@ describe("lectura del perfil", () => {
     expect(enFrase(["Español", "Inglés", "Francés"])).toBe("Español, Inglés y Francés");
   });
 });
+
+describe("repetidos", () => {
+  it("quita idiomas y especialidades repetidos", () => {
+    const r = esquemaPerfilGuia.parse({ ...base, idiomas: ["es", "es", "en", "es"], especialidades: ["aves", "aves"] });
+    expect(r.idiomas).toEqual(["es", "en"]);
+    expect(r.especialidades).toEqual(["aves"]);
+  });
+});

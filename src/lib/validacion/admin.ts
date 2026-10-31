@@ -118,7 +118,12 @@ export const esquemaPlan = z.object({
 });
 
 /** Poner o quitar la insignia "Guía acreditado" (versión 13, 41.3). */
-export const esquemaAcreditar = z.object({ lugar: z.uuid(), acreditar: z.enum(["si", "no"]) });
+export const esquemaAcreditar = z.object({
+  lugar: z.uuid(),
+  acreditar: z.enum(["si", "no"]),
+  // El número que vio el admin: si el guía lo cambió mientras lo revisaban, no se acredita (revisión 2026-10-31)
+  credencial: z.string().trim().max(40).optional().default(""),
+});
 
 /** Palabra o frase para la lista de prohibidas (versión 2, paso 9.1). La base la guarda normalizada. */
 export const esquemaPalabra = z.object({

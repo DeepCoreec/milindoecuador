@@ -522,7 +522,7 @@
 - [x] 41.4 Ficha del guía — 2026-10-31: insignia «Guía acreditado» en la ficha y en las tarjetas; en "Información": Idiomas, Recorridos (especialidades), Zonas y Credencial (revisada, con enlace al catastro, o "pídele su credencial antes de contratarlo"); "Sobre el guía" en lugar de "La historia"; sin "Cómo llegar" si el guía no puso ubicación. En las listas, los acreditados van antes que los que no
 - [x] 41.5 Sección "Guías turísticos" en Turismo — 2026-10-31: debajo de los lugares, hasta 3 guías (acreditados y con foto primero) y "Ver los N guías"; sin guías, una invitación a registrarse. Probado con Playwright a 390 y 1280 px, claro y oscuro (con dos guías de ejemplo temporales, ya quitados)
 - [x] 41.6 Política de privacidad — 2026-10-31: párrafo "Si eres guía de turismo" (qué es público y que la credencial no se publica); fecha al 31 de octubre
-- [ ] Revisión de seguridad independiente
+- [x] Revisión de seguridad independiente — 2026-10-31: sin críticos ni altos. Arreglados: (medio) la insignia solo se pone al número que vio el admin (si el guía lo cambió mientras se revisaba, no se acredita); (bajos) la insignia se quita también si la ficha cambia de categoría o de dueño; idiomas y especialidades repetidos se quitan; 6 pruebas RLS más (301 pasan) y 211 unitarias
 - [ ] (usuario) aplicar 0023 en Supabase; luego publicar
 
 ### Fase 42 · Recorridos de los guías
@@ -531,7 +531,7 @@
 ### Fase 43 · "Guayaquil de misterio"
 - [ ] 43.1 a 43.3 (ver el plan)
 
-- **Siguiente paso:** revisión de seguridad independiente de la fase 41; luego (usuario) aplicar 0023 en Supabase y publicar la rama `v13-guias`.
+- **Siguiente paso:** (usuario) aplicar `supabase/migrations/0023_guias.sql` en el editor SQL de Supabase y avisar; Claude publica la rama `v13-guias` (antes NO: las páginas leen columnas nuevas). Después, la puerta de la fase 41 con un guía de prueba, y la fase 42 (recorridos).
 
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
 

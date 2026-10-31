@@ -22,8 +22,17 @@ export const esquemaRespuestaDueno = esquemaRespuesta;
 const sinInvisibles = (v: string) => !/[\p{Cc}\p{Cf}]/u.test(v);
 export const esquemaPerfilGuia = z.object({
   lugar: z.uuid(),
-  idiomas: z.array(z.enum(CODIGOS_IDIOMA, "Elige idiomas de la lista")).min(1, "Elige al menos un idioma").max(8, "Máximo 8 idiomas"),
-  especialidades: z.array(z.enum(CODIGOS_ESPECIALIDAD, "Elige especialidades de la lista")).max(6, "Máximo 6 especialidades"),
+  idiomas: z
+    .array(z.enum(CODIGOS_IDIOMA, "Elige idiomas de la lista"))
+    .max(20)
+    .transform((v) => [...new Set(v)])
+    .refine((v) => v.length >= 1, "Elige al menos un idioma")
+    .refine((v) => v.length <= 8, "Máximo 8 idiomas"),
+  especialidades: z
+    .array(z.enum(CODIGOS_ESPECIALIDAD, "Elige especialidades de la lista"))
+    .max(20)
+    .transform((v) => [...new Set(v)])
+    .refine((v) => v.length <= 6, "Máximo 6 especialidades"),
   zonas: z
     .string()
     .trim()
