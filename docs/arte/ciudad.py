@@ -29,9 +29,10 @@ def r(x, y, w, h, cls=None, fill=None, extra=""):
 
 # Cielo de noche, estrellas y luna
 r(0, 0, W, H, fill="var(--papel)")
-for _ in range(70):
+for i in range(70):
     x, y = random.uniform(0, W), random.uniform(10, 330)
-    a(f'<circle className="cal" cx="{x:.0f}" cy="{y:.0f}" r="{random.choice([1.2, 1.6, 2.2]):.1f}" opacity="{random.uniform(.35, .85):.2f}"/>')
+    titila = f" mle-titila-{i % 3 + 1}" if i % 2 == 0 else ""  # la mitad de las estrellas titila (animación en globals.css)
+    a(f'<circle className="cal{titila}" cx="{x:.0f}" cy="{y:.0f}" r="{random.choice([1.2, 1.6, 2.2]):.1f}" opacity="{random.uniform(.35, .85):.2f}"/>')
 a('<circle className="cal" cx="1250" cy="120" r="44"/>')
 a('<circle fill="var(--papel)" cx="1272" cy="104" r="40"/>')
 
@@ -46,12 +47,15 @@ while x < 1180:
     h = random.uniform(120, 230) * (0.8 + 0.4 * centro)
     torres.append((x, w, h))
     x += w + random.choice([4, 8, 12])
+luces = 0
 for (x, w, h) in torres:
     r(x, BASE - h, w, h, fill="var(--linea)")
     for fy in range(int(BASE - h + 14), BASE - 14, 18):
         for fx in range(int(x + 8), int(x + w - 10), 14):
             if random.random() < 0.28:
-                a(f'<rect className="ventana" x="{fx}" y="{fy}" width="6" height="8" opacity="{random.uniform(.55, 1):.2f}"/>')
+                luces += 1
+                prende = f" mle-luz-{(luces // 9) % 3 + 1}" if luces % 9 == 0 else ""  # algunas ventanas se prenden y se apagan
+                a(f'<rect className="ventana{prende}" x="{fx}" y="{fy}" width="6" height="8" opacity="{random.uniform(.55, 1):.2f}"/>')
 # "The Point": la torre alta y torcida a orillas del río
 a('<polygon fill="var(--linea)" points="1120,600 1172,600 1166,300 1150,268 1128,300"/>')
 for i, fy in enumerate(range(316, 590, 22)):
@@ -84,7 +88,7 @@ a('<polygon className="celeste" points="1395,344 1417,344 1417.8,356 1394.2,356"
 r(1394, 270, 24, 22, fill="var(--linea)")
 r(1399, 275, 14, 12, cls="ventana")
 a('<polygon fill="var(--linea)" points="1390,270 1422,270 1406,256"/>')
-a('<polygon className="mango" points="1413,281 1600,236 1600,300" opacity=".14"/>')  # haz de luz
+a('<polygon className="mango mle-haz" points="1413,281 1600,236 1600,300" opacity=".14"/>')  # haz de luz (se mueve)
 # capilla
 r(1450, 356, 40, 30, cls="cal")
 a('<polygon className="cal" points="1446,358 1494,358 1470,338"/>')
@@ -94,6 +98,7 @@ a('<path fill="var(--papel)" d="M1464,386 v-12 a6,6 0 0 1 12,0 v12 z"/>')
 # La Perla: la noria del Malecón
 cx, cy, rad = 250, 420, 150
 a(f'<path className="cal-trazo" strokeWidth="7" d="M{cx},{cy} L{cx - 70},{BASE} M{cx},{cy} L{cx + 70},{BASE}"/>')
+a('<g className="mle-noria">')  # gira despacio (globals.css)
 a(f'<circle className="cal-trazo" strokeWidth="5" cx="{cx}" cy="{cy}" r="{rad}"/>')
 a(f'<circle className="cal-trazo" strokeWidth="2" cx="{cx}" cy="{cy}" r="{rad - 22}"/>')
 rayos = " ".join(f"M{cx},{cy} L{cx + rad * math.cos(t):.1f},{cy + rad * math.sin(t):.1f}" for t in [i * math.pi / 12 for i in range(24)])
@@ -102,6 +107,7 @@ for i in range(16):
     t = i * 2 * math.pi / 16
     c = ["buganvilla", "mango", "celeste", "faro"][i % 4]
     a(f'<rect className="{c}" x="{cx + rad * math.cos(t) - 9:.1f}" y="{cy + rad * math.sin(t) - 4:.1f}" width="18" height="16" rx="4"/>')
+a('</g>')
 a(f'<circle className="mango" cx="{cx}" cy="{cy}" r="10"/>')
 
 # Malecón: paseo, baranda y palmeras
@@ -131,11 +137,13 @@ for _ in range(60):
     a(f'<rect className="ventana" x="{x:.0f}" y="{y:.0f}" width="{random.choice([10, 18, 26])}" height="3" opacity="{random.uniform(.15, .45):.2f}"/>')
 olas = " ".join(f"M{x},{y} q12,-7 24,0 t24,0" for x, y in [(random.randint(0, 1560), random.randint(650, 780)) for _ in range(26)])
 a(f'<path className="cal-trazo" strokeWidth="2.5" opacity=".6" d="{olas}"/>')
-# balandra
+# balandra (cruza el río)
+a('<g className="mle-balandra">')
 a('<path className="cal" d="M720,705 h120 l-16,22 h-88 z"/>')
 a('<path className="cal-trazo" strokeWidth="3" d="M782,705 V600"/>')
 a('<polygon className="mango" points="778,606 778,698 726,698"/>')
 a('<polygon className="cal" points="786,612 786,698 834,698"/>')
+a('</g>')
 
 # Grano de serigrafía
 a('<rect className="grano" width="1600" height="800" filter="url(#g-ciudad)"/>')

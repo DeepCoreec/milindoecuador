@@ -63,7 +63,7 @@ Las reglas de uso de cada uno están en el artefacto.
 ## Ilustración
 
 - Se usa tal cual: sin recolorear, deformar, recortar ni poner texto encima.
-- El Panorama es la única animación automática: se pausa fuera de pantalla y queda fijo con "reducir movimiento".
+- Animaciones automáticas: solo el Panorama, la ilustración de la ciudad y el carrete de postales (versión 10); todas se detienen fuera de pantalla o al tocarlas y quedan fijas con "reducir movimiento".
 - Tinta `on-color` (no cambia entre modos); blanco de cal `papel-alto` de día y `rio` de noche.
 - Nuevas ilustraciones: formas planas, tinta `on-color`, un color de categoría de fondo, grano y un objeto reconocible de Guayaquil.
 
@@ -76,6 +76,22 @@ Las reglas de uso de cada uno están en el artefacto.
   (no llega a 4,5:1).
 - **Cierre de noche** para negocios con botón `mango` / `on-color` (el botón principal de la pantalla sigue siendo "Buscar").
 - Contenedor más ancho: 1280 px.
+
+## Versión 10: ciudad de fondo y postales (aprobado por el usuario el 2026-10-31)
+
+- **Portada:** detrás del título va la **ilustración de la ciudad** (Guayaquil de noche en el estilo de los afiches:
+  La Perla, torres del centro, Malecón, río Guayas con balandra y Cerro Santa Ana; generador `docs/arte/ciudad.py`),
+  con el título, el buscador y "Cerca de mí" al centro. En computadora llena el fondo; en el celular va como franja abajo.
+  Cada ciudad tiene su fondo en `src/lib/fondos-ciudad.ts` (ilustración o foto con crédito; sin ninguno, el fondo de noche).
+- **Movimiento de la ilustración:** la noria gira, el faro barre, la balandra cruza, titilan estrellas y ventanas. Solo
+  transform y opacity, se pausa fuera de pantalla y queda quieta con "reducir movimiento". Es la única animación
+  automática junto con el Panorama y el carrete de postales.
+- **Categorías de la portada:** cuadros (`papel-alto`, radius 20 px) con el afiche y el nombre, que suben sobre el borde
+  de la ilustración: 3 columnas en el celular y 6 en computadora; el último abre "Todas las categorías".
+- **Panorama:** pasa al cierre de la portada ("¿Tienes un negocio?").
+- **Postales:** en las categorías con Guía útil, un carrete de postales (marco `rio` sobre la franja de noche, nombre en
+  `rotulo`, levemente inclinadas) se desliza solo y se detiene al tocarlo; las tarjetas con foto de la Guía útil son
+  postales (marco blanco `papel-alto`, nombre en `rotulo`).
 
 ## Reglas que más se olvidan
 

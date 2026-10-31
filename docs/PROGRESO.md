@@ -467,7 +467,7 @@
 - [ ] 38.5 Textos ("Destacados", reseñas, "Sobre el lugar", nombres de las partes, "Adminístralo gratis", formulario del dueño, precio por rangos)
 - **Siguiente paso:** 36.2 — `generateStaticParams` (devolver `[]`) en las rutas de `src/app/[ciudad]/` para que su `revalidate` funcione; en la ficha, sacar la lectura de la sesión (mi reseña, guardado) a una parte que se carga aparte; comprobar con `curl -I` que respondan con caché
 
-## Pruebas de diseño (rama aparte, no publicadas)
+## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
 
 > Pedido del usuario del 2026-10-31 01:22: "quiero probar diseños así" (con una copia aparte y su vista previa en Vercel;
 > si no gusta, se descarta y la página queda igual). Cada prueba vive en su propia rama y **no se junta con `main`
@@ -476,7 +476,10 @@
 - [x] Prueba 1 "Postales" (rama `diseno-prueba-1`) — 2026-10-31: en la portada, las categorías en mosaico (Restaurantes grande, las otras 4 en cuadros y "Todas las categorías" debajo) en vez de la fila que se corta; en las categorías con Guía útil, un carrete de postales de los lugares con foto que se desliza solo y despacio bajo el título (se detiene al tocarlo; quieto con "reducir movimiento"); las tarjetas con foto de la Guía útil, como postales (marco blanco y nombre en letra de rótulo). Revisado a 390 px y 1280 px, claro y oscuro, con fotos de prueba
 - [x] Prueba 2 "Ciudad de fondo" (rama `diseno-prueba-2`, encima de la prueba 1) — 2026-10-31: el usuario mostró la plantilla "Dorne" de Colorlib (foto de la ciudad de fondo, buscador al centro y categorías en cuadros que suben sobre el borde de la foto) y pidió algo así con sus ideas, y que cuando haya más ciudades de Ecuador cada una tenga su foto. Portada: foto del Malecón 2000 (de la Guía útil, Freddy eduardo, CC BY-SA 4.0, con su crédito) con velo de noche, título y buscador al centro; las 5 categorías y "Todas" en cuadros con sus afiches sobre el borde; el Panorama del Cerro Santa Ana pasa al cierre "¿Tienes un negocio?". Fotos por ciudad en `src/lib/fondos-ciudad.ts` (hoy solo Guayaquil; sin foto, el fondo de noche de siempre). Revisado a 390 px y 1280 px con una foto de prueba
 - [x] Prueba 2, cambio — 2026-10-31: al usuario le gustó más cómo se veía con los dibujos planos de las capturas de prueba que con la foto real ("tú eres el genio aquí, hazlo"), y preguntó si después se puede cambiar por fotos profesionales (sí: es cambiar una línea en `src/lib/fondos-ciudad.ts`). Ilustración propia de Guayaquil de noche en el estilo de los afiches (`docs/arte/ciudad.py` → `src/components/arte/ciudades.tsx`): La Perla, torres del centro con The Point, Malecón con palmeras, río Guayas con balandra y el Cerro Santa Ana con sus casas, escalinata, faro y capilla. En computadora llena el fondo; en el celular va como franja abajo, entera. Revisado a 390 px y 1280 px, claro y oscuro
-- **Siguiente paso:** el usuario mira la vista previa de `diseno-prueba-2` y decide: se queda, se cambia algo o se descarta
+- [x] Prueba 2, animación — 2026-10-31: el usuario preguntó si la imagen era animada y pidió animarla ("sí, hagamos eso"): la noria La Perla gira despacio, el haz del faro barre, la balandra cruza el río, titilan estrellas y se prenden y apagan algunas ventanas. Solo CSS (transform y opacity); se pausa fuera de pantalla (`PausaFueraDePantalla`) y queda quieta con "reducir movimiento" (comprobado con Playwright)
+- [x] **Aprobado por el usuario el 2026-10-31 03:46** ("quiero que la implementes, me gustó el modelo"): las pruebas 1 y 2 se juntan con `main` y se publican. `docs/DISENO.md` actualizado (sección "Versión 10: ciudad de fondo y postales")
+- **Siguiente paso:** volver a la versión 10, paso 36.2 (páginas de Guayaquil en caché; ver arriba)
+
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
