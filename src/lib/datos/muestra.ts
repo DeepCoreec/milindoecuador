@@ -24,6 +24,7 @@ const NOMBRES: [slug: string, nombre: string, principal: boolean][] = [
   ["ninos", "Para niños", false],
   ["naturaleza", "Naturaleza y aventura", false],
   ["reparaciones", "Reparaciones y servicios", false],
+  ["guias", "Guías turísticos", false],
 ];
 
 /** Igual que las categorías que siembra la migración, con sus textos. */
@@ -107,6 +108,6 @@ export const ENCEBOLLADOS = ["la-sazon-del-estero", "el-rincon-de-dona-rosa", "e
 
 /** Quita los campos de la ficha para listar: así las listas no cargan historias ni reseñas. */
 export function resumen(l: LugarDetalle): LugarResumen {
-  const { slug, categoria, nombre, sector, datos, promedio, cantidad, precio, destacado, verificado, extra, ejemplo } = l;
-  return { slug, categoria, nombre, sector, datos, promedio, cantidad, precio, destacado, verificado, extra, ejemplo };
+  const { slug, categoria, nombre, sector, datos, promedio, cantidad, precio, destacado, verificado, acreditado, extra, ejemplo } = l;
+  return { slug, categoria, nombre, sector, datos, promedio, cantidad, precio, destacado, verificado, acreditado, extra, ejemplo };
 }

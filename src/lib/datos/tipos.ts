@@ -28,6 +28,8 @@ export type LugarResumen = {
   destacado: boolean;
   /** Plan "Verificado": el negocio confirmó sus datos. */
   verificado: boolean;
+  /** Versión 13: guía turístico con su credencial del MINTUR revisada por el admin. */
+  acreditado?: boolean;
   /** Dato corto para lugares sin precio, por ejemplo "Entrada libre". */
   extra?: string;
   /** Negocio inventado para mostrar el diseño: lleva la insignia "Ejemplo". */
@@ -70,4 +72,6 @@ export type LugarDetalle = LugarResumen & {
   video?: { src: string; portada: string | null; duracion: number } | null;
   fotos: Foto[];
   resenas: Resena[];
+  /** Versión 13: perfil público del guía turístico (solo en la categoría "guias"). Nombres ya traducidos. */
+  guia?: { idiomas: string[]; especialidades: string[]; zonas: string | null } | null;
 };

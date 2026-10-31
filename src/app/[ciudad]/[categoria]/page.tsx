@@ -48,6 +48,11 @@ export default async function PaginaCategoria({ params, searchParams }: PageProp
   const referencia = tiposReferencia.length ? (await getSitios().catch(() => [] as Sitio[])).filter((x) => tiposReferencia.includes(x.tipo)) : [];
   const enDosPartes = referencia.length > 0;
   const conFiltros = filtros.sector !== null || filtros.precios.length > 0 || filtros.orden !== "destacados";
+  // Versión 13 (41.5): en Turismo, los guías turísticos (acreditados y con foto primero)
+  const guias =
+    categoria.slug === "turismo"
+      ? (await getLugaresDeCategoria(ciudad.slug, "guias", leerFiltros({})).catch(() => ({ lugares: [], total: 0 })))
+      : null;
 
   const listaRegistrados = (
     <>
@@ -158,6 +163,40 @@ export default async function PaginaCategoria({ params, searchParams }: PageProp
               <SitiosPorTipo sitios={referencia} tipos={tiposReferencia} />
             </div>
           </details>
+        )}
+
+        {guias && (
+          <section aria-labelledby="t-guias" className="mt-6 grid gap-4 border-t border-linea pt-6">
+            <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+              <h2 id="t-guias" className="m-0 font-rotulo text-[26px] leading-8 font-normal md:text-[32px] md:leading-10">
+                Guías turísticos
+              </h2>
+              {guias.total > 3 && (
+                <Link href={`/${ciudad.slug}/guias`} className="font-semibold text-celeste-tinta underline underline-offset-2">
+                  Ver los {guias.total} guías
+                </Link>
+              )}
+            </div>
+            <p className="m-0 max-w-[64ch] text-rio-suave">
+              Recorre la ciudad con alguien que la conoce. La insignia «Guía acreditado» quiere decir que revisamos su credencial en el catastro del
+              Ministerio de Turismo.
+            </p>
+            {guias.lugares.length > 0 ? (
+              <div className="grid grid-cols-2 gap-x-4 gap-y-6 max-[599px]:[&_h3]:text-base max-[599px]:[&_h3]:leading-[22px] max-[599px]:[&_.mle-insignias]:inset-x-2 max-[599px]:[&_.mle-insignias]:top-2 max-[599px]:[&_.mle-insignias]:gap-1 min-[1000px]:grid-cols-3 min-[1000px]:gap-6">
+                {guias.lugares.slice(0, 3).map((l) => (
+                  <TarjetaResumen key={l.slug} ciudad={ciudad.slug} lugar={l} tono={tono} />
+                ))}
+              </div>
+            ) : (
+              <div className="grid justify-items-start gap-3 rounded-[20px] bg-celeste-suave px-6 py-6 md:px-10">
+                <p className="m-0 font-semibold">Todavía no hay guías registrados.</p>
+                <p className="m-0 max-w-[56ch] text-rio-suave">¿Eres guía de turismo en Guayaquil? Publica tu perfil gratis con tus idiomas y tu WhatsApp.</p>
+                <Boton href="/negocios/registro" variante="principal" tamano="chico">
+                  Registrarme como guía
+                </Boton>
+              </div>
+            )}
+          </section>
         )}
         </div>
       </main>

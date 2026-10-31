@@ -547,3 +547,19 @@ export async function getSitiosAdmin(
     acierto: [...porTipo.values()].sort((a, b) => b.total - a.total),
   };
 }
+
+/**
+ * Lo que el admin necesita para acreditar a un guía (versión 13, 41.3). La credencial no se lee con la sesión
+ * (migración 0023): se lee con admin.ts, después de requireAdmin. Devuelve null si la ficha no es de un guía.
+ */
+export async function getGuiaAdmin(id: string): Promise<{ credencial: string | null; acreditadoDesde: string | null } | null> {
+  await requireAdmin();
+  const { data } = await crearClienteAdmin()
+    .from("places")
+    .select("guide_license, accredited_at, categories(slug)")
+    .eq("id", id)
+    .returns<{ guide_license: string | null; accredited_at: string | null; categories: { slug: string } | null }[]>()
+    .maybeSingle();
+  if (!data || data.categories?.slug !== "guias") return null;
+  return { credencial: data.guide_license, acreditadoDesde: data.accredited_at };
+}

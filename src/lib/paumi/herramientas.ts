@@ -10,6 +10,8 @@ import { crearClientePublico } from "@/lib/supabase/publico";
 import { exigirConfigSupabase } from "@/lib/supabase/config";
 import { enlaceRutaGoogle, type Ubicacion } from "@/lib/ubicacion";
 import { normalizar } from "@/lib/validacion/busqueda";
+import { textoPrecio as precioRecorrido } from "@/lib/recorridos";
+import { textoDuracion } from "@/lib/validacion/recorridos";
 import { FUENTES_CONFIABLES } from "./config";
 import type { ExternoPaumi, TarjetaPaumi } from "./tipos";
 
@@ -23,7 +25,7 @@ import type { ExternoPaumi, TarjetaPaumi } from "./tipos";
 const CIUDAD = "guayaquil";
 const PRECIOS = { 1: "$", 2: "$$", 3: "$$$" } as const;
 const COLUMNAS =
-  "id, slug, name, sector, description, price_level, short_fact, address, latitude, longitude, opening_hours, is_featured, categories!inner(slug, name), cities!inner(slug), place_photos(storage_path, alt_text, sort_order)";
+  "id, slug, name, sector, description, price_level, short_fact, address, latitude, longitude, opening_hours, is_featured, accredited_at, categories!inner(slug, name), cities!inner(slug), place_photos(storage_path, alt_text, sort_order)";
 
 type Fila = {
   id: string;
@@ -38,6 +40,7 @@ type Fila = {
   longitude: number | string | null;
   opening_hours: unknown;
   is_featured: boolean;
+  accredited_at?: string | null;
   categories: { slug: string; name: string } | null;
   place_photos: { storage_path: string; alt_text: string; sort_order: number }[];
 };
@@ -124,9 +127,18 @@ export const DEFINICIONES = [
     },
   },
   {
+    name: "buscar_recorridos",
+    description:
+      "Busca recorridos (tours) publicados por los guías turísticos de la guía: nombre, guía, si el guía está acreditado, duración, precio, paradas y su ruta. Para mostrar al guía usa mostrar_lugares con guia_id; para llevar a la persona al recorrido, abrir_pagina con su ruta.",
+    input_schema: {
+      type: "object",
+      properties: { texto: { type: "string", description: "Palabras del recorrido o de sus paradas (ej. 'Las Peñas', 'noche'); vacío = todos" } },
+    },
+  },
+  {
     name: "abrir_pagina",
     description:
-      "Propone llevar a la persona a una página de la guía: '/guayaquil' (todas las categorías), '/guayaquil/<categoria>', '/buscar?q=<palabras>', '/guayaquil/eventos', '/guayaquil/guia-util' o la ruta de un evento que devolvió buscar_eventos.",
+      "Propone llevar a la persona a una página de la guía: '/guayaquil' (todas las categorías), '/guayaquil/<categoria>', '/buscar?q=<palabras>', '/guayaquil/eventos', '/guayaquil/guia-util', la ruta de un evento que devolvió buscar_eventos o la de un recorrido que devolvió buscar_recorridos.",
     input_schema: { type: "object", properties: { ruta: { type: "string" } }, required: ["ruta"] },
   },
 ] as const;
@@ -153,7 +165,8 @@ const esquemaSitios = z.object({
   tipo: z.enum(TIPOS_SITIO.map((t) => t.tipo) as [TipoSitio, ...TipoSitio[]]).optional(),
 });
 const esquemaMostrarSitios = z.object({ ids: z.array(z.uuid()).min(1).max(3) });
-const esquemaAbrir = z.object({ ruta: z.string().max(120) });
+const esquemaAbrir = z.object({ ruta: z.string().max(160) });
+const esquemaRecorridos = z.object({ texto: z.string().trim().max(60).optional() });
 const esquemaCerca = z.object({ que: z.enum(["todo", "negocios", "eventos", "visitar"]).optional() });
 const esquemaExterno = z.object({
   nombre: z
@@ -191,6 +204,8 @@ export type Estado = {
   externos: ExternoPaumi[];
   /** Rutas de eventos que devolvió buscar_eventos en esta respuesta (versión 5). */
   eventos?: Set<string>;
+  /** Rutas de recorridos que devolvió buscar_recorridos en esta respuesta (versión 13, 42.4). */
+  recorridos?: Set<string>;
   /** Sitios de la Guía útil que devolvió buscar_sitios en esta respuesta (versión 5, fase 23). */
   sitios?: Map<string, ExternoPaumi>;
   /** Versión 8: ubicación que la persona compartió con «Cerca de mí» (redondeada). La IA nunca la ve. */
@@ -222,6 +237,8 @@ function corto(f: Fila) {
     precio: f.price_level ? PRECIOS[f.price_level as 1 | 2 | 3] : null,
     dato: f.short_fact,
     ahora: e?.texto ?? "sin horario por día",
+    // Versión 13: en los guías turísticos, si su credencial fue revisada por la guía
+    ...(f.categories?.slug === "guias" ? { guia_acreditado: !!f.accredited_at } : {}),
   };
 }
 
@@ -282,9 +299,9 @@ async function buscar(entrada: z.infer<typeof esquemaBuscar>, e: Estado) {
 }
 
 /** ¿Es una página de la guía a la que se puede llevar a alguien? */
-export function rutaPermitida(ruta: string, categorias: Set<string>, eventos: Set<string> = new Set()): string | null {
+export function rutaPermitida(ruta: string, categorias: Set<string>, eventos: Set<string> = new Set(), recorridos: Set<string> = new Set()): string | null {
   if (ruta === `/${CIUDAD}` || ruta === `/${CIUDAD}/eventos` || ruta === `/${CIUDAD}/guia-util`) return ruta;
-  if (eventos.has(ruta)) return ruta;
+  if (eventos.has(ruta) || recorridos.has(ruta)) return ruta;
   const cat = /^\/guayaquil\/([a-z0-9-]{2,40})$/.exec(ruta);
   if (cat) return categorias.has(cat[1]!) ? ruta : null;
   const b = /^\/buscar\?q=([^&#]{2,80})$/.exec(ruta);
@@ -442,9 +459,63 @@ export async function ejecutar(nombre: string, entrada: unknown, e: Estado): Pro
         if (!negocios.length && !eventos.length && !visitar.length) return { resultado: `No hay nada en la guía a menos de ${c.radio / 1000} km.` };
         return { resultado: { radio_km: c.radio / 1000, negocios, eventos, visitar } };
       }
+      case "buscar_recorridos": {
+        const r = esquemaRecorridos.safeParse(entrada ?? {});
+        if (!r.success) return { resultado: "Pedido inválido", error: true };
+        // La base solo deja ver recorridos publicados de guías publicados, y paradas de lugares publicados (0024)
+        const { data } = await db()
+          .from("guide_tours")
+          .select("id, name, description, duration_minutes, price_usd, places!inner(id, slug, name, accredited_at, status, cities!inner(slug)), guide_tour_stops(position, city_spots(name, tipo))")
+          .eq("status", "publicado")
+          .eq("places.status", "publicado")
+          .eq("places.cities.slug", CIUDAD)
+          .limit(60)
+          .returns<
+            {
+              id: string;
+              name: string;
+              description: string;
+              duration_minutes: number;
+              price_usd: number | string | null;
+              places: { id: string; slug: string; name: string; accredited_at: string | null } | null;
+              guide_tour_stops: { position: number; city_spots: { name: string; tipo: string } | null }[];
+            }[]
+          >();
+        const t = r.data.texto ? normalizar(r.data.texto) : "";
+        const lista = (data ?? [])
+          .filter((x) => x.places)
+          .map((x) => ({
+            x,
+            paradas: [...x.guide_tour_stops]
+              .sort((a, b) => a.position - b.position)
+              .flatMap((p) => (p.city_spots && p.city_spots.tipo !== "monumento" ? [p.city_spots.name] : [])),
+          }))
+          // La descripción la escribe el guía: se usa para buscar, pero no se le pasa a la IA (revisión 2026-10-31)
+          .filter(({ x, paradas }) => paradas.length >= 2 && (!t || normalizar(`${x.name} ${x.description} ${paradas.join(" ")}`).includes(t)))
+          .sort((a, b) => Number(!!b.x.places!.accredited_at) - Number(!!a.x.places!.accredited_at))
+          .slice(0, 6);
+        e.recorridos ??= new Set();
+        const resultado = lista.map(({ x, paradas }) => {
+          const g = x.places!;
+          const ruta = `/${CIUDAD}/guias/${g.slug}/recorridos/${x.id}`;
+          e.recorridos!.add(ruta);
+          e.vistos.add(g.id);
+          return {
+            nombre: x.name,
+            guia: g.name,
+            guia_id: g.id,
+            guia_acreditado: !!g.accredited_at,
+            duracion: textoDuracion(x.duration_minutes),
+            precio: precioRecorrido(x.price_usd == null ? null : Number(x.price_usd)),
+            paradas,
+            ruta,
+          };
+        });
+        return { resultado: resultado.length ? resultado : "Todavía no hay recorridos publicados así. Puedes recomendar guías con buscar_lugares (categoria guias)." };
+      }
       case "abrir_pagina": {
         const r = esquemaAbrir.safeParse(entrada);
-        const ruta = r.success ? rutaPermitida(r.data.ruta, e.categorias, e.eventos) : null;
+        const ruta = r.success ? rutaPermitida(r.data.ruta, e.categorias, e.eventos, e.recorridos) : null;
         if (!ruta) return { resultado: "Esa página no existe en la guía.", error: true };
         e.navegar = ruta;
         return { resultado: "Listo: la página ofrece un botón para ir." };

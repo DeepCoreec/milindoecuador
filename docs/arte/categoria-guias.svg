@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 112 112" role="img" aria-label="Guías turísticos"><style>
+.tinta{fill:var(--on-color)} .trazo{stroke:var(--on-color);fill:none;stroke-linecap:round;stroke-linejoin:round}
+.cal{fill:var(--papel-alto)} .cal-trazo{stroke:var(--papel-alto);fill:none;stroke-linecap:round;stroke-linejoin:round}
+.mango{fill:var(--mango)} .faro{fill:var(--faro)} .celeste{fill:var(--celeste)} .manglar{fill:var(--manglar)}
+.buganvilla{fill:var(--buganvilla)} .celeste-tinta{fill:var(--celeste-tinta)} .ventana{fill:var(--mango)} .grano{opacity:.18;mix-blend-mode:multiply}
+[data-theme="dark"] .cal{fill:var(--rio)} [data-theme="dark"] .cal-trazo{stroke:var(--rio)}
+[data-theme="dark"] .grano{mix-blend-mode:screen;opacity:.08}
+</style><defs><filter id="g-gui" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="3" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1.4 -.55"/></filter><clipPath id="c-gui"><rect width="112" height="112" rx="12"/></clipPath></defs><g clip-path="url(#c-gui)"><rect class="manglar" width="112" height="112"/><path class="tinta" d="M0,112 V78 q30,-30 56,-34 q30,4 56,30 V112 z"/><rect class="cal" x="52" y="24" width="8" height="22"/><path class="mango" d="M50,24 h12 l-2,-6 h-8 z"/><path class="cal-trazo" stroke-width="2.6" stroke-dasharray="1 6" d="M18,104 q18,-6 26,-22 t14,-30"/><path class="cal-trazo" stroke-width="3" d="M84,104 V40"/><path class="mango" stroke="var(--on-color)" stroke-width="1.6" d="M85,41 l20,8 l-20,9 z"/><circle class="cal" cx="18" cy="104" r="4"/><rect class="grano" width="112" height="112" filter="url(#g-gui)"/></g></svg>

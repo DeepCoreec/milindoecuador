@@ -16,6 +16,7 @@ import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { exigirConfigSupabase } from "@/lib/supabase/config";
 import { crearClienteServidor } from "@/lib/supabase/server";
 import {
+  esquemaAcreditar,
   esquemaDecisionEvento,
   esquemaDecisionSitios,
   esquemaEditarSitio,
@@ -423,6 +424,36 @@ export async function cambiarPlan(_previo: EstadoAdmin, datos: FormData): Promis
   if (error) return { estado: "error", mensaje: "No se pudo cambiar el plan" };
   revalidatePath("/", "layout");
   return { estado: "ok", mensaje: "Plan actualizado" };
+}
+
+/**
+ * Insignia "Guía acreditado" (versión 13, 41.3). El admin la pone a mano después de buscar el número de credencial en
+ * el catastro turístico del MINTUR. Se escribe con admin.ts (nadie la cambia con la clave pública, migración 0023),
+ * siempre después de requireAdmin. Solo para fichas de la categoría guías y con número de credencial.
+ */
+export async function acreditarGuia(_previo: EstadoAdmin, datos: FormData): Promise<EstadoAdmin> {
+  const r = esquemaAcreditar.safeParse({ lugar: datos.get("lugar"), acreditar: datos.get("acreditar"), credencial: datos.get("credencial") ?? undefined });
+  if (!r.success) return { estado: "error", mensaje: "Datos inválidos" };
+  await requireAdmin();
+  const db = crearClienteAdmin();
+  const { data: l } = await db
+    .from("places")
+    .select("guide_license, categories(slug)")
+    .eq("id", r.data.lugar)
+    .returns<{ guide_license: string | null; categories: { slug: string } | null }[]>()
+    .maybeSingle();
+  if (!l || l.categories?.slug !== "guias") return { estado: "error", mensaje: "Esta ficha no es de un guía turístico" };
+  if (r.data.acreditar === "si" && !l.guide_license) return { estado: "error", mensaje: "El guía todavía no escribió su número de credencial" };
+  if (r.data.acreditar === "si" && l.guide_license !== r.data.credencial)
+    return { estado: "error", mensaje: "El guía cambió su número mientras lo revisabas. Recarga la página y vuelve a buscarlo." };
+  let cambio = db.from("places").update({ accredited_at: r.data.acreditar === "si" ? new Date().toISOString() : null }).eq("id", r.data.lugar);
+  // Solo se acredita el número que el admin vio (si cambió entre la lectura y el guardado, no se toca ninguna fila)
+  if (r.data.acreditar === "si") cambio = cambio.eq("guide_license", r.data.credencial);
+  const { data: hecho, error } = await cambio.select("id");
+  if (error) return { estado: "error", mensaje: "No se pudo cambiar la insignia" };
+  if (hecho.length === 0) return { estado: "error", mensaje: "El guía cambió su número mientras lo revisabas. Recarga la página y vuelve a buscarlo." };
+  revalidatePath("/", "layout");
+  return { estado: "ok", mensaje: r.data.acreditar === "si" ? "Insignia «Guía acreditado» puesta" : "Insignia quitada" };
 }
 
 /** Agrega una palabra o frase a la lista de prohibidas. Se bloquea al instante en fichas, reseñas y nombres. */

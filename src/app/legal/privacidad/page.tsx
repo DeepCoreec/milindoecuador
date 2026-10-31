@@ -63,6 +63,11 @@ export default function Privacidad() {
             y lo que cambias en tu ficha (lo revisa el equipo que modera).
           </li>
           <li>
+            <b>Si eres guía de turismo:</b> además de tu ficha, tus idiomas, especialidades y zonas (son públicos) y tu número de credencial de guía
+            del Ministerio de Turismo. <b>El número no se publica</b>: solo lo ve el equipo que modera, para buscarlo en el catastro turístico del
+            Ministerio y, si está, poner en tu ficha la insignia «Guía acreditado». Puedes borrarlo desde «Mi negocio» y la insignia se quita.
+          </li>
+          <li>
             <b>Solicitudes de negocios:</b> el nombre del negocio, su categoría y sector, el nombre de quien la envía, el WhatsApp y la descripción. El
             WhatsApp del negocio se publica en su ficha para que los clientes le escriban.
           </li>

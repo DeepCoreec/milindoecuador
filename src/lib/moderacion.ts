@@ -23,6 +23,8 @@ const CAMPOS: Record<string, string> = {
   lugar: "El lugar",
   organizador: "El organizador",
   afiche: "La descripción del afiche",
+  zonas: "Las zonas donde trabajas",
+  encuentro: "El punto de encuentro",
 };
 
 const MOTIVOS: Record<string, string> = {
@@ -34,6 +36,8 @@ const MOTIVOS: Record<string, string> = {
 
 export function mensajeModeracion(error: { message?: string } | null | undefined): string | null {
   const texto = error?.message ?? "";
+  if (texto.includes("tope_recorridos")) return "Ya tienes 10 recorridos, el máximo. Borra alguno para crear otro.";
+  if (texto.includes("parada_no_valida")) return "Una de las paradas ya no está en la guía. Elige otra.";
   if (texto.includes("limite_fotos")) return "Ya hay 15 fotos, el máximo. Borra alguna para subir otra.";
   const m = texto.match(/texto_no_permitido:([a-z]+):([a-z]+)/);
   if (!m) return null;

@@ -510,6 +510,33 @@
   - Se revisaron las webs en el navegador. No abrían las de la Casa de la Cultura, el Museo Presley Norton, el BAE Calderón (turismo.guayaquil.gob.ec) y La Perla: se cambiaron por su Instagram oficial, y en La Perla se quitó. El Cementerio ahora lleva a la Junta de Beneficencia, que lo administra; la Catedral, a su Instagram oficial; el Malecón y el Teatro, a la dirección que sí funciona
 - **Siguiente paso:** el usuario revisa en su celular y, si puede, sube fotos propias de los 4 lugares sin foto. Pendientes menores: el nombre "Guayaquil en la Historía", la ubicación de la Plaza Rodolfo Baquerizo y por qué Overpass falla desde Vercel. Después, volver a la versión 10, paso 36.2
 
+## Versión 13 · Guías turísticos, recorridos y "Guayaquil de misterio"
+
+> Plan: `docs/PLAN-V13.md`, **aprobado por el usuario el 2026-10-31** ("me parece increíble, agrégalo al plan y dale inicio").
+> Rama `v13-guias`. Cada fase lleva su migración (la aplica el usuario en Supabase antes de publicar).
+
+### Fase 41 · Guías turísticos
+- [x] 41.1 Base (migración `0023_guias.sql`) — 2026-10-31: categoría `guias` ("Guías turísticos", con su afiche: el banderín y la ruta de puntos al faro del cerro); en `places`: idiomas y especialidades de una lista fija, zonas (≤160, filtro de palabras sin teléfonos ni enlaces), número de credencial del MINTUR (**no se da permiso de lectura al público**) y `accredited_at` (sin credencial no hay insignia; si cambia el número, se quita sola). Nadie escribe estas columnas con la clave pública. 15 pruebas RLS nuevas: 295 pasan. **(usuario) Falta aplicarla en Supabase** antes de publicar
+- [x] 41.2 Registro y "Tu perfil de guía" — 2026-10-31: el guía se registra eligiendo «Guías turísticos» (aviso en la página de registro). En «Mi negocio», solo para esa categoría, la sección "Tu perfil de guía": idiomas y especialidades con casillas (lista fija en `src/lib/guias.ts`), zonas y número de credencial (no se publica). Acción `guardarPerfilGuia`: Zod → sesión → que la ficha sea suya y de la categoría guías → límite diario → guarda con `admin.ts`; si cambia la credencial, la insignia se quita y el admin lo ve en "Cambios recientes"
+- [x] 41.3 Insignia "Guía acreditado" — 2026-10-31: en el panel, al editar la ficha de un guía, la sección "Guía acreditado" muestra el número de credencial (leído con `admin.ts` después de `requireAdmin`), el enlace al catastro turístico del MINTUR y el botón para poner o quitar la insignia (acción `acreditarGuia`: Zod → `requireAdmin` → que sea un guía con credencial). Insignia nueva `acreditado` (borde y texto `exito`, sin colores nuevos; anotada en DISENO.md). Pruebas unitarias del perfil: 210 pasan
+- [x] 41.4 Ficha del guía — 2026-10-31: insignia «Guía acreditado» en la ficha y en las tarjetas; en "Información": Idiomas, Recorridos (especialidades), Zonas y Credencial (revisada, con enlace al catastro, o "pídele su credencial antes de contratarlo"); "Sobre el guía" en lugar de "La historia"; sin "Cómo llegar" si el guía no puso ubicación. En las listas, los acreditados van antes que los que no
+- [x] 41.5 Sección "Guías turísticos" en Turismo — 2026-10-31: debajo de los lugares, hasta 3 guías (acreditados y con foto primero) y "Ver los N guías"; sin guías, una invitación a registrarse. Probado con Playwright a 390 y 1280 px, claro y oscuro (con dos guías de ejemplo temporales, ya quitados)
+- [x] 41.6 Política de privacidad — 2026-10-31: párrafo "Si eres guía de turismo" (qué es público y que la credencial no se publica); fecha al 31 de octubre
+- [x] Revisión de seguridad independiente — 2026-10-31: sin críticos ni altos. Arreglados: (medio) la insignia solo se pone al número que vio el admin (si el guía lo cambió mientras se revisaba, no se acredita); (bajos) la insignia se quita también si la ficha cambia de categoría o de dueño; idiomas y especialidades repetidos se quitan; 6 pruebas RLS más (301 pasan) y 211 unitarias
+- [x] (usuario) 0023 y 0024 aplicadas en Supabase el 2026-10-31 18:29 ("los dos funcionaron"; el aviso de "operaciones destructivas" de 0024 era por el `delete` dentro de `guardar_paradas` y los `revoke`)
+
+### Fase 42 · Recorridos de los guías
+- [x] 42.1 Base (migración `0024_recorridos.sql`) — 2026-10-31: tablas `guide_tours` (nombre, descripción 40–800, duración 30–720 min, precio por persona o "a convenir", punto de encuentro, borrador/publicado; hasta 10 por guía con candado) y `guide_tour_stops` (de 1 a 8 paradas en orden, sin repetir, solo lugares para visitar publicados de la Guía útil). El público ve solo recorridos publicados de guías publicados y paradas de lugares publicados; solo escribe el servidor. Textos con el filtro de palabras, sin teléfonos ni enlaces. 20 pruebas RLS nuevas: 321 pasan. **(usuario) Falta aplicarla en Supabase**
+- [x] 42.2 Crear recorridos — 2026-10-31: en «Mi negocio», solo para guías, "Tus recorridos (n de 10)": crear, cambiar y borrar. Nombre, qué se hace, duración (lista), precio por persona o "a convenir", punto de encuentro, de 2 a 8 paradas elegidas de los lugares para visitar de la guía (en orden) y publicado o borrador. Acciones `guardarRecorrido` y `borrarRecorrido`: Zod → sesión y dueño → que sea guía → paradas que hoy se muestran → límite diario → `admin.ts`. Pruebas unitarias: 219 pasan
+- [x] 42.3 Página del recorrido — 2026-10-31: `/guayaquil/guias/<guía>/recorridos/<id>` (solo si el recorrido es de ese guía): duración, precio, descripción, punto de encuentro, paradas numeradas con foto que llevan a la página de cada lugar, "Ver la ruta en Google Maps" (a pie, con las paradas en orden) y "Pedir este recorrido por WhatsApp" con la fecha y las personas ya escritas (no se guarda nada; cuenta como toque de WhatsApp). En la ficha del guía, "Sus recorridos". Probado con Playwright a 390 y 1280 px, claro y oscuro, con datos de ejemplo temporales ya quitados. Pruebas unitarias: 225 pasan
+- [x] 42.4 Paumi recomienda guías y recorridos — 2026-10-31: herramienta nueva `buscar_recorridos` (solo lee lo público; acreditados primero; devuelve guía, duración, precio, paradas y la ruta, que solo así puede abrir). `buscar_lugares` dice si un guía está acreditado. Instrucciones: ante "guía", "tour" o "recorrido", recomendar primero a los acreditados, mostrar al guía y abrir el recorrido; no inventar precios ni cupos; nunca recomendar entrar a lugares abandonados o cerrados. Pruebas unitarias: 228 pasan
+- [x] Revisión de seguridad independiente — 2026-10-31: sin críticos ni altos. Arreglados: (medio) las paradas se reemplazan en una sola transacción con candado (función `guardar_paradas` en 0024; si falla, quedan las de antes); (bajos) Paumi ya no recibe la descripción que escribe el guía (solo la usa para buscar) y no nombra monumentos; la base no acepta monumentos como parada; nombre y punto de encuentro sin saltos de línea. Queda (bajo): los cambios de recorridos cuentan en el mismo límite diario que la ficha (40). 6 pruebas RLS más
+
+### Fase 43 · "Guayaquil de misterio"
+- [ ] 43.1 a 43.3 (ver el plan)
+
+- **Siguiente paso:** publicar la rama `v13-guias` (PR a `main`) y probar las puertas 41 y 42 en la página real con un guía de prueba. Después, fase 43 ("Guayaquil de misterio"). **(usuario):** aplicar `supabase/migrations/0023_guias.sql` y luego `0024_recorridos.sql` en el editor SQL de Supabase y avisar; Claude publica la rama `v13-guias` (antes NO: las páginas leen columnas nuevas). Después, la puerta de la fase 41 con un guía de prueba, y la fase 42 (recorridos).
+
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
 
 > Pedido del usuario del 2026-10-31 01:22: "quiero probar diseños así" (con una copia aparte y su vista previa en Vercel;
@@ -528,6 +555,7 @@
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
+- (2026-10-31, revisión de la fase 42) Que el admin pueda ocultar un solo recorrido de un guía (hoy oculta la ficha entera)
 - (2026-10-28, fase 33) Enlazar **La Guayaca** (laguayacagye.com, tarjeta y subsidio de la Metrovía) cuando su sitio salga de mantenimiento. ¿Enlazar Moovit (app gratuita de terceros con rutas de la Metrovía)? Lo decide el usuario: no es oficial
 
 - (2026-10-28, del usuario) **Espacio publicitario en la portada** para quien pague aparte (un anuncio pequeño). Lo decide el usuario más adelante
