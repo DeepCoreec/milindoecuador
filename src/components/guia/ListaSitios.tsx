@@ -1,5 +1,6 @@
 import Image from "next/image";
-import type { Sitio } from "@/lib/datos/sitios";
+import Link from "next/link";
+import { rutaSitio, type Sitio } from "@/lib/datos/sitios";
 import { horarioLegible, TIPOS_SITIO, type TipoSitio } from "@/lib/osm";
 import { enlaceRutaGoogle } from "@/lib/ubicacion";
 
@@ -14,30 +15,38 @@ export function FilaSitio({ s }: { s: Sitio }) {
   const telefono = s.telefono?.split(/[;,/]/)[0]!.replace(/[^\d+]/g, "");
   const texto = s.nota ?? s.descripcion?.texto ?? s.direccion;
   const usaWikipedia = !s.nota && !!s.descripcion;
+  const visitar = s.grupo === "visitar";
   return (
     // Diseño de prueba 1 "Postales": con foto, la tarjeta es una postal (marco blanco y el nombre en letra de rótulo)
-    <li className={`grid content-start gap-1 overflow-hidden border border-linea bg-papel-alto ${s.foto ? "rounded-sm p-2.5 pb-4" : "rounded-xl p-4"}`}>
+    <li className={`relative grid content-start gap-1 overflow-hidden border border-linea bg-papel-alto ${s.foto ? "rounded-sm p-2.5 pb-4" : "rounded-xl p-4"}`}>
       {s.foto && (
         <div className="relative mb-2 aspect-[4/3] overflow-hidden rounded-[2px] bg-celeste-suave">
           <Image src={s.foto.src} alt={`Foto de ${s.nombre}`} fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
         </div>
       )}
-      <b className={s.foto ? "px-1.5 font-rotulo text-[17px] leading-6 font-normal" : "text-base leading-6"}>{s.nombre}</b>
+      {/* Versión 11 (39.3): los lugares para visitar tienen su página; toda la tarjeta lleva a ella */}
+      {visitar ? (
+        <Link href={rutaSitio(s)} className={`text-rio no-underline after:absolute after:inset-0 ${s.foto ? "px-1.5 font-rotulo text-[17px] leading-6 font-normal" : "text-base leading-6 font-bold"}`}>
+          {s.nombre}
+        </Link>
+      ) : (
+        <b className={s.foto ? "px-1.5 font-rotulo text-[17px] leading-6 font-normal" : "text-base leading-6"}>{s.nombre}</b>
+      )}
       {texto && <span className={`text-[15px] leading-[22px] text-rio-suave ${s.foto ? "px-1.5" : ""}`}>{texto}</span>}
       {s.horario && <span className={`text-sm leading-5 text-rio-suave ${s.foto ? "px-1.5" : ""}`}>Horario: {horarioLegible(s.horario)}</span>}
-      <span className={`mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[15px] ${s.foto ? "px-1.5" : ""}`}>
+      <span className={`relative z-10 mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[15px] ${s.foto ? "px-1.5" : ""}`}>
         <a href={enlaceRutaGoogle(s.ubicacion)} target="_blank" rel="noopener noreferrer" aria-label={`Cómo llegar a ${s.nombre}`}>
           Cómo llegar
         </a>
         {telefono && telefono.length >= 7 && <a href={`tel:${telefono}`}>Llamar</a>}
-        {s.web && (
+        {s.web && /^https?:\/\//i.test(s.web) && (
           <a href={s.web} target="_blank" rel="noopener noreferrer nofollow" aria-label={`Página web de ${s.nombre}`}>
             Página web
           </a>
         )}
       </span>
       {(s.foto || usaWikipedia) && (
-        <small className={`mt-1 text-[13px] leading-[18px] text-rio-suave ${s.foto ? "px-1.5" : ""}`}>
+        <small className={`relative z-10 mt-1 text-[13px] leading-[18px] text-rio-suave ${s.foto ? "px-1.5" : ""}`}>
           {s.foto && (
             <>
               Foto: {s.foto.credito},{" "}

@@ -473,11 +473,12 @@
 > reseñas en los lugares de la guía (decisión del usuario), sin librerías nuevas ni migraciones.
 
 ### Fase 39 · Cada lugar turístico con su página
-- [ ] 39.1 Página de cada lugar para visitar
-- [ ] 39.2 Qué hay cerca (lugares, negocios y eventos)
-- [ ] 39.3 Enlaces desde la Guía útil, las categorías, "Cerca de mí" y el mapa del sitio
-- [ ] 39.4 Google y WhatsApp (título, foto al compartir, TouristAttraction)
-- **Siguiente paso:** 39.1 — ruta `src/app/[ciudad]/visitar/[sitio]/page.tsx` y ayudas `rutaSitio`/`getSitioVisitar` en `src/lib/datos/sitios.ts`
+- [x] 39.1 Página de cada lugar para visitar — 2026-10-31: `src/app/[ciudad]/visitar/[sitio]/page.tsx` (`/guayaquil/visitar/<nombre>-<id>`): foto grande con crédito, tipo, dirección, "Cómo llegar" y Compartir, "Sobre el lugar" (nota o Wikipedia con su enlace) y "Antes de ir" (horario, dirección, Google Maps y Waze, teléfono, web). Sin reseñas. La dirección se valida (`idDeRutaSitio`), un nombre viejo redirige a la dirección correcta y lo que no existe da 404
+- [x] 39.2 Qué hay cerca — 2026-10-31: "Más para visitar cerca" (3 km, primero con foto), "Para comer y pasar el rato cerca" (negocios registrados) y "Esta semana cerca" (eventos), con los datos públicos en caché de "Cerca de mí"
+- [x] 39.3 Enlaces — 2026-10-31: toda la tarjeta de un lugar para visitar (Guía útil y categorías) lleva a su página; también "Cerca de mí" y el sitemap (solo los que tienen foto o descripción)
+- [x] 39.4 Google y WhatsApp — 2026-10-31: título y descripción propios, foto al compartir, datos estructurados TouristAttraction (escapados); sin foto ni descripción, noindex
+- Revisión de seguridad independiente (2026-10-31): sin hallazgos críticos ni altos. Bajos: los monumentos solo se esconden en la página (la base los entrega con la clave pública; no son datos secretos); si Supabase falla, la página da 500 (lo resuelve 36.3, páginas de error); texto por defecto si falta el nombre del tipo (arreglado). Prueba unitaria nueva (direcciones y Turismo sin estatuas): 190 pasan
+- **Siguiente paso:** el usuario revisa en su celular la página de un lugar (desde Turismo) y aprueba la puerta de la fase 39; luego volver a la versión 10, paso 36.2
 
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
 
@@ -492,7 +493,7 @@
 - [x] **Aprobado por el usuario el 2026-10-31 03:46** ("quiero que la implementes, me gustó el modelo"): las pruebas 1 y 2 se juntan con `main` y se publican. `docs/DISENO.md` actualizado (sección "Versión 10: ciudad de fondo y postales")
 - [x] Ajuste tras publicar — 2026-10-31: el usuario vio en su computadora (modo claro) los cuadros de las categorías blancos sobre fondo blanco y los quería oscuros, como en las capturas: ahora la franja de las categorías es siempre de noche (en modo claro y oscuro). En pantallas anchas, "Cerca de mí" quedaba sobre la baranda del Malecón: el contenido sube según el ancho. Revisado a 390, 1280 y 1600 px
 - [x] Turismo sin estatuas — 2026-10-31: el usuario pidió quitar el carrete que se mueve y no mostrar estatuas ("la gente no va a un lugar solo por una estatua; mejor donde se pueden hacer actividades, espaciosos y divertidos"). Se quitó el carrete; los monumentos no se muestran al público (`TIPOS_OCULTOS` en `src/lib/osm.ts`: ni en la guía, ni en "Cerca de mí", ni en Paumi; siguen en la base y el panel); Turismo muestra atracciones, parques, áreas naturales, zoológicos, miradores y museos (sin iglesias); en cada tipo, primero los que tienen foto
-- **Siguiente paso:** el usuario decide si aprueba la propuesta de ficha con fotos y reseñas para los lugares turísticos (necesita una migración); si no, volver a la versión 10, paso 36.2
+- **Siguiente paso:** ver la versión 11 (fase 39)
 
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)

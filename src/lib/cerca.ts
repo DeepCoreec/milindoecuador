@@ -1,6 +1,6 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
-import { getSitios } from "@/lib/datos/sitios";
+import { getSitios, rutaSitio } from "@/lib/datos/sitios";
 import { deEstaSemana, textoFechas, textoPrecio } from "@/lib/eventos";
 import { urlPublicaFoto } from "@/lib/fotos";
 import { estadoAhora, leerHorario } from "@/lib/horario";
@@ -66,6 +66,8 @@ export type CercaSitio = {
   foto: { src: string; alt: string } | null;
   comoLlegar: string;
   fuente: { url: string; sitio: string };
+  /** Versión 11 (39.3): su página en la guía */
+  ruta: string;
 };
 export type ResultadoCerca = { lugares: CercaLugar[]; eventos: CercaEvento[]; sitios: CercaSitio[]; radio: number };
 
@@ -185,6 +187,7 @@ export async function buscarCerca(u: Ubicacion, maximo = 8, ahora = new Date()):
         foto: x.foto ? { src: x.foto.src, alt: `Foto de ${x.nombre}` } : null,
         comoLlegar: enlaceRutaGoogle(x.ubicacion),
         fuente: { url: enlaceOSM(tipoOsm!, idOsm!), sitio: tipoOsm === "wikidata" ? "wikidata.org" : "openstreetmap.org" },
+        ruta: rutaSitio(x),
       };
     });
 

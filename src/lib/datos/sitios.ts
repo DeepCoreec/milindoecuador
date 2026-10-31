@@ -107,3 +107,33 @@ const leerSitiosEnCache = unstable_cache(async (): Promise<Sitio[]> => {
     ...fotoYDescripcion(f),
   }));
 }, ["sitios-guia-util"], { revalidate: 300, tags: ["sitios"] });
+
+/** Nombre en forma de dirección: "Malecón 2000" → "malecon-2000" (sin tildes ni signos, hasta 60 letras). */
+export function slugSitio(nombre: string): string {
+  return nombre
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60)
+    .replace(/-+$/, "");
+}
+
+/** Dirección de la página de un lugar para visitar (versión 11, 39.1): /guayaquil/visitar/<nombre>-<id>. */
+export function rutaSitio(s: Pick<Sitio, "id" | "nombre">): string {
+  const slug = slugSitio(s.nombre);
+  return `/guayaquil/visitar/${slug ? `${slug}-` : ""}${s.id}`;
+}
+
+const ID_AL_FINAL = /^(?:[a-z0-9-]{0,80}-)?([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/;
+
+/** El id de un lugar a partir de su dirección ("malecon-2000-<id>"); null si no tiene la forma esperada. */
+export function idDeRutaSitio(parte: string): string | null {
+  return ID_AL_FINAL.exec(parte)?.[1] ?? null;
+}
+
+/** Un lugar para visitar publicado (de la lista en caché); null si no existe o no es para visitar. */
+export async function getSitioVisitar(id: string): Promise<Sitio | null> {
+  return (await getSitios()).find((s) => s.id === id && s.grupo === "visitar") ?? null;
+}

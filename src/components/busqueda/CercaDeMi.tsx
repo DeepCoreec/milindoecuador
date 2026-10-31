@@ -65,7 +65,9 @@ function Sitio({ s }: { s: CercaSitio }) {
     <li className="flex gap-3 rounded-xl border border-linea bg-papel-alto p-3">
       <Miniatura foto={s.foto} />
       <div className="grid min-w-0 content-start gap-0.5">
-        <b className="font-semibold">{s.nombre}</b>
+        <Link href={s.ruta} className="font-semibold">
+          {s.nombre}
+        </Link>
         <span className="text-sm leading-5 text-rio-suave">
           {s.tipo} · <b className="font-semibold text-rio">{distancia(s.distancia)}</b>
         </span>

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getCategorias, getCiudades, getLugaresDeCiudad, rutaLugar } from "@/lib/datos/lugares";
 import { getEventos } from "@/lib/datos/eventos";
+import { getSitios, rutaSitio } from "@/lib/datos/sitios";
 import { urlSitio } from "@/lib/sitio";
 
 /** Mapa del sitio para Google: inicio, ciudades, categorías y lugares reales (nunca los de ejemplo). */
@@ -27,6 +28,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Versión 5: eventos vigentes de Guayaquil
   paginas.push({ url: url("/guayaquil/eventos"), changeFrequency: "daily", priority: 0.7 });
   paginas.push({ url: url("/guayaquil/guia-util"), changeFrequency: "weekly", priority: 0.6 });
+  // Versión 11 (39.3): lugares para visitar con foto o descripción (los demás no se ofrecen a Google)
+  for (const s of await getSitios().catch(() => [])) {
+    if (s.grupo === "visitar" && (s.foto || s.descripcion || s.nota)) paginas.push({ url: url(rutaSitio(s)), changeFrequency: "monthly", priority: 0.5 });
+  }
   for (const e of await getEventos().catch(() => [])) paginas.push({ url: url(`/guayaquil/eventos/${e.slug}`), changeFrequency: "daily", priority: 0.5 });
   return paginas;
 }
