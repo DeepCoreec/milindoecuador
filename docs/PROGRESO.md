@@ -518,7 +518,7 @@
 ### Fase 41 · Guías turísticos
 - [x] 41.1 Base (migración `0023_guias.sql`) — 2026-10-31: categoría `guias` ("Guías turísticos", con su afiche: el banderín y la ruta de puntos al faro del cerro); en `places`: idiomas y especialidades de una lista fija, zonas (≤160, filtro de palabras sin teléfonos ni enlaces), número de credencial del MINTUR (**no se da permiso de lectura al público**) y `accredited_at` (sin credencial no hay insignia; si cambia el número, se quita sola). Nadie escribe estas columnas con la clave pública. 15 pruebas RLS nuevas: 295 pasan. **(usuario) Falta aplicarla en Supabase** antes de publicar
 - [x] 41.2 Registro y "Tu perfil de guía" — 2026-10-31: el guía se registra eligiendo «Guías turísticos» (aviso en la página de registro). En «Mi negocio», solo para esa categoría, la sección "Tu perfil de guía": idiomas y especialidades con casillas (lista fija en `src/lib/guias.ts`), zonas y número de credencial (no se publica). Acción `guardarPerfilGuia`: Zod → sesión → que la ficha sea suya y de la categoría guías → límite diario → guarda con `admin.ts`; si cambia la credencial, la insignia se quita y el admin lo ve en "Cambios recientes"
-- [ ] 41.3 Insignia "Guía acreditado" desde el panel (con el número y el enlace al catastro del MINTUR)
+- [x] 41.3 Insignia "Guía acreditado" — 2026-10-31: en el panel, al editar la ficha de un guía, la sección "Guía acreditado" muestra el número de credencial (leído con `admin.ts` después de `requireAdmin`), el enlace al catastro turístico del MINTUR y el botón para poner o quitar la insignia (acción `acreditarGuia`: Zod → `requireAdmin` → que sea un guía con credencial). Insignia nueva `acreditado` (borde y texto `exito`, sin colores nuevos; anotada en DISENO.md). Pruebas unitarias del perfil: 210 pasan
 - [ ] 41.4 Ficha del guía con insignia, idiomas, especialidades y zonas
 - [ ] 41.5 Sección "Guías turísticos" en Turismo
 - [ ] 41.6 Política de privacidad: datos del guía
@@ -531,7 +531,7 @@
 ### Fase 43 · "Guayaquil de misterio"
 - [ ] 43.1 a 43.3 (ver el plan)
 
-- **Siguiente paso:** 41.3, insignia "Guía acreditado" en el panel: en la edición del lugar (solo guías), el número de credencial, el enlace al catastro del MINTUR y un botón poner/quitar (`requireAdmin` en el servidor; escribe `accredited_at` con `admin.ts`).
+- **Siguiente paso:** 41.4, la ficha pública del guía muestra la insignia «Guía acreditado», sus idiomas, especialidades y zonas (leer las columnas públicas de 0023 en `getLugar`).
 
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
 

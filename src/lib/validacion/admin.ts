@@ -117,6 +117,9 @@ export const esquemaPlan = z.object({
   accion: z.enum(["destacar-semana", "destacar-seis-semanas", "quitar-destacado", "verificar", "quitar-verificado"]),
 });
 
+/** Poner o quitar la insignia "Guía acreditado" (versión 13, 41.3). */
+export const esquemaAcreditar = z.object({ lugar: z.uuid(), acreditar: z.enum(["si", "no"]) });
+
 /** Palabra o frase para la lista de prohibidas (versión 2, paso 9.1). La base la guarda normalizada. */
 export const esquemaPalabra = z.object({
   palabra: z

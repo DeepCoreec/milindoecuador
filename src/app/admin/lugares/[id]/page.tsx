@@ -4,9 +4,10 @@ import { FormLugar, type DatosFormLugar } from "@/components/admin/FormLugar";
 import { FotosLugar } from "@/components/admin/FotosLugar";
 import { VideoNegocio } from "@/components/admin/VideoNegocio";
 import { PlanLugar } from "@/components/admin/PlanLugar";
+import { AcreditarGuia } from "@/components/admin/AcreditarGuia";
 import { configSupabase } from "@/lib/supabase/config";
 import { ResenaAdmin } from "@/components/admin/ResenaAdmin";
-import { getFotosAdmin, getLugarAdmin, getResenasDeLugar, type FotoAdmin, type ResenaAdmin as DatosResena } from "@/lib/datos/admin";
+import { getFotosAdmin, getGuiaAdmin, getLugarAdmin, getResenasDeLugar, type FotoAdmin, type ResenaAdmin as DatosResena } from "@/lib/datos/admin";
 import { getCategorias } from "@/lib/datos/lugares";
 import { getVideoPrivado, type VideoLugar } from "@/lib/datos/video";
 import { destacadoVigente } from "@/lib/planes";
@@ -27,6 +28,7 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
   let fotos: FotoAdmin[] = [];
   let video: VideoLugar | null = null;
   let resenas: DatosResena[] = [];
+  let guia: Awaited<ReturnType<typeof getGuiaAdmin>> = null;
   let plan = { vigente: false, destacadoHasta: null as string | null, verificado: false };
   if (id === "nuevo") {
     datos = { id, nombre: "", categoria: categorias[0]?.slug ?? "", sector: "", descripcion: "", dato: "", horario: "", direccion: "", ubicacion: "", horarioDias: "", precio: "", whatsapp: "", web: "", facebook: "", instagram: "", tiktok: "", youtube: "", estado: "borrador" };
@@ -57,7 +59,12 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
     if (l.status === "publicado") enlace = `/guayaquil/${categoria}/${l.slug}`;
     plan = { vigente: destacadoVigente(l.is_featured, l.featured_until), destacadoHasta: l.featured_until, verificado: l.is_verified };
     // getLugarAdmin ya exigió admin (requireAdmin) antes de leer el video con admin.ts
-    [fotos, resenas, video] = await Promise.all([getFotosAdmin(l.id, configSupabase()!.url), getResenasDeLugar(l.id), getVideoPrivado(l.id)]);
+    [fotos, resenas, video, guia] = await Promise.all([
+      getFotosAdmin(l.id, configSupabase()!.url),
+      getResenasDeLugar(l.id),
+      getVideoPrivado(l.id),
+      categoria === "guias" ? getGuiaAdmin(l.id) : null,
+    ]);
   }
 
   return (
@@ -81,6 +88,7 @@ export default async function EditarLugar({ params, searchParams }: PageProps<"/
       <FormLugar lugar={datos} categorias={categorias} />
       {id !== "nuevo" && <FotosLugar lugar={id} fotos={fotos} />}
       {id !== "nuevo" && <VideoNegocio lugar={id} video={video} modo="admin" />}
+      {id !== "nuevo" && guia && <AcreditarGuia lugar={id} credencial={guia.credencial} acreditadoDesde={guia.acreditadoDesde} />}
       {id !== "nuevo" && <PlanLugar lugar={id} {...plan} />}
       {id !== "nuevo" && (
         <section aria-labelledby="t-resenas" className="grid gap-4">
