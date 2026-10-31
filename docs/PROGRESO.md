@@ -480,6 +480,20 @@
 - Revisión de seguridad independiente (2026-10-31): sin hallazgos críticos ni altos. Bajos: los monumentos solo se esconden en la página (la base los entrega con la clave pública; no son datos secretos); si Supabase falla, la página da 500 (lo resuelve 36.3, páginas de error); texto por defecto si falta el nombre del tipo (arreglado). Prueba unitaria nueva (direcciones y Turismo sin estatuas): 190 pasan
 - **Siguiente paso:** el usuario revisa en su celular la página de un lugar (desde Turismo) y aprueba la puerta de la fase 39; luego volver a la versión 10, paso 36.2
 
+## Versión 12 · Más fotos y más información de cada lugar
+
+> Plan: `docs/PLAN-V12.md`, **aprobado por el usuario el 2026-10-31 12:24** ("sí, me parece bien, hazlo así").
+
+### Fase 40 · Galería y más información
+- [x] 40.1 Base (migración `0022_mas_fotos_guia.sql`) — 2026-10-31: tabla `city_spot_photos` (hasta 8 por lugar; de Commons con autor, licencia y enlace, o propias sin ellos; filtro de palabras; solo escribe el servidor; el público ve las de lugares publicados) y en `city_spots` `description_long` (≤1200, con fuente de Wikipedia), `facts` (objeto pequeño) y `photos_at`. 20 pruebas RLS nuevas: 280 pasan. **(usuario) Falta aplicarla en Supabase** antes de publicar el código de la fase 40
+- [x] 40.2 Más fotos de Wikimedia Commons — 2026-10-31: `buscarMasEnWikimedia` (`src/lib/wikimedia.ts`): las otras P18 de la ficha y la carpeta de Commons (P373), solo libres, de 1000×600 o más, sin mapas, logos, escudos ni planos, sin repetir la principal, hasta 6; `traerMasDeUnSitio` (`src/lib/guia/mas-fotos.ts`) las copia a `guia/<lugar>/<uuid>` con su crédito. Botón "Traer más fotos" en el panel (5 lugares por clic). Pruebas unitarias con respuestas simuladas
+- [x] 40.3 Fotos propias desde el panel — 2026-10-31: "Fotos del lugar" en cada lugar para visitar del panel → `/admin/guia/fotos/<id>`: ver la principal y las más, subir propias (WebP sin datos del celular, permiso de subida de un solo uso, se comprueba que sea una foto) y borrar cualquiera. Tope de 8
+- [x] 40.4 Galería con flechas — 2026-10-31: `GaleriaSitio`: flechas ‹ ›, "3 de 6", deslizar con el dedo, flechas del teclado, miniaturas para saltar y el crédito de la foto que se ve. Probado con Playwright a 390 y 1280 px
+- [x] 40.5 Más información — 2026-10-31: "Sobre el lugar" con el párrafo de Wikipedia (hasta 1200 letras, con su crédito) y en "Antes de ir" los datos rápidos (Desde, Tamaño, Patrimonio)
+- Revisión de seguridad independiente (2026-10-31): sin críticos ni altos. Arreglados: no se borra el archivo de una foto ya registrada (media); sin tope de 50 en el orden; candado por lugar para el tope de 8; las fotos de Wikimedia se revisan por sus primeros bytes. Queda (bajo): al borrar un lugar, sus fotos quedan en el almacenamiento (igual que la foto principal desde la versión 7)
+- [x] (usuario) 0022 aplicada en Supabase el 2026-10-31 12:38 ("Success. No rows returned", captura)
+- **Siguiente paso:** publicar la rama `v12-fotos`, tocar "Traer más fotos" en el panel hasta terminar y revisar las fotos (Claude, delegado)
+
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
 
 > Pedido del usuario del 2026-10-31 01:22: "quiero probar diseños así" (con una copia aparte y su vista previa en Vercel;
