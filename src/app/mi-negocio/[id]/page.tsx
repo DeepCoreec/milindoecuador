@@ -5,12 +5,14 @@ import { FotosLugar } from "@/components/admin/FotosLugar";
 import { VideoNegocio } from "@/components/admin/VideoNegocio";
 import { EstadoNegocio } from "@/components/dueno/EstadoNegocio";
 import { PerfilGuia } from "@/components/dueno/PerfilGuia";
+import { RecorridosGuia } from "@/components/dueno/RecorridosGuia";
 import { Estadisticas } from "@/components/dueno/Estadisticas";
 import { RespuestaDueno } from "@/components/dueno/RespuestaDueno";
 import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
 import { Insignia } from "@/components/ui/Insignia";
-import { getEstadisticas, getMiNegocio, requireDueno } from "@/lib/datos/dueno";
+import { getEstadisticas, getMiNegocio, getMisRecorridos, requireDueno } from "@/lib/datos/dueno";
+import { getSitios } from "@/lib/datos/sitios";
 import { getVideoPrivado } from "@/lib/datos/video";
 import { fechaLarga } from "@/lib/enlaces";
 import { textoUbicacion } from "@/lib/ubicacion";
@@ -31,6 +33,15 @@ export default async function PaginaMiNegocio({ params }: PageProps<"/mi-negocio
   // getVideoPrivado lee con admin.ts: va después de requireDueno (ya comprobó que el negocio es de esta cuenta)
   const [n, numeros, video] = await Promise.all([getMiNegocio(usuario, id), getEstadisticas(usuario, id), getVideoPrivado(id)]);
   const pendiente = n.descripcion.startsWith(DESCRIPCION_PENDIENTE);
+  // Versión 13 (42.2): los guías arman recorridos con los lugares para visitar de la Guía útil
+  const [recorridos, opciones] = n.guia
+    ? await Promise.all([
+        getMisRecorridos(usuario, id),
+        getSitios()
+          .catch(() => [])
+          .then((s) => s.filter((x) => x.grupo === "visitar").map((x) => ({ id: x.id, nombre: x.nombre })).sort((a, b) => a.nombre.localeCompare(b.nombre, "es"))),
+      ])
+    : [[], []];
 
   return (
     <>
@@ -49,6 +60,7 @@ export default async function PaginaMiNegocio({ params }: PageProps<"/mi-negocio
         {n.estado !== "borrador" && <Estadisticas semana={numeros.semana} mes={numeros.mes} conVideo={!!video} />}
 
         {n.guia && <PerfilGuia lugar={n.id} perfil={n.guia} />}
+        {n.guia && <RecorridosGuia lugar={n.id} recorridos={recorridos} opciones={opciones} />}
 
         <section aria-labelledby="t-datos" className="grid gap-3">
           <h2 id="t-datos" className={titulo}>

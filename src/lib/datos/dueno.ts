@@ -232,3 +232,49 @@ export async function getEstadisticas(usuario: Usuario, lugarId: string): Promis
   }
   return { semana, mes };
 }
+
+export type MiRecorrido = {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  duracion: number;
+  precio: number | null;
+  encuentro: string;
+  estado: "borrador" | "publicado";
+  /** Ids de los lugares de la guía, en orden. */
+  paradas: string[];
+};
+
+/** Los recorridos de un guía de la cuenta (versión 13, 42.2). Llamar después de requireDueno. */
+export async function getMisRecorridos(usuario: Usuario, lugarId: string): Promise<MiRecorrido[]> {
+  const db = crearClienteAdmin();
+  const { data: propio } = await db.from("places").select("id").eq("id", lugarId).eq("owner_id", usuario.id).maybeSingle();
+  if (!propio) return [];
+  const { data } = await db
+    .from("guide_tours")
+    .select("id, name, description, duration_minutes, price_usd, meeting_point, status, guide_tour_stops(spot_id, position)")
+    .eq("place_id", lugarId)
+    .order("created_at")
+    .returns<
+      {
+        id: string;
+        name: string;
+        description: string;
+        duration_minutes: number;
+        price_usd: number | string | null;
+        meeting_point: string;
+        status: "borrador" | "publicado";
+        guide_tour_stops: { spot_id: string; position: number }[];
+      }[]
+    >();
+  return (data ?? []).map((t) => ({
+    id: t.id,
+    nombre: t.name,
+    descripcion: t.description,
+    duracion: t.duration_minutes,
+    precio: t.price_usd == null ? null : Number(t.price_usd),
+    encuentro: t.meeting_point,
+    estado: t.status,
+    paradas: [...t.guide_tour_stops].sort((a, b) => a.position - b.position).map((p) => p.spot_id),
+  }));
+}

@@ -12,6 +12,8 @@ import { configSupabase, exigirConfigSupabase } from "@/lib/supabase/config";
 import { esEnlaceCorto } from "@/lib/ubicacion";
 import { DESCRIPCION_PENDIENTE, esquemaEstadoDueno, esquemaFotoDueno, esquemaNegocio, esquemaPerfilGuia, esquemaRespuestaDueno, esquemaSubidaDueno } from "@/lib/validacion/dueno";
 import { esquemaIdFoto, esquemaMoverFoto } from "@/lib/validacion/admin";
+import { esquemaBorrarRecorrido, esquemaRecorrido } from "@/lib/validacion/recorridos";
+import { getSitios } from "@/lib/datos/sitios";
 
 /*
  * Acciones de "Mi negocio" (versión 2, fase 9). El dueño publica al instante.
@@ -30,7 +32,7 @@ export type EstadoDueno = {
   intento?: number;
 };
 
-const LIMITES = { ficha: 40, permisosFoto: 40, fotosOrden: 60, respuesta: 50 } as const;
+const LIMITES = { ficha: 40, permisosFoto: 40, fotosOrden: 60, respuesta: 50, recorridos: 40 } as const;
 const SESION = "Tu sesión se cerró. Entra otra vez a tu cuenta.";
 const NO_ES_TUYO = "Este negocio no está en tu cuenta.";
 
@@ -409,4 +411,90 @@ export async function guardarPerfilGuia(_previo: EstadoDueno, datos: FormData): 
     mensaje: pierde ? "Perfil guardado. Como cambiaste el número de credencial, revisaremos otra vez tu acreditación." : "Perfil guardado",
     intento: Date.now(),
   };
+}
+
+/** ¿La ficha es de un guía turístico? (los recorridos son solo para guías) */
+async function esGuia(lugarId: string) {
+  const { data } = await crearClienteAdmin().from("places").select("categories(slug)").eq("id", lugarId).returns<{ categories: { slug: string } | null }[]>().maybeSingle();
+  return data?.categories?.slug === "guias";
+}
+
+/**
+ * Crear o cambiar un recorrido (versión 13, 42.2). Zod → sesión y dueño → que sea guía → límite diario →
+ * guarda con admin.ts. Las paradas se reemplazan enteras (la base exige lugares publicados de la Guía útil, 0024).
+ */
+export async function guardarRecorrido(_previo: EstadoDueno, datos: FormData): Promise<EstadoDueno> {
+  const campos = ["lugar", "recorrido", "nombre", "descripcion", "duracion", "precio", "encuentro", "estado"] as const;
+  const valores = Object.fromEntries(campos.map((c) => [c, String(datos.get(c) ?? "").slice(0, 1000)]));
+  const paradas = datos.getAll("paradas").slice(0, 8).map((x) => String(x).slice(0, 40));
+  valores.paradas = paradas.join(",");
+  const r = esquemaRecorrido.safeParse({ ...valores, paradas });
+  if (!r.success) return { estado: "error", mensaje: "Revisa los datos", errores: [...new Set(r.error.issues.map((i) => i.message))], valores, intento: Date.now() };
+  const m = await miLugar(r.data.lugar);
+  if ("error" in m) return { estado: "error", mensaje: m.error, valores, intento: Date.now() };
+  if (!(await esGuia(m.lugar.id))) return { estado: "error", mensaje: "Los recorridos son solo para guías turísticos.", valores, intento: Date.now() };
+
+  // Solo lugares para visitar que hoy se muestran en la guía (sin monumentos ni lugares ocultos)
+  const visibles = new Set((await getSitios().catch(() => [])).filter((x) => x.grupo === "visitar").map((x) => x.id));
+  if (r.data.paradas.some((p) => !visibles.has(p))) return { estado: "error", mensaje: "Una de las paradas ya no está en la guía. Elige otra.", valores, intento: Date.now() };
+
+  const db = crearClienteAdmin();
+  if (r.data.recorrido) {
+    const { data: propio } = await db.from("guide_tours").select("id").eq("id", r.data.recorrido).eq("place_id", m.lugar.id).maybeSingle();
+    if (!propio) return { estado: "error", mensaje: "Ese recorrido no es tuyo.", valores, intento: Date.now() };
+  }
+  const anotado = await reservar(m.usuario.id, m.lugar.id, "ficha", ["ficha", "estado"], LIMITES.recorridos, `${r.data.recorrido ? "Cambió" : "Creó"} el recorrido «${r.data.nombre}»`);
+  if (!anotado) return { estado: "error", mensaje: LIMITE_DIA, valores, intento: Date.now() };
+
+  const fila = {
+    name: r.data.nombre,
+    description: r.data.descripcion,
+    duration_minutes: r.data.duracion,
+    price_usd: r.data.precio,
+    meeting_point: r.data.encuentro,
+    status: r.data.estado,
+  };
+  const guardado = r.data.recorrido
+    ? await db.from("guide_tours").update(fila).eq("id", r.data.recorrido).eq("place_id", m.lugar.id).select("id").single()
+    : await db.from("guide_tours").insert({ ...fila, place_id: m.lugar.id }).select("id").single();
+  const id = guardado.data?.id as string | undefined;
+  const fallo = (error: { message?: string } | null) => ({
+    estado: "error" as const,
+    mensaje: error?.message?.includes("tope_recorridos")
+      ? "Ya tienes 10 recorridos, el máximo. Borra alguno para crear otro."
+      : (mensajeModeracion(error) ?? "No se pudo guardar. Inténtalo de nuevo."),
+    valores,
+    intento: Date.now(),
+  });
+  if (guardado.error || !id) {
+    await quitar(anotado);
+    return fallo(guardado.error);
+  }
+  await db.from("guide_tour_stops").delete().eq("tour_id", id);
+  const { error: e2 } = await db.from("guide_tour_stops").insert(r.data.paradas.map((spot_id, i) => ({ tour_id: id, spot_id, position: i + 1 })));
+  if (e2) {
+    // Sin sus paradas no se publica: queda en borrador para que el guía las vuelva a elegir
+    await db.from("guide_tours").update({ status: "borrador" }).eq("id", id);
+    return {
+      estado: "error",
+      mensaje: e2.message.includes("parada_no_valida") ? "Una de las paradas ya no está en la guía. Elige otra y vuelve a guardar." : "No se pudieron guardar las paradas. Vuelve a intentarlo.",
+      valores,
+      intento: Date.now(),
+    };
+  }
+  revalidatePath("/", "layout");
+  return { estado: "ok", mensaje: r.data.estado === "publicado" ? "Recorrido guardado y publicado" : "Recorrido guardado como borrador", intento: Date.now() };
+}
+
+/** Borrar un recorrido propio (con sus paradas). */
+export async function borrarRecorrido(_previo: EstadoDueno, datos: FormData): Promise<EstadoDueno> {
+  const r = esquemaBorrarRecorrido.safeParse({ lugar: datos.get("lugar"), recorrido: datos.get("recorrido") });
+  if (!r.success) return { estado: "error", mensaje: "Datos inválidos", intento: Date.now() };
+  const m = await miLugar(r.data.lugar);
+  if ("error" in m) return { estado: "error", mensaje: m.error, intento: Date.now() };
+  const { data, error } = await crearClienteAdmin().from("guide_tours").delete().eq("id", r.data.recorrido).eq("place_id", m.lugar.id).select("name");
+  if (error || !data?.length) return { estado: "error", mensaje: "No se pudo borrar.", intento: Date.now() };
+  await anotar(m.lugar.id, m.usuario.id, "ficha", `Borró el recorrido «${data[0]!.name}»`);
+  revalidatePath("/", "layout");
+  return { estado: "ok", mensaje: "Recorrido borrado", intento: Date.now() };
 }
