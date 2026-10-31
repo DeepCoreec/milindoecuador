@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CATASTRO_MINTUR, enFrase } from "@/lib/guias";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
@@ -62,6 +63,8 @@ export default async function FichaLugar({ params }: Props) {
   const whatsapp = enlaceWhatsApp(lugar.whatsapp, lugar.nombre);
   // Con la ubicación exacta abre la ruta ya trazada; sin ella, busca el lugar por nombre y dirección
   const comoLlegar = lugar.ubicacion ? enlaceRutaGoogle(lugar.ubicacion) : enlaceComoLlegar(lugar.nombre, lugar.direccion, ciudad.nombre);
+  // Versión 13: un guía es una persona; "Cómo llegar" solo si puso un punto de encuentro con ubicación
+  const conRuta = categoria.slug !== "guias" || !!lugar.ubicacion;
   const precio = lugar.precio ? PRECIOS[lugar.precio] : null;
   // Parques, miradores y lugares públicos no son negocios: no se les ofrece "Pide destacarlo" (fase 24)
   const esNegocio = !!lugar.whatsapp || !["turismo", "paseos", "naturaleza"].includes(categoria.slug);
@@ -100,10 +103,12 @@ export default async function FichaLugar({ params }: Props) {
                   Escribir por WhatsApp
                 </EnlaceContado>
               )}
-              <EnlaceContado lugar={lugar.id} tipo="route" href={comoLlegar} target="_blank" rel="noopener noreferrer" className={clasesBoton("secundario")}>
-                <IconoUbicacion />
-                Cómo llegar
-              </EnlaceContado>
+              {conRuta && (
+                <EnlaceContado lugar={lugar.id} tipo="route" href={comoLlegar} target="_blank" rel="noopener noreferrer" className={clasesBoton("secundario")}>
+                  <IconoUbicacion />
+                  Cómo llegar
+                </EnlaceContado>
+              )}
               {lugar.id &&
                 (usuario ? (
                   <BotonGuardar lugar={lugar.id} ruta={ruta} guardado={guardado} />
@@ -125,10 +130,12 @@ export default async function FichaLugar({ params }: Props) {
                 WhatsApp
               </EnlaceContado>
             )}
-            <EnlaceContado lugar={lugar.id} tipo="route" href={comoLlegar} target="_blank" rel="noopener noreferrer" className={clasesBoton("secundario", "normal", "min-w-0 flex-1 gap-1.5! px-2!")}>
-              <IconoUbicacion />
-              Cómo llegar
-            </EnlaceContado>
+            {conRuta && (
+              <EnlaceContado lugar={lugar.id} tipo="route" href={comoLlegar} target="_blank" rel="noopener noreferrer" className={clasesBoton("secundario", "normal", "min-w-0 flex-1 gap-1.5! px-2!")}>
+                <IconoUbicacion />
+                Cómo llegar
+              </EnlaceContado>
+            )}
             {/* Fase 24: también Guardar y Compartir a mano (solo íconos, con su nombre para el lector de pantalla) */}
             {lugar.id &&
               (usuario ? (
@@ -146,6 +153,42 @@ export default async function FichaLugar({ params }: Props) {
               Información
             </h2>
             <dl className="m-0 grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-2.5 text-[15px] leading-[22px]">
+              {/* Versión 13: perfil del guía turístico */}
+              {lugar.guia && lugar.guia.idiomas.length > 0 && (
+                <>
+                  <dt className="text-rio-suave">Idiomas</dt>
+                  <dd className="m-0">{enFrase(lugar.guia.idiomas)}</dd>
+                </>
+              )}
+              {lugar.guia && lugar.guia.especialidades.length > 0 && (
+                <>
+                  <dt className="text-rio-suave">Recorridos</dt>
+                  <dd className="m-0">{lugar.guia.especialidades.join(" · ")}</dd>
+                </>
+              )}
+              {lugar.guia?.zonas && (
+                <>
+                  <dt className="text-rio-suave">Zonas</dt>
+                  <dd className="m-0">{lugar.guia.zonas}</dd>
+                </>
+              )}
+              {lugar.guia && (
+                <>
+                  <dt className="text-rio-suave">Credencial</dt>
+                  <dd className="m-0">
+                    {lugar.acreditado ? (
+                      <>
+                        Revisada por Mi Lindo Ecuador en el{" "}
+                        <a href={CATASTRO_MINTUR} target="_blank" rel="noopener noreferrer" className="font-semibold text-celeste-tinta underline underline-offset-2">
+                          catastro del Ministerio de Turismo ↗
+                        </a>
+                      </>
+                    ) : (
+                      <span className="text-rio-suave">Todavía sin revisar. Pídele su credencial de guía antes de contratarlo.</span>
+                    )}
+                  </dd>
+                </>
+              )}
               {(lugar.horarioDias || lugar.horario) && (
                 <>
                   <dt className="text-rio-suave">Horario</dt>
@@ -249,7 +292,7 @@ export default async function FichaLugar({ params }: Props) {
             )}
             <section aria-labelledby="t-hist" className="grid gap-3">
               <h2 id="t-hist" className="m-0 font-rotulo text-xl leading-[26px] font-normal md:text-2xl md:leading-[30px]">
-                La historia
+                {lugar.guia ? "Sobre el guía" : "La historia"}
               </h2>
               <p className="m-0 max-w-[62ch] font-historia text-lg leading-[30px]">{lugar.descripcion}</p>
             </section>

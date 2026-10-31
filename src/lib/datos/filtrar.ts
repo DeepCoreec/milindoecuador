@@ -8,9 +8,9 @@ import type { LugarResumen } from "./tipos";
 
 /**
  * Destacado pesa más que verificado; los dos juntos, más que cualquiera solo. Versión 9 (35.3): a igualdad de eso,
- * primero los que tienen foto (se ven mejor y dan más confianza).
+ * primero los que tienen foto (se ven mejor y dan más confianza). Versión 13: los guías acreditados, antes que los que no.
  */
-const peso = (l: LugarResumen) => (l.destacado ? 4 : 0) + (l.verificado ? 2 : 0) + (l.foto ? 1 : 0);
+const peso = (l: LugarResumen) => (l.destacado ? 8 : 0) + (l.verificado ? 4 : 0) + (l.acreditado ? 2 : 0) + (l.foto ? 1 : 0);
 
 /** Mejor calificado primero; los que no tienen reseñas van al final. */
 function porCalificacion(a: LugarResumen, b: LugarResumen) {

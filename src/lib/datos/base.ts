@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { ESPECIALIDADES, IDIOMAS, leerLista } from "@/lib/guias";
 import { urlPublicaFoto, urlPublicaVideo } from "@/lib/fotos";
 import { leerHorario } from "@/lib/horario";
 import { enlacesDeFila } from "@/lib/redes";
@@ -21,6 +22,7 @@ type FilaLugar = {
   is_featured: boolean;
   featured_until: string | null;
   is_verified: boolean;
+  accredited_at?: string | null;
   categories: { slug: string } | null;
   place_photos?: { storage_path: string; alt_text: string; sort_order: number }[];
 };
@@ -38,6 +40,9 @@ type FilaDetalle = FilaLugar & {
   instagram: string | null;
   tiktok: string | null;
   youtube: string | null;
+  guide_languages?: string[] | null;
+  guide_specialties?: string[] | null;
+  guide_zones?: string | null;
   place_videos: { storage_path: string; poster_path: string | null; duration_seconds: number | string } | null;
   place_photos: { storage_path: string; alt_text: string; sort_order: number }[];
 };
@@ -53,7 +58,7 @@ type FilaResena = {
 };
 
 const COLUMNAS =
-  "id, slug, name, sector, price_level, short_fact, is_featured, featured_until, is_verified, categories!inner(slug), place_photos(storage_path, alt_text, sort_order)";
+  "id, slug, name, sector, price_level, short_fact, is_featured, featured_until, is_verified, accredited_at, categories!inner(slug), place_photos(storage_path, alt_text, sort_order)";
 
 function fallo(que: string, error: { message: string }): never {
   throw new Error(`No se pudo leer ${que} desde la base: ${error.message}`);
@@ -86,6 +91,7 @@ function aResumen(f: FilaLugar, nota: Map<string, { promedio: number; cantidad: 
     precio,
     destacado: destacadoVigente(f, ahora),
     verificado: f.is_verified,
+    acreditado: categoria === "guias" && !!f.accredited_at,
     extra: f.short_fact ?? undefined,
     ejemplo: false,
     foto: portada(f),
@@ -156,7 +162,7 @@ export async function buscarEnBase(db: SupabaseClient, ciudad: string, q: string
 export async function leerLugar(db: SupabaseClient, urlBase: string, ciudad: string, categoria: string, slug: string): Promise<LugarDetalle | null> {
   const { data, error } = await db
     .from("places")
-    .select(`${COLUMNAS}, description, hours, address, latitude, longitude, opening_hours, whatsapp, website, facebook, instagram, tiktok, youtube, place_videos(storage_path, poster_path, duration_seconds), cities!inner(slug)`)
+    .select(`${COLUMNAS}, description, hours, address, latitude, longitude, opening_hours, whatsapp, website, facebook, instagram, tiktok, youtube, guide_languages, guide_specialties, guide_zones, place_videos(storage_path, poster_path, duration_seconds), cities!inner(slug)`)
     .eq("cities.slug", ciudad)
     .eq("categories.slug", categoria)
     .eq("slug", slug)
@@ -196,6 +202,14 @@ export async function leerLugar(db: SupabaseClient, urlBase: string, ciudad: str
     ubicacion: data.latitude != null && data.longitude != null ? { lat: Number(data.latitude), lng: Number(data.longitude) } : null,
     whatsapp: data.whatsapp,
     enlaces: enlacesDeFila(data),
+    guia:
+      categoria === "guias"
+        ? {
+            idiomas: leerLista(data.guide_languages, IDIOMAS).map((c) => IDIOMAS[c]),
+            especialidades: leerLista(data.guide_specialties, ESPECIALIDADES).map((c) => ESPECIALIDADES[c]),
+            zonas: data.guide_zones ?? null,
+          }
+        : null,
     // La regla de la base (0009) ya esconde los videos ocultos
     video: data.place_videos
       ? {

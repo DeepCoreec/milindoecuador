@@ -108,6 +108,6 @@ export const ENCEBOLLADOS = ["la-sazon-del-estero", "el-rincon-de-dona-rosa", "e
 
 /** Quita los campos de la ficha para listar: así las listas no cargan historias ni reseñas. */
 export function resumen(l: LugarDetalle): LugarResumen {
-  const { slug, categoria, nombre, sector, datos, promedio, cantidad, precio, destacado, verificado, extra, ejemplo } = l;
-  return { slug, categoria, nombre, sector, datos, promedio, cantidad, precio, destacado, verificado, extra, ejemplo };
+  const { slug, categoria, nombre, sector, datos, promedio, cantidad, precio, destacado, verificado, acreditado, extra, ejemplo } = l;
+  return { slug, categoria, nombre, sector, datos, promedio, cantidad, precio, destacado, verificado, acreditado, extra, ejemplo };
 }

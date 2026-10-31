@@ -6,7 +6,7 @@ import { TarjetaLugar } from "./TarjetaLugar";
 
 /** Tarjeta de un lugar a partir de sus datos: pone las insignias según el plan y si es de ejemplo. */
 export function TarjetaResumen({ ciudad, lugar: l, tono }: { ciudad: string; lugar: LugarResumen; tono?: "celeste" | "mango" }) {
-  const tiene = l.destacado || l.verificado || l.ejemplo;
+  const tiene = l.destacado || l.verificado || l.acreditado || l.ejemplo;
   return (
     <TarjetaLugar
       href={rutaLugar(ciudad, l)}
