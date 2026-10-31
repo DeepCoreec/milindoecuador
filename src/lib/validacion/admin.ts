@@ -186,7 +186,8 @@ export const esquemaDatosSitio = z.object({
     .string()
     .trim()
     .max(40, "Máximo 40 caracteres")
-    .refine((t) => t === "" || /^[+\d][\d\s()-]{5,}$/.test(t), "Escribe solo el número, por ejemplo 04 259 9100")
+    // También como viene de OpenStreetMap: "(593) (4) 2833807"
+    .refine((t) => t === "" || /^[+\d(][\d\s()+.-]{5,}$/.test(t), "Escribe solo el número, por ejemplo 04 259 9100")
     .optional()
     .default(""),
 });
