@@ -437,7 +437,35 @@
 - [ ] 35.4 (usuario) Crear cuenta con correo: dominio + Resend + plantillas (pasos 6.3 a 6.5)
 - [ ] 35.5 (usuario) Captcha y confirmación por correo en Supabase Auth
 - [ ] 35.6 (usuario) Datos legales del responsable en Términos y Privacidad
-- **Siguiente paso:** guiar al usuario en 35.4 (empezar por el dominio: comprarlo y conectarlo en Vercel, PUESTA-EN-MARCHA)
+- **Siguiente paso:** 35.4 queda para después de la versión 10 (el usuario: "aún no compramos nada, primero debe estar todo listo")
+
+## Versión 10 · Más calidad antes de abrir a los negocios
+
+> Plan: `docs/PLAN-V10.md`, **aprobado por el usuario el 2026-10-31 00:14** ("me parece"). Ideas de tres revisores
+> independientes (diseño, contenido, técnico) del 2026-10-30, filtradas por Claude. Orden: 38.1 primero (urgente), luego 36, 37 y 38.
+
+### Fase 36 · Rápida y sólida
+- [ ] 36.1 Ficha sin la librería de validación en el navegador
+- [ ] 36.2 Páginas de Guayaquil en caché; lo personal de la ficha aparte
+- [ ] 36.3 Páginas de error y de "cargando" en español
+- [ ] 36.4 Imagen al compartir por WhatsApp
+- [ ] 36.5 Google: canonical, noindex, robots, sitemap con fechas, JSON-LD
+- [ ] 36.6 Paumi se descarga al tocarla
+- [ ] 36.7 "Saltar al contenido" y enlaces del pie de 44 px
+
+### Fase 37 · Retoques visuales
+- [ ] 37.1 Ficha sin foto con la ilustración de la categoría
+- [ ] 37.2 Tarjetas sin foto más bajas en computadora
+- [ ] 37.3 Guía útil sin secciones vacías y títulos iguales
+- [ ] 37.4 Detalles (cabecera, comillas, hueco, fila de categorías, "Cómo llegar", insignias)
+
+### Fase 38 · Para que los negocios se registren
+- [ ] 38.1 "Continuar con Google" en Crear cuenta
+- [ ] 38.2 Registro con precio, 3 pasos y contador de letras
+- [ ] 38.3 "Mi negocio" ofrece el Destacado
+- [ ] 38.4 "Verificado" explicado
+- [ ] 38.5 Textos ("Destacados", reseñas, "Sobre el lugar", nombres de las partes, "Adminístralo gratis", formulario del dueño, precio por rangos)
+- **Siguiente paso:** 38.1 — agregar el botón de Google (el mismo de `/entrar`) arriba del formulario en `src/app/crear-cuenta/page.tsx`
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
@@ -475,6 +503,7 @@
 - Pagos automáticos (Payphone o Kushki)
 - Apps en Google Play y App Store
 - Otras ciudades e inglés
+- Accesibilidad (rampa, baño adaptado) y formas de pago en la ficha (revisión del 2026-10-30; necesita migración)
 
 ## Registro de sesiones
 
