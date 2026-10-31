@@ -87,6 +87,18 @@ export default function Privacidad() {
       </section>
 
       <section>
+        <h2>Tu ubicación («Cerca de mí»)</h2>
+        <p>
+          Si tocas «Cerca de mí» en el buscador o le dices a Paumi «Sí, usa mi ubicación», tu teléfono te pide permiso. Si lo das, usamos tu
+          ubicación aproximada (redondeada a unos 100 metros) solo para calcular qué hay cerca de ti en ese momento. No la guardamos, no la
+          escribimos en nuestros registros y no la enviamos a la base de datos. En Paumi, la página la recuerda solo mientras el chat está abierto
+          y hasta 15 minutos; puedes quitarla con «Quitar» o «Empezar de nuevo». A Anthropic, que hace funcionar a Paumi, no le enviamos tu
+          ubicación: solo los lugares de la guía que están cerca y su distancia en tramos (por ejemplo, «a 1–2 km»). Si no das permiso, todo
+          sigue funcionando y puedes buscar por barrio.
+        </p>
+      </section>
+
+      <section>
         <h2>Con quién se comparten</h2>
         <p>Usamos servicios de otras empresas para que la guía funcione. Ellos guardan o procesan datos por nosotros, solo para eso:</p>
         <ul className="mt-2">
@@ -94,7 +106,7 @@ export default function Privacidad() {
           <li>Vercel: el servidor donde vive la página.</li>
           <li>Cloudflare Turnstile: el captcha de los formularios.</li>
           <li>Google: solo si eliges entrar con Google.</li>
-          <li>Anthropic: procesa los mensajes que le escribes a Paumi, solo para responderlos.</li>
+          <li>Anthropic: procesa los mensajes que le escribes a Paumi, solo para responderlos (sin tu ubicación; ver arriba).</li>
           <li>OpenStreetMap: de ahí traemos los lugares de la Guía útil. No le enviamos ningún dato tuyo.</li>
           <li>GitHub: guarda las copias de seguridad de la base, cifradas con una contraseña que solo tenemos nosotros.</li>
         </ul>

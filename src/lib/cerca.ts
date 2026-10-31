@@ -1,16 +1,18 @@
 import "server-only";
-import { fotoYDescripcion } from "@/lib/datos/sitios";
+import { unstable_cache } from "next/cache";
+import { getSitios } from "@/lib/datos/sitios";
 import { deEstaSemana, textoFechas, textoPrecio } from "@/lib/eventos";
 import { urlPublicaFoto } from "@/lib/fotos";
 import { estadoAhora, leerHorario } from "@/lib/horario";
-import { NOMBRE_TIPO, type TipoSitio } from "@/lib/osm";
+import { enlaceOSM, NOMBRE_TIPO, type TipoSitio } from "@/lib/osm";
 import { crearClientePublico } from "@/lib/supabase/publico";
 import { enEcuador, enlaceRutaGoogle, type Ubicacion } from "@/lib/ubicacion";
 
 /*
  * "Cerca de mí" (versión 8, fase 34; plan en docs/PLAN-V8.md): negocios, eventos de esta semana y lugares de la Guía
  * útil cerca de un punto, ordenados por distancia. Lo usan el buscador (/api/cerca) y Paumi (herramienta buscar_cerca).
- * Privacidad: la ubicación llega redondeada a unos 100 m, se usa solo para esta búsqueda y no se guarda ni se registra.
+ * Privacidad: la ubicación llega redondeada a unos 100 m, se usa solo en la memoria del servidor para calcular distancias
+ * y no se guarda, no se registra ni se manda a la base (lo público se lee aparte, sin ella, y en caché).
  * Solo lee lo público, con la clave pública (RLS esconde borradores y todo lo privado).
  */
 
@@ -39,13 +41,6 @@ export function distanciaM(a: Ubicacion, b: Ubicacion): number {
 export function textoDistancia(m: number): string {
   if (m < 1000) return `a ${Math.max(100, Math.round(m / 50) * 50)} m`;
   return `a ${(Math.round(m / 100) / 10).toLocaleString("es-EC")} km`;
-}
-
-/** Caja alrededor del punto (para pedirle a la base solo lo de la zona). */
-function caja(u: Ubicacion, radio: number) {
-  const dLat = radio / 111_320;
-  const dLng = radio / (111_320 * Math.cos((u.lat * Math.PI) / 180));
-  return { latMin: u.lat - dLat, latMax: u.lat + dLat, lngMin: u.lng - dLng, lngMax: u.lng + dLng };
 }
 
 export type CercaLugar = {
@@ -86,137 +81,137 @@ type FilaLugar = {
   categories: { slug: string; name: string } | null;
   place_photos: { storage_path: string; alt_text: string; sort_order: number }[];
 };
-type FilaEvento = { slug: string; title: string; starts_at: string; ends_at: string; venue: string | null; price: number | string | null; latitude: number | string; longitude: number | string };
-type FilaSitio = {
-  id: string;
-  tipo: string;
-  name: string;
+type FilaEvento = {
+  slug: string;
+  title: string;
+  starts_at: string;
+  ends_at: string;
+  venue: string | null;
   address: string | null;
-  latitude: number;
-  longitude: number;
-  osm_type: string;
-  osm_id: number;
-  photo_path: string | null;
-  photo_credit: string | null;
-  photo_license: string | null;
-  photo_source: string | null;
-  description: string | null;
-  description_source: string | null;
+  price: number | string | null;
+  latitude: number | string;
+  longitude: number | string;
 };
 
-async function buscarEnRadio(u: Ubicacion, radio: number, maximo: number, ahora: Date): Promise<ResultadoCerca> {
-  const db = crearClientePublico();
-  if (!db) return { lugares: [], eventos: [], sitios: [], radio };
-  const c = caja(u, radio);
-  const base = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-  const [lugares, eventos, sitios] = await Promise.all([
-    db
-      .from("places")
-      .select("id, slug, name, sector, price_level, latitude, longitude, opening_hours, categories!inner(slug, name), cities!inner(slug), place_photos(storage_path, alt_text, sort_order)")
-      .eq("status", "publicado")
-      .eq("cities.slug", CIUDAD)
-      .gte("latitude", c.latMin)
-      .lte("latitude", c.latMax)
-      .gte("longitude", c.lngMin)
-      .lte("longitude", c.lngMax)
-      .limit(300)
-      .returns<FilaLugar[]>(),
-    db
-      .from("city_events")
-      .select("slug, title, starts_at, ends_at, venue, price, latitude, longitude, cities!inner(slug)")
-      .eq("cities.slug", CIUDAD)
-      .eq("online", false)
-      .gte("latitude", c.latMin)
-      .lte("latitude", c.latMax)
-      .gte("longitude", c.lngMin)
-      .lte("longitude", c.lngMax)
-      .order("starts_at")
-      .limit(100)
-      .returns<FilaEvento[]>(),
-    db
-      .from("city_spots")
-      .select(
-        "id, tipo, name, address, latitude, longitude, osm_type, osm_id, photo_path, photo_credit, photo_license, photo_source, description, description_source, cities!inner(slug)",
-      )
-      .eq("cities.slug", CIUDAD)
-      .eq("grupo", "visitar")
-      .gte("latitude", c.latMin)
-      .lte("latitude", c.latMax)
-      .gte("longitude", c.lngMin)
-      .lte("longitude", c.lngMax)
-      .limit(300)
-      .returns<FilaSitio[]>(),
-  ]);
+/*
+ * Lo público de Guayaquil que tiene ubicación, leído SIN la ubicación de la persona y guardado 5 minutos en caché
+ * (revisión independiente del 2026-10-30, hallazgos 1, 2 y 7): así la ubicación nunca sale de nuestro servidor (no va
+ * en las consultas a la base ni queda en sus registros), cada "Cerca de mí" no carga la base y lo más cercano no
+ * queda fuera por un límite. Si la base falla, se lanza el error (no se muestra "no hay nada cerca").
+ */
+const leerPublico = unstable_cache(
+  async () => {
+    const db = crearClientePublico();
+    if (!db) return { lugares: [] as FilaLugar[], eventos: [] as FilaEvento[] };
+    const [lugares, eventos] = await Promise.all([
+      db
+        .from("places")
+        .select("id, slug, name, sector, price_level, latitude, longitude, opening_hours, categories!inner(slug, name), cities!inner(slug), place_photos(storage_path, alt_text, sort_order)")
+        .eq("status", "publicado")
+        .eq("cities.slug", CIUDAD)
+        .not("latitude", "is", null)
+        .not("longitude", "is", null)
+        .limit(3000)
+        .returns<FilaLugar[]>(),
+      db
+        .from("city_events")
+        .select("slug, title, starts_at, ends_at, venue, address, price, latitude, longitude, cities!inner(slug)")
+        .eq("cities.slug", CIUDAD)
+        .eq("online", false)
+        .not("latitude", "is", null)
+        .not("longitude", "is", null)
+        .order("starts_at")
+        .limit(500)
+        .returns<FilaEvento[]>(),
+    ]);
+    if (lugares.error || eventos.error) throw new Error("No se pudo leer la guía para «Cerca de mí»");
+    return { lugares: lugares.data ?? [], eventos: eventos.data ?? [] };
+  },
+  ["cerca-de-mi"],
+  { revalidate: 300, tags: ["sitios"] },
+);
 
-  const enRadio = <T extends { distancia: number }>(xs: T[]) => xs.filter((x) => x.distancia <= radio).sort((a, b) => a.distancia - b.distancia).slice(0, maximo);
-
-  const listaLugares = enRadio(
-    (lugares.data ?? []).map((f): CercaLugar => {
-      const punto = { lat: Number(f.latitude), lng: Number(f.longitude) };
-      const h = leerHorario(f.opening_hours);
-      const e = h ? estadoAhora(h, ahora) : null;
-      const foto = [...(f.place_photos ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0];
-      return {
-        id: f.id,
-        nombre: f.name,
-        categoria: f.categories?.name ?? "",
-        sector: f.sector,
-        ruta: `/${CIUDAD}/${f.categories?.slug ?? ""}/${f.slug}`,
-        distancia: distanciaM(u, punto),
-        estado: e?.texto ?? null,
-        abierto: e?.abierto ?? null,
-        precio: f.price_level === 1 || f.price_level === 2 || f.price_level === 3 ? PRECIOS[f.price_level] : null,
-        foto: foto && base ? { src: urlPublicaFoto(base, foto.storage_path), alt: foto.alt_text } : null,
-        comoLlegar: enlaceRutaGoogle(punto),
-      };
-    }),
-  );
-  // Abiertos ahora primero (a igual cercanía, mejor lo que se puede visitar ya)
-  listaLugares.sort((a, b) => Number(b.abierto === true) - Number(a.abierto === true) || a.distancia - b.distancia);
-
-  const filasEventos = (eventos.data ?? []).map((f) => ({ ...f, inicio: f.starts_at, fin: f.ends_at }));
-  const listaEventos = enRadio(
-    deEstaSemana(filasEventos, ahora, 50).map((f): CercaEvento => {
-      const punto = { lat: Number(f.latitude), lng: Number(f.longitude) };
-      return {
-        ruta: `/${CIUDAD}/eventos/${f.slug}`,
-        titulo: f.title,
-        cuando: textoFechas(f.inicio, f.fin),
-        donde: f.venue ?? "",
-        precio: textoPrecio(f.price == null ? null : Number(f.price)),
-        distancia: distanciaM(u, punto),
-        comoLlegar: enlaceRutaGoogle(punto),
-      };
-    }),
-  );
-
-  const listaSitios = enRadio(
-    (sitios.data ?? []).map((f): CercaSitio => {
-      const punto = { lat: f.latitude, lng: f.longitude };
-      return {
-        id: f.id,
-        nombre: f.name,
-        tipo: NOMBRE_TIPO[f.tipo as TipoSitio] ?? f.tipo,
-        direccion: f.address,
-        distancia: distanciaM(u, punto),
-        foto: fotoYDescripcion(f).foto ? { src: fotoYDescripcion(f).foto!.src, alt: `Foto de ${f.name}` } : null,
-        comoLlegar: enlaceRutaGoogle(punto),
-        fuente:
-          f.osm_type === "wikidata"
-            ? { url: `https://www.wikidata.org/wiki/Q${f.osm_id}`, sitio: "wikidata.org" }
-            : { url: `https://www.openstreetmap.org/${f.osm_type}/${f.osm_id}`, sitio: "openstreetmap.org" },
-      };
-    }),
-  );
-  // Primero los que tienen foto (los mejor documentados), a igual cercanía
-  listaSitios.sort((a, b) => Number(!!b.foto) - Number(!!a.foto) || a.distancia - b.distancia);
-
-  return { lugares: listaLugares, eventos: listaEventos, sitios: listaSitios, radio };
+function enRadio<T extends { distancia: number }>(xs: T[], radio: number, maximo: number): T[] {
+  return xs.filter((x) => x.distancia <= radio).sort((a, b) => a.distancia - b.distancia).slice(0, maximo);
 }
 
 /** Lo que hay cerca de `u`: hasta `maximo` de cada cosa. Si a 3 km no hay casi nada, se amplía a 8 km. */
 export async function buscarCerca(u: Ubicacion, maximo = 8, ahora = new Date()): Promise<ResultadoCerca> {
-  let r = await buscarEnRadio(u, RADIOS_M[0], maximo, ahora);
-  if (r.lugares.length + r.eventos.length + r.sitios.length < 3) r = await buscarEnRadio(u, RADIOS_M[1], maximo, ahora);
-  return r;
+  const [publico, sitios] = await Promise.all([leerPublico(), getSitios()]);
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+
+  const todosLugares = publico.lugares.map((f): CercaLugar => {
+    const punto = { lat: Number(f.latitude), lng: Number(f.longitude) };
+    const h = leerHorario(f.opening_hours);
+    const e = h ? estadoAhora(h, ahora) : null;
+    const foto = [...(f.place_photos ?? [])].sort((a, b) => a.sort_order - b.sort_order)[0];
+    return {
+      id: f.id,
+      nombre: f.name,
+      categoria: f.categories?.name ?? "",
+      sector: f.sector,
+      ruta: `/${CIUDAD}/${f.categories?.slug ?? ""}/${f.slug}`,
+      distancia: distanciaM(u, punto),
+      estado: e?.texto ?? null,
+      abierto: e?.abierto ?? null,
+      precio: f.price_level === 1 || f.price_level === 2 || f.price_level === 3 ? PRECIOS[f.price_level] : null,
+      foto: foto && base ? { src: urlPublicaFoto(base, foto.storage_path), alt: foto.alt_text } : null,
+      comoLlegar: enlaceRutaGoogle(punto),
+    };
+  });
+  const filasEventos = publico.eventos.map((f) => ({ ...f, inicio: f.starts_at, fin: f.ends_at }));
+  const todosEventos = deEstaSemana(filasEventos, ahora, 500).map((f): CercaEvento => {
+    const punto = { lat: Number(f.latitude), lng: Number(f.longitude) };
+    return {
+      ruta: `/${CIUDAD}/eventos/${f.slug}`,
+      titulo: f.title,
+      cuando: textoFechas(f.inicio, f.fin),
+      donde: [f.venue, f.address].filter(Boolean).join(", "),
+      precio: textoPrecio(f.price == null ? null : Number(f.price)),
+      distancia: distanciaM(u, punto),
+      comoLlegar: enlaceRutaGoogle(punto),
+    };
+  });
+  const todosSitios = sitios
+    .filter((x) => x.grupo === "visitar")
+    .map((x): CercaSitio => {
+      const [tipoOsm, idOsm] = x.osm.split("/");
+      return {
+        id: x.id,
+        nombre: x.nombre,
+        tipo: NOMBRE_TIPO[x.tipo as TipoSitio] ?? x.tipo,
+        direccion: x.direccion,
+        distancia: distanciaM(u, x.ubicacion),
+        foto: x.foto ? { src: x.foto.src, alt: `Foto de ${x.nombre}` } : null,
+        comoLlegar: enlaceRutaGoogle(x.ubicacion),
+        fuente: { url: enlaceOSM(tipoOsm!, idOsm!), sitio: tipoOsm === "wikidata" ? "wikidata.org" : "openstreetmap.org" },
+      };
+    });
+
+  for (const radio of RADIOS_M) {
+    const lugares = enRadio(todosLugares, radio, maximo);
+    // Abiertos ahora primero (a igual cercanía, mejor lo que se puede visitar ya)
+    lugares.sort((a, b) => Number(b.abierto === true) - Number(a.abierto === true) || a.distancia - b.distancia);
+    const eventos = enRadio(todosEventos, radio, maximo);
+    const visitar = enRadio(todosSitios, radio, maximo);
+    // Primero los que tienen foto (los mejor documentados), a igual cercanía
+    visitar.sort((a, b) => Number(!!b.foto) - Number(!!a.foto) || a.distancia - b.distancia);
+    const r = { lugares, eventos, sitios: visitar, radio };
+    if (lugares.length + eventos.length + visitar.length >= 3 || radio === RADIOS_M[RADIOS_M.length - 1]) return r;
+  }
+  return { lugares: [], eventos: [], sitios: [], radio: RADIOS_M[RADIOS_M.length - 1] };
+}
+
+/**
+ * Distancia en tramos para Paumi (revisión del 2026-10-30, hallazgo 3): con distancias exactas a lugares reales se
+ * podría deducir dónde está la persona. A la IA solo le llegan tramos.
+ */
+export function tramoDistancia(m: number): string {
+  if (m < 300) return "a menos de 300 m";
+  if (m < 600) return "a unos 300–600 m";
+  if (m < 1000) return "a menos de 1 km";
+  if (m < 2000) return "a 1–2 km";
+  if (m < 3000) return "a 2–3 km";
+  if (m < 5000) return "a 3–5 km";
+  return "a 5–8 km";
 }

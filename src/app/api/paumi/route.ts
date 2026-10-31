@@ -28,7 +28,7 @@ const esquema = z.object({
     .refine((m) => m.at(-1)!.rol === "usuario" && m.at(-1)!.texto.length <= MAX_MENSAJE, "Mensaje inválido"),
   captcha: z.string().max(2048).optional(),
   // Versión 8 (34.3): "Cerca de mí" del chat. Se redondea a ~100 m, no se guarda ni se registra, y NO se le pasa a la IA
-  // (la IA solo ve distancias como "a 350 m" en lo que devuelve la herramienta buscar_cerca)
+  // (la IA solo ve distancias en tramos, como "a 1–2 km", en lo que devuelve la herramienta buscar_cerca)
   ubicacion: z.object({ lat: z.number(), lng: z.number() }).optional(),
 });
 
@@ -52,6 +52,9 @@ export async function POST(request: NextRequest) {
   // Solo valen las respuestas de Paumi que firmó este servidor (o el saludo): nadie inventa lo que "dijo" Paumi
   if (r.data.mensajes.some((m) => m.rol === "paumi" && m.texto !== SALUDO && !respuestaValida(m.texto, m.firma)))
     return respuesta({ error: "Conversación inválida. Toca «Empezar de nuevo»." }, 400);
+  // Una ubicación fuera de Ecuador (o rara) no entra en un ciclo de "toca el botón": se avisa claro (revisión, hallazgo 7)
+  if (r.data.ubicacion && !ubicacionAproximada(r.data.ubicacion))
+    return respuesta({ error: "ubicacion", mensaje: "Parece que no estás en Ecuador: lo de «cerca de ti» funciona en Guayaquil. Dime el barrio y te recomiendo." }, 400);
   if (r.data.mensajes.some((m) => m.rol === "usuario" && m.texto.trim().length > MAX_MENSAJE))
     return respuesta({ error: `Escribe un mensaje de hasta ${MAX_MENSAJE} letras.` }, 400);
 

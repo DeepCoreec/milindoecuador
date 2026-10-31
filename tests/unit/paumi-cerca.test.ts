@@ -18,10 +18,12 @@ describe("Paumi · buscar_cerca", () => {
     expect(Object.keys(d.input_schema.properties)).toEqual(["que"]);
   });
 
-  it("sin ubicación compartida, le dice a la IA que pida tocar el botón (y no consulta nada)", async () => {
-    const r = await ejecutar("buscar_cerca", {}, estado());
+  it("sin ubicación compartida, Paumi pide permiso y la página ofrece «Sí, usa mi ubicación» (sin consultar nada)", async () => {
+    const e = estado();
+    const r = await ejecutar("buscar_cerca", {}, e);
     expect(r.error).toBeFalsy();
-    expect(String(r.resultado)).toContain("Cerca de mí");
+    expect(String(r.resultado)).toContain("Sí, usa mi ubicación");
+    expect(e.pedirUbicacion).toBe(true);
   });
 
   it("ignora coordenadas que la IA intente mandar y rechaza pedidos raros", async () => {

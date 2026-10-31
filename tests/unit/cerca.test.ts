@@ -24,3 +24,13 @@ describe("cerca de mí", () => {
     expect(textoDistancia(1234)).toBe("a 1,2 km");
   });
 });
+
+describe("cerca de mí · lo que ve Paumi", () => {
+  it("a la IA solo le llegan tramos de distancia, no metros exactos", async () => {
+    const { tramoDistancia } = await import("@/lib/cerca");
+    expect(tramoDistancia(120)).toBe("a menos de 300 m");
+    expect(tramoDistancia(450)).toBe("a unos 300–600 m");
+    expect(tramoDistancia(1500)).toBe("a 1–2 km");
+    expect(tramoDistancia(7000)).toBe("a 5–8 km");
+  });
+});

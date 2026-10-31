@@ -130,25 +130,52 @@ export function CercaDeMi({ autoIniciar = false }: { autoIniciar?: boolean }) {
   }, []);
 
   // Desde el enlace "Cerca de mí" de la portada: la persona ya lo pidió con ese toque
+  // Si ya dio permiso antes, busca de una; si no, destaca el botón y espera su toque (sin abrir el aviso del navegador
+  // al cargar la página: revisión del 2026-10-30, hallazgo 5)
+  const boton = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (!autoIniciar) return;
-    const t = setTimeout(buscar, 0);
-    return () => clearTimeout(t);
+    let vivo = true;
+    const consulta = navigator.permissions?.query({ name: "geolocation" });
+    if (!consulta) {
+      boton.current?.focus();
+      return;
+    }
+    consulta
+      .then((p) => {
+        if (!vivo) return;
+        if (p.state === "granted") buscar();
+        else boton.current?.focus();
+      })
+      .catch(() => boton.current?.focus());
+    return () => {
+      vivo = false;
+    };
   }, [autoIniciar, buscar]);
 
   const r = estado.fase === "listo" ? estado.r : null;
   return (
     <section aria-label="Cerca de mí" className="mt-6 grid gap-4">
       <div className="flex flex-wrap items-center gap-3">
-        <button type="button" onClick={buscar} disabled={estado.fase === "buscando"} className={`${clasesBoton("secundario")} gap-2 [&_svg]:size-5`}>
+        <button
+          ref={boton}
+          type="button"
+          onClick={() => estado.fase !== "buscando" && buscar()}
+          aria-disabled={estado.fase === "buscando"}
+          className={`${clasesBoton(autoIniciar && estado.fase === "inicio" ? "principal" : "secundario")} gap-2 [&_svg]:size-5`}
+        >
           <IconoUbicacion />
           {estado.fase === "buscando" ? "Buscando cerca de ti…" : r ? "Volver a buscar cerca de mí" : "Cerca de mí"}
         </button>
         <span className="text-sm text-rio-suave">
-          Usa tu ubicación solo para esta búsqueda. No la guardamos.
+          Usa tu ubicación aproximada solo para esta búsqueda. No la guardamos. <Link href="/legal/privacidad">Privacidad</Link>
         </span>
       </div>
-      <div aria-live="polite">
+      {/* Aviso corto en vivo (lo lee el lector de pantalla); los resultados no van en la región en vivo */}
+      <p role="status" className="sr-only">
+        {estado.fase === "buscando" ? "Buscando lugares cerca de ti" : r ? `Listo: ${r.lugares.length + r.eventos.length + r.sitios.length} resultados cerca de ti` : ""}
+      </p>
+      <div>
         {estado.fase === "error" && (
           <p role="alert" className="m-0 font-semibold text-error">
             {estado.mensaje}

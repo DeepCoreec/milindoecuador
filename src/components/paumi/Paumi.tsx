@@ -18,7 +18,15 @@ import type { EstadoPaumi } from "./sprite";
 import { despuesDelNombre } from "@/lib/paumi/voz";
 import { callar, escuchar, escucharSiempre, hablar, mensajeErrorMicrofono, prepararVoz, puedeEscuchar, puedeManosLibres } from "./voz";
 
-type Entrada = MensajePaumi & { lugares?: TarjetaPaumi[]; externos?: ExternoPaumi[]; navegar?: string | null; fuentes?: RespuestaPaumi["fuentes"]; aviso?: boolean };
+type Entrada = MensajePaumi & {
+  lugares?: TarjetaPaumi[];
+  externos?: ExternoPaumi[];
+  navegar?: string | null;
+  fuentes?: RespuestaPaumi["fuentes"];
+  aviso?: boolean;
+  /** Versión 8: Paumi pidió permiso para usar la ubicación (aparece «Sí, usa mi ubicación»). */
+  pedirUbicacion?: boolean;
+};
 
 const inicial: Entrada[] = [{ rol: "paumi", texto: SALUDO }];
 const CLAVE_SONIDO = "mle-paumi-sonido";
@@ -76,6 +84,11 @@ export function Paumi() {
   // Versión 8 (34.3): ubicación de "Cerca de mí", solo en memoria y por 15 minutos (para seguir preguntando "¿y cafés?")
   const ubicacion = useRef<{ lat: number; lng: number; hasta: number } | null>(null);
   const [buscandoUbicacion, setBuscandoUbicacion] = useState(false);
+  const [usandoUbicacion, setUsandoUbicacion] = useState(false);
+  const quitarUbicacion = () => {
+    ubicacion.current = null;
+    setUsandoUbicacion(false);
+  };
   const [notaVoz, setNotaVoz] = useState<string | null>(null);
   const textoDeVoz = useRef(""); // lo que quedó escrito desde la voz (si se envía tal cual, responde hablando)
   // Manos libres
@@ -298,6 +311,8 @@ export function Paumi() {
   }
 
   function empezarDeNuevo() {
+    ubicacion.current = null; // empezar de nuevo también olvida la ubicación (revisión del 2026-10-30, hallazgo 4)
+    setUsandoUbicacion(false);
     callar();
     setVoz(false);
     setMensajes(inicial);
@@ -342,9 +357,19 @@ export function Paumi() {
       const datos = (await r.json().catch(() => ({}))) as Partial<RespuestaPaumi> & { error?: string; mensaje?: string };
       if (r.ok && typeof datos.texto === "string") {
         setPideCaptcha(false);
-        decir({ rol: "paumi", texto: datos.texto, firma: datos.firma, lugares: datos.lugares ?? [], externos: datos.externos ?? [], navegar: datos.navegar ?? null, fuentes: datos.fuentes ?? [] });
+        decir({
+          rol: "paumi",
+          texto: datos.texto,
+          firma: datos.firma,
+          lugares: datos.lugares ?? [],
+          externos: datos.externos ?? [],
+          navegar: datos.navegar ?? null,
+          fuentes: datos.fuentes ?? [],
+          pedirUbicacion: datos.pedirUbicacion === true,
+        });
       } else {
         if (datos.error === "captcha") setPideCaptcha(true);
+        if (datos.error === "ubicacion") quitarUbicacion();
         decir({ rol: "paumi", texto: datos.mensaje ?? "No pude responder. Intenta de nuevo en un ratito.", aviso: true });
       }
     } catch {
@@ -357,7 +382,7 @@ export function Paumi() {
     }
   }
 
-  /** "Cerca de mí" en el chat: pide permiso SOLO al tocarlo, redondea en el teléfono y pregunta por lo de cerca. */
+  /** «Sí, usa mi ubicación» (cuando Paumi lo pide): permiso SOLO al tocarlo, se redondea en el teléfono y se vuelve a preguntar. */
   function cercaDeMi() {
     if (pensando || buscandoUbicacion) return;
     if (!("geolocation" in navigator)) {
@@ -370,6 +395,7 @@ export function Paumi() {
         setBuscandoUbicacion(false);
         const r3 = (n: number) => Math.round(n * 1000) / 1000;
         ubicacion.current = { lat: r3(pos.coords.latitude), lng: r3(pos.coords.longitude), hasta: Date.now() + 15 * 60_000 };
+        setUsandoUbicacion(true);
         void enviarTexto("¿Qué hay cerca de mí?");
       },
       (e) => {
@@ -522,7 +548,7 @@ export function Paumi() {
                 {AVISO}
               </p>
               {mensajes.map((m, i) => (
-                <Mensaje key={i} m={m} alNavegar={cerrar} />
+                <Mensaje key={i} m={m} alNavegar={cerrar} ubicar={i === mensajes.length - 1 ? { alTocar: cercaDeMi, ocupado: pensando || buscandoUbicacion } : null} />
               ))}
               {pensando && <p className="m-0 max-w-[85%] self-start rounded-md bg-celeste-suave px-3.5 py-2.5 text-[15px] leading-[22px] text-rio-suave">{NOMBRE} está pensando…</p>}
             </div>
@@ -530,15 +556,15 @@ export function Paumi() {
 
           <form ref={formulario} onSubmit={enviar} className="grid gap-2 border-t border-linea px-5 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
             {pideCaptcha && <Captcha reiniciar={intento} />}
-            <button
-              type="button"
-              onClick={cercaDeMi}
-              disabled={pensando || buscandoUbicacion}
-              className={clasesBoton("texto", "chico", "justify-self-start gap-1.5 [&_svg]:size-4")}
-            >
-              <IconoUbicacion />
-              {buscandoUbicacion ? "Buscando dónde estás…" : "¿Qué hay cerca de mí?"}
-            </button>
+            {usandoUbicacion && (
+              <p className="m-0 flex flex-wrap items-center gap-x-2 text-[13px] leading-[18px] text-rio-suave [&_svg]:size-4">
+                <IconoUbicacion />
+                Usando tu ubicación aproximada para lo de cerca (no la guardamos).
+                <button type="button" onClick={quitarUbicacion} className={clasesBoton("texto", "chico", "min-h-0 px-0 underline")}>
+                  Quitar
+                </button>
+              </p>
+            )}
             <div className="flex items-end gap-2">
               <label htmlFor="paumi-texto" className="sr-only">
                 Escríbele a {NOMBRE}
@@ -635,12 +661,19 @@ function Extras({ m, alNavegar }: { m: Entrada; alNavegar: () => void }) {
   );
 }
 
-function Mensaje({ m, alNavegar }: { m: Entrada; alNavegar: () => void }) {
+function Mensaje({ m, alNavegar, ubicar }: { m: Entrada; alNavegar: () => void; ubicar: { alTocar: () => void; ocupado: boolean } | null }) {
   if (m.rol === "usuario") return <Burbuja texto={m.texto} />;
   return (
     <div className="grid max-w-[92%] gap-2 self-start">
       <p className="m-0 rounded-md bg-celeste-suave px-3.5 py-2.5 text-[15px] leading-[22px] break-words whitespace-pre-wrap">{m.texto}</p>
       <Extras m={m} alNavegar={alNavegar} />
+      {/* Versión 8: solo cuando Paumi lo pide, y solo en su última respuesta */}
+      {m.pedirUbicacion && ubicar && (
+        <button type="button" onClick={ubicar.alTocar} disabled={ubicar.ocupado} className={clasesBoton("secundario", "chico", "justify-self-start gap-1.5 [&_svg]:size-4")}>
+          <IconoUbicacion />
+          Sí, usa mi ubicación
+        </button>
+      )}
     </div>
   );
 }

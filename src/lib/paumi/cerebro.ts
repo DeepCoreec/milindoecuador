@@ -146,5 +146,6 @@ export async function conversar(historial: MensajePaumi[], opciones: { ubicacion
     externos: estado.externos,
     navegar: estado.navegar,
     fuentes: [...fuentes].slice(0, 3).map(([url, titulo]) => ({ url, titulo })),
+    pedirUbicacion: estado.pedirUbicacion ?? false,
   };
 }

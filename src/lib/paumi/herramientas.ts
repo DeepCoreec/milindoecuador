@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { buscarCerca, textoDistancia } from "@/lib/cerca";
+import { buscarCerca, tramoDistancia } from "@/lib/cerca";
 import { agruparEventos, LISTA_TIPOS, textoFechas, textoPrecio } from "@/lib/eventos";
 import { enlaceOSM, NOMBRE_TIPO, TIPOS_SITIO, type TipoSitio } from "@/lib/osm";
 import { urlPublicaFoto } from "@/lib/fotos";
@@ -117,7 +117,7 @@ export const DEFINICIONES = [
   {
     name: "buscar_cerca",
     description:
-      "Lo que hay CERCA de la persona (versión 8): negocios (abiertos ahora primero), eventos de esta semana y lugares para visitar de la Guía útil, ordenados por distancia, con su id o ruta. Solo funciona si la persona compartió su ubicación con el botón «Cerca de mí» del chat; tú no sabes dónde está.",
+      "Lo que hay CERCA de la persona (versión 8): negocios (abiertos ahora primero), eventos de esta semana y lugares para visitar de la Guía útil, ordenados por distancia, con su id o ruta. Si la persona no compartió su ubicación, la página le ofrece compartirla; tú no sabes dónde está.",
     input_schema: {
       type: "object",
       properties: { que: { type: "string", enum: ["todo", "negocios", "eventos", "visitar"], description: "Qué buscar (por defecto, todo)" } },
@@ -195,6 +195,8 @@ export type Estado = {
   sitios?: Map<string, ExternoPaumi>;
   /** Versión 8: ubicación que la persona compartió con «Cerca de mí» (redondeada). La IA nunca la ve. */
   ubicacion?: Ubicacion | null;
+  /** Versión 8: buscar_cerca no tenía ubicación: la página muestra «Sí, usa mi ubicación» bajo la respuesta. */
+  pedirUbicacion?: boolean;
 };
 
 function db() {
@@ -407,7 +409,10 @@ export async function ejecutar(nombre: string, entrada: unknown, e: Estado): Pro
       case "buscar_cerca": {
         const r = esquemaCerca.safeParse(entrada ?? {});
         if (!r.success) return { resultado: "Pedido inválido", error: true };
-        if (!e.ubicacion) return { resultado: "La persona no compartió su ubicación: dile que toque el botón «Cerca de mí» del chat." };
+        if (!e.ubicacion) {
+          e.pedirUbicacion = true;
+          return { resultado: "La persona no compartió su ubicación. Dile, en una frase, que para recomendarle lo de cerca necesitas su permiso y que toque «Sí, usa mi ubicación», que aparece debajo de tu respuesta (o que te diga el barrio)." };
+        }
         const que = r.data.que ?? "todo";
         const c = await buscarCerca(e.ubicacion, 6);
         e.eventos ??= new Set();
@@ -416,21 +421,21 @@ export async function ejecutar(nombre: string, entrada: unknown, e: Estado): Pro
           que === "todo" || que === "negocios"
             ? c.lugares.map((l) => {
                 e.vistos.add(l.id);
-                return { id: l.id, nombre: l.nombre, categoria: l.categoria, sector: l.sector, distancia: textoDistancia(l.distancia), ahora: l.estado ?? "sin horario por día", precio: l.precio };
+                return { id: l.id, nombre: l.nombre, categoria: l.categoria, sector: l.sector, distancia: tramoDistancia(l.distancia), ahora: l.estado ?? "sin horario por día", precio: l.precio };
               })
             : [];
         const eventos =
           que === "todo" || que === "eventos"
             ? c.eventos.map((x) => {
                 e.eventos!.add(x.ruta);
-                return { titulo: x.titulo, cuando: x.cuando, donde: x.donde, distancia: textoDistancia(x.distancia), precio: x.precio, ruta: x.ruta };
+                return { titulo: x.titulo, cuando: x.cuando, donde: x.donde, distancia: tramoDistancia(x.distancia), precio: x.precio, ruta: x.ruta };
               })
             : [];
         const visitar =
           que === "todo" || que === "visitar"
             ? c.sitios.map((x) => {
                 e.sitios!.set(x.id, { nombre: x.nombre, sector: x.direccion, mapa: x.comoLlegar, fuente: x.fuente, origen: "guia-util" });
-                return { id: x.id, nombre: x.nombre, tipo: x.tipo, distancia: textoDistancia(x.distancia) };
+                return { id: x.id, nombre: x.nombre, tipo: x.tipo, distancia: tramoDistancia(x.distancia) };
               })
             : [];
         if (!negocios.length && !eventos.length && !visitar.length) return { resultado: `No hay nada en la guía a menos de ${c.radio / 1000} km.` };
