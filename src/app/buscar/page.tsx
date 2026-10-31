@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Buscador } from "@/components/busqueda/Buscador";
+import { CercaDeMi } from "@/components/busqueda/CercaDeMi";
 import { BarraCategorias } from "@/components/categorias/BarraCategorias";
 import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
@@ -17,7 +18,10 @@ export const metadata: Metadata = { title: "Buscar · Mi Lindo Ecuador", robots:
 const CIUDAD = "guayaquil"; // por ahora la guía solo tiene Guayaquil
 
 export default async function PaginaBuscar({ searchParams }: PageProps<"/buscar">) {
-  const q = leerBusqueda(await searchParams);
+  const parametros = await searchParams;
+  const q = leerBusqueda(parametros);
+  // Versión 8 (34.2): "?cerca=1" viene del enlace "Cerca de mí" de la portada (la persona ya lo pidió con ese toque)
+  const cerca = parametros.cerca === "1";
   const [lugares, categorias] = await Promise.all([q ? buscarLugares(CIUDAD, q) : Promise.resolve([]), getCategoriasBarra(CIUDAD)]);
   // Versión 5, fase 24: si la guía trae poco, también los lugares de referencia de la Guía útil
   const sitios = q && lugares.length < 4 ? buscarEnSitios(await getSitios().catch(() => [] as Sitio[]), q) : [];
@@ -41,9 +45,10 @@ export default async function PaginaBuscar({ searchParams }: PageProps<"/buscar"
       <Cabecera />
       <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 pt-10 pb-16 text-rio md:px-8">
         <h1 className="m-0 mb-5 font-rotulo text-[34px] leading-10 font-normal tracking-[-0.01em] md:text-[56px] md:leading-[62px]">
-          {q ? "Resultados" : "Buscar en Guayaquil"}
+          {q ? "Resultados" : cerca ? "Cerca de ti" : "Buscar en Guayaquil"}
         </h1>
         <Buscador valor={q ?? ""} />
+        <CercaDeMi autoIniciar={cerca} />
 
         {q && (
           <p aria-live="polite" className="mt-6 mb-4 text-sm leading-5 text-rio-suave">

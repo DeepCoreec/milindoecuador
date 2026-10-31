@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Panorama } from "@/components/arte/Panorama";
 import { Buscador } from "@/components/busqueda/Buscador";
+import { IconoUbicacion } from "@/components/ui/iconos";
 import { BarraCategorias } from "@/components/categorias/BarraCategorias";
 import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
@@ -67,7 +68,14 @@ export default async function Inicio() {
               <p className="m-0 max-w-[48ch] text-lg leading-7 text-rio-suave">
                 Dónde comer, dónde dormir y qué visitar, recomendado por la gente de aquí. Escríbele directo al negocio por WhatsApp.
               </p>
-              <Buscador />
+              <div className="grid justify-items-start gap-3">
+                <Buscador />
+                {/* Versión 8 (34.2): lugares, eventos y cosas para visitar cerca de donde estás */}
+                <Link href="/buscar?cerca=1" className="inline-flex min-h-11 items-center gap-2 font-semibold [&_svg]:size-5">
+                  <IconoUbicacion />
+                  Cerca de mí
+                </Link>
+              </div>
             </div>
           </div>
           <div className="mx-auto mt-10 w-full max-w-[1600px] md:mt-14">

@@ -1,6 +1,7 @@
 import "server-only";
 import { getCategorias } from "@/lib/datos/lugares";
 import { configPaumi, FUENTES_CONFIABLES } from "./config";
+import type { Ubicacion } from "@/lib/ubicacion";
 import { DEFINICIONES, ejecutar, urlComparable, type Estado } from "./herramientas";
 import { instrucciones } from "./personaje";
 import type { MensajePaumi, RespuestaPaumi } from "./tipos";
@@ -48,7 +49,7 @@ export function limpiarTexto(t: string): string {
     .slice(0, 1200);
 }
 
-export async function conversar(historial: MensajePaumi[]): Promise<RespuestaPaumi> {
+export async function conversar(historial: MensajePaumi[], opciones: { ubicacion?: Ubicacion | null } = {}): Promise<RespuestaPaumi> {
   const c = configPaumi();
   const categorias = (await getCategorias()).map(({ slug, nombre }) => ({ slug, nombre }));
   const estado: Estado = {
@@ -58,6 +59,7 @@ export async function conversar(historial: MensajePaumi[]): Promise<RespuestaPau
     categorias: new Set(categorias.map((x) => x.slug)),
     urlsWeb: new Set(),
     externos: [],
+    ubicacion: opciones.ubicacion ?? null,
   };
   const herramientas: unknown[] = [...DEFINICIONES];
   const busqueda = { type: "web_search_20250305", name: "web_search", max_uses: 2, allowed_domains: FUENTES_CONFIABLES };
@@ -144,5 +146,6 @@ export async function conversar(historial: MensajePaumi[]): Promise<RespuestaPau
     externos: estado.externos,
     navegar: estado.navegar,
     fuentes: [...fuentes].slice(0, 3).map(([url, titulo]) => ({ url, titulo })),
+    pedirUbicacion: estado.pedirUbicacion ?? false,
   };
 }

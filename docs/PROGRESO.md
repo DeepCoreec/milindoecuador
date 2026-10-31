@@ -403,7 +403,26 @@
 
 - [x] 33.1 Enlaces comprobados — 2026-10-28 20:10 (abiertos uno por uno en el navegador): la ATM **sigue activa** (atm.gob.ec, "Autoridad de Tránsito y Movilidad", tarifario 2026) y publica el **mapa oficial de la Metrovía 2026** (PDF, octubre 2026), la página de Metrovía y la de Aerovía; Terminal Terrestre (ttg.ec); aeropuerto (tagsa.aero, vuelos en vivo); ECU 911 (ecu911.gob.ec). **No se puso:** laguayacagye.com (la tarjeta de la Metrovía) estaba "en mantenimiento"; app de la Metrovía (no hay una oficial vigente: la de 2015 ya no existe y Moovit es de terceros)
 - [x] 33.2 Sección "Enlaces oficiales" en Información útil — 2026-10-28: `src/lib/enlaces-utiles.ts` (lista con fecha de comprobación) y `src/components/guia/EnlacesUtiles.tsx` (filas grandes para tocar en el celular, dicen a qué sitio llevan, se abren en otra pestaña), agrupadas en Moverse por la ciudad, Viajar y Emergencias. La tarjeta "Moverse por la ciudad" ahora manda a esos enlaces. Prueba unitaria: solo HTTPS y solo dominios oficiales de la lista
-- **Siguiente paso:** publicar y revisar; puerta de la fase 33 (el usuario abre los enlaces); luego fase 34 "Cerca de mí"
+- [x] **Puertas de las fases 32 y 33** — 2026-10-30 21:24: el usuario respondió "continua" tras el resumen; se toman como aprobadas (pendiente que mire el celular)
+
+### Fase 34 · "Cerca de mí"
+
+- [x] 34.1 Búsqueda por cercanía — 2026-10-30: `src/lib/cerca.ts` (solo lo público): negocios publicados (abiertos ahora primero), eventos de esta semana con dirección y lugares de la Guía útil "para visitar" (con foto primero), ordenados por distancia, a 3 km y si hay muy poco a 8 km. La ubicación solo se acepta dentro de Ecuador y redondeada a 3 decimales (~110 m). Ruta `POST /api/cerca` (solo desde nuestras páginas, cuerpo de 200 bytes, Zod; la ubicación va en el cuerpo, no en la dirección, y no se escribe en los registros). 3 pruebas unitarias
+- [x] 34.2 Botón "Cerca de mí" — 2026-10-30: `src/components/busqueda/CercaDeMi.tsx` en `/buscar` (pide permiso solo al tocarlo; sin permiso, un mensaje y todo sigue igual) y enlace "Cerca de mí" bajo el buscador de la portada (`/buscar?cerca=1`, arranca solo porque la persona ya lo tocó). Resultados en tres grupos: Negocios (abiertos primero), Eventos de esta semana y Para visitar, con "a 350 m" y "Cómo llegar". **Probado con Playwright** (página compilada en la nube de Claude, sin datos reales, ubicación simulada en el Malecón): a 390 px claro y oscuro y a 1366 px, sin desplazamiento lateral; sin permiso muestra el aviso
+- [x] 34.3 Paumi con "Cerca de mí" — 2026-10-30: botón «¿Qué hay cerca de mí?» en el chat (pide permiso solo al tocarlo; redondea en el teléfono; la ubicación vive solo en la memoria de la página por 15 minutos para seguir preguntando). `/api/paumi` acepta `ubicacion` opcional (Zod, redondeada, dentro de Ecuador) y la guarda en el estado de esa respuesta. Herramienta nueva `buscar_cerca` (que: todo/negocios/eventos/visitar): **la IA no recibe ni manda coordenadas**, solo ve distancias ("a 350 m"); los negocios, eventos y sitios que devuelve se pueden mostrar con las herramientas de siempre. Instrucciones: si no hay ubicación, pedir que toque el botón (nunca preguntarla en texto). 3 pruebas unitarias
+- [x] 34.3b Cambio pedido por el usuario — 2026-10-30 21:35: **sin botón "Cerca de mí" en el chat de Paumi**. Paumi lo anuncia en su saludo ("También te cuento qué hay cerca de ti") y, cuando le preguntan por lo de cerca sin ubicación, pide permiso en su respuesta: debajo aparece «Sí, usa mi ubicación» (solo en su última respuesta y solo cuando lo pide)
+- [x] 34.4 Revisión independiente de seguridad y privacidad — 2026-10-30: sin hallazgos críticos ni altos. Arreglados:
+  - (media) **la ubicación quedaba en los registros de Supabase** (iba en los filtros de las consultas): ahora lo público se lee SIN la ubicación, en caché de 5 minutos, y las distancias se calculan en la memoria del servidor; la ubicación nunca sale de nuestro servidor. Además, lo más cercano ya no queda fuera por un límite y un error de la base ya no parece "no hay nada cerca";
+  - (media/baja) sin límite de uso en `/api/cerca`: con la caché, cada pedido ya no toca la base (aceptado sin límite propio: solo calcula sobre datos públicos en memoria);
+  - (media) Anthropic podía deducir la zona con distancias exactas: a Paumi solo le llegan **tramos** ("a 1–2 km"); la página de **Privacidad** tiene la sección "Tu ubicación («Cerca de mí»)" (fecha: 30 de octubre de 2026);
+  - (baja/media) "Empezar de nuevo" ahora olvida la ubicación; mientras se usa, el chat muestra "Usando tu ubicación aproximada… · Quitar";
+  - (baja) `/buscar?cerca=1` ya no abre el aviso de permiso al cargar: busca solo si el permiso ya estaba dado; si no, destaca el botón;
+  - (baja) accesibilidad: aviso corto en vivo (no toda la lista), botón con `aria-disabled` (no pierde el foco);
+  - (baja) Paumi avisa claro si la ubicación está fuera de Ecuador; los eventos muestran lugar y dirección.
+  - **Decisión:** "orden por cercanía" del buscador quedó como una sección propia ("Cerca de mí"), no mezclada con los resultados por palabra
+  - 185 unitarias y 260 RLS pasan; probado otra vez con Playwright a 390 px (claro y oscuro) y 1366 px
+- [ ] 34.5 Publicar y probar en la página real con una ubicación simulada (nunca la del usuario)
+- **Siguiente paso:** 34.5
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
