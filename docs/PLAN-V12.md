@@ -22,6 +22,11 @@
   página web […] al menos ponle el horario para tener noción, y la página web de cada lugar"): botón en el panel que los
   completa desde OpenStreetMap (por el Q de Wikidata o el id; solo llena lo que falta) y formulario en «Fotos y datos
   del lugar» para ponerlos a mano desde fuentes oficiales. El aviso "confírmalo antes de ir" se mantiene.
+- **40.7 Completar todos los lugares visibles** (pedido del usuario del 2026-10-31 15:35: "haz que todos los visibles
+  tengan información […] busca fotos en Wikimedia de los que no tenían […] ayúdate con otras IAs y busca información
+  extra pero cierta"): tres investigadores independientes buscan horario, web, teléfono, una frase y fotos libres de
+  Commons, siempre con fuente; en el panel se agregan fotos de Commons por su enlace (la primera pasa a principal si no
+  hay), se puede pasar una foto de Commons a principal y se edita la frase de la guía junto al horario.
 - **No se hace:** copiar fotos de Google, Instagram o TripAdvisor (tienen dueño).
 - **Puerta:** un lugar con varias fotos se recorre con las flechas en el celular y en la computadora; las fotos llevan
   su crédito; RLS probado; revisión de seguridad independiente sin hallazgos altos.

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { startTransition, useActionState, useState } from "react";
 import type { EstadoAdmin } from "@/acciones/admin";
-import { borrarFotoSitio, pedirSubidaFotoSitio, registrarFotoSitio } from "@/acciones/fotos-guia";
+import { agregarFotoCommons, borrarFotoSitio, hacerPrincipalFotoSitio, pedirSubidaFotoSitio, registrarFotoSitio } from "@/acciones/fotos-guia";
 import { clasesBoton } from "@/components/ui/Boton";
 import { claseAyuda, claseEntrada, claseEtiqueta } from "@/components/ui/clasesFormulario";
 import { prepararFoto } from "@/lib/imagen";
@@ -17,12 +17,14 @@ export type FotoSitioAdmin = { id: string; src: string; alt: string; credito: st
  * Fotos más de un lugar de la Guía útil (versión 12, 40.3): las traídas de Commons y las propias. Subir una propia
  * (se convierte a WebP sin datos del celular, con permiso de subida de un solo uso) o borrar cualquiera.
  */
-export function FotosSitio({ sitio, fotos }: { sitio: string; fotos: FotoSitioAdmin[] }) {
+export function FotosSitio({ sitio, fotos, tienePrincipal }: { sitio: string; fotos: FotoSitioAdmin[]; tienePrincipal: boolean }) {
   const [registro, registrar, registrando] = useActionState(registrarFotoSitio, inicial);
   const [borrado, borrar, borrando] = useActionState(borrarFotoSitio, inicial);
+  const [deCommons, agregar, agregando] = useActionState(agregarFotoCommons, inicial);
+  const [principal, hacerPrincipal, moviendo] = useActionState(hacerPrincipalFotoSitio, inicial);
   const [subiendo, setSubiendo] = useState(false);
   const [aviso, setAviso] = useState<{ tipo: "error" | "ok"; texto: string } | null>(null);
-  const ocupado = subiendo || registrando || borrando;
+  const ocupado = subiendo || registrando || borrando || agregando || moviendo;
   const lleno = fotos.length >= 8;
 
   async function subir(e: React.FormEvent<HTMLFormElement>) {
@@ -53,7 +55,8 @@ export function FotosSitio({ sitio, fotos }: { sitio: string; fotos: FotoSitioAd
     }
   }
 
-  const ultimo = aviso ?? (registro.estado !== "inicio" ? { tipo: registro.estado === "ok" ? "ok" : "error", texto: registro.mensaje ?? "" } : borrado.estado !== "inicio" ? { tipo: borrado.estado === "ok" ? "ok" : "error", texto: borrado.mensaje ?? "" } : null);
+  const otros = [deCommons, principal].find((x) => x.estado !== "inicio");
+  const ultimo = aviso ?? (otros ? { tipo: otros.estado === "ok" ? "ok" : "error", texto: otros.mensaje ?? "" } : null) ?? (registro.estado !== "inicio" ? { tipo: registro.estado === "ok" ? "ok" : "error", texto: registro.mensaje ?? "" } : borrado.estado !== "inicio" ? { tipo: borrado.estado === "ok" ? "ok" : "error", texto: borrado.mensaje ?? "" } : null);
 
   return (
     <section aria-labelledby="t-mas-fotos" className="grid gap-5 rounded-xl border border-linea bg-papel-alto p-6">
@@ -82,6 +85,14 @@ export function FotosSitio({ sitio, fotos }: { sitio: string; fotos: FotoSitioAd
                   "Foto propia"
                 )}
               </span>
+              {!tienePrincipal && f.fuente && (
+                <form action={hacerPrincipal}>
+                  <input type="hidden" name="foto" value={f.id} />
+                  <button type="submit" disabled={ocupado} className={clasesBoton("secundario", "chico", "min-h-9")}>
+                    Hacer principal
+                  </button>
+                </form>
+              )}
               <form action={borrar}>
                 <input type="hidden" name="foto" value={f.id} />
                 <button type="submit" disabled={ocupado} className={clasesBoton("texto", "chico", "min-h-9 text-error!")} aria-label={`Borrar foto: ${f.alt}`}>
@@ -92,6 +103,19 @@ export function FotosSitio({ sitio, fotos }: { sitio: string; fotos: FotoSitioAd
           ))}
         </ol>
       )}
+      <form action={agregar} className="grid gap-3 sm:max-w-[560px]">
+        <input type="hidden" name="sitio" value={sitio} />
+        <label className="grid gap-1.5">
+          <span className={claseEtiqueta}>Foto de Wikimedia Commons (enlace)</span>
+          <input name="enlace" type="url" placeholder="https://commons.wikimedia.org/wiki/File:..." className={claseEntrada} />
+          <span className={claseAyuda}>Solo fotos con licencia libre; se guardan con su autor. Si el lugar no tiene foto principal, esta pasa a serlo.</span>
+        </label>
+        <div>
+          <button type="submit" disabled={ocupado} className={clasesBoton("secundario", "chico")}>
+            {agregando ? "Agregando…" : "Agregar de Commons"}
+          </button>
+        </div>
+      </form>
       {!lleno && (
         <form onSubmit={subir} className="grid gap-3 sm:max-w-[480px]">
           <label className="grid gap-1.5">

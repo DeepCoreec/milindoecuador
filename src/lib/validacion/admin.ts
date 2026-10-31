@@ -168,6 +168,8 @@ export const esquemaIdFotoSitio = z.object({ foto: z.uuid("Foto inválida") });
  */
 export const esquemaDatosSitio = z.object({
   sitio: z.uuid("Lugar inválido"),
+  /** La frase de la guía (la misma de "Corregir"): pasa por el filtro de palabras de la base. */
+  nota: z.string().trim().max(300, "Máximo 300 caracteres").optional().default(""),
   horario: z
     .string()
     .trim()
@@ -190,4 +192,9 @@ export const esquemaDatosSitio = z.object({
     .refine((t) => t === "" || /^[+\d(][\d\s()+.-]{5,}$/.test(t), "Escribe solo el número, por ejemplo 04 259 9100")
     .optional()
     .default(""),
+});
+/** Una foto de Commons por su enlace (2026-10-31). */
+export const esquemaFotoCommons = z.object({
+  sitio: z.uuid("Lugar inválido"),
+  enlace: z.string().trim().max(400, "El enlace es demasiado largo").regex(/^https:\/\/commons\.(m\.)?wikimedia\.org\/wiki\//, "Pega el enlace de la página de la foto en Wikimedia Commons"),
 });
