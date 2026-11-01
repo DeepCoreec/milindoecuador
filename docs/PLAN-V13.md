@@ -43,7 +43,7 @@
   ligada a un lugar de la guía que se puede visitar de forma segura.
 - **43.2 Recorridos nocturnos oficiales:** solo los que se confirme que existen hoy (por ejemplo, los del Cementerio
   General o el municipio), con su fuente y su contacto oficial.
-- **43.3 Rutas de terror de los guías:** los recorridos de la fase 42 marcados como "de misterio" salen en esta sección.
+- **43.3 Rutas de terror de los guías:** los guías con la especialidad «Recorridos de noche» y sus recorridos salen en esta sección (decidido el 2026-10-31: así no hace falta otra migración; el guía lo marca en su perfil).
 - **Regla de seguridad:** no se recomienda entrar a lugares abandonados, cerrados o privados (por ejemplo, la antigua
   morgue del cerro): solo se cuenta su historia y se ve desde la calle o con un guía autorizado. Aviso visible.
 - **Puerta:** cada leyenda y recorrido oficial con su fuente; ninguna página invita a entrar a un lugar cerrado.

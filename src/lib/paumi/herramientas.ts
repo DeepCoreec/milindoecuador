@@ -138,7 +138,7 @@ export const DEFINICIONES = [
   {
     name: "abrir_pagina",
     description:
-      "Propone llevar a la persona a una página de la guía: '/guayaquil' (todas las categorías), '/guayaquil/<categoria>', '/buscar?q=<palabras>', '/guayaquil/eventos', '/guayaquil/guia-util', la ruta de un evento que devolvió buscar_eventos o la de un recorrido que devolvió buscar_recorridos.",
+      "Propone llevar a la persona a una página de la guía: '/guayaquil' (todas las categorías), '/guayaquil/<categoria>', '/buscar?q=<palabras>', '/guayaquil/eventos', '/guayaquil/guia-util', '/guayaquil/misterio' (leyendas de la ciudad con su lugar y su fuente), la ruta de un evento que devolvió buscar_eventos o la de un recorrido que devolvió buscar_recorridos.",
     input_schema: { type: "object", properties: { ruta: { type: "string" } }, required: ["ruta"] },
   },
 ] as const;
@@ -300,7 +300,7 @@ async function buscar(entrada: z.infer<typeof esquemaBuscar>, e: Estado) {
 
 /** ¿Es una página de la guía a la que se puede llevar a alguien? */
 export function rutaPermitida(ruta: string, categorias: Set<string>, eventos: Set<string> = new Set(), recorridos: Set<string> = new Set()): string | null {
-  if (ruta === `/${CIUDAD}` || ruta === `/${CIUDAD}/eventos` || ruta === `/${CIUDAD}/guia-util`) return ruta;
+  if (ruta === `/${CIUDAD}` || ruta === `/${CIUDAD}/eventos` || ruta === `/${CIUDAD}/guia-util` || ruta === `/${CIUDAD}/misterio`) return ruta;
   if (eventos.has(ruta) || recorridos.has(ruta)) return ruta;
   const cat = /^\/guayaquil\/([a-z0-9-]{2,40})$/.exec(ruta);
   if (cat) return categorias.has(cat[1]!) ? ruta : null;
