@@ -142,21 +142,19 @@ test("hablarle con el micrófono y que responda hablando (micrófono y voz simul
   expect(await page.evaluate(() => (window as unknown as { __dicho: unknown[] }).__dicho.length)).toBe(1);
 });
 
-test("manos libres: despierta al decir «Paumi» con la ventana cerrada (micrófono simulado)", async ({ page }, info) => {
-  // En celulares no se ofrece (Android pita cada vez que se enciende el micrófono): solo en computadora
-  test.skip(info.project.name !== "escritorio", "manos libres es solo para computadora");
+test("Conversar (manos libres): te escucha sola, deja hacer pausas y te responde hablando (micrófono simulado)", async ({ page }) => {
   await page.addInitScript(() => {
     const w = window as unknown as Record<string, unknown>;
     const dicho: string[] = [];
     w.__dicho = dicho;
     const activos = new Set<object>();
+    // Cada vez que se enciende el micrófono, "se oye" lo siguiente del guion (en pedazos, con una pausa en medio)
     const guion: [string, number][][] = [
       [
-        ["me voy pa mi casa", 1500], // en Ecuador se dice así: no debe despertarla
-        ["le dije a Paumi que me preste plata", 2000], // nombrarla de pasada tampoco
-        ["Paumi dónde como un encebollado", 3000],
+        ["dónde como", 300],
+        ["dónde como un encebollado", 1800], // una pausa de 1,5 s no corta (antes cortaba en la primera pausa)
       ],
-      [["oye Paumi llévame a los restaurantes", 500]],
+      [["llévame a los restaurantes", 300]],
     ];
     w.__escuchando = () => activos.size;
     w.SpeechRecognition = class {
@@ -166,15 +164,14 @@ test("manos libres: despierta al decir «Paumi» con la ventana cerrada (micróf
       onend: (() => void) | null = null;
       onerror = null;
       start() {
-        if (!this.continuous) return;
         activos.add(this);
-        // Cada vez que se enciende, "se oye" lo siguiente del guion
-        const tanda = guion.shift();
-        tanda?.forEach(([frase, ms]) =>
-          setTimeout(() => this.onresult?.({ resultIndex: 0, results: [{ isFinal: true, 0: { transcript: frase } }] }), ms),
-        );
+        const tanda = guion.shift() ?? [];
+        tanda.forEach(([frase, ms]) => setTimeout(() => this.onresult?.({ resultIndex: 0, results: [{ isFinal: false, 0: { transcript: frase } }] }), ms));
       }
-      stop() {}
+      stop() {
+        activos.delete(this);
+        setTimeout(() => this.onend?.(), 50);
+      }
       abort() {
         activos.delete(this);
       }
@@ -193,53 +190,26 @@ test("manos libres: despierta al decir «Paumi» con la ventana cerrada (micróf
     });
   });
   await page.goto("/");
-  const boton = page.getByRole("button", { name: /Paumi/ }).first();
-  await boton.click();
+  await page.getByRole("button", { name: /Paumi/ }).first().click();
   const chat = page.getByRole("dialog", { name: "Paumi" });
-  await chat.getByRole("button", { name: "Activar manos libres" }).click();
-  await expect(chat.getByRole("button", { name: "Apagar manos libres" })).toHaveAttribute("aria-pressed", "true");
-  await page.keyboard.press("Escape");
-  await expect(chat).toBeHidden();
-  // Mientras está encendido, el botón flotante lo dice
-  await expect(page.getByRole("button", { name: /manos libres encendido/ })).toBeVisible();
-
-  // "pa mi casa" y nombrarla de pasada no la despiertan
-  await page.waitForTimeout(2600);
-  await expect(chat).toBeHidden();
-  // "Paumi, …" abre la ventana. La primera vez falta el captcha: lo deja escrito para enviarlo con un toque
-  await expect(chat).toBeVisible({ timeout: 5000 });
-  await expect(chat.getByText("Confirma que no eres un robot")).toBeVisible();
+  // Las tres formas de hablarle están siempre a la vista
+  await expect(chat.getByRole("radio", { name: "Escribir" })).toBeVisible();
+  await expect(chat.getByRole("radio", { name: "Hablar" })).toBeVisible();
+  await chat.getByRole("radio", { name: "Conversar" }).click();
+  await expect(chat.getByRole("radio", { name: "Conversar" })).toHaveAttribute("aria-checked", "true");
+  // La primera vez falta el captcha: lo dicho queda escrito entero (con la pausa incluida) para enviarlo con un toque
+  await expect(chat.getByText("Confirma que no eres un robot")).toBeVisible({ timeout: 8000 });
   await expect(chat.getByLabel("Escríbele a Paumi")).toHaveValue("dónde como un encebollado");
   await chat.getByRole("button", { name: "Enviar" }).click();
   await expect(chat.getByTestId("cuadro-paumi")).toContainText("¡Te recomiendo estos encebollados!");
-  // Como la pregunta vino por voz, responde hablando
   await expect.poll(() => page.evaluate(() => (window as unknown as { __dicho: string[] }).__dicho.length)).toBe(1);
-  // Ya con el captcha hecho, "Oye, Paumi, …" se envía solo
+  // Con el captcha hecho, al volver a Conversar se envía solo y responde hablando
+  await chat.getByRole("radio", { name: "Conversar" }).click();
   await expect(chat.getByText("llévame a los restaurantes", { exact: true })).toBeVisible({ timeout: 10_000 });
-  await expect(chat.getByRole("link", { name: "Ir a la página" })).toBeVisible();
   await expect.poll(() => page.evaluate(() => (window as unknown as { __dicho: string[] }).__dicho.length)).toBe(2);
-
-  // Apagarlo deja de escuchar y quita el aviso del botón
-  await chat.getByRole("button", { name: "Apagar manos libres" }).click();
+  // Pasar a "Escribir" apaga el micrófono
+  await chat.getByRole("radio", { name: "Escribir" }).click();
   await expect.poll(() => page.evaluate(() => (window as unknown as { __escuchando: () => number }).__escuchando())).toBe(0);
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("button", { name: /manos libres encendido/ })).toHaveCount(0);
-});
-
-test("en el celular no se ofrece manos libres, pero sí el micrófono", async ({ page }, info) => {
-  test.skip(info.project.name !== "celular", "solo celular");
-  await page.addInitScript(() => {
-    (window as unknown as Record<string, unknown>).SpeechRecognition = class {
-      start() {}
-      stop() {}
-      abort() {}
-    };
-  });
-  await page.goto("/");
-  await page.getByRole("button", { name: "Paumi" }).click();
-  const chat = page.getByRole("dialog", { name: "Paumi" });
-  await expect(chat.getByRole("button", { name: "Hablarle a Paumi" })).toBeVisible();
-  await expect(chat.getByRole("button", { name: "Activar manos libres" })).toHaveCount(0);
 });
 
 test("si la guía no lo tiene, muestra lugares de internet con Google Maps y su fuente (solo fuentes reales)", async ({ request, baseURL }) => {
