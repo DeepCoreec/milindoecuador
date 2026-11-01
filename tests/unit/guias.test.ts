@@ -56,3 +56,16 @@ describe("repetidos", () => {
     expect(r.especialidades).toEqual(["aves"]);
   });
 });
+
+import { esquemaPerfilGuiaRegistro } from "@/lib/validacion/dueno";
+
+describe("perfil del guía al registrarse", () => {
+  it("se valida sin ficha todavía y la credencial es opcional", () => {
+    const r = esquemaPerfilGuiaRegistro.parse({ idiomas: ["es"], especialidades: [], zonas: "", credencial: "" });
+    expect(r.credencial).toBeNull();
+    expect(r.zonas).toBeNull();
+  });
+  it("pide al menos un idioma", () => {
+    expect(esquemaPerfilGuiaRegistro.safeParse({ idiomas: [], especialidades: [], zonas: "", credencial: "" }).success).toBe(false);
+  });
+});

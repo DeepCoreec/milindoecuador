@@ -46,3 +46,6 @@ export const esquemaPerfilGuia = z.object({
     .transform((v) => v.toUpperCase() || null)
     .refine((v) => v === null || /^[A-Z0-9][A-Z0-9 ./-]{2,39}$/.test(v), "El número de credencial: solo letras, números, puntos y guiones (3 a 40)"),
 });
+
+/** El mismo perfil, pero al registrarse (todavía no hay ficha). */
+export const esquemaPerfilGuiaRegistro = esquemaPerfilGuia.omit({ lugar: true });

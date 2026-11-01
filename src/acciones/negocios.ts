@@ -9,11 +9,12 @@ import { crearFichaBorrador } from "@/lib/fichas";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { configSupabase } from "@/lib/supabase/config";
 import { esquemaSolicitud, type CampoSolicitud } from "@/lib/validacion/negocios";
+import { esquemaPerfilGuiaRegistro } from "@/lib/validacion/dueno";
 
 export type EstadoSolicitud = {
   estado: "inicio" | "ok" | "error";
   mensaje?: string;
-  errores?: Partial<Record<CampoSolicitud, string>>;
+  errores?: Partial<Record<CampoSolicitud | "guia", string>>;
   /** Lo escrito, para no borrar el formulario cuando hay un error. */
   valores?: Record<string, string>;
   negocio?: string;
@@ -26,7 +27,7 @@ export type EstadoSolicitud = {
 const MENSAJE_DIA = "Ya registraste 3 negocios hoy. Vuelve mañana para registrar otro.";
 const MENSAJE_TOTAL = "Tu cuenta ya tiene 10 negocios. Escríbenos por WhatsApp si necesitas más.";
 
-const CAMPOS =["negocio", "categoria", "sector", "contacto", "whatsapp", "descripcion", "terminos"] as const;
+const CAMPOS = ["negocio", "categoria", "sector", "contacto", "whatsapp", "descripcion", "terminos", "zonas", "credencial"] as const;
 
 /**
  * Registra un negocio. Orden: Zod → captcha → sesión → límites → escribir con admin.ts (la tabla no acepta
@@ -37,13 +38,23 @@ const CAMPOS =["negocio", "categoria", "sector", "contacto", "whatsapp", "descri
  */
 export async function solicitarRegistro(_previo: EstadoSolicitud, datos: FormData): Promise<EstadoSolicitud> {
   const valores = Object.fromEntries(CAMPOS.map((c) => [c, String(datos.get(c) ?? "").slice(0, 1200)]));
+  const esGuia = valores.categoria === "guias";
+  // Versión 13: el guía es una persona; su nombre de contacto es el mismo nombre con el que lo encuentran
+  if (esGuia && !valores.contacto?.trim()) valores.contacto = (valores.negocio ?? "").slice(0, 80);
+  const idiomas = datos.getAll("idiomas").slice(0, 20).map(String);
+  const especialidades = datos.getAll("especialidades").slice(0, 20).map(String);
+  valores.idiomas = idiomas.join(",");
+  valores.especialidades = especialidades.join(",");
   const r = esquemaSolicitud.safeParse({ ...valores, terminos: datos.get("terminos") ?? undefined });
-  if (!r.success) {
+  // Versión 13: el guía llena su perfil en el mismo registro (idiomas, especialidades, zonas y credencial)
+  const p = esGuia ? esquemaPerfilGuiaRegistro.safeParse({ idiomas, especialidades, zonas: valores.zonas ?? "", credencial: valores.credencial ?? "" }) : null;
+  if (!r.success || (p && !p.success)) {
     const errores: EstadoSolicitud["errores"] = {};
-    for (const i of r.error.issues) {
+    for (const i of r.success ? [] : r.error.issues) {
       const campo = i.path[0] as CampoSolicitud;
       errores[campo] ??= i.message;
     }
+    if (p && !p.success) errores.guia = [...new Set(p.error.issues.map((i) => i.message))].join(". ");
     return { estado: "error", mensaje: "Revisa los campos marcados", errores, valores, intento: Date.now() };
   }
   const h = await headers();
@@ -80,7 +91,8 @@ export async function solicitarRegistro(_previo: EstadoSolicitud, datos: FormDat
   // (evita que alguien se adueñe de un negocio que no es suyo).
   const base = aSlug(r.data.negocio) || "lugar";
   const { data: parecidos } = await db.from("places").select("slug").eq("city_id", ciudad.data.id).eq("status", "publicado").like("slug", `${base}%`).limit(20);
-  const repetido = (parecidos ?? []).some((p) => p.slug === base || new RegExp(`^${base}-\\d+$`).test(p.slug));
+  // Los guías son personas (puede haber dos con el mismo nombre): su ficha se crea sin esperar revisión
+  const repetido = !esGuia && (parecidos ?? []).some((p) => p.slug === base || new RegExp(`^${base}-\\d+$`).test(p.slug));
 
   const { data: solicitud, error } = await db.from("business_requests").insert({
     business_name: r.data.negocio,
@@ -120,6 +132,15 @@ export async function solicitarRegistro(_previo: EstadoSolicitud, datos: FormDat
     // Respaldo: queda pendiente y el admin la aprueba a mano
     await db.from("business_requests").update({ status: "pendiente", admin_notes: null }).eq("id", solicitud.id);
     return { estado: "ok", negocio: r.data.negocio };
+  }
+  if (p?.success) {
+    // Si el perfil no se pudo guardar (por ejemplo, el filtro de palabras en las zonas), la ficha igual queda creada:
+    // el guía lo completa en «Mi negocio»
+    await db
+      .from("places")
+      .update({ guide_languages: p.data.idiomas, guide_specialties: p.data.especialidades, guide_zones: p.data.zonas, guide_license: p.data.credencial })
+      .eq("id", ficha.id)
+      .eq("owner_id", usuario.id);
   }
   return { estado: "ok", negocio: r.data.negocio, ficha: ficha.id };
 }

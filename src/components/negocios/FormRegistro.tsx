@@ -7,6 +7,7 @@ import { clasesBoton } from "@/components/ui/Boton";
 import { Captcha } from "@/components/ui/Captcha";
 import { claseAyuda, claseEntrada, claseEtiqueta } from "@/components/ui/clasesFormulario";
 import { IconoConversacion } from "@/components/ui/iconos";
+import { ESPECIALIDADES, IDIOMAS } from "@/lib/guias";
 
 const inicial: EstadoSolicitud = { estado: "inicio" };
 
@@ -29,6 +30,24 @@ function Campo({ id, etiqueta, error, ayuda, children }: { id: string; etiqueta:
         )
       )}
     </div>
+  );
+}
+
+/** Casillas de una lista fija (idiomas o especialidades del guía). */
+function Casillas({ nombre, leyenda, ayuda, opciones, marcadas }: { nombre: string; leyenda: string; ayuda: string; opciones: Record<string, string>; marcadas: string[] }) {
+  return (
+    <fieldset className="m-0 grid gap-2 border-0 p-0">
+      <legend className={`p-0 ${claseEtiqueta}`}>{leyenda}</legend>
+      <p className={`m-0 ${claseAyuda}`}>{ayuda}</p>
+      <div className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
+        {Object.entries(opciones).map(([codigo, texto]) => (
+          <label key={codigo} className="flex min-h-11 cursor-pointer items-center gap-3 text-[15px] leading-5">
+            <input type="checkbox" name={nombre} value={codigo} defaultChecked={marcadas.includes(codigo)} className="size-5 flex-none accent-celeste-tinta" />
+            {texto}
+          </label>
+        ))}
+      </div>
+    </fieldset>
   );
 }
 
@@ -120,9 +139,12 @@ export function FormRegistro({ categorias, avisoWhatsApp, categoriaInicial }: { 
         </Campo>
       </div>
       <div className="grid gap-5 sm:grid-cols-2">
-        <Campo id="r-contacto" etiqueta="Tu nombre" error={e.contacto}>
-          <input id="r-contacto" name="contacto" required maxLength={80} autoComplete="name" defaultValue={v.contacto} className={claseEntrada} {...a11y("contacto")} />
-        </Campo>
+        {/* El guía es una persona: su nombre de contacto es el mismo con el que lo encuentran (lo pone el servidor) */}
+        {!guia && (
+          <Campo id="r-contacto" etiqueta="Tu nombre" error={e.contacto}>
+            <input id="r-contacto" name="contacto" required maxLength={80} autoComplete="name" defaultValue={v.contacto} className={claseEntrada} {...a11y("contacto")} />
+          </Campo>
+        )}
         <Campo id="r-whatsapp" etiqueta={guia ? "Tu WhatsApp" : "WhatsApp del negocio"} error={e.whatsapp} ayuda={guia ? "Los turistas te escribirán a este número para pedirte un recorrido." : "Los clientes te escribirán a este número."}>
           <div className="flex">
             <span className="grid place-items-center rounded-l-sm border border-r-0 border-linea-fuerte bg-papel px-3 font-medium text-rio-suave">+593</span>
@@ -159,6 +181,35 @@ export function FormRegistro({ categorias, avisoWhatsApp, categoriaInicial }: { 
           {...a11y("descripcion")}
         />
       </Campo>
+      {guia && (
+        <div className="grid gap-5 border-t border-linea pt-5">
+          <h3 className="m-0 text-lg leading-6 font-semibold">Tu perfil de guía</h3>
+          <Casillas
+            nombre="idiomas"
+            leyenda="Idiomas"
+            ayuda="En los que puedes guiar un recorrido (al menos uno)."
+            opciones={IDIOMAS}
+            marcadas={v.idiomas !== undefined ? v.idiomas.split(",") : ["es"]}
+          />
+          <Casillas nombre="especialidades" leyenda="Especialidades" ayuda="Qué recorridos haces (hasta 6)." opciones={ESPECIALIDADES} marcadas={v.especialidades?.split(",") ?? []} />
+          <Campo id="r-zonas" etiqueta="Zonas donde trabajas" error={undefined}>
+            <input id="r-zonas" name="zonas" maxLength={160} defaultValue={v.zonas} placeholder="Ej.: Centro, Las Peñas, Isla Santay" className={claseEntrada} />
+          </Campo>
+          <Campo
+            id="r-credencial"
+            etiqueta="Número de credencial de guía (MINTUR), si la tienes"
+            error={undefined}
+            ayuda="No se publica. Lo buscamos en el catastro del Ministerio de Turismo y, si está, tu ficha lleva la insignia «Guía acreditado». Puedes registrarte sin ella."
+          >
+            <input id="r-credencial" name="credencial" maxLength={40} autoComplete="off" defaultValue={v.credencial} className={claseEntrada} />
+          </Campo>
+          {e.guia && (
+            <p role="alert" className="m-0 text-sm leading-5 text-error">
+              {e.guia}
+            </p>
+          )}
+        </div>
+      )}
       <Captcha reiniciar={estado} />
       <div className="grid gap-1.5">
         <label className="flex cursor-pointer items-start gap-3 text-[15px] leading-[22px]">
@@ -179,7 +230,7 @@ export function FormRegistro({ categorias, avisoWhatsApp, categoriaInicial }: { 
         </p>
       )}
       <button type="submit" disabled={enviando} className={clasesBoton("principal")}>
-        {enviando ? "Registrando…" : "Registrar mi negocio"}
+        {enviando ? "Registrando…" : guia ? "Crear mi perfil de guía" : "Registrar mi negocio"}
       </button>
     </form>
   );
