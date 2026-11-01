@@ -13,6 +13,7 @@ import { normalizar } from "@/lib/validacion/busqueda";
 import { textoPrecio as precioRecorrido } from "@/lib/recorridos";
 import { textoDuracion } from "@/lib/validacion/recorridos";
 import { LEYENDAS } from "@/lib/misterio";
+import { ACCIONES, LISTA_ACCIONES, LISTA_SECCIONES, SECCIONES, rutaConFiltros, type Movimiento } from "./secciones";
 import { rutaSitio } from "@/lib/datos/sitios";
 import { FUENTES_CONFIABLES } from "./config";
 import type { ExternoPaumi, TarjetaPaumi } from "./tipos";
@@ -138,6 +139,34 @@ export const DEFINICIONES = [
     },
   },
   {
+    name: "mover_pagina",
+    description:
+      "Mueve la página que la persona está viendo (o la que acabas de abrir con abrir_pagina): baja a una parte y la resalta, pasa las fotos, abre todas las categorías o vuelve arriba. Úsala cuando digan «baja a…», «muéstrame las reseñas / el horario / las fotos», «siguiente foto», «sube». Partes: " +
+      LISTA_SECCIONES.map((k) => `${k} (${SECCIONES[k].que})`).join("; ") +
+      ". Acciones: " +
+      LISTA_ACCIONES.map((k) => `${k} (${ACCIONES[k]})`).join("; ") +
+      ".",
+    input_schema: {
+      type: "object",
+      properties: { seccion: { type: "string", enum: LISTA_SECCIONES }, accion: { type: "string", enum: LISTA_ACCIONES } },
+    },
+  },
+  {
+    name: "filtrar_categoria",
+    description:
+      "Abre una categoría de la guía con sus filtros ya puestos (la página se abre sola): sector o barrio, precio máximo (1 = económico, 2 = medio, 3 = alto) y orden (destacados, calificacion = mejor calificados, resenas = más reseñas). Úsala para «restaurantes baratos en Urdesa», «los hoteles mejor calificados».",
+    input_schema: {
+      type: "object",
+      properties: {
+        categoria: { type: "string", description: "Slug de una categoría de la guía" },
+        sector: { type: "string", description: "Barrio, tal como lo dicen (ej. 'Urdesa')" },
+        precio_max: { type: "integer", enum: [1, 2, 3] },
+        orden: { type: "string", enum: ["destacados", "calificacion", "resenas"] },
+      },
+      required: ["categoria"],
+    },
+  },
+  {
     name: "contar_leyendas",
     description:
       "Las leyendas e historias de Guayaquil verificadas, con su lugar real y su fuente (la dama tapada, el banquero que salió del cementerio, el tesoro del Cerro Santa Ana…). Al usarla, la página «Guayaquil de misterio» se abre sola. Úsala SIEMPRE que pregunten por leyendas, historias, misterio, terror, fantasmas o miedo.",
@@ -175,6 +204,14 @@ const esquemaSitios = z.object({
 const esquemaMostrarSitios = z.object({ ids: z.array(z.uuid()).min(1).max(3) });
 const esquemaAbrir = z.object({ ruta: z.string().max(160) });
 const esquemaRecorridos = z.object({ texto: z.string().trim().max(60).optional() });
+const esquemaMover = z.object({ seccion: z.enum(LISTA_SECCIONES).optional(), accion: z.enum(LISTA_ACCIONES).optional() }).refine((v) => v.seccion || v.accion);
+const esquemaFiltrar = z.object({
+  categoria: z.string().regex(/^[a-z0-9-]{2,40}$/),
+  // Sector: solo letras, números y signos comunes (va a la dirección de la página como dato, nunca como código)
+  sector: z.string().trim().max(60).regex(/^[\p{L}\p{N} .'-]*$/u).optional(),
+  precio_max: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(),
+  orden: z.enum(["destacados", "calificacion", "resenas"]).optional(),
+});
 const esquemaCerca = z.object({ que: z.enum(["todo", "negocios", "eventos", "visitar"]).optional() });
 const esquemaExterno = z.object({
   nombre: z
@@ -216,6 +253,8 @@ export type Estado = {
   recorridos?: Set<string>;
   /** 2026-11-01: fichas de lugares y páginas de lugares para visitar que devolvieron las herramientas (para abrirlas). */
   rutas?: Set<string>;
+  /** 2026-11-01: lo que la página tiene que mover por dentro (bajar a una parte, pasar una foto…). */
+  mover?: Movimiento | null;
   /** Sitios de la Guía útil que devolvió buscar_sitios en esta respuesta (versión 5, fase 23). */
   sitios?: Map<string, ExternoPaumi>;
   /** Versión 8: ubicación que la persona compartió con «Cerca de mí» (redondeada). La IA nunca la ve. */
@@ -535,6 +574,18 @@ export async function ejecutar(nombre: string, entrada: unknown, e: Estado): Pro
           };
         });
         return { resultado: resultado.length ? resultado : "Todavía no hay recorridos publicados así. Puedes recomendar guías con buscar_lugares (categoria guias)." };
+      }
+      case "mover_pagina": {
+        const r = esquemaMover.safeParse(entrada ?? {});
+        if (!r.success) return { resultado: "Pedido inválido: elige una parte o una acción de la lista.", error: true };
+        e.mover = { seccion: r.data.seccion, accion: r.data.accion };
+        return { resultado: "Listo: la página se mueve sola. Si esa parte no está en la página que ve la persona, no pasa nada: ábrela antes con abrir_pagina." };
+      }
+      case "filtrar_categoria": {
+        const r = esquemaFiltrar.safeParse(entrada ?? {});
+        if (!r.success || !e.categorias.has(r.data.categoria)) return { resultado: "Esa categoría o ese filtro no existe en la guía.", error: true };
+        e.navegar = rutaConFiltros(CIUDAD, r.data.categoria, { sector: r.data.sector || undefined, precioMax: r.data.precio_max, orden: r.data.orden });
+        return { resultado: "Listo: se abre la categoría con esos filtros. Si no hay lugares con ese filtro, la página lo dice y ofrece quitarlos." };
       }
       case "contar_leyendas": {
         // Las leyendas verificadas de "Guayaquil de misterio" (fase 43); la página se abre sola para mostrarlas

@@ -49,7 +49,7 @@ export function limpiarTexto(t: string): string {
     .slice(0, 1200);
 }
 
-export async function conversar(historial: MensajePaumi[], opciones: { ubicacion?: Ubicacion | null } = {}): Promise<RespuestaPaumi> {
+export async function conversar(historial: MensajePaumi[], opciones: { ubicacion?: Ubicacion | null; pagina?: string | null } = {}): Promise<RespuestaPaumi> {
   const c = configPaumi();
   const categorias = (await getCategorias()).map(({ slug, nombre }) => ({ slug, nombre }));
   const estado: Estado = {
@@ -75,7 +75,7 @@ export async function conversar(historial: MensajePaumi[], opciones: { ubicacion
     const r = await fetch(`${c.url}/v1/messages`, {
       method: "POST",
       headers: { "x-api-key": c.clave, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model: c.modelo, max_tokens: 700, system: instrucciones(categorias, herramientas.includes(busqueda)), messages: mensajes, tools: herramientas }),
+      body: JSON.stringify({ model: c.modelo, max_tokens: 700, system: instrucciones(categorias, herramientas.includes(busqueda), opciones.pagina ?? null), messages: mensajes, tools: herramientas }),
       signal: AbortSignal.timeout(30_000),
       cache: "no-store",
     });
@@ -145,6 +145,7 @@ export async function conversar(historial: MensajePaumi[], opciones: { ubicacion
     lugares: estado.tarjetas,
     externos: estado.externos,
     navegar: estado.navegar,
+    mover: estado.mover ?? null,
     fuentes: [...fuentes].slice(0, 3).map(([url, titulo]) => ({ url, titulo })),
     pedirUbicacion: estado.pedirUbicacion ?? false,
   };

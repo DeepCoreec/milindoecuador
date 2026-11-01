@@ -30,6 +30,8 @@ const esquema = z.object({
   // Versión 8 (34.3): "Cerca de mí" del chat. Se redondea a ~100 m, no se guarda ni se registra, y NO se le pasa a la IA
   // (la IA solo ve distancias en tramos, como "a 1–2 km", en lo que devuelve la herramienta buscar_cerca)
   ubicacion: z.object({ lat: z.number(), lng: z.number() }).optional(),
+  // 2026-11-01: la página que la persona está viendo (solo la ruta; a la IA le llega descrita en palabras, nunca tal cual)
+  pagina: z.string().max(200).regex(/^\/[a-z0-9\-/]*$/).optional().catch(undefined),
 });
 
 const respuesta = (cuerpo: object, status = 200) => NextResponse.json(cuerpo, { status, headers: { "cache-control": "no-store" } });
@@ -75,7 +77,7 @@ export async function POST(request: NextRequest) {
     const ubicacion = r.data.ubicacion ? ubicacionAproximada(r.data.ubicacion) : null;
     const resultado = await conversar(
       r.data.mensajes.map(({ rol, texto }) => ({ rol, texto: texto.trim() })),
-      { ubicacion },
+      { ubicacion, pagina: r.data.pagina ?? null },
     );
     const salida = respuesta({ ...resultado, firma: firmarRespuesta(resultado.texto) });
     if (pase) salida.cookies.set(COOKIE_PASE, pase, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict", path: "/api/paumi", maxAge: DURACION_PASE });

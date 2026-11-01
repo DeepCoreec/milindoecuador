@@ -34,7 +34,7 @@ export function Galeria({ fotos, tono }: { fotos: Foto[]; tono: "celeste" | "man
 
   return (
     <>
-      <div className={`relative grid gap-2 ${disposicion}`}>
+      <div id="fotos" className={`relative grid scroll-mt-4 gap-2 ${disposicion}`}>
         {visibles.map((f, i) => {
           const ultima = i === visibles.length - 1 && resto > 0;
           return (
