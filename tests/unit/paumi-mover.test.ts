@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ejecutar, type Estado } from "@/lib/paumi/herramientas";
-import { instrucciones } from "@/lib/paumi/personaje";
+import { contextoPagina, instrucciones } from "@/lib/paumi/personaje";
 import { describirPagina, leerMovimiento, rutaConFiltros } from "@/lib/paumi/secciones";
 import { leerFiltros } from "@/lib/validacion/filtros";
 
@@ -46,9 +46,11 @@ describe("Paumi sabe dónde está la persona", () => {
     expect(describirPagina("/guayaquil/restaurantes")).toContain("restaurantes");
     expect(describirPagina("/guayaquil/restaurantes/la-sazon")).toContain("ficha de un lugar");
     expect(describirPagina("/admin")).toBe("otra página");
-    const t = instrucciones([], false, "/guayaquil/visitar/malecon-123");
-    expect(t).toContain("AHORA la persona está viendo: la página de un lugar para visitar");
-    expect(t).toContain("mover_pagina");
+    expect(contextoPagina("/guayaquil/visitar/malecon-123")).toContain("AHORA la persona está viendo: la página de un lugar para visitar");
+    // Las instrucciones fijas NO cambian con la página (así se guardan en la caché)
+    expect(instrucciones([], false)).toBe(instrucciones([], false));
+    expect(instrucciones([], false)).not.toContain("AHORA la persona");
+    expect(instrucciones([], false)).toContain("mover_pagina");
   });
 });
 
@@ -70,5 +72,31 @@ describe("atajos que hace la página sin la IA", () => {
   it("Paumi trata de tú, como en Ecuador", async () => {
     const { instrucciones } = await import("@/lib/paumi/personaje");
     expect(instrucciones([], false)).toContain("NUNCA de vos");
+  });
+});
+
+describe("más atajos gratis: navegar sin preguntarle a Haiku (2026-11-01)", () => {
+  const nada = () => false;
+  it("categorías y páginas por su nombre", () => {
+    expect(atajo("llévame a restaurantes", nada)?.navegar).toBe("/guayaquil/restaurantes");
+    expect(atajo("Paumi, muéstrame los hoteles por favor", nada)?.navegar).toBe("/guayaquil/hoteles");
+    expect(atajo("abre eventos", nada)?.navegar).toBe("/guayaquil/eventos");
+    expect(atajo("cuéntame las leyendas", nada)).toBeNull(); // "cuéntame" es una pregunta: la contesta Paumi
+    expect(atajo("leyendas", nada)?.navegar).toBe("/guayaquil/misterio");
+    expect(atajo("ve a la guía útil", nada)?.navegar).toBe("/guayaquil/guia-util");
+    expect(atajo("museos", nada)?.navegar).toBe("/guayaquil/museos");
+  });
+  it("partes de la página, solo si están en la página que se ve", () => {
+    const hay = (ids: readonly string[]) => ids.includes("t-resenas");
+    expect(atajo("baja a las reseñas", hay)?.movimiento).toEqual({ seccion: "resenas" });
+    expect(atajo("baja a las reseñas", nada)).toBeNull();
+    // "los guías" en Turismo baja a la sección; en otra página abre la categoría
+    expect(atajo("muéstrame los guías", (ids) => ids.includes("t-guias"))?.movimiento).toEqual({ seccion: "guias" });
+    expect(atajo("muéstrame los guías", nada)?.navegar).toBe("/guayaquil/guias");
+  });
+  it("si dicen algo más, se le pregunta a Paumi", () => {
+    expect(atajo("restaurantes baratos en Urdesa", nada)).toBeNull();
+    expect(atajo("¿dónde como un buen encebollado?", nada)).toBeNull();
+    expect(atajo("qué hoteles me recomiendas", nada)).toBeNull();
   });
 });

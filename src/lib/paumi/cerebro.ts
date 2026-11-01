@@ -3,7 +3,7 @@ import { getCategorias } from "@/lib/datos/lugares";
 import { configPaumi, FUENTES_CONFIABLES } from "./config";
 import type { Ubicacion } from "@/lib/ubicacion";
 import { DEFINICIONES, ejecutar, urlComparable, type Estado } from "./herramientas";
-import { instrucciones } from "./personaje";
+import { contextoPagina, instrucciones } from "./personaje";
 import type { MensajePaumi, RespuestaPaumi } from "./tipos";
 
 /*
@@ -19,6 +19,15 @@ type MensajeApi = { role: "user" | "assistant"; content: string | Bloque[] };
 export class ErrorPaumi extends Error {}
 
 const VUELTAS = 6;
+
+/**
+ * Marca la lista de herramientas para la caché (2026-11-01): la marca va en la última herramienta propia, así se guarda
+ * todo lo anterior (la búsqueda web, si va, queda después y no cambia lo guardado).
+ */
+function conCache(herramientas: unknown[]): unknown[] {
+  const i = herramientas.findLastIndex((h) => typeof h === "object" && h !== null && "input_schema" in h);
+  return herramientas.map((h, j) => (j === i ? { ...(h as object), cache_control: { type: "ephemeral" } } : h));
+}
 
 /** Convierte el historial de la página al formato de la API: empieza con la persona y alterna. */
 export function aMensajesApi(historial: MensajePaumi[]): MensajeApi[] {
@@ -78,9 +87,14 @@ export async function conversar(historial: MensajePaumi[], opciones: { ubicacion
       body: JSON.stringify({
         model: c.modelo,
         max_tokens: 700,
-        system: instrucciones(categorias, herramientas.includes(busqueda), opciones.pagina ?? null),
+        // Caché (2026-11-01): las instrucciones fijas y las herramientas son iguales en cada mensaje; marcadas así,
+        // Anthropic las cobra mucho más barato al reutilizarlas por unos minutos. La página que se ve va aparte (cambia).
+        system: [
+          { type: "text", text: instrucciones(categorias, herramientas.includes(busqueda)), cache_control: { type: "ephemeral" } },
+          { type: "text", text: contextoPagina(opciones.pagina ?? null) },
+        ],
         messages: mensajes,
-        tools: herramientas,
+        tools: conCache(herramientas),
         // En la última vuelta ya no puede pedir herramientas: tiene que responder (2026-11-01: a veces se quedaba sin
         // vueltas buscando y abriendo páginas, y contestaba "me enredé las plumas")
         ...(vuelta === VUELTAS - 1 ? { tool_choice: { type: "none" } } : {}),
