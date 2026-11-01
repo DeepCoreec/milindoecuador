@@ -18,7 +18,7 @@ type MensajeApi = { role: "user" | "assistant"; content: string | Bloque[] };
 
 export class ErrorPaumi extends Error {}
 
-const VUELTAS = 5;
+const VUELTAS = 6;
 
 /** Convierte el historial de la página al formato de la API: empieza con la persona y alterna. */
 export function aMensajesApi(historial: MensajePaumi[]): MensajeApi[] {
@@ -75,7 +75,16 @@ export async function conversar(historial: MensajePaumi[], opciones: { ubicacion
     const r = await fetch(`${c.url}/v1/messages`, {
       method: "POST",
       headers: { "x-api-key": c.clave, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model: c.modelo, max_tokens: 700, system: instrucciones(categorias, herramientas.includes(busqueda), opciones.pagina ?? null), messages: mensajes, tools: herramientas }),
+      body: JSON.stringify({
+        model: c.modelo,
+        max_tokens: 700,
+        system: instrucciones(categorias, herramientas.includes(busqueda), opciones.pagina ?? null),
+        messages: mensajes,
+        tools: herramientas,
+        // En la última vuelta ya no puede pedir herramientas: tiene que responder (2026-11-01: a veces se quedaba sin
+        // vueltas buscando y abriendo páginas, y contestaba "me enredé las plumas")
+        ...(vuelta === VUELTAS - 1 ? { tool_choice: { type: "none" } } : {}),
+      }),
       signal: AbortSignal.timeout(30_000),
       cache: "no-store",
     });
@@ -94,10 +103,12 @@ export async function conversar(historial: MensajePaumi[], opciones: { ubicacion
     busquedasHechas += bloques.filter((b) => b.type === "server_tool_use" && b.name === "web_search").length;
     if (busquedasHechas >= 2 && herramientas.includes(busqueda)) herramientas.splice(herramientas.indexOf(busqueda), 1);
 
-    texto = bloques
+    // Se queda con lo último que dijo (si la última vuelta solo usó herramientas, vale lo de antes)
+    const dijo = bloques
       .filter((b) => b.type === "text" && typeof b.text === "string")
       .map((b) => b.text as string)
       .join("");
+    if (dijo.trim()) texto = dijo;
     // Lo que trajo la búsqueda web: solo de estas páginas se aceptan lugares de internet
     for (const b of bloques) {
       if (b.type !== "web_search_tool_result" || !Array.isArray(b.content)) continue;
@@ -140,8 +151,9 @@ export async function conversar(historial: MensajePaumi[], opciones: { ubicacion
   }
 
   const final = limpiarTexto(texto);
+  const mostro = !!(estado.navegar || estado.mover || estado.tarjetas.length);
   return {
-    texto: final || "Uy, me enredé las plumas. ¿Me lo preguntas de otra forma?",
+    texto: final || (mostro ? "¡Listo! Te lo muestro en la página." : "Uy, me enredé las plumas. ¿Me lo preguntas de otra forma?"),
     lugares: estado.tarjetas,
     externos: estado.externos,
     navegar: estado.navegar,
