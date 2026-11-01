@@ -547,6 +547,7 @@
 
 - [x] (usuario) Puertas 41, 42 y 43 aprobadas el 2026-10-31 21:43 ("están bien")
 - [x] Fondo de la portada con fotos — 2026-10-31 (pedido del usuario: "una foto de Guayaquil desde un lugar alto, que se vea La Perla, de noche, con el fondo difuminado […] ya no quiero el fondo pixel art"; luego "que entre ratos cambie de imagen, me gustan la U1 y la U5"): se buscaron fotos libres en Wikimedia Commons (pocas de noche y ninguna buena con La Perla), Unsplash y Pexels; el usuario eligió dos de Jose Garcia en Unsplash ("uso gratuito bajo la Licencia Unsplash"): Guayaquil de noche desde lo alto con La Perla, y La Perla iluminada de azul. `FondoFotos`: fundido cada 8 s, difuminadas (2 px) con velo de noche, crédito de la foto que se ve, quieto con "reducir movimiento" y pausado si la pestaña no se ve. Pasan por el optimizador de la página: en `next.config.ts` solo se permiten esas dos direcciones exactas de images.unsplash.com. La ilustración animada queda guardada (se vuelve cambiando una línea en `src/lib/fondos-ciudad.ts`). El usuario dirá otra foto para sumar
+- [x] Fotos nítidas — 2026-11-01 (pedido del usuario: "que la imagen se vea no borrosa sino un poquito transparente"): sin difuminado; solo el velo de noche encima
 - **Para sumar una foto:** su dirección de images.unsplash.com en `FOTOS_GUAYAQUIL` (`src/lib/fondos-ciudad.ts`) y en `FOTOS_PORTADA` (`next.config.ts`)
 
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
