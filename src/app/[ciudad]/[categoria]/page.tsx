@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Afiche } from "@/components/arte/Afiche";
+import { FotoCategoria } from "@/components/arte/FotoCategoria";
 import { SitiosPorTipo } from "@/components/guia/ListaSitios";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -122,7 +122,7 @@ export default async function PaginaCategoria({ params, searchParams }: PageProp
               </h1>
               <p className="m-0 max-w-[60ch] text-lg leading-7 text-rio-suave">{categoria.bajada}</p>
             </div>
-            <Afiche slug={categoria.slug} className="size-28 max-md:hidden md:size-44 lg:size-52" />
+            <FotoCategoria slug={categoria.slug} className="size-28 rounded-[20px]! max-md:hidden md:size-44 lg:size-52" ancho={208} />
           </div>
         </section>
 
@@ -173,7 +173,7 @@ export default async function PaginaCategoria({ params, searchParams }: PageProp
           </details>
         )}
 
-        {categoria.slug === "turismo" && ciudad.slug === "guayaquil" && (
+        {(categoria.slug === "turismo" || categoria.slug === "museos") && ciudad.slug === "guayaquil" && (
           <Link
             href={`/${ciudad.slug}/misterio`}
             data-theme="dark"

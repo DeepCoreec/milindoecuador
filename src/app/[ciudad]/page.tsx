@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Afiche } from "@/components/arte/Afiche";
+import { FotoCategoria } from "@/components/arte/FotoCategoria";
 import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
 import { FranjaGuiaUtil } from "@/components/guia/FranjaGuiaUtil";
@@ -38,7 +38,7 @@ export default async function PaginaCiudad({ params }: PageProps<"/[ciudad]">) {
           {categorias.map((c) => (
             <li key={c.slug} className="min-w-0">
               <Link href={`/${ciudad.slug}/${c.slug}`} className="group grid gap-3 text-rio no-underline">
-                <Afiche slug={c.slug} className="aspect-square w-full rounded-lg" />
+                <FotoCategoria slug={c.slug} className="aspect-square w-full rounded-lg!" ancho={300} />
                 <span className="text-lg leading-6 font-semibold group-hover:underline group-hover:underline-offset-[3px]">{c.nombre}</span>
                 <span className="-mt-2 text-sm leading-5 text-rio-suave">{c.bajada}</span>
               </Link>

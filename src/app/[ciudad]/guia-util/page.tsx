@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Afiche } from "@/components/arte/Afiche";
+import { FotoCategoria } from "@/components/arte/FotoCategoria";
 import { EnlacesUtiles } from "@/components/guia/EnlacesUtiles";
 import { SitiosPorTipo } from "@/components/guia/ListaSitios";
 import { Cabecera } from "@/components/layout/Cabecera";
@@ -77,7 +77,7 @@ export default async function PaginaGuiaUtil({ params }: PageProps<"/[ciudad]/gu
 
           <section id="danado" aria-labelledby="t-danado" className="grid scroll-mt-6 gap-6">
             <div className="grid items-center gap-5 rounded-[20px] bg-celeste-suave p-6 md:grid-cols-[auto_minmax(0,1fr)] md:p-8">
-              <Afiche slug="reparaciones" className="size-24 max-md:hidden" />
+              <FotoCategoria slug="reparaciones" className="size-24 max-md:hidden" ancho={128} />
               <div className="grid gap-3">
                 <h2 id="t-danado" className={h2}>
                   ¿Se te dañó algo?

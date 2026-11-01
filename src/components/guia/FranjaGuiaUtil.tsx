@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Afiche } from "@/components/arte/Afiche";
+import { FotoCategoria } from "@/components/arte/FotoCategoria";
 
 const PARTES = [
   { href: "#visitar", titulo: "Para visitar", texto: "Parques, museos, miradores y monumentos" },
@@ -15,7 +15,7 @@ export function FranjaGuiaUtil({ ciudad = "guayaquil", titulo = "Guía útil de 
   const base = `/${ciudad}/guia-util`;
   return (
     <section aria-labelledby="t-franja-guia" className="grid gap-6 rounded-[20px] bg-celeste-suave p-6 md:grid-cols-[auto_minmax(0,1fr)] md:items-center md:gap-8 md:p-10">
-      <Afiche slug="reparaciones" className="size-24 max-md:hidden md:size-32" />
+      <FotoCategoria slug="reparaciones" className="size-24 max-md:hidden md:size-32" ancho={128} />
       <div className="grid gap-5">
         <div className="grid gap-2">
           <h2 id="t-franja-guia" className="m-0 font-rotulo text-[26px] leading-8 font-normal text-balance md:text-4xl md:leading-[44px]">
