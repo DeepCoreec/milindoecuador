@@ -38,3 +38,25 @@ describe("Guayaquil de misterio (fase 43)", () => {
     for (const l of LEYENDAS) expect(`${l.historia} ${l.lugar}`.toLowerCase()).not.toMatch(/entra (a|al)|abandonad/);
   });
 });
+
+describe("Paumi muestra lo que dice (2026-11-01)", () => {
+  it("existe contar_leyendas y abre la página de misterio", async () => {
+    const { ejecutar } = await import("@/lib/paumi/herramientas");
+    const e = { vistos: new Set<string>(), tarjetas: [], navegar: null as string | null, categorias: new Set<string>(), urlsWeb: new Set<string>(), externos: [] };
+    const r = await ejecutar("contar_leyendas", {}, e);
+    expect(r.error).toBeFalsy();
+    expect(e.navegar).toBe("/guayaquil/misterio");
+    expect(JSON.stringify(r.resultado)).toContain("La dama tapada");
+    expect(DEFINICIONES.some((d) => d.name === "contar_leyendas")).toBe(true);
+  });
+  it("abre la ficha de un lugar solo si una herramienta la devolvió en esta respuesta", () => {
+    const ficha = "/guayaquil/restaurantes/la-sazon-del-estero";
+    expect(rutaPermitida(ficha, new Set(["restaurantes"]))).toBeNull();
+    expect(rutaPermitida(ficha, new Set(["restaurantes"]), new Set(), new Set(), new Set([ficha]))).toBe(ficha);
+  });
+  it("las instrucciones piden mostrar lo que dice y usar contar_leyendas", () => {
+    const t = instrucciones([], false);
+    expect(t).toContain("contar_leyendas");
+    expect(t).toContain("MUESTRA LO QUE DICES");
+  });
+});
