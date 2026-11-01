@@ -566,6 +566,7 @@
   - Paumi sabe en qué página está la persona: la página manda su ruta (validada), y a la IA le llega descrita en palabras
   - Pruebas unitarias: 244 pasan
 - [x] Probado en la página real (2026-11-01): «baja a los guías turísticos» bajó hasta los guías en Turismo; «hoteles baratos en Urdesa, los mejor calificados» abrió Hoteles con sector Urdesa, precio económico y orden por calificación. «muéstrame el Malecón 2000» falló («me enredé las plumas»: se quedó sin vueltas usando herramientas): arreglado con una vuelta más, la última sin herramientas (tiene que responder) y, si igual no dice nada pero movió la página, «¡Listo! Te lo muestro en la página»
+- [x] Atajos y trato de tú — 2026-11-01: «siguiente foto» no cambió la foto (la IA dijo «listo» sin usar la herramienta) y habló con «podés/querés». Ahora «siguiente foto», «foto anterior», «sube» y «todas las categorías» los hace la página al instante sin la IA (`atajo` en secciones.ts; no van al historial del servidor), y las instrucciones exigen tratar de tú como en Ecuador y no decir que movió algo sin usar la herramienta. Pruebas: 247
 - **Para sumar una foto:** su dirección de images.unsplash.com en `FOTOS_GUAYAQUIL` (`src/lib/fondos-ciudad.ts`) y en `FOTOS_PORTADA` (`next.config.ts`)
 
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)

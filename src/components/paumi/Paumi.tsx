@@ -11,7 +11,7 @@ import { claseEntrada } from "@/components/ui/clasesFormulario";
 import { IconoCerrar, IconoMicrofono, IconoSilencio, IconoSonido, IconoUbicacion } from "@/components/ui/iconos";
 import { tiempoDeLectura } from "@/lib/paumi/pantallas";
 import { AVISO, AVISO_VOZ, MAX_HISTORIAL, MAX_MENSAJE, NOMBRE, SALUDO } from "@/lib/paumi/personaje";
-import { leerMovimiento, SECCIONES, type Movimiento } from "@/lib/paumi/secciones";
+import { atajo, leerMovimiento, SECCIONES, type Movimiento } from "@/lib/paumi/secciones";
 import type { ExternoPaumi, MensajePaumi, RespuestaPaumi, TarjetaPaumi } from "@/lib/paumi/tipos";
 import { CuadroRetro } from "./CuadroRetro";
 import { Guacamaya } from "./Guacamaya";
@@ -374,6 +374,16 @@ export function Paumi() {
   async function enviarTexto(t: string) {
     const limpio = t.trim();
     if (!limpio || pensando || enviando.current) return;
+    // Atajos (2026-11-01): "siguiente foto", "sube"… los hace la página al instante, sin la IA. No van al historial
+    // que se manda al servidor (marcados como aviso), así no cuentan como mensajes de Paumi sin firma.
+    const corto = atajo(limpio);
+    if (corto) {
+      setTexto("");
+      setMensajes((m) => [...m, { rol: "usuario", texto: limpio, aviso: true }]);
+      moverPagina(corto.movimiento, !reducir);
+      decir({ rol: "paumi", texto: corto.respuesta, aviso: true });
+      return;
+    }
     enviando.current = true;
     setNotaVoz(null);
     callar();

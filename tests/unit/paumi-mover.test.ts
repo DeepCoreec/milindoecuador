@@ -51,3 +51,24 @@ describe("Paumi sabe dónde está la persona", () => {
     expect(t).toContain("mover_pagina");
   });
 });
+
+import { atajo } from "@/lib/paumi/secciones";
+
+describe("atajos que hace la página sin la IA", () => {
+  it("reconoce frases cortas y claras", () => {
+    expect(atajo("pasa a la siguiente foto")?.movimiento).toEqual({ accion: "foto_siguiente" });
+    expect(atajo("¡Otra foto!")?.movimiento).toEqual({ accion: "foto_siguiente" });
+    expect(atajo("foto anterior")?.movimiento).toEqual({ accion: "foto_anterior" });
+    expect(atajo("Sube")?.movimiento).toEqual({ accion: "arriba" });
+    expect(atajo("muéstrame las categorías")?.movimiento).toEqual({ accion: "todas_las_categorias" });
+  });
+  it("lo demás se le pregunta a Paumi", () => {
+    expect(atajo("dónde como encebollado")).toBeNull();
+    expect(atajo("sube el volumen de la música que suena en el bar de la esquina por favor")).toBeNull();
+    expect(atajo("arriba el Barcelona")).toBeNull();
+  });
+  it("Paumi trata de tú, como en Ecuador", async () => {
+    const { instrucciones } = await import("@/lib/paumi/personaje");
+    expect(instrucciones([], false)).toContain("NUNCA de vos");
+  });
+});
