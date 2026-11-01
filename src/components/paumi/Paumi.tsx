@@ -11,6 +11,7 @@ import { claseEntrada } from "@/components/ui/clasesFormulario";
 import { IconoCerrar, IconoMicrofono, IconoSilencio, IconoSonido, IconoUbicacion } from "@/components/ui/iconos";
 import { tiempoDeLectura } from "@/lib/paumi/pantallas";
 import { AVISO, AVISO_VOZ, MAX_HISTORIAL, MAX_MENSAJE, NOMBRE, SALUDO } from "@/lib/paumi/personaje";
+import { leerMovimiento, SECCIONES, type Movimiento } from "@/lib/paumi/secciones";
 import type { ExternoPaumi, MensajePaumi, RespuestaPaumi, TarjetaPaumi } from "@/lib/paumi/tipos";
 import { CuadroRetro } from "./CuadroRetro";
 import { Guacamaya } from "./Guacamaya";
@@ -29,6 +30,54 @@ type Entrada = MensajePaumi & {
 
 const inicial: Entrada[] = [{ rol: "paumi", texto: SALUDO }];
 const CLAVE_SONIDO = "mle-paumi-sonido";
+/**
+ * Mueve la página por dentro (2026-11-01): baja a una parte y la resalta, pasa fotos, abre todas las categorías o sube.
+ * Solo con palabras conocidas (secciones.ts) y elementos de la propia página. Si la parte todavía no está (la página
+ * se está abriendo), lo vuelve a intentar unos segundos.
+ */
+function moverPagina(m: Movimiento, suave: boolean, intento = 0) {
+  const comportamiento: ScrollBehavior = suave ? "smooth" : "auto";
+  if (m.accion === "arriba") {
+    window.scrollTo({ top: 0, behavior: comportamiento });
+    return;
+  }
+  const resaltar = (el: Element) => {
+    el.scrollIntoView({ behavior: comportamiento, block: "start" });
+    el.classList.add("mle-resalta");
+    setTimeout(() => el.classList.remove("mle-resalta"), 2600);
+  };
+  const reintentar = () => {
+    if (intento < 16) setTimeout(() => moverPagina(m, suave, intento + 1), 250);
+  };
+  if (m.accion === "todas_las_categorias") {
+    const b = document.querySelector<HTMLButtonElement>('nav[aria-label="Categorías"] button[aria-expanded]');
+    if (!b) return reintentar();
+    if (b.getAttribute("aria-expanded") !== "true") b.click();
+    resaltar(b.closest("nav") ?? b);
+    return;
+  }
+  if (m.accion === "foto_siguiente" || m.accion === "foto_anterior") {
+    const nombre = m.accion === "foto_siguiente" ? "Foto siguiente" : "Foto anterior";
+    const flecha = [...document.querySelectorAll<HTMLButtonElement>(`button[aria-label="${nombre}"]`)].find((b) => b.offsetParent !== null);
+    if (flecha) {
+      flecha.click();
+      flecha.closest("#fotos")?.scrollIntoView({ behavior: comportamiento, block: "start" });
+      return;
+    }
+    // En la ficha de un negocio, las flechas están en la vista grande: se abre tocando la primera foto
+    const abrir = document.querySelector<HTMLButtonElement>("#fotos button");
+    if (abrir) abrir.click();
+    else reintentar();
+    return;
+  }
+  if (m.seccion) {
+    const el = SECCIONES[m.seccion].ids.map((id) => document.getElementById(id)).find((x) => x !== null);
+    if (!el) return reintentar();
+    // Se resalta la sección entera que nombra ese título (o el elemento, si no está dentro de una)
+    resaltar(el.closest("section, aside, details, nav") ?? el);
+  }
+}
+
 /** ¿Todavía no pasó esa hora? (fuera del componente: solo se usa al enviar, nunca al dibujar) */
 const sigueVigente = (hasta: number) => hasta > Date.now();
 /** Cómo prefiere hablar con Paumi esta persona (2026-11-01): se pregunta al presentarse y se recuerda. */
@@ -345,6 +394,7 @@ export function Paumi() {
           mensajes: historial.slice(-MAX_HISTORIAL).map(({ rol, texto, firma }) => ({ rol, texto, firma })),
           captcha: typeof captcha === "string" && captcha ? captcha : undefined,
           ubicacion: u ? { lat: u.lat, lng: u.lng } : undefined,
+          pagina: window.location.pathname,
         }),
       });
       const datos = (await r.json().catch(() => ({}))) as Partial<RespuestaPaumi> & { error?: string; mensaje?: string };
@@ -366,6 +416,12 @@ export function Paumi() {
         {
           router.push(datos.navegar, { scroll: true });
           setMitad(true);
+        }
+        // Y la mueve por dentro (después de abrirla, si cambió de página)
+        const mov = leerMovimiento(datos.mover);
+        if (mov) {
+          setMitad(true);
+          moverPagina(mov, !reducir);
         }
       } else {
         if (datos.error === "captcha") setPideCaptcha(true);

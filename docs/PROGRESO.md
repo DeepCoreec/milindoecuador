@@ -560,6 +560,11 @@
   - La página se mueve con la conversación: cuando Paumi usa `abrir_pagina`, el navegador va solo a esa página (Paumi sigue abierta y hablando). En el celular, la ventana baja a la mitad para que se vea la página
   - Ahora puede abrir también la ficha de un lugar y la página de un lugar para visitar, pero solo si una herramienta los devolvió en esa misma respuesta (el servidor lo revisa)
   - Herramienta nueva `contar_leyendas`: trae las 5 leyendas verificadas y abre "Guayaquil de misterio" (antes solo podía "proponer" la página y a veces no mostraba nada)
+- [x] Paumi controla la página — 2026-11-01 (pedido del usuario: "que controle más la funcionalidad de la página, que vaya moviendo según lo que busque el usuario"):
+  - `mover_pagina`: baja a una parte y la resalta (reseñas, información/horario, fotos, historia, eventos de hoy/finde/próximos, guías, recorridos, leyendas, partes de la Guía útil…), pasa las fotos, abre "Todas las categorías" o vuelve arriba. Solo palabras de una lista fija (`src/lib/paumi/secciones.ts`); la página vuelve a revisarlas y busca la parte por su id
+  - `filtrar_categoria`: abre una categoría con sector, precio máximo y orden (la misma dirección que usan los filtros de la página)
+  - Paumi sabe en qué página está la persona: la página manda su ruta (validada), y a la IA le llega descrita en palabras
+  - Pruebas unitarias: 244 pasan
 - **Para sumar una foto:** su dirección de images.unsplash.com en `FOTOS_GUAYAQUIL` (`src/lib/fondos-ciudad.ts`) y en `FOTOS_PORTADA` (`next.config.ts`)
 
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)

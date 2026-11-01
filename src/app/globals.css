@@ -149,3 +149,13 @@ body {
   body:has(.mle-barra-acciones) { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
   html:has(.mle-barra-acciones) { scroll-padding-bottom: 96px; }
 }
+
+/* 2026-11-01: lo que Paumi muestra al mover la página se resalta un momento (sin movimiento si se pidió reducirlo) */
+.mle-resalta {
+  outline: 3px solid var(--celeste-tinta);
+  outline-offset: 6px;
+  border-radius: var(--radius-md);
+  animation: mle-resalta 2.6s ease-out;
+}
+@keyframes mle-resalta { 0%, 70% { outline-color: var(--celeste-tinta); } 100% { outline-color: transparent; } }
+html { scroll-padding-top: 16px; }

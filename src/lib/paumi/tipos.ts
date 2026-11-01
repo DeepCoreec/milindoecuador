@@ -37,6 +37,8 @@ export type RespuestaPaumi = {
   /** Página de la guía a la que Paumi propone llevar a la persona (ya validada por el servidor). */
   navegar: string | null;
   fuentes: { titulo: string; url: string }[];
+  /** 2026-11-01: lo que la página mueve por dentro (una de las palabras de secciones.ts). */
+  mover?: { seccion?: string; accion?: string } | null;
   /** Versión 8: la persona preguntó qué hay cerca y no compartió su ubicación: la página ofrece «Sí, usa mi ubicación». */
   pedirUbicacion?: boolean;
   /** Firma del servidor: la página la devuelve con el historial (sin ella, el mensaje "de Paumi" no vale). */

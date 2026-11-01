@@ -61,7 +61,7 @@ export function GaleriaSitio({ nombre, fotos }: { nombre: string; fotos: FotoGal
 
   const foto = fotos[actual] ?? fotos[0]!;
   return (
-    <div className="grid gap-2">
+    <div id="fotos" className="grid scroll-mt-4 gap-2">
       <div
         className="relative overflow-hidden rounded-[20px] bg-celeste-suave"
         role="region"
