@@ -514,10 +514,6 @@ export function Paumi() {
           {vista === "escena" ? (
             <div className="flex min-h-0 flex-1 flex-col">
               <div ref={escena} className="relative flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 py-4">
-                <p id="paumi-aviso" className="m-0 text-[13px] leading-[18px] text-rio-suave">
-                  {AVISO}
-                </p>
-                {microfono && <p className="m-0 text-[13px] leading-[18px] text-rio-suave">{AVISO_VOZ}</p>}
                 {/* Al presentarse: ¿con tu voz o escribiendo? (se recuerda; el parlante de arriba lo cambia) */}
                 {!modo && mensajes.length === 1 && (
                   <div className="grid gap-2 rounded-xl border border-linea bg-papel p-3" role="group" aria-label={`¿Cómo quieres hablar con ${NOMBRE}?`}>
@@ -537,6 +533,10 @@ export function Paumi() {
                     </p>
                   </div>
                 )}
+                <p id="paumi-aviso" className="m-0 text-[13px] leading-[18px] text-rio-suave">
+                  {AVISO}
+                </p>
+                {microfono && <p className="m-0 text-[13px] leading-[18px] text-rio-suave">{AVISO_VOZ}</p>}
                 {libreDisponible && (
                   <div className="grid justify-items-start gap-1">
                     <button type="button" onClick={cambiarManosLibres} aria-pressed={manosLibres} className={clasesBoton("secundario", "chico", "min-h-11 [&_svg]:size-4")}>
