@@ -570,6 +570,7 @@
 - [x] Paumi gasta menos — 2026-11-01 (pedido del usuario: "que no gaste más que solo para consultar preguntas, no atajos"):
   - Atajos gratis (sin Haiku) para navegar: "llévame a / abre / muéstrame" + una categoría (restaurantes, hoteles, museos…), eventos, Guía útil, leyendas, portada; y "baja a las reseñas / el horario / las fotos / los eventos de hoy / los guías…" si esa parte está en la página que se ve. Solo si la frase es SOLO la orden; si dicen algo más ("restaurantes baratos en Urdesa"), lo contesta Paumi. No cuentan en el límite diario
   - Caché de Anthropic: las instrucciones fijas y la lista de herramientas van marcadas (`cache_control`) y la página que se ve va en un bloque aparte, así lo que se repite en cada mensaje se cobra más barato. Si las instrucciones fueran más cortas que el mínimo que pide Anthropic para guardar en caché, simplemente no se guardan (no falla)
+- **Decisión del usuario (2026-11-01 13:59):** Paumi se queda con Haiku + atajos gratis + caché. El usuario mide el gasto real una semana en la Consola de Anthropic (uso, «cache read») y pone un tope de gasto mensual. Si sale caro, primero: apagar la búsqueda en internet (`PAUMI_BUSQUEDA_WEB=no`), bajar `PAUMI_MAX_DIA` y respuestas más cortas; solo después, un enrutador con un modelo gratis (ver «Ideas para después»)
 - **Para sumar una foto:** su dirección de images.unsplash.com en `FOTOS_GUAYAQUIL` (`src/lib/fondos-ciudad.ts`) y en `FOTOS_PORTADA` (`next.config.ts`)
 
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)
@@ -590,6 +591,7 @@
 
 ## Ideas para después (no se hacen hasta terminar la versión 1)
 
+- (2026-11-01) Enrutador de modelos para Paumi: preguntas simples con un modelo gratis y las complejas con Haiku. Opciones vistas: Gemini plan gratis (Google usa lo que se escribe para mejorar sus productos: habría que decirlo en la política de privacidad), Groq plan gratis (no está claro si sirve para producción), OpenRouter gratis (poco confiable). Se decide después de medir el gasto real
 - (2026-10-31, revisión de la fase 42) Que el admin pueda ocultar un solo recorrido de un guía (hoy oculta la ficha entera)
 - (2026-10-28, fase 33) Enlazar **La Guayaca** (laguayacagye.com, tarjeta y subsidio de la Metrovía) cuando su sitio salga de mantenimiento. ¿Enlazar Moovit (app gratuita de terceros con rutas de la Metrovía)? Lo decide el usuario: no es oficial
 
