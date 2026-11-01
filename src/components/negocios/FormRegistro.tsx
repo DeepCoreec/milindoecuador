@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, type ReactNode } from "react";
+import { useActionState, useState, type ReactNode } from "react";
 import { solicitarRegistro, type EstadoSolicitud } from "@/acciones/negocios";
 import { clasesBoton } from "@/components/ui/Boton";
 import { Captcha } from "@/components/ui/Captcha";
@@ -33,22 +33,34 @@ function Campo({ id, etiqueta, error, ayuda, children }: { id: string; etiqueta:
 }
 
 /** Formulario "Registra tu negocio" (maqueta Registro). Al enviarse, ofrece avisar por WhatsApp. */
-export function FormRegistro({ categorias, avisoWhatsApp }: { categorias: { slug: string; nombre: string }[]; avisoWhatsApp: string }) {
+export function FormRegistro({ categorias, avisoWhatsApp, categoriaInicial }: { categorias: { slug: string; nombre: string }[]; avisoWhatsApp: string; categoriaInicial?: string }) {
   const [estado, accion, enviando] = useActionState(solicitarRegistro, inicial);
   const e = estado.errores ?? {};
   const v = estado.valores ?? {};
+  // Versión 13: si elige "Guías turísticos", el formulario habla de su perfil de guía (no de un negocio)
+  const [elegida, setElegida] = useState(v.categoria ?? categoriaInicial ?? categorias[0]?.slug ?? "");
+  const guia = (v.categoria ?? elegida) === "guias";
   const a11y = (campo: keyof typeof e) => ({ "aria-invalid": e[campo] ? true : undefined, "aria-describedby": `r-${campo}-aviso` });
 
   if (estado.estado === "ok" && estado.ficha) {
     return (
       <div role="status" className="grid gap-4 rounded-xl border border-linea bg-papel-alto p-6">
-        <h2 className="m-0 text-xl leading-[26px] font-semibold">¡Tu negocio ya está registrado!</h2>
+        <h2 className="m-0 text-xl leading-[26px] font-semibold">{guia ? "¡Tu perfil de guía ya está creado!" : "¡Tu negocio ya está registrado!"}</h2>
         <p className="m-0 text-rio-suave">
-          Creamos la ficha de <b className="text-rio">{estado.negocio}</b>. Complétala con fotos, horario y ubicación, y publícala cuando quieras: se ve
-          en la guía al instante.
+          {guia ? (
+            <>
+              Creamos la ficha de <b className="text-rio">{estado.negocio}</b>. Complétala con tu foto, tus idiomas, tu credencial y tus recorridos, y
+              publícala cuando quieras.
+            </>
+          ) : (
+            <>
+              Creamos la ficha de <b className="text-rio">{estado.negocio}</b>. Complétala con fotos, horario y ubicación, y publícala cuando quieras: se
+              ve en la guía al instante.
+            </>
+          )}
         </p>
         <Link href={`/mi-negocio/${estado.ficha}`} className={clasesBoton("principal", "normal", "justify-self-start")}>
-          Completar mi ficha
+          {guia ? "Completar mi perfil de guía" : "Completar mi ficha"}
         </Link>
       </div>
     );
@@ -79,14 +91,23 @@ export function FormRegistro({ categorias, avisoWhatsApp }: { categorias: { slug
   return (
     <form key={estado.intento ?? 0} action={accion} noValidate aria-labelledby="t-form" className="grid gap-5 rounded-xl border border-linea bg-papel-alto p-6">
       <h2 id="t-form" className="m-0 text-xl leading-[26px] font-semibold">
-        Datos del negocio
+        {guia ? "Tus datos de guía" : "Datos del negocio"}
       </h2>
-      <Campo id="r-negocio" etiqueta="Nombre del negocio" error={e.negocio}>
-        <input id="r-negocio" name="negocio" required maxLength={120} defaultValue={v.negocio} placeholder="Ej.: Encebollados El Puerto" className={claseEntrada} {...a11y("negocio")} />
+      <Campo id="r-negocio" etiqueta={guia ? "Nombre con el que te van a encontrar" : "Nombre del negocio"} error={e.negocio}>
+        <input
+          id="r-negocio"
+          name="negocio"
+          required
+          maxLength={120}
+          defaultValue={v.negocio}
+          placeholder={guia ? "Ej.: Ana Torres, guía de Guayaquil" : "Ej.: Encebollados El Puerto"}
+          className={claseEntrada}
+          {...a11y("negocio")}
+        />
       </Campo>
       <div className="grid gap-5 sm:grid-cols-2">
         <Campo id="r-categoria" etiqueta="Categoría" error={e.categoria}>
-          <select id="r-categoria" name="categoria" required defaultValue={v.categoria ?? categorias[0]?.slug} className={`mle-select ${claseEntrada} pr-10`} {...a11y("categoria")}>
+          <select id="r-categoria" name="categoria" required value={elegida} onChange={(ev) => setElegida(ev.target.value)} className={`mle-select ${claseEntrada} pr-10`} {...a11y("categoria")}>
             {categorias.map((c) => (
               <option key={c.slug} value={c.slug}>
                 {c.nombre}
@@ -102,7 +123,7 @@ export function FormRegistro({ categorias, avisoWhatsApp }: { categorias: { slug
         <Campo id="r-contacto" etiqueta="Tu nombre" error={e.contacto}>
           <input id="r-contacto" name="contacto" required maxLength={80} autoComplete="name" defaultValue={v.contacto} className={claseEntrada} {...a11y("contacto")} />
         </Campo>
-        <Campo id="r-whatsapp" etiqueta="WhatsApp del negocio" error={e.whatsapp} ayuda="Los clientes te escribirán a este número.">
+        <Campo id="r-whatsapp" etiqueta={guia ? "Tu WhatsApp" : "WhatsApp del negocio"} error={e.whatsapp} ayuda={guia ? "Los turistas te escribirán a este número para pedirte un recorrido." : "Los clientes te escribirán a este número."}>
           <div className="flex">
             <span className="grid place-items-center rounded-l-sm border border-r-0 border-linea-fuerte bg-papel px-3 font-medium text-rio-suave">+593</span>
             <input
@@ -120,7 +141,7 @@ export function FormRegistro({ categorias, avisoWhatsApp }: { categorias: { slug
           </div>
         </Campo>
       </div>
-      <Campo id="r-descripcion" etiqueta="¿Qué ofreces?" error={e.descripcion}>
+      <Campo id="r-descripcion" etiqueta={guia ? "Preséntate" : "¿Qué ofreces?"} error={e.descripcion}>
         <textarea
           id="r-descripcion"
           name="descripcion"
@@ -129,7 +150,11 @@ export function FormRegistro({ categorias, avisoWhatsApp }: { categorias: { slug
           minLength={40}
           maxLength={1000}
           defaultValue={v.descripcion}
-          placeholder="Cuéntale a la gente qué te hace especial: qué vendes, tu especialidad, para quién es (al menos 40 letras)"
+          placeholder={
+            guia
+              ? "Cuéntale a la gente quién eres, cuánto tiempo llevas guiando y qué recorridos haces. Si tienes una agencia de turismo, cuéntalo aquí (al menos 40 letras)"
+              : "Cuéntale a la gente qué te hace especial: qué vendes, tu especialidad, para quién es (al menos 40 letras)"
+          }
           className={`${claseEntrada} min-h-[120px] resize-y`}
           {...a11y("descripcion")}
         />
