@@ -21,3 +21,20 @@ describe("Paumi · recorridos", () => {
     expect(t).toContain("abandonados");
   });
 });
+
+import { LEYENDAS, RECORRIDOS_OFICIALES } from "@/lib/misterio";
+
+describe("Guayaquil de misterio (fase 43)", () => {
+  it("Paumi puede abrir la página de misterio", () => {
+    expect(rutaPermitida("/guayaquil/misterio", new Set())).toBe("/guayaquil/misterio");
+  });
+  it("cada leyenda y recorrido oficial tiene su fuente https y su fecha", () => {
+    for (const x of [...LEYENDAS, ...RECORRIDOS_OFICIALES]) {
+      expect(x.fuente.url.startsWith("https://")).toBe(true);
+      expect(x.fuente.fecha).toMatch(/\d{4}$/);
+    }
+  });
+  it("ningún texto invita a entrar a un lugar abandonado", () => {
+    for (const l of LEYENDAS) expect(`${l.historia} ${l.lugar}`.toLowerCase()).not.toMatch(/entra (a|al)|abandonad/);
+  });
+});

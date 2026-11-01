@@ -21,6 +21,7 @@ export function Pie() {
           <Link href="/guayaquil/turismo" className={enlace}>Lugares turísticos</Link>
           <Link href="/guayaquil/eventos" className={enlace}>Eventos</Link>
           <Link href="/guayaquil/guia-util" className={enlace}>Guía útil</Link>
+          <Link href="/guayaquil/misterio" className={enlace}>Guayaquil de misterio</Link>
           <Link href="/guayaquil" className={enlace}>Todas las categorías</Link>
         </nav>
         <nav aria-labelledby="pie-negocios" className="grid content-start gap-2">

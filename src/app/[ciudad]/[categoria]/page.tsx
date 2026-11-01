@@ -173,6 +173,17 @@ export default async function PaginaCategoria({ params, searchParams }: PageProp
           </details>
         )}
 
+        {categoria.slug === "turismo" && ciudad.slug === "guayaquil" && (
+          <Link
+            href={`/${ciudad.slug}/misterio`}
+            data-theme="dark"
+            className="mt-6 grid gap-1 rounded-[20px] bg-papel px-6 py-6 text-rio no-underline hover:ring-2 hover:ring-celeste md:px-10"
+          >
+            <span className="font-rotulo text-2xl leading-[30px]">Guayaquil de misterio →</span>
+            <span className="text-rio-suave">La dama tapada, el banquero que salió del cementerio y otras leyendas, con su lugar real y su fuente.</span>
+          </Link>
+        )}
+
         {guias && (
           <section aria-labelledby="t-guias" className="mt-6 grid gap-4 border-t border-linea pt-6">
             <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-2">

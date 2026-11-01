@@ -68,3 +68,28 @@ export const getRecorrido = cache(async (id: string): Promise<Recorrido | null> 
   if (error || !data) return null;
   return (await aRecorridos([data]))[0] ?? null;
 });
+
+export type GuiaNocturno = { id: string; nombre: string; ruta: string; acreditado: boolean; recorridos: Recorrido[] };
+
+/**
+ * Guías publicados con la especialidad «Recorridos de noche» y sus recorridos (versión 13, 43.3: "Guayaquil de
+ * misterio"). Acreditados primero. Sin migración nueva: usa la especialidad que el guía ya marca en su perfil.
+ */
+export const getGuiasNocturnos = cache(async (ciudad: string): Promise<GuiaNocturno[]> => {
+  const db = crearClientePublico();
+  if (!db) return [];
+  const { data, error } = await db
+    .from("places")
+    .select("id, slug, name, accredited_at, categories!inner(slug), cities!inner(slug)")
+    .eq("status", "publicado")
+    .eq("categories.slug", "guias")
+    .eq("cities.slug", ciudad)
+    .contains("guide_specialties", ["nocturno"])
+    .limit(12)
+    .returns<{ id: string; slug: string; name: string; accredited_at: string | null }[]>();
+  if (error || !data) return [];
+  const guias = await Promise.all(
+    data.map(async (g) => ({ id: g.id, nombre: g.name, ruta: `/${ciudad}/guias/${g.slug}`, acreditado: !!g.accredited_at, recorridos: await getRecorridosDeGuia(g.id) })),
+  );
+  return guias.sort((a, b) => Number(b.acreditado) - Number(a.acreditado) || b.recorridos.length - a.recorridos.length);
+});
