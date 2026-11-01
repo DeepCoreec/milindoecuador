@@ -15,6 +15,17 @@ describe("la voz de Paumi", () => {
     expect(elegirVoz([{ lang: "en-US", name: "Inglés" }])).toBeNull();
   });
 
+  it("prefiere las voces que suenan como persona, aunque sean de otro país, y de mujer al empatar (2026-11-01)", () => {
+    const voces = [
+      { lang: "es-EC", name: "Ecuador básica", localService: true },
+      { lang: "es-MX", name: "Microsoft Jorge Online (Natural) - Spanish (Mexico)" },
+      { lang: "es-EC", name: "Microsoft Andrea Online (Natural) - Spanish (Ecuador)" },
+      { lang: "es-EC", name: "Microsoft Luis Online (Natural) - Spanish (Ecuador)" },
+    ];
+    expect(elegirVoz(voces)?.name).toBe("Microsoft Andrea Online (Natural) - Spanish (Ecuador)");
+    expect(elegirVoz([{ lang: "es-EC", name: "Ecuador básica" }, { lang: "es-US", name: "Google español de Estados Unidos" }])?.name).toBe("Google español de Estados Unidos");
+  });
+
   it("escucha en el español del teléfono o, si no, en español de Ecuador", () => {
     expect(idiomaMicrofono("es-EC")).toBe("es-EC");
     expect(idiomaMicrofono("es-419")).toBe("es-419");

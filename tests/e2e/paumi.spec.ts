@@ -40,7 +40,7 @@ test("Paumi recomienda lugares de la guía con tarjetas, y no se deja engañar",
   await expect(cuadro).toContainText("¡Te recomiendo estos encebollados!");
 
   // El sonido se apaga y se recuerda
-  const sonido = chat.getByRole("button", { name: "Sonido al escribir" });
+  const sonido = chat.getByRole("button", { name: "Responder con voz" });
   await expect(sonido).toHaveAttribute("aria-pressed", "true");
   await sonido.click();
   await expect(sonido).toHaveAttribute("aria-pressed", "false");
@@ -135,7 +135,7 @@ test("hablarle con el micrófono y que responda hablando (micrófono y voz simul
   await expect(chat.getByRole("button", { name: "Hablarle a Paumi" })).toHaveAttribute("aria-pressed", "false");
 
   // Con el sonido apagado responde solo con texto
-  await chat.getByRole("button", { name: "Sonido al escribir" }).click();
+  await chat.getByRole("button", { name: "Responder con voz" }).click();
   await chat.getByRole("button", { name: "Hablarle a Paumi" }).click();
   await expect(chat.getByTestId("cuadro-paumi")).toHaveAttribute("data-completo", "true");
   await page.waitForTimeout(800);

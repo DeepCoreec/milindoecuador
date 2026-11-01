@@ -18,10 +18,20 @@ function rango(lang: string): number {
   return l.startsWith("es") ? PREFERENCIA.length : 99;
 }
 
-/** La mejor voz en español del teléfono (las del propio teléfono primero), o null si no hay. */
+/**
+ * Voces que suenan como persona (2026-11-01): las "Natural"/"Online" de Microsoft (Edge), las de Google (Chrome) y las
+ * "Premium"/"Enhanced"/"Mejorada" de Apple. Valen más que el país: una voz natural de México suena mejor que una
+ * robótica de Ecuador.
+ */
+const NATURAL = /natural|neural|online|premium|enhanced|mejorad|google|siri/i;
+/** Voces de mujer conocidas (Paumi es "ella"); solo desempatan. */
+const MUJER = /paloma|dalia|elvira|helena|laura|lucia|lucía|monica|mónica|paulina|sabina|camila|elena|salome|salomé|andrea|female|mujer/i;
+
+/** La mejor voz en español del teléfono, o null si no hay. Primero las naturales, luego el país, luego de mujer. */
 export function elegirVoz<T extends VozSimple>(voces: readonly T[]): T | null {
   const enEspanol = voces.filter((v) => rango(v.lang) < 99);
-  enEspanol.sort((a, b) => rango(a.lang) - rango(b.lang) || Number(!!b.localService) - Number(!!a.localService));
+  const puntos = (v: T) => (NATURAL.test(v.name) ? 0 : 100) + rango(v.lang) * 2 + (MUJER.test(v.name) ? 0 : 1);
+  enEspanol.sort((a, b) => puntos(a) - puntos(b) || Number(!!b.localService) - Number(!!a.localService));
   return enEspanol[0] ?? null;
 }
 
