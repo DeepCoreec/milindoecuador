@@ -12,7 +12,7 @@ export const NOMBRE = "Paumi";
  */
 export const LLAMADAS = ["paumi", "pami", "paomi", "paumy"];
 
-export const SALUDO = `¡Hola! Soy ${NOMBRE}, la guacamaya guía de Guayaquil. ¿Te recomiendo un lugar o un plan? Dime qué buscas: dónde comer, dormir, pasear o qué visitar. También te cuento qué hay cerca de ti.`;
+export const SALUDO = `¡Hola! Soy ${NOMBRE}, la guacamaya guía de Guayaquil. Te recomiendo dónde comer, dormir, pasear o qué visitar, y te cuento qué hay cerca de ti. ¿Cómo te gustaría hablar conmigo: con tu voz o escribiendo?`;
 
 /** Lo que se le cuenta a la gente sobre Paumi (Términos, Privacidad y la ventana del chat). */
 export const AVISO = `${NOMBRE} es una inteligencia artificial: puede equivocarse. Revisa los datos importantes (horarios, precios) en la ficha de cada lugar. No escribas datos personales: lo que escribes se envía a Anthropic, que hace funcionar a ${NOMBRE}, y no lo guardamos.`;

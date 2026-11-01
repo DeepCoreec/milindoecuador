@@ -30,6 +30,8 @@ type Entrada = MensajePaumi & {
 
 const inicial: Entrada[] = [{ rol: "paumi", texto: SALUDO }];
 const CLAVE_SONIDO = "mle-paumi-sonido";
+/** Cómo prefiere hablar con Paumi esta persona (2026-11-01): se pregunta al presentarse y se recuerda. */
+const CLAVE_MODO = "mle-paumi-modo";
 
 /**
  * Paumi, la guacamaya guía (versión 3, fases 14 y 15): botón flotante y ventana con dos vistas.
@@ -38,6 +40,8 @@ const CLAVE_SONIDO = "mle-paumi-sonido";
  *  - Conversación: todo lo que se dijo, para releer.
  * Lo que dice Paumi se muestra SIEMPRE como texto (nunca como HTML). Las tarjetas vienen armadas por el servidor.
  * Voz (16.1): con el micrófono le hablas y te responde con la voz del teléfono (el texto sale igual en el cuadro).
+ *   Desde el 2026-11-01 (pedido del usuario: "hagamos que hable") responde hablando SIEMPRE que el sonido esté
+ *   encendido, también si le escribes; el botón del parlante la calla.
  * Manos libres (16.2): solo si la persona lo activa; con la página a la vista, despierta al decir "Paumi" (el botón
  * flotante muestra el micrófono mientras tanto). Se pausa mientras Paumi habla y no se recuerda entre visitas.
  * El lector de pantalla recibe cada respuesta completa de una vez. La conversación vive solo en esta pestaña.
@@ -62,6 +66,14 @@ export function Paumi() {
     }
   });
   const sonidoAhora = useRef(sonido); // para la respuesta que llega después (si lo apagas mientras piensa)
+  const [modo, setModo] = useState<"voz" | "texto" | null>(() => {
+    try {
+      const m = typeof window === "undefined" ? null : localStorage.getItem(CLAVE_MODO);
+      return m === "voz" || m === "texto" ? m : null;
+    } catch {
+      return null;
+    }
+  });
   const [reducir, setReducir] = useState(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   const [cuadro, setCuadro] = useState(true);
   const [tocando, setTocando] = useState(false);
@@ -251,6 +263,27 @@ export function Paumi() {
     } catch {}
   }
 
+  /** Al presentarse, Paumi pregunta cómo quieres hablarle (2026-11-01). Con voz: te responde hablando y abre el
+   *  micrófono (si el navegador puede escuchar). Escribiendo: te responde solo con texto. Se cambia con el parlante. */
+  function elegirModo(m: "voz" | "texto") {
+    setModo(m);
+    const conSonido = m === "voz";
+    sonidoAhora.current = conSonido;
+    setSonido(conSonido);
+    try {
+      localStorage.setItem(CLAVE_MODO, m);
+      localStorage.setItem(CLAVE_SONIDO, conSonido ? "si" : "no");
+    } catch {}
+    if (conSonido) {
+      prepararVoz();
+      if (microfono) usarMicrofono();
+    } else {
+      callar();
+      setVoz(false);
+      campo.current?.focus();
+    }
+  }
+
   function terminoDeHablar() {
     setHablando(false);
     setPico(false);
@@ -264,8 +297,8 @@ export function Paumi() {
     setMensajes((m) => [...m, entrada]);
     setCuadro(true);
     setHablando(!reducir);
-    // Si le preguntaste hablando, te responde hablando (el texto sale igual en el cuadro)
-    if (porVoz.current && sonidoAhora.current) {
+    // Responde hablando si el sonido está encendido (el texto sale igual en el cuadro)
+    if (sonidoAhora.current) {
       setVoz(true);
       vozConPalabras.current = false;
       hablar(entrada.texto, {
@@ -326,6 +359,8 @@ export function Paumi() {
     e.preventDefault();
     porVoz.current = !!textoDeVoz.current && texto === textoDeVoz.current;
     textoDeVoz.current = "";
+    // En iPhone la voz solo arranca si se "despierta" con un toque: el de Enviar
+    if (sonidoAhora.current) prepararVoz();
     void enviarTexto(texto);
   }
 
@@ -459,8 +494,8 @@ export function Paumi() {
                 type="button"
                 onClick={cambiarSonido}
                 aria-pressed={sonido}
-                aria-label="Sonido al escribir"
-                title={sonido ? "Sonido encendido" : "Sonido apagado"}
+                aria-label="Responder con voz"
+                title={sonido ? "Te respondo hablando (toca para callarme)" : "Te respondo solo con texto (toca para que hable)"}
                 className="inline-grid size-11 cursor-pointer place-items-center rounded-md border-0 bg-transparent text-rio [&_svg]:size-5"
               >
                 {sonido ? <IconoSonido /> : <IconoSilencio />}
@@ -483,6 +518,25 @@ export function Paumi() {
                   {AVISO}
                 </p>
                 {microfono && <p className="m-0 text-[13px] leading-[18px] text-rio-suave">{AVISO_VOZ}</p>}
+                {/* Al presentarse: ¿con tu voz o escribiendo? (se recuerda; el parlante de arriba lo cambia) */}
+                {!modo && mensajes.length === 1 && (
+                  <div className="grid gap-2 rounded-xl border border-linea bg-papel p-3" role="group" aria-label={`¿Cómo quieres hablar con ${NOMBRE}?`}>
+                    <p className="m-0 text-[15px] leading-5 font-semibold">¿Cómo quieres hablar conmigo?</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button type="button" onClick={() => elegirModo("voz")} className={clasesBoton("principal", "chico", "min-h-12 [&_svg]:size-5")}>
+                        <IconoMicrofono />
+                        Con mi voz
+                      </button>
+                      <button type="button" onClick={() => elegirModo("texto")} className={clasesBoton("secundario", "chico", "min-h-12")}>
+                        Escribiendo
+                      </button>
+                    </div>
+                    <p className="m-0 text-[13px] leading-[18px] text-rio-suave">
+                      {microfono ? "Con tu voz: me hablas con el micrófono y te respondo hablando." : "Con tu voz: te respondo hablando (en este navegador me escribes la pregunta)."} Lo
+                      cambias cuando quieras con el parlante de arriba.
+                    </p>
+                  </div>
+                )}
                 {libreDisponible && (
                   <div className="grid justify-items-start gap-1">
                     <button type="button" onClick={cambiarManosLibres} aria-pressed={manosLibres} className={clasesBoton("secundario", "chico", "min-h-11 [&_svg]:size-4")}>
