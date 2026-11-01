@@ -20,7 +20,10 @@ function guion(cuerpo) {
   const pedido = [...mensajes].reverse().find((m) => m.role === "user" && typeof m.content === "string")?.content.toLowerCase() ?? primera.toLowerCase();
 
   // La regla más importante: las herramientas tienen que estar y el sistema debe pedir no inventar
-  if (!cuerpo.system?.includes("JAMÁS inventes")) return texto("FALTAN LAS INSTRUCCIONES");
+  // Desde 2026-11-01 el system va en bloques (el fijo, con caché, y la página que se ve)
+  const system = Array.isArray(cuerpo.system) ? cuerpo.system.map((b) => b.text).join("\n") : cuerpo.system;
+  if (!system?.includes("JAMÁS inventes")) return texto("FALTAN LAS INSTRUCCIONES");
+  if (Array.isArray(cuerpo.system) && cuerpo.system[0]?.cache_control?.type !== "ephemeral") return texto("FALTA LA CACHÉ");
 
   if (pedido.includes("encebollado")) {
     if (!resultados.length) return usar("buscar_lugares", { texto: "encebollado" });

@@ -376,11 +376,18 @@ export function Paumi() {
     if (!limpio || pensando || enviando.current) return;
     // Atajos (2026-11-01): "siguiente foto", "sube"… los hace la página al instante, sin la IA. No van al historial
     // que se manda al servidor (marcados como aviso), así no cuentan como mensajes de Paumi sin firma.
-    const corto = atajo(limpio);
+    const corto = atajo(limpio, (ids) => ids.some((id) => document.getElementById(id)));
     if (corto) {
       setTexto("");
       setMensajes((m) => [...m, { rol: "usuario", texto: limpio, aviso: true }]);
-      moverPagina(corto.movimiento, !reducir);
+      if (corto.navegar && corto.navegar !== window.location.pathname) {
+        router.push(corto.navegar, { scroll: true });
+        setMitad(true);
+      }
+      if (corto.movimiento) {
+        setMitad(true);
+        moverPagina(corto.movimiento, !reducir);
+      }
       decir({ rol: "paumi", texto: corto.respuesta, aviso: true });
       return;
     }

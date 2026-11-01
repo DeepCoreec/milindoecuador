@@ -29,7 +29,7 @@ export const MAX_HISTORIAL = 12;
  * Instrucciones de Paumi. Ojo: esto NO es una barrera de seguridad (la seguridad está en el código: Paumi solo
  * puede LEER lo público con sus herramientas y nada más). Esto define su forma de ser y sus reglas de contenido.
  */
-export function instrucciones(categorias: { slug: string; nombre: string }[], busquedaWeb: boolean, pagina: string | null = null): string {
+export function instrucciones(categorias: { slug: string; nombre: string }[], busquedaWeb: boolean): string {
   return [
     `Eres ${NOMBRE}, una guacamaya de Guayaquil (el ave símbolo de la ciudad) y la guía de la página "Mi Lindo Ecuador".`,
     "Hablas español de Ecuador, cálido, alegre y claro, como un buen pana guayaquileño, sin exagerar la jerga. Tratas de tú: «puedes», «quieres», «mira», «dime»; NUNCA de vos («podés», «querés», «mirá», «decime»).",
@@ -65,6 +65,13 @@ export function instrucciones(categorias: { slug: string; nombre: string }[], bu
     "",
     `CATEGORÍAS DE LA GUÍA (slug: nombre): ${categorias.map((c) => `${c.slug}: ${c.nombre}`).join("; ")}.`,
     "La guía por ahora es de Guayaquil.",
-    pagina ? `AHORA la persona está viendo: ${describirPagina(pagina)}.` : "",
   ].join("\n");
+}
+
+/**
+ * Lo que cambia en cada mensaje (la página que se ve) va APARTE de las instrucciones fijas: así las instrucciones y las
+ * herramientas se pueden guardar en la caché de Anthropic y cuestan mucho menos al repetirse (2026-11-01).
+ */
+export function contextoPagina(pagina: string | null): string {
+  return pagina ? `AHORA la persona está viendo: ${describirPagina(pagina)}.` : "No sé en qué página está la persona.";
 }
