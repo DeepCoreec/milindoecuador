@@ -9,15 +9,27 @@ import { obtenerUsuario } from "@/lib/auth";
 import { getCategorias } from "@/lib/datos/lugares";
 import { paraCompartir, WHATSAPP_GUIA } from "@/lib/sitio";
 
-const descripcion = "Publica gratis la ficha de tu negocio en Guayaquil, con fotos, horario y tu WhatsApp.";
+const descripcion =
+  "Publica gratis la ficha de tu negocio en Guayaquil, con fotos, horario y tu WhatsApp.";
 export const metadata: Metadata = {
   title: "Registra tu negocio gratis · Mi Lindo Ecuador",
   description: descripcion,
-  ...paraCompartir("Registra tu negocio gratis", descripcion, "/negocios/registro"),
+  ...paraCompartir(
+    "Registra tu negocio gratis",
+    descripcion,
+    "/negocios/registro",
+  ),
 };
 
 // Versión 2: depende de la sesión (para registrar un negocio hace falta cuenta)
 export const dynamic = "force-dynamic";
+
+const VENTAJAS_GUIA = [
+  "Tu perfil con foto, idiomas, especialidades y tu WhatsApp",
+  "La insignia «Guía acreditado» si tu credencial está en el catastro del Ministerio de Turismo",
+  "Tus recorridos con su mapa y un botón para que te los pidan por WhatsApp",
+  "Paumi, la guacamaya de la guía, recomienda a los guías y sus recorridos",
+];
 
 const VENTAJAS = [
   "Ficha con fotos, horario, ubicación y tu WhatsApp",
@@ -26,48 +38,104 @@ const VENTAJAS = [
   "Un enlace propio para compartir en Instagram y WhatsApp",
 ];
 
-export default async function PaginaRegistro() {
-  const [categorias, usuario] = await Promise.all([getCategorias().then((c) => c.map(({ slug, nombre }) => ({ slug, nombre }))), obtenerUsuario()]);
+export default async function PaginaRegistro({
+  searchParams,
+}: PageProps<"/negocios/registro">) {
+  const [categorias, usuario] = await Promise.all([
+    getCategorias().then((c) =>
+      c.map(({ slug, nombre }) => ({ slug, nombre })),
+    ),
+    obtenerUsuario(),
+  ]);
+  // Versión 13: "/negocios/registro?categoria=guias" llega con la categoría ya elegida (solo si existe en la lista)
+  const pedida = (await searchParams).categoria;
+  const categoriaInicial =
+    typeof pedida === "string" && categorias.some((c) => c.slug === pedida)
+      ? pedida
+      : undefined;
+  const esGuia = categoriaInicial === "guias";
+  // Después de entrar, vuelve aquí con la categoría ya elegida
+  const volver = esGuia
+    ? "/negocios/registro?categoria=guias"
+    : "/negocios/registro";
   return (
     <>
       <Cabecera />
       <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 pt-8 pb-16 text-rio md:px-8">
         <div className="grid items-start gap-10 min-[900px]:grid-cols-[minmax(0,1fr)_minmax(0,560px)]">
           <div className="grid max-w-[520px] gap-4">
-            <Migas pasos={[{ texto: "Negocios", href: "/negocios/planes" }, { texto: "Registro" }]} />
+            <Migas
+              pasos={[
+                { texto: "Negocios", href: "/negocios/planes" },
+                { texto: "Registro" },
+              ]}
+            />
             <h1 className="m-0 font-rotulo text-[34px] leading-10 font-normal tracking-[-0.01em] text-balance md:text-[56px] md:leading-[62px]">
-              Registra tu negocio gratis
+              {esGuia
+                ? "Regístrate como guía turístico"
+                : "Registra tu negocio gratis"}
             </h1>
-            <p className="m-0 max-w-[60ch] text-lg leading-7 text-rio-suave">Llena tus datos y tu ficha se crea al instante. La completas tú mismo desde «Mi negocio» (fotos, horario y ubicación) y la publicas cuando quieras.</p>
+            <p className="m-0 max-w-[60ch] text-lg leading-7 text-rio-suave">
+              {esGuia
+                ? "Es gratis. Llena tus datos y tu perfil se crea al instante. Lo completas tú mismo desde «Mi negocio» (foto, idiomas, credencial y recorridos) y lo publicas cuando quieras."
+                : "Llena tus datos y tu ficha se crea al instante. La completas tú mismo desde «Mi negocio» (fotos, horario y ubicación) y la publicas cuando quieras."}
+            </p>
             <ul className="m-0 mt-2 grid list-none gap-3 p-0">
-              {VENTAJAS.map((v) => (
-                <li key={v} className="flex gap-3 [&_svg]:size-[22px] [&_svg]:flex-none [&_svg]:text-exito">
+              {(esGuia ? VENTAJAS_GUIA : VENTAJAS).map((v) => (
+                <li
+                  key={v}
+                  className="flex gap-3 [&_svg]:size-[22px] [&_svg]:flex-none [&_svg]:text-exito"
+                >
                   <IconoVisto />
                   <span>{v}</span>
                 </li>
               ))}
             </ul>
-            <p className="m-0 max-w-[60ch] rounded-lg border border-linea bg-papel-alto px-4 py-3 text-[15px] leading-[22px]">
-              <b>¿Eres guía de turismo?</b> Elige la categoría «Guías turísticos». Después, en «Mi negocio», llenas tus idiomas, tus
-              especialidades y tu número de credencial para llevar la insignia «Guía acreditado».
-            </p>
-            <Boton href="/negocios/planes" variante="texto" className="justify-self-start">
-              Ver planes para destacar tu negocio
-            </Boton>
+            {!esGuia && (
+              <p className="m-0 max-w-[60ch] rounded-lg border border-linea bg-papel-alto px-4 py-3 text-[15px] leading-[22px]">
+                <b>¿Eres guía de turismo?</b> Elige la categoría «Guías
+                turísticos». Después, en «Mi negocio», llenas tus idiomas, tus
+                especialidades y tu número de credencial para llevar la insignia
+                «Guía acreditado».
+              </p>
+            )}
+            {!esGuia && (
+              <Boton
+                href="/negocios/planes"
+                variante="texto"
+                className="justify-self-start"
+              >
+                Ver planes para destacar tu negocio
+              </Boton>
+            )}
           </div>
           {usuario ? (
-            <FormRegistro categorias={categorias} avisoWhatsApp={WHATSAPP_GUIA} />
+            <FormRegistro
+              categorias={categorias}
+              avisoWhatsApp={WHATSAPP_GUIA}
+              categoriaInicial={categoriaInicial}
+            />
           ) : (
             <div className="grid gap-4 rounded-xl border border-linea bg-papel-alto p-6">
-              <h2 className="m-0 text-xl leading-[26px] font-semibold">Primero, tu cuenta</h2>
+              <h2 className="m-0 text-xl leading-[26px] font-semibold">
+                Primero, tu cuenta
+              </h2>
               <p className="m-0 text-rio-suave">
-                Con tu cuenta manejas tu negocio en la guía: cambias fotos, horario y ubicación cuando quieras, y respondes las reseñas.
+                {esGuia
+                  ? "Con tu cuenta manejas tu perfil de guía: cambias tu foto, tus datos y tus recorridos cuando quieras, y respondes las reseñas."
+                  : "Con tu cuenta manejas tu negocio en la guía: cambias fotos, horario y ubicación cuando quieras, y respondes las reseñas."}
               </p>
               <div className="flex flex-wrap gap-3">
-                <Boton href="/crear-cuenta?siguiente=%2Fnegocios%2Fregistro" variante="principal">
+                <Boton
+                  href={`/crear-cuenta?siguiente=${encodeURIComponent(volver)}`}
+                  variante="principal"
+                >
                   Crear mi cuenta
                 </Boton>
-                <Boton href="/entrar?siguiente=%2Fnegocios%2Fregistro" variante="secundario">
+                <Boton
+                  href={`/entrar?siguiente=${encodeURIComponent(volver)}`}
+                  variante="secundario"
+                >
                   Ya tengo cuenta
                 </Boton>
               </div>

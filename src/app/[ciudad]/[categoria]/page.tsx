@@ -59,16 +59,24 @@ export default async function PaginaCategoria({ params, searchParams }: PageProp
         {total === 0 ? (
           <div className="mt-8 grid justify-items-start gap-4 rounded-[20px] bg-celeste-suave px-6 py-8 md:px-12 md:py-10">
             <h2 className="m-0 font-rotulo text-xl leading-[26px] font-normal">
-              {enDosPartes ? "Todavía no hay negocios registrados aquí" : "Todavía no hay lugares aquí"}
+              {categoria.slug === "guias" ? "Todavía no hay guías registrados" : enDosPartes ? "Todavía no hay negocios registrados aquí" : "Todavía no hay lugares aquí"}
             </h2>
             <p className="m-0 max-w-[56ch] text-rio-suave">
-              {enDosPartes
+              {categoria.slug === "guias"
+                ? "¿Eres guía de turismo en Guayaquil? Publica gratis tu perfil con tu foto, tus idiomas, tus recorridos y tu WhatsApp para que los turistas te encuentren. Si tienes una agencia, cuéntalo en tu presentación."
+                : enDosPartes
                 ? "Mientras tanto, mira abajo los lugares de la guía. Si tienes un negocio que encaja aquí, publícalo gratis."
                 : "Estamos sumando lugares a esta categoría. Si tienes un negocio que encaja aquí, publícalo gratis."}
             </p>
-            <Boton href="/negocios/registro" variante="principal">
-              Registrar mi negocio
-            </Boton>
+            {categoria.slug === "guias" ? (
+              <Boton href="/negocios/registro?categoria=guias" variante="principal">
+                Registrarme como guía
+              </Boton>
+            ) : (
+              <Boton href="/negocios/registro" variante="principal">
+                Registrar mi negocio
+              </Boton>
+            )}
           </div>
         ) : (
           <>
@@ -191,7 +199,7 @@ export default async function PaginaCategoria({ params, searchParams }: PageProp
               <div className="grid justify-items-start gap-3 rounded-[20px] bg-celeste-suave px-6 py-6 md:px-10">
                 <p className="m-0 font-semibold">Todavía no hay guías registrados.</p>
                 <p className="m-0 max-w-[56ch] text-rio-suave">¿Eres guía de turismo en Guayaquil? Publica tu perfil gratis con tus idiomas y tu WhatsApp.</p>
-                <Boton href="/negocios/registro" variante="principal" tamano="chico">
+                <Boton href="/negocios/registro?categoria=guias" variante="principal" tamano="chico">
                   Registrarme como guía
                 </Boton>
               </div>
