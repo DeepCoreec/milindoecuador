@@ -54,7 +54,14 @@ export function unirPedazos(pedazos: string[]): string {
 }
 
 /** Una frase se escucha como mucho este tiempo (si el teléfono no corta solo, se corta aquí). */
-const MAXIMO_ESCUCHA = 12_000;
+/*
+ * Tiempos al escuchar (2026-11-01, pedido del usuario: "se corta muy rápido mientras hablo"): el micrófono ya no se
+ * cierra en la primera pausa. Se cierra después de 2,5 s de silencio desde lo último que dijiste, a los 8 s si no
+ * empezaste a hablar, o a los 45 s como máximo.
+ */
+const MAXIMO_ESCUCHA = 45_000;
+export const SILENCIO_FINAL = 2_500;
+const SIN_EMPEZAR = 8_000;
 
 /** Mensajes claros para cuando el micrófono falla. */
 export function mensajeErrorMicrofono(error: string): string {
@@ -89,7 +96,7 @@ export function escuchar({
   const rec = new Rec();
   rec.lang = idiomaMicrofono(navigator.language);
   rec.interimResults = true;
-  rec.continuous = false;
+  rec.continuous = true; // las pausas para respirar no cortan; corta el silencio (abajo)
   rec.maxAlternatives = 1;
   let final = "";
   rec.onresult = (e) => {
@@ -97,17 +104,21 @@ export function escuchar({
     const finales: string[] = [];
     const parciales: string[] = [];
     for (let i = 0; i < e.results.length; i++) (e.results[i].isFinal ? finales : parciales).push(e.results[i][0].transcript);
-    final = unirPedazos(finales);
-    alParcial(unirPedazos([...finales, ...parciales]));
+    // Con continuous, al cerrar por silencio puede quedar un pedazo sin confirmar: también cuenta como dicho
+    final = unirPedazos([...finales, ...parciales]);
+    alParcial(final);
+    // Cada vez que entiende algo, vuelve a contar el silencio
+    clearTimeout(silencio);
+    silencio = setTimeout(() => rec.stop(), SILENCIO_FINAL);
   };
-  // Al dejar de hablar se cierra el micrófono (y nunca queda abierto más de 12 segundos)
-  rec.onspeechend = () => rec.stop();
+  let silencio = setTimeout(() => rec.stop(), SIN_EMPEZAR);
   const corte = setTimeout(() => rec.stop(), MAXIMO_ESCUCHA);
   rec.onerror = (e) => {
     if (e.error !== "aborted") alError(e.error);
   };
   rec.onend = () => {
     clearTimeout(corte);
+    clearTimeout(silencio);
     if (final.trim()) alFinal(final.trim());
     alTerminar();
   };
@@ -119,6 +130,7 @@ export function escuchar({
   }
   return () => {
     clearTimeout(corte);
+    clearTimeout(silencio);
     rec.onresult = null;
     rec.abort();
   };

@@ -45,10 +45,9 @@ export default function Privacidad() {
             Nosotros <b>no guardamos tus conversaciones</b>; solo contamos cuántos mensajes se envían por día (con la misma huella cifrada de abajo)
             para que nadie abuse. No le escribas datos personales. <b>Si le hablas con el micrófono</b> (solo cuando tú lo tocas y das permiso),
             tu navegador convierte tu voz en texto: en Chrome lo hace Google y en Safari, Apple. A nosotros solo nos llega el texto, igual que si lo
-            escribieras; no grabamos ni guardamos tu voz. Paumi te responde con la voz que ya trae tu teléfono. Con <b>manos libres</b> (solo si lo
-            activas), el navegador escucha mientras la página está abierta y a la vista para saber si la llamaste: solo te atiende si empiezas por
-            su nombre («Paumi, …» u «Oye, Paumi, …») y entonces le envía lo que dijiste después. Lo demás se descarta en tu teléfono y no se envía
-            a nadie más que al servicio de voz de tu navegador. Se apaga al cerrar la página o después de 10 minutos sin oír su nombre.
+            escribieras; no grabamos ni guardamos tu voz. Paumi te responde con la voz que ya trae tu teléfono. Con <b>Conversar</b> (solo si lo eliges), el micrófono escucha mientras la ventana de Paumi está abierta y a la
+            vista: después de cada respuesta vuelve a escucharte, y lo que dices se le envía a Paumi como texto. Se apaga si cierras la ventana,
+            si eliges «Escribir» o «Hablar», o si no dices nada en un rato.
           </li>
           <li>
             <b>Si publicas un evento:</b> los datos del evento (todo es público, incluido el WhatsApp de contacto si lo pones) y su afiche. Qué

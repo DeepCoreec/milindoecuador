@@ -15,8 +15,7 @@ import type { ExternoPaumi, MensajePaumi, RespuestaPaumi, TarjetaPaumi } from "@
 import { CuadroRetro } from "./CuadroRetro";
 import { Guacamaya } from "./Guacamaya";
 import type { EstadoPaumi } from "./sprite";
-import { despuesDelNombre } from "@/lib/paumi/voz";
-import { callar, escuchar, escucharSiempre, hablar, mensajeErrorMicrofono, prepararVoz, puedeEscuchar, puedeManosLibres } from "./voz";
+import { callar, escuchar, hablar, mensajeErrorMicrofono, prepararVoz, puedeEscuchar } from "./voz";
 
 type Entrada = MensajePaumi & {
   lugares?: TarjetaPaumi[];
@@ -30,6 +29,8 @@ type Entrada = MensajePaumi & {
 
 const inicial: Entrada[] = [{ rol: "paumi", texto: SALUDO }];
 const CLAVE_SONIDO = "mle-paumi-sonido";
+/** ¿Todavía no pasó esa hora? (fuera del componente: solo se usa al enviar, nunca al dibujar) */
+const sigueVigente = (hasta: number) => hasta > Date.now();
 /** Cómo prefiere hablar con Paumi esta persona (2026-11-01): se pregunta al presentarse y se recuerda. */
 const CLAVE_MODO = "mle-paumi-modo";
 
@@ -66,7 +67,9 @@ export function Paumi() {
     }
   });
   const sonidoAhora = useRef(sonido); // para la respuesta que llega después (si lo apagas mientras piensa)
-  const [modo, setModo] = useState<"voz" | "texto" | null>(() => {
+  // Cómo hablarle (2026-11-01): "texto" (te responde escrito), "voz" (te responde hablando; tocas el micrófono) o
+  // "conversa" (manos libres: te escucha sola después de cada respuesta). Se recuerda texto o voz, nunca la conversación.
+  const [modo, setModo] = useState<"voz" | "texto" | "conversa" | null>(() => {
     try {
       const m = typeof window === "undefined" ? null : localStorage.getItem(CLAVE_MODO);
       return m === "voz" || m === "texto" ? m : null;
@@ -83,7 +86,6 @@ export function Paumi() {
   const [leidos, setLeidos] = useState<ReadonlySet<number>>(new Set());
   // Voz
   const [microfono] = useState(() => puedeEscuchar());
-  const [libreDisponible] = useState(() => typeof window !== "undefined" && puedeManosLibres());
   const [oyendo, setOyendo] = useState(false);
   const [avisoMicrofono, setAvisoMicrofono] = useState<string | null>(null);
   const [voz, setVoz] = useState(false);
@@ -107,8 +109,7 @@ export function Paumi() {
   const [manosLibres, setManosLibres] = useState(false);
   const [visible, setVisible] = useState(true);
   const [vuelta, setVuelta] = useState(0);
-  const cortes = useRef<number[]>([]);
-  const pararLibre = useRef<() => void>(() => {});
+  const silencios = useRef(0); // vueltas seguidas sin que digas nada (la conversación se apaga a la cuarta)
   const lista = useRef<HTMLDivElement>(null);
   const escena = useRef<HTMLDivElement>(null);
   const pregunta = useRef<HTMLParagraphElement>(null);
@@ -166,59 +167,6 @@ export function Paumi() {
     return () => document.removeEventListener("visibilitychange", ver);
   }, []);
 
-  const oirFrase = useEffectEvent((frase: string) => {
-    const pedido = despuesDelNombre(frase);
-    if (pedido === null) return; // no la llamaron: no se hace nada con lo que se oyó
-    pararLibre.current();
-    abrir();
-    setUltimaLlamada(Date.now());
-    if (pedido && pideCaptcha) {
-      // La primera vez hay que confirmar que no eres un robot: queda escrito para enviarlo con un toque
-      setTexto(pedido.slice(0, MAX_MENSAJE));
-      textoDeVoz.current = pedido.slice(0, MAX_MENSAJE);
-      setNotaVoz("Te escuché. Confirma que no eres un robot y toca «Enviar».");
-    } else if (pedido) {
-      porVoz.current = true;
-      void enviarTexto(pedido.slice(0, MAX_MENSAJE));
-    } else usarMicrofono(); // solo dijeron "Paumi": te escucha
-  });
-  const errorLibre = useEffectEvent((error: string) => {
-    if (["not-allowed", "service-not-allowed", "not-supported", "audio-capture"].includes(error)) {
-      setManosLibres(false);
-      setAvisoMicrofono(mensajeErrorMicrofono(error));
-    }
-  });
-  const seCorto = useEffectEvent(() => {
-    // El navegador corta cada tanto y se vuelve a encender; si se corta muy seguido, se apaga para no gastar
-    const ahora = Date.now();
-    cortes.current = [...cortes.current.filter((t) => ahora - t < 10_000), ahora];
-    if (cortes.current.length > 5) {
-      setManosLibres(false);
-      setAvisoMicrofono("Apagué el manos libres porque el micrófono se cortaba seguido. Puedes volver a activarlo.");
-    } else setVuelta((n) => n + 1);
-  });
-
-  // Se apaga solo si pasan 10 minutos sin que la llamen (para no dejar el micrófono encendido sin querer)
-  const [ultimaLlamada, setUltimaLlamada] = useState(0);
-  useEffect(() => {
-    if (!manosLibres) return;
-    const id = setTimeout(() => {
-      pararLibre.current();
-      setManosLibres(false);
-      setAvisoMicrofono("Apagué el manos libres porque pasaron 10 minutos sin que me llames.");
-    }, 10 * 60_000);
-    return () => clearTimeout(id);
-  }, [manosLibres, ultimaLlamada]);
-
-  const escuchaLibre = manosLibres && visible && !oyendo && !voz && !pensando && !ruta.startsWith("/admin") && !ruta.startsWith("/dev");
-  useEffect(() => {
-    if (!escuchaLibre) return;
-    const parar = escucharSiempre({ alOir: (f) => oirFrase(f), alError: (e) => errorLibre(e), alTerminar: () => seCorto() });
-    pararLibre.current = parar;
-    return parar;
-  }, [escuchaLibre, vuelta]);
-
-  if (ruta.startsWith("/admin") || ruta.startsWith("/dev")) return null;
 
   const estado: EstadoPaumi = pensando
     ? "pensando"
@@ -239,18 +187,6 @@ export function Paumi() {
     setHablando(!reducir && !leidos.has(indice));
   }
 
-  function cambiarManosLibres() {
-    if (manosLibres) {
-      pararLibre.current();
-      setManosLibres(false);
-      return;
-    }
-    prepararVoz();
-    cortes.current = [];
-    setAvisoMicrofono(null);
-    setManosLibres(true);
-  }
-
   function cambiarSonido() {
     if (sonido) {
       callar();
@@ -258,29 +194,48 @@ export function Paumi() {
     }
     sonidoAhora.current = !sonido;
     setSonido(!sonido);
+    if (sonido) {
+      // Callarla es pasar a "Escribir"
+      setModo("texto");
+      if (manosLibres) pararMicrofono.current();
+      setManosLibres(false);
+    } else setModo("voz");
     try {
       localStorage.setItem(CLAVE_SONIDO, sonido ? "no" : "si");
+      localStorage.setItem(CLAVE_MODO, sonido ? "texto" : "voz");
     } catch {}
   }
 
-  /** Al presentarse, Paumi pregunta cómo quieres hablarle (2026-11-01). Con voz: te responde hablando y abre el
-   *  micrófono (si el navegador puede escuchar). Escribiendo: te responde solo con texto. Se cambia con el parlante. */
-  function elegirModo(m: "voz" | "texto") {
+  /**
+   * Cómo hablarle a Paumi (2026-11-01, pedido del usuario), siempre a la vista arriba de la ventana:
+   *  - Escribir: te responde solo con texto.
+   *  - Hablar: te responde hablando; tocas el micrófono para hablarle (te deja hacer pausas).
+   *  - Conversar (manos libres): te responde hablando y te vuelve a escuchar sola, sin tocar nada.
+   */
+  function elegirModo(m: "voz" | "texto" | "conversa") {
     setModo(m);
-    const conSonido = m === "voz";
+    const conSonido = m !== "texto";
     sonidoAhora.current = conSonido;
     setSonido(conSonido);
     try {
-      localStorage.setItem(CLAVE_MODO, m);
+      localStorage.setItem(CLAVE_MODO, m === "texto" ? "texto" : "voz");
       localStorage.setItem(CLAVE_SONIDO, conSonido ? "si" : "no");
     } catch {}
-    if (conSonido) {
-      prepararVoz();
-      if (microfono) usarMicrofono();
-    } else {
+    setAvisoMicrofono(null);
+    if (m !== "conversa") {
+      if (manosLibres) pararMicrofono.current();
+      setManosLibres(false);
+    }
+    if (m === "texto") {
       callar();
       setVoz(false);
       campo.current?.focus();
+      return;
+    }
+    prepararVoz(); // en iPhone la voz se "despierta" con este toque
+    if (m === "conversa") {
+      silencios.current = 0;
+      setManosLibres(true);
     }
   }
 
@@ -379,7 +334,7 @@ export function Paumi() {
     setCuadro(false);
     setHablando(false);
     try {
-      const u = ubicacion.current && ubicacion.current.hasta > Date.now() ? ubicacion.current : null;
+      const u = ubicacion.current && sigueVigente(ubicacion.current.hasta) ? ubicacion.current : null;
       const r = await fetch("/api/paumi", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -450,6 +405,64 @@ export function Paumi() {
 
   const cerrar = () => setAbierto(false);
 
+  /** Lo que dijiste en la conversación. La primera pregunta necesita el captcha: si no está, queda escrita para enviarla. */
+  const enviarDicho = useEffectEvent((dicho: string) => {
+    const t = dicho.slice(0, MAX_MENSAJE);
+    const token = formulario.current ? new FormData(formulario.current).get("cf-turnstile-response") : null;
+    if (pideCaptcha && !token) {
+      setManosLibres(false);
+      setTexto(t);
+      textoDeVoz.current = t;
+      setNotaVoz("Te escuché. Confirma que no eres un robot y toca «Enviar».");
+      return;
+    }
+    porVoz.current = true;
+    void enviarTexto(t);
+  });
+
+  // ---------- Conversación (manos libres, 2026-11-01): con la ventana abierta, te escucha sola después de cada respuesta ----------
+  const escucharTurno = useEffectEvent(() => {
+    let dijo = false;
+    setAvisoMicrofono(null);
+    setOyendo(true);
+    pararMicrofono.current = escuchar({
+      alParcial: (t) => setTexto(t.slice(0, MAX_MENSAJE)),
+      alFinal: (dicho) => {
+        dijo = true;
+        silencios.current = 0;
+        enviarDicho(dicho);
+      },
+      alError: (e) => {
+        if (["not-allowed", "service-not-allowed", "not-supported", "audio-capture"].includes(e)) {
+          setManosLibres(false);
+          setModo("voz");
+          setAvisoMicrofono(mensajeErrorMicrofono(e));
+        }
+      },
+      alTerminar: () => {
+        setOyendo(false);
+        if (dijo) return;
+        silencios.current += 1;
+        if (silencios.current >= 4) {
+          setManosLibres(false);
+          setModo("voz");
+          setAvisoMicrofono("Dejé de escucharte porque no dijiste nada en un rato. Toca «Conversar» para seguir.");
+        } else setVuelta((n) => n + 1);
+      },
+    });
+  });
+  const conversa = manosLibres && abierto && visible && !oyendo && !voz && !pensando && !ruta.startsWith("/admin") && !ruta.startsWith("/dev");
+  useEffect(() => {
+    if (!conversa) return;
+    const id = setTimeout(() => escucharTurno(), 400);
+    return () => clearTimeout(id);
+  }, [conversa, vuelta]);
+  // Al cerrar la ventana o esconder la pestaña, el micrófono se apaga
+  useEffect(() => {
+    if (!abierto || !visible) pararMicrofono.current();
+  }, [abierto, visible]);
+
+  if (ruta.startsWith("/admin") || ruta.startsWith("/dev")) return null;
   return (
     <Dialog.Root
       open={abierto}
@@ -472,9 +485,9 @@ export function Paumi() {
           {NOMBRE}
         </span>
         {manosLibres && (
-          <span className="inline-flex text-celeste-tinta" title="Manos libres encendido: di su nombre para hablarle">
+          <span className="inline-flex text-celeste-tinta" title="Conversación encendida: te escucho con la ventana abierta">
             <IconoMicrofono />
-            <span className="sr-only">(manos libres encendido)</span>
+            <span className="sr-only">(conversación encendida)</span>
           </span>
         )}
       </Dialog.Trigger>
@@ -506,6 +519,52 @@ export function Paumi() {
             </div>
           </div>
 
+          {/* Cómo hablarle, siempre a la vista (2026-11-01) */}
+          <div className="grid gap-1.5 border-b border-linea px-5 py-3">
+            <p id="paumi-modo" className="m-0 text-[13px] leading-[18px] font-semibold">
+              {modo ? "Cómo hablamos" : "¿Cómo quieres hablar conmigo?"}
+            </p>
+            <div role="radiogroup" aria-labelledby="paumi-modo" className="grid grid-cols-3 gap-1 rounded-lg bg-papel p-1">
+              {(
+                [
+                  ["texto", "Escribir", null],
+                  ["voz", "Hablar", <IconoMicrofono key="m" />],
+                  ...(microfono ? ([["conversa", "Conversar", <IconoSonido key="s" />]] as const) : []),
+                ] as const
+              ).map(([valor, nombre, icono]) => {
+                const activo = modo === valor;
+                return (
+                  <button
+                    key={valor}
+                    type="button"
+                    role="radio"
+                    aria-checked={activo}
+                    onClick={() => elegirModo(valor)}
+                    className={`inline-flex min-h-11 cursor-pointer items-center justify-center gap-1.5 rounded-md border-0 px-2 text-sm font-semibold [&_svg]:size-4 ${
+                      activo ? "bg-celeste-tinta text-on-celeste-tinta" : "bg-transparent text-rio"
+                    }`}
+                  >
+                    {icono}
+                    {nombre}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="m-0 text-[13px] leading-[18px] text-rio-suave" aria-live="polite">
+              {modo === "conversa"
+                ? oyendo
+                  ? "Te escucho… habla con calma; cuando hagas una pausa larga, te respondo."
+                  : "Conversación: después de cada respuesta te vuelvo a escuchar sola. Solo con esta ventana abierta."
+                : modo === "voz"
+                  ? microfono
+                    ? "Te respondo hablando. Toca el micrófono para hablarme."
+                    : "Te respondo hablando (en este navegador me escribes la pregunta)."
+                  : modo === "texto"
+                    ? "Te respondo solo con texto."
+                    : "Escribir: te respondo con texto. Hablar: te respondo con voz. Conversar: hablamos sin tocar nada."}
+            </p>
+          </div>
+
           {/* El lector de pantalla recibe cada respuesta completa de una vez */}
           <p className="sr-only" aria-live="polite" aria-busy={pensando}>
             {pensando ? `${NOMBRE} está pensando.` : actual ? `${NOMBRE} dice: ${actual.texto}` : ""}
@@ -514,44 +573,10 @@ export function Paumi() {
           {vista === "escena" ? (
             <div className="flex min-h-0 flex-1 flex-col">
               <div ref={escena} className="relative flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-5 py-4">
-                {/* Al presentarse: ¿con tu voz o escribiendo? (se recuerda; el parlante de arriba lo cambia) */}
-                {!modo && mensajes.length === 1 && (
-                  <div className="grid gap-2 rounded-xl border border-linea bg-papel p-3" role="group" aria-label={`¿Cómo quieres hablar con ${NOMBRE}?`}>
-                    <p className="m-0 text-[15px] leading-5 font-semibold">¿Cómo quieres hablar conmigo?</p>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button type="button" onClick={() => elegirModo("voz")} className={clasesBoton("principal", "chico", "min-h-12 [&_svg]:size-5")}>
-                        <IconoMicrofono />
-                        Con mi voz
-                      </button>
-                      <button type="button" onClick={() => elegirModo("texto")} className={clasesBoton("secundario", "chico", "min-h-12")}>
-                        Escribiendo
-                      </button>
-                    </div>
-                    <p className="m-0 text-[13px] leading-[18px] text-rio-suave">
-                      {microfono ? "Con tu voz: me hablas con el micrófono y te respondo hablando." : "Con tu voz: te respondo hablando (en este navegador me escribes la pregunta)."} Lo
-                      cambias cuando quieras con el parlante de arriba.
-                    </p>
-                  </div>
-                )}
                 <p id="paumi-aviso" className="m-0 text-[13px] leading-[18px] text-rio-suave">
                   {AVISO}
                 </p>
                 {microfono && <p className="m-0 text-[13px] leading-[18px] text-rio-suave">{AVISO_VOZ}</p>}
-                {libreDisponible && (
-                  <div className="grid justify-items-start gap-1">
-                    <button type="button" onClick={cambiarManosLibres} aria-pressed={manosLibres} className={clasesBoton("secundario", "chico", "min-h-11 [&_svg]:size-4")}>
-                      <IconoMicrofono />
-                      {manosLibres ? "Apagar manos libres" : "Activar manos libres"}
-                    </button>
-                    {manosLibres && (
-                      <p className="m-0 text-[13px] leading-[18px] text-rio-suave">
-                        Di «{NOMBRE}» y lo que buscas, por ejemplo: «{NOMBRE}, ¿dónde como un encebollado?». Solo te escucho mientras esta página está abierta y
-                        a la vista; mientras tanto, tu navegador (en Chrome, Google) procesa lo que oye el micrófono para encontrar mi nombre. Me apago
-                        solo si pasan 10 minutos sin que me llames.
-                      </p>
-                    )}
-                  </div>
-                )}
                 {ultimaPregunta && <Burbuja ref={pregunta} texto={ultimaPregunta.texto} />}
                 {conExtras && <Extras m={actual} alNavegar={cerrar} />}
               </div>
