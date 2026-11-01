@@ -79,3 +79,19 @@ export function describirPagina(ruta: string): string {
   if (/^\/guayaquil\/[a-z0-9-]+\/[a-z0-9-]+$/.test(ruta)) return "la ficha de un lugar (fotos, información, historia y reseñas)";
   return "otra página";
 }
+
+const sinTildes = (t: string) => t.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "").replace(/[¿?¡!.,;:]/g, " ").replace(/\s+/g, " ").trim();
+
+/**
+ * Atajos que la página hace al instante, sin preguntarle a la IA (2026-11-01: más rápido por voz, y la IA a veces decía
+ * "listo" sin mover nada). Solo frases cortas y claras; todo lo demás se le pregunta a Paumi.
+ */
+export function atajo(frase: string): { movimiento: Movimiento; respuesta: string } | null {
+  const t = sinTildes(frase);
+  if (t.split(" ").length > 7) return null;
+  if (/\b(siguiente|proxima|otra) foto\b|\bfoto siguiente\b|\bpasa (la )?foto\b/.test(t)) return { movimiento: { accion: "foto_siguiente" }, respuesta: "¡Ahí va la siguiente foto!" };
+  if (/\bfoto anterior\b|\b(regresa|vuelve) (a )?la foto\b|\bla foto de antes\b/.test(t)) return { movimiento: { accion: "foto_anterior" }, respuesta: "Volvemos a la foto anterior." };
+  if (/^(sube|subir|ve arriba|ir arriba|arriba|vuelve arriba|al inicio de la pagina)$/.test(t)) return { movimiento: { accion: "arriba" }, respuesta: "Listo, arriba." };
+  if (/\b(todas las categorias|ver categorias|muestrame las categorias)\b/.test(t)) return { movimiento: { accion: "todas_las_categorias" }, respuesta: "Aquí están todas las categorías." };
+  return null;
+}
