@@ -9,7 +9,7 @@ import { urlPublicaFoto } from "@/lib/fotos";
 
 type FotoCiudad = { tipo: "foto"; camino: string; alt: string; credito?: string; licencia?: string; fuente?: string };
 /** Una foto de un banco de fotos libre para el fondo que va cambiando (src: su dirección exacta, permitida en next.config). */
-export type FotoFondo = { src: string; alt: string; credito: string; licencia: string; fuente: string };
+export type FotoFondo = { src: string; alt: string; credito: string; licencia: string; fuente: string; /** Qué parte de la foto se ve al recortarla (en el celular). */ enfoque?: string };
 type Fondo = { tipo: "ilustracion" } | FotoCiudad | { tipo: "fotos"; fotos: FotoFondo[] };
 
 /*
@@ -21,6 +21,7 @@ export const FOTOS_GUAYAQUIL: FotoFondo[] = [
   {
     src: "https://images.unsplash.com/photo-1574570120297-2836722938eb",
     alt: "Guayaquil de noche desde lo alto: La Perla, el Malecón 2000 y el río Guayas",
+    enfoque: "22% 55%", // La Perla está a la izquierda
     credito: "Jose Garcia",
     licencia: "Unsplash",
     fuente: "https://unsplash.com/es/fotos/foto-aerea-de-la-ciudad-iEPBfZbpn9g",

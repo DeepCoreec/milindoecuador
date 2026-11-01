@@ -35,6 +35,7 @@ export function FondoFotos({ fotos }: { fotos: FotoFondo[] }) {
             priority={i === 0}
             quality={60}
             sizes="100vw"
+            style={{ objectPosition: f.enfoque ?? "50% 50%" }}
             className={`scale-105 object-cover blur-[2px] transition-opacity duration-[1500ms] ease-in-out motion-reduce:transition-none ${i === actual ? "opacity-100" : "opacity-0"}`}
           />
         ))}
