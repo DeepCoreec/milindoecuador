@@ -60,6 +60,10 @@ const cabecerasDeSeguridad = [
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
 ];
 
+// Fotos de la portada (Unsplash, Licencia Unsplash): SOLO estas, por su dirección exacta (src/lib/fondos-ciudad.ts).
+// Pasan por el optimizador de la página, así el navegador las carga desde nuestro dominio (no hace falta tocar la CSP).
+const FOTOS_PORTADA = ["/photo-1574570120297-2836722938eb", "/photo-1574570119220-01b7e3dfcc8d"];
+
 const nextConfig: NextConfig = {
   poweredByHeader: false, // no anunciar qué tecnología usa el servidor
   images: {
@@ -69,6 +73,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: hostSupabase(), pathname: "/storage/v1/object/public/fotos-lugares/**" },
       // Versión 5: afiches de eventos
       { protocol: "https", hostname: hostSupabase(), pathname: "/storage/v1/object/public/afiches-eventos/**" },
+      ...FOTOS_PORTADA.map((pathname) => ({ protocol: "https" as const, hostname: "images.unsplash.com", pathname })),
       // Solo en desarrollo: el Supabase de prueba local
       ...(desarrollo
         ? (["fotos-lugares", "afiches-eventos"] as const).map((b) => ({ protocol: "http" as const, hostname: "127.0.0.1", port: "54321", pathname: `/storage/v1/object/public/${b}/**` }))

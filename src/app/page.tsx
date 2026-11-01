@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { IlustracionCiudad } from "@/components/arte/IlustracionCiudad";
+import { FondoFotos } from "@/components/arte/FondoFotos";
 import { Panorama } from "@/components/arte/Panorama";
 import { Buscador } from "@/components/busqueda/Buscador";
 import { IconoUbicacion } from "@/components/ui/iconos";
@@ -63,6 +64,8 @@ export default async function Inicio() {
             de noche para que el texto se lea); sin ninguna, el fondo de noche de siempre. Las categorías suben sobre el borde. */}
         <section data-theme="dark" className="relative isolate overflow-hidden bg-papel text-rio" aria-labelledby="t-inicio">
           {fondo?.tipo === "ilustracion" && <IlustracionCiudad ciudad="guayaquil" className="absolute inset-x-0 bottom-0 -z-10 aspect-[2/1] md:top-0 md:aspect-auto" />}
+          {/* Desde el 2026-10-31 (pedido del usuario): fotos de Guayaquil de noche que se turnan */}
+          {fondo?.tipo === "fotos" && <FondoFotos fotos={fondo.fotos} />}
           {fondo?.tipo === "foto" && (
             <>
               <Image src={fondo.src} alt={fondo.alt} fill priority sizes="100vw" className="-z-20 object-cover" />
