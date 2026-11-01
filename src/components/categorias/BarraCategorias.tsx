@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useId, useState } from "react";
 import { Afiche } from "@/components/arte/Afiche";
+import { FotoCategoria } from "@/components/arte/FotoCategoria";
 
 export type CategoriaBarra = { slug: string; nombre: string; nombreCorto?: string; href: string; principal: boolean };
 
@@ -28,7 +29,7 @@ export function BarraCategorias({ categorias, activa, grande = false }: { catego
         <div className="mx-auto grid max-w-[1040px] grid-cols-3 gap-3 md:grid-cols-6 md:gap-4">
           {principales.map((c) => (
             <Link key={c.slug} href={c.href} className={cuadro}>
-              <Afiche slug={c.slug} className="aspect-square w-full" />
+              <FotoCategoria slug={c.slug} className="aspect-square w-full" ancho={168} />
               <span>{c.nombreCorto ?? c.nombre}</span>
             </Link>
           ))}
@@ -58,7 +59,7 @@ export function BarraCategorias({ categorias, activa, grande = false }: { catego
             aria-current={c.slug === activa ? "page" : undefined}
             className={`grid ${ancho} flex-none justify-items-center gap-2 text-center font-medium text-rio no-underline aria-[current=page]:font-bold`}
           >
-            <Afiche slug={c.slug} className={`${tam} ${c.slug === activa ? anilloActiva : ""}`} />
+            <FotoCategoria slug={c.slug} className={`${tam} ${c.slug === activa ? anilloActiva : ""}`} ancho={112} />
             <span>{c.nombreCorto ?? c.nombre}</span>
           </Link>
         ))}
@@ -94,7 +95,7 @@ function Panel({ id, abierto, categorias, activa }: { id: string; abierto: boole
             aria-current={c.slug === activa ? "page" : undefined}
             className="grid justify-items-center gap-2 text-center text-[13px] leading-[18px] font-medium text-rio no-underline aria-[current=page]:font-bold"
           >
-            <Afiche slug={c.slug} className="size-[72px]" />
+            <FotoCategoria slug={c.slug} className="size-[72px]" ancho={72} />
             <span>{c.nombre}</span>
           </Link>
         ))}
