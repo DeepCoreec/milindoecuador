@@ -151,7 +151,19 @@ export default async function Inicio() {
           )}
         </section>
 
-        <div className={`${ancho} pb-12 min-[900px]:pb-16`}>
+        <div className={`${ancho} grid gap-6 pb-12 min-[900px]:pb-16`}>
+          {/* Leyendas de la ciudad (versión 13, fase 43), a la vista desde la portada */}
+          <Link
+            href="/guayaquil/misterio"
+            data-theme="dark"
+            className="grid gap-1 rounded-[20px] bg-papel px-6 py-6 text-rio no-underline hover:ring-2 hover:ring-celeste md:px-10 md:py-8"
+          >
+            <span className="font-rotulo text-2xl leading-[30px] md:text-3xl md:leading-9">Guayaquil de misterio →</span>
+            <span className="max-w-[60ch] text-rio-suave">
+              Historias y leyendas de la ciudad: la dama tapada, el banquero que salió del cementerio y el tesoro del Cerro Santa Ana, con su lugar real y
+              su fuente.
+            </span>
+          </Link>
           <FranjaGuiaUtil />
         </div>
 
