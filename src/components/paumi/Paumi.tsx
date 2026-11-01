@@ -3,7 +3,7 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { clasesBoton } from "@/components/ui/Boton";
 import { Captcha } from "@/components/ui/Captcha";
@@ -49,6 +49,9 @@ const CLAVE_MODO = "mle-paumi-modo";
  */
 export function Paumi() {
   const ruta = usePathname();
+  const router = useRouter();
+  // En el celular, cuando Paumi te lleva a otra página, la ventana baja a la mitad para que la veas (2026-11-01)
+  const [mitad, setMitad] = useState(false);
   const [abierto, setAbierto] = useState(false);
   const [vista, setVista] = useState<"escena" | "conversacion">("escena");
   const [mensajes, setMensajes] = useState<Entrada[]>(inicial);
@@ -357,6 +360,13 @@ export function Paumi() {
           fuentes: datos.fuentes ?? [],
           pedirUbicacion: datos.pedirUbicacion === true,
         });
+        // 2026-11-01 (pedido del usuario): la página se mueve con la conversación. Paumi sigue abierta y hablando.
+        // La ruta ya viene revisada por el servidor (solo páginas de la guía que devolvieron sus herramientas).
+        if (datos.navegar && datos.navegar.startsWith("/") && !datos.navegar.startsWith("//") && datos.navegar !== window.location.pathname + window.location.search)
+        {
+          router.push(datos.navegar, { scroll: true });
+          setMitad(true);
+        }
       } else {
         if (datos.error === "captcha") setPideCaptcha(true);
         if (datos.error === "ubicacion") quitarUbicacion();
@@ -470,6 +480,7 @@ export function Paumi() {
         if (a) abrir();
         else {
           setAbierto(false);
+          setMitad(false);
           pararMicrofono.current();
           callar();
           setVoz(false);
@@ -492,10 +503,10 @@ export function Paumi() {
         )}
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay className="mle-velo fixed inset-0 z-40 bg-[#0b1d28]/40 sm:bg-transparent" />
+        <Dialog.Overlay className={`mle-velo fixed inset-0 z-40 sm:bg-transparent ${mitad ? "bg-transparent" : "bg-[#0b1d28]/40"}`} />
         <Dialog.Content
           aria-describedby="paumi-aviso"
-          className="fixed inset-x-0 bottom-0 z-50 flex h-[88dvh] flex-col rounded-t-[20px] border border-linea bg-papel-alto text-rio shadow-flotante sm:inset-x-auto sm:right-6 sm:bottom-6 sm:h-[min(640px,calc(100dvh-48px))] sm:w-[400px] sm:rounded-[20px]"
+          className={`fixed inset-x-0 bottom-0 z-50 flex ${mitad ? "h-[55dvh]" : "h-[88dvh]"} flex-col rounded-t-[20px] border border-linea bg-papel-alto text-rio shadow-flotante sm:inset-x-auto sm:right-6 sm:bottom-6 sm:h-[min(640px,calc(100dvh-48px))] sm:w-[400px] sm:rounded-[20px]`}
         >
           <div className="flex items-start justify-between gap-3 border-b border-linea px-5 pt-4 pb-3">
             <div className="grid gap-0.5">

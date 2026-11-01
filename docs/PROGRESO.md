@@ -556,6 +556,10 @@
   - Arriba de la ventana, siempre a la vista: **Escribir** (responde con texto), **Hablar** (responde con voz; se toca el micrófono para hablarle) y **Conversar** (manos libres: después de cada respuesta vuelve a escuchar sola). Se recuerda Escribir o Hablar; Conversar nunca queda encendido entre visitas
   - El micrófono ya no corta en la primera pausa: se cierra con 2,5 s de silencio desde lo último dicho (8 s si no empezaste, 45 s como máximo)
   - Conversar reemplaza al manos libres de la fase 16 (que solo despertaba al oír "Paumi" con la ventana cerrada): ahora solo escucha con la ventana abierta y a la vista, también en el celular, y se apaga sola tras 4 vueltas sin oír nada. La política de privacidad se actualizó. Prueba e2e reescrita (micrófono simulado, con una pausa en medio de la frase)
+- [x] Paumi muestra lo que dice — 2026-11-01 (pedido del usuario: "¿Paumi puede ir cambiando en qué sección de la página nos encontramos para ir mostrando lo que tenemos? […] iba a mostrar las historias y no mostró nada"):
+  - La página se mueve con la conversación: cuando Paumi usa `abrir_pagina`, el navegador va solo a esa página (Paumi sigue abierta y hablando). En el celular, la ventana baja a la mitad para que se vea la página
+  - Ahora puede abrir también la ficha de un lugar y la página de un lugar para visitar, pero solo si una herramienta los devolvió en esa misma respuesta (el servidor lo revisa)
+  - Herramienta nueva `contar_leyendas`: trae las 5 leyendas verificadas y abre "Guayaquil de misterio" (antes solo podía "proponer" la página y a veces no mostraba nada)
 - **Para sumar una foto:** su dirección de images.unsplash.com en `FOTOS_GUAYAQUIL` (`src/lib/fondos-ciudad.ts`) y en `FOTOS_PORTADA` (`next.config.ts`)
 
 ## Pruebas de diseño (ramas aparte; las pruebas 1 y 2 se publicaron el 2026-10-31)

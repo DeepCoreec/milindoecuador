@@ -12,6 +12,8 @@ import { enlaceRutaGoogle, type Ubicacion } from "@/lib/ubicacion";
 import { normalizar } from "@/lib/validacion/busqueda";
 import { textoPrecio as precioRecorrido } from "@/lib/recorridos";
 import { textoDuracion } from "@/lib/validacion/recorridos";
+import { LEYENDAS } from "@/lib/misterio";
+import { rutaSitio } from "@/lib/datos/sitios";
 import { FUENTES_CONFIABLES } from "./config";
 import type { ExternoPaumi, TarjetaPaumi } from "./tipos";
 
@@ -136,9 +138,15 @@ export const DEFINICIONES = [
     },
   },
   {
+    name: "contar_leyendas",
+    description:
+      "Las leyendas e historias de Guayaquil verificadas, con su lugar real y su fuente (la dama tapada, el banquero que salió del cementerio, el tesoro del Cerro Santa Ana…). Al usarla, la página «Guayaquil de misterio» se abre sola. Úsala SIEMPRE que pregunten por leyendas, historias, misterio, terror, fantasmas o miedo.",
+    input_schema: { type: "object", properties: {} },
+  },
+  {
     name: "abrir_pagina",
     description:
-      "Propone llevar a la persona a una página de la guía: '/guayaquil' (todas las categorías), '/guayaquil/<categoria>', '/buscar?q=<palabras>', '/guayaquil/eventos', '/guayaquil/guia-util', '/guayaquil/misterio' (leyendas de la ciudad con su lugar y su fuente), la ruta de un evento que devolvió buscar_eventos o la de un recorrido que devolvió buscar_recorridos.",
+      "Lleva a la persona a una página de la guía (la página se abre SOLA mientras hablan): una ficha o página de lugar con la 'ruta' que devolvió buscar_lugares, ver_lugar o buscar_sitios, '/guayaquil' (todas las categorías), '/guayaquil/<categoria>', '/buscar?q=<palabras>', '/guayaquil/eventos', '/guayaquil/guia-util', '/guayaquil/misterio' (leyendas de la ciudad con su lugar y su fuente), la ruta de un evento que devolvió buscar_eventos o la de un recorrido que devolvió buscar_recorridos.",
     input_schema: { type: "object", properties: { ruta: { type: "string" } }, required: ["ruta"] },
   },
 ] as const;
@@ -206,6 +214,8 @@ export type Estado = {
   eventos?: Set<string>;
   /** Rutas de recorridos que devolvió buscar_recorridos en esta respuesta (versión 13, 42.4). */
   recorridos?: Set<string>;
+  /** 2026-11-01: fichas de lugares y páginas de lugares para visitar que devolvieron las herramientas (para abrirlas). */
+  rutas?: Set<string>;
   /** Sitios de la Guía útil que devolvió buscar_sitios en esta respuesta (versión 5, fase 23). */
   sitios?: Map<string, ExternoPaumi>;
   /** Versión 8: ubicación que la persona compartió con «Cerca de mí» (redondeada). La IA nunca la ve. */
@@ -295,13 +305,21 @@ async function buscar(entrada: z.infer<typeof esquemaBuscar>, e: Estado) {
   } else filas.sort((a, b) => Number(b.is_featured) - Number(a.is_featured));
   const elegidos = filas.slice(0, 6);
   elegidos.forEach((f) => e.vistos.add(f.id));
-  return { lugares: elegidos.map(corto), nota: elegidos.length ? undefined : "No hay lugares que cumplan todo eso." };
+  e.rutas ??= new Set();
+  for (const f of elegidos) e.rutas.add(`/${CIUDAD}/${f.categories?.slug ?? ""}/${f.slug}`);
+  return { lugares: elegidos.map((f) => ({ ...corto(f), ruta: `/${CIUDAD}/${f.categories?.slug ?? ""}/${f.slug}` })), nota: elegidos.length ? undefined : "No hay lugares que cumplan todo eso." };
 }
 
 /** ¿Es una página de la guía a la que se puede llevar a alguien? */
-export function rutaPermitida(ruta: string, categorias: Set<string>, eventos: Set<string> = new Set(), recorridos: Set<string> = new Set()): string | null {
+export function rutaPermitida(
+  ruta: string,
+  categorias: Set<string>,
+  eventos: Set<string> = new Set(),
+  recorridos: Set<string> = new Set(),
+  rutas: Set<string> = new Set(),
+): string | null {
   if (ruta === `/${CIUDAD}` || ruta === `/${CIUDAD}/eventos` || ruta === `/${CIUDAD}/guia-util` || ruta === `/${CIUDAD}/misterio`) return ruta;
-  if (eventos.has(ruta) || recorridos.has(ruta)) return ruta;
+  if (eventos.has(ruta) || recorridos.has(ruta) || rutas.has(ruta)) return ruta;
   const cat = /^\/guayaquil\/([a-z0-9-]{2,40})$/.exec(ruta);
   if (cat) return categorias.has(cat[1]!) ? ruta : null;
   const b = /^\/buscar\?q=([^&#]{2,80})$/.exec(ruta);
@@ -332,9 +350,11 @@ export async function ejecutar(nombre: string, entrada: unknown, e: Estado): Pro
         const [f] = await leer([r.data.id]);
         if (!f) return { resultado: "Ese lugar no está en la guía.", error: true };
         e.vistos.add(f.id);
+        e.rutas ??= new Set();
+        e.rutas.add(`/${CIUDAD}/${f.categories?.slug ?? ""}/${f.slug}`);
         const h = leerHorario(f.opening_hours);
         return {
-          resultado: { ...corto(f), descripcion: f.description.slice(0, 600), direccion: f.address, horario: h ? resumenHorario(h) : null },
+          resultado: { ...corto(f), ruta: `/${CIUDAD}/${f.categories?.slug ?? ""}/${f.slug}`, descripcion: f.description.slice(0, 600), direccion: f.address, horario: h ? resumenHorario(h) : null },
         };
       }
       case "mostrar_lugares": {
@@ -392,7 +412,7 @@ export async function ejecutar(nombre: string, entrada: unknown, e: Estado): Pro
         if (!r.success) return { resultado: "Pedido inválido: usa texto, grupo o tipo.", error: true };
         let q = db()
           .from("city_spots")
-          .select("id, tipo, name, note, address, latitude, longitude, osm_type, osm_id, cities!inner(slug)")
+          .select("id, grupo, tipo, name, note, address, latitude, longitude, osm_type, osm_id, cities!inner(slug)")
           .eq("cities.slug", CIUDAD)
           .not("tipo", "in", `(${TIPOS_OCULTOS.join(",")})`)
           .order("name")
@@ -410,7 +430,10 @@ export async function ejecutar(nombre: string, entrada: unknown, e: Estado): Pro
             fuente: { url: enlaceOSM(f.osm_type, f.osm_id), sitio: f.osm_type === "wikidata" ? "wikidata.org" : "openstreetmap.org" },
             origen: "guia-util",
           });
-          return { id: f.id, nombre: f.name, tipo: NOMBRE_TIPO[f.tipo as TipoSitio] ?? f.tipo, frase: f.note, direccion: f.address };
+          // Los lugares para visitar tienen su página (fotos, horario, cómo llegar): se puede abrir
+          const ruta = f.grupo === "visitar" ? rutaSitio({ id: f.id, nombre: f.name }) : undefined;
+          if (ruta) (e.rutas ??= new Set()).add(ruta);
+          return { id: f.id, nombre: f.name, tipo: NOMBRE_TIPO[f.tipo as TipoSitio] ?? f.tipo, frase: f.note, direccion: f.address, ruta };
         });
         return { resultado: lista.length ? lista : "No hay lugares así en la Guía útil." };
       }
@@ -513,9 +536,19 @@ export async function ejecutar(nombre: string, entrada: unknown, e: Estado): Pro
         });
         return { resultado: resultado.length ? resultado : "Todavía no hay recorridos publicados así. Puedes recomendar guías con buscar_lugares (categoria guias)." };
       }
+      case "contar_leyendas": {
+        // Las leyendas verificadas de "Guayaquil de misterio" (fase 43); la página se abre sola para mostrarlas
+        e.navegar = `/${CIUDAD}/misterio`;
+        return {
+          resultado: {
+            leyendas: LEYENDAS.map((l) => ({ titulo: l.titulo, historia: l.historia, donde: l.lugar, nota: l.nota, fuente: `${l.fuente.medio}, ${l.fuente.fecha}` })),
+            nota: "La página «Guayaquil de misterio» se abre para la persona. Cuenta una o dos, cortas; no inventes otras ni recomiendes entrar a lugares abandonados.",
+          },
+        };
+      }
       case "abrir_pagina": {
         const r = esquemaAbrir.safeParse(entrada);
-        const ruta = r.success ? rutaPermitida(r.data.ruta, e.categorias, e.eventos, e.recorridos) : null;
+        const ruta = r.success ? rutaPermitida(r.data.ruta, e.categorias, e.eventos, e.recorridos, e.rutas) : null;
         if (!ruta) return { resultado: "Esa página no existe en la guía.", error: true };
         e.navegar = ruta;
         return { resultado: "Listo: la página ofrece un botón para ir." };
