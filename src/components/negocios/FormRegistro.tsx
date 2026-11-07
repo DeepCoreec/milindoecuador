@@ -11,6 +11,9 @@ import { Captcha } from "@/components/ui/Captcha";
 import { claseAyuda, claseEntrada, claseEtiqueta } from "@/components/ui/clasesFormulario";
 import { IconoConversacion } from "@/components/ui/iconos";
 import { ESPECIALIDADES, IDIOMAS } from "@/lib/guias";
+import { LISTA_REDES, REDES } from "@/lib/redes";
+
+const EJEMPLO_RED = { web: "www.tupagina.com", facebook: "facebook.com/tupagina", instagram: "@tuusuario", tiktok: "@tuusuario", youtube: "@tucanal" } as const;
 
 const inicial: EstadoSolicitud = { estado: "inicio" };
 
@@ -307,6 +310,34 @@ export function FormRegistro({ categorias, avisoWhatsApp, categoriaInicial }: { 
               {e.guia}
             </p>
           )}
+          <fieldset className="m-0 grid gap-3 border-0 p-0">
+            <legend className={`mb-1 p-0 ${claseEtiqueta}`}>Tus redes y tu página web (si tienes)</legend>
+            <p className={`m-0 ${claseAyuda}`}>Salen en tu perfil como enlaces en azul para que los turistas vean tu trabajo. Puedes pegar el enlace o poner tu @usuario.</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {LISTA_REDES.map((red) => (
+                <div key={red} className="grid gap-1.5">
+                  <label htmlFor={`r-${red}`} className="text-[15px] leading-5 font-semibold">
+                    {REDES[red].etiqueta}
+                  </label>
+                  <input
+                    id={`r-${red}`}
+                    name={red}
+                    inputMode="url"
+                    autoComplete="off"
+                    maxLength={300}
+                    defaultValue={v[red]}
+                    placeholder={EJEMPLO_RED[red]}
+                    aria-invalid={e[red] ? true : undefined}
+                    aria-describedby={`r-${red}-aviso`}
+                    className={claseEntrada}
+                  />
+                  <p id={`r-${red}-aviso`} className="m-0 text-sm leading-5 text-error">
+                    {e[red] ?? ""}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </fieldset>
         </div>
       )}
       <Captcha reiniciar={estado} />

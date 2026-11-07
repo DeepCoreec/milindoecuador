@@ -252,7 +252,7 @@ export default async function FichaLugar({ params }: Props) {
                 </>
               )}
             </dl>
-            {lugar.enlaces && <RedesLugar enlaces={lugar.enlaces} nombre={lugar.nombre} />}
+            {lugar.enlaces && <RedesLugar enlaces={lugar.enlaces} nombre={lugar.nombre} titulo={lugar.guia ? "Mis redes y mi página" : "Síguenos"} />}
             {whatsapp && (
               // En celular ya está arriba; aquí solo en escritorio (la envoltura evita el choque con inline-flex)
               <span className="hidden min-[900px]:contents">

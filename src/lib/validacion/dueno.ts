@@ -49,3 +49,6 @@ export const esquemaPerfilGuia = z.object({
 
 /** El mismo perfil, pero al registrarse (todavía no hay ficha). */
 export const esquemaPerfilGuiaRegistro = esquemaPerfilGuia.omit({ lugar: true });
+
+/** Redes y página web al registrarse (2026-11-07): las mismas reglas que en «Mi negocio» y en el panel. */
+export const esquemaEnlacesRegistro = esquemaLugar.pick({ web: true, facebook: true, instagram: true, tiktok: true, youtube: true });
