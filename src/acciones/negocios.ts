@@ -9,12 +9,13 @@ import { crearFichaBorrador } from "@/lib/fichas";
 import { crearClienteAdmin } from "@/lib/supabase/admin";
 import { configSupabase } from "@/lib/supabase/config";
 import { esquemaSolicitud, type CampoSolicitud } from "@/lib/validacion/negocios";
-import { esquemaPerfilGuiaRegistro } from "@/lib/validacion/dueno";
+import { esquemaEnlacesRegistro, esquemaPerfilGuiaRegistro } from "@/lib/validacion/dueno";
+import { LISTA_REDES, REDES, type Red } from "@/lib/redes";
 
 export type EstadoSolicitud = {
   estado: "inicio" | "ok" | "error";
   mensaje?: string;
-  errores?: Partial<Record<CampoSolicitud | "guia", string>>;
+  errores?: Partial<Record<CampoSolicitud | "guia" | Red, string>>;
   /** Lo escrito, para no borrar el formulario cuando hay un error. */
   valores?: Record<string, string>;
   negocio?: string;
@@ -27,7 +28,7 @@ export type EstadoSolicitud = {
 const MENSAJE_DIA = "Ya registraste 3 negocios hoy. Vuelve mañana para registrar otro.";
 const MENSAJE_TOTAL = "Tu cuenta ya tiene 10 negocios. Escríbenos por WhatsApp si necesitas más.";
 
-const CAMPOS = ["negocio", "categoria", "sector", "contacto", "whatsapp", "descripcion", "terminos", "zonas", "credencial"] as const;
+const CAMPOS = ["negocio", "categoria", "sector", "contacto", "whatsapp", "descripcion", "terminos", "zonas", "credencial", ...LISTA_REDES] as const;
 
 /**
  * Registra un negocio. Orden: Zod → captcha → sesión → límites → escribir con admin.ts (la tabla no acepta
@@ -48,13 +49,16 @@ export async function solicitarRegistro(_previo: EstadoSolicitud, datos: FormDat
   const r = esquemaSolicitud.safeParse({ ...valores, terminos: datos.get("terminos") ?? undefined });
   // Versión 13: el guía llena su perfil en el mismo registro (idiomas, especialidades, zonas y credencial)
   const p = esGuia ? esquemaPerfilGuiaRegistro.safeParse({ idiomas, especialidades, zonas: valores.zonas ?? "", credencial: valores.credencial ?? "" }) : null;
-  if (!r.success || (p && !p.success)) {
+  // 2026-11-07: el guía puede poner sus redes y su página web al registrarse (opcional)
+  const red = esGuia ? esquemaEnlacesRegistro.safeParse(Object.fromEntries(LISTA_REDES.map((k) => [k, valores[k] ?? ""]))) : null;
+  if (!r.success || (p && !p.success) || (red && !red.success)) {
     const errores: EstadoSolicitud["errores"] = {};
     for (const i of r.success ? [] : r.error.issues) {
       const campo = i.path[0] as CampoSolicitud;
       errores[campo] ??= i.message;
     }
     if (p && !p.success) errores.guia = [...new Set(p.error.issues.map((i) => i.message))].join(". ");
+    if (red && !red.success) for (const i of red.error.issues) errores[i.path[0] as Red] ??= i.message;
     return { estado: "error", mensaje: "Revisa los campos marcados", errores, valores, intento: Date.now() };
   }
   const h = await headers();
@@ -138,9 +142,21 @@ export async function solicitarRegistro(_previo: EstadoSolicitud, datos: FormDat
     // el guía lo completa en «Mi negocio»
     await db
       .from("places")
-      .update({ guide_languages: p.data.idiomas, guide_specialties: p.data.especialidades, guide_zones: p.data.zonas, guide_license: p.data.credencial })
+      .update({
+        guide_languages: p.data.idiomas,
+        guide_specialties: p.data.especialidades,
+        guide_zones: p.data.zonas,
+        guide_license: p.data.credencial,
+      })
       .eq("id", ficha.id)
       .eq("owner_id", usuario.id);
+    // Las redes aparte: si alguna no pasa el filtro de la base, el perfil igual queda guardado
+    if (red?.success && LISTA_REDES.some((k) => red.data[k]))
+      await db
+        .from("places")
+        .update(Object.fromEntries(LISTA_REDES.map((k) => [REDES[k].columna, red.data[k]])))
+        .eq("id", ficha.id)
+        .eq("owner_id", usuario.id);
   }
   return { estado: "ok", negocio: r.data.negocio, ficha: ficha.id };
 }

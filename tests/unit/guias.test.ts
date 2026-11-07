@@ -69,3 +69,18 @@ describe("perfil del guía al registrarse", () => {
     expect(esquemaPerfilGuiaRegistro.safeParse({ idiomas: [], especialidades: [], zonas: "", credencial: "" }).success).toBe(false);
   });
 });
+
+import { esquemaEnlacesRegistro } from "@/lib/validacion/dueno";
+
+describe("redes del guía al registrarse (2026-11-07)", () => {
+  it("acepta @usuario y enlaces, y los guarda en https", () => {
+    const r = esquemaEnlacesRegistro.parse({ web: "www.anatours.com", facebook: "", instagram: "@ana.guia", tiktok: "", youtube: "" });
+    expect(r.web).toBe("https://www.anatours.com/");
+    expect(r.instagram).toBe("https://www.instagram.com/ana.guia");
+    expect(r.facebook).toBeNull();
+  });
+  it("rechaza enlaces de otra red o que no son enlaces", () => {
+    expect(esquemaEnlacesRegistro.safeParse({ web: "", facebook: "instagram.com/ana", instagram: "", tiktok: "", youtube: "" }).success).toBe(false);
+    expect(esquemaEnlacesRegistro.safeParse({ web: "javascript:alert(1)", facebook: "", instagram: "", tiktok: "", youtube: "" }).success).toBe(false);
+  });
+});
