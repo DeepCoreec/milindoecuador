@@ -91,6 +91,13 @@ export default async function PaginaMiNegocio({ params }: PageProps<"/mi-negocio
           />
         </section>
 
+        {/* 2026-11-07: a los guías se les dice qué subir (fotos y video de sus recorridos), igual que los negocios */}
+        {n.guia && (
+          <p className="m-0 rounded-lg border border-linea bg-celeste-suave px-4 py-3 text-[15px] leading-[22px]">
+            <b>Muestra tus recorridos:</b> sube hasta 15 fotos (la primera es la de tu perfil: que se vea tu cara) y un video corto de un recorrido. Salen en
+            tu perfil y ayudan a que los turistas te elijan.
+          </p>
+        )}
         <FotosLugar lugar={n.id} fotos={n.fotos} modo="dueno" maximo={15} />
 
         <VideoNegocio lugar={n.id} video={video} />

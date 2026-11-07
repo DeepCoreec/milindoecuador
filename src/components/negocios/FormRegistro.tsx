@@ -121,8 +121,8 @@ export function FormRegistro({ categorias, avisoWhatsApp, categoriaInicial }: { 
         <p className="m-0 text-rio-suave">
           {guia ? (
             <>
-              Creamos la ficha de <b className="text-rio">{estado.negocio}</b>. En «Mi negocio» revisas tu perfil, armas tus recorridos y lo
-              publicas cuando quieras.
+              Creamos la ficha de <b className="text-rio">{estado.negocio}</b>. En «Mi negocio» subes más fotos y un video de tus recorridos, armas
+              tus recorridos y publicas tu perfil cuando quieras.
             </>
           ) : (
             <>
