@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState, type ReactNode } from "react";
+import { useActionState, useEffect, useRef, useState, type ReactNode } from "react";
+import { pedirSubidaFoto, registrarFotoDueno } from "@/acciones/dueno";
+import { prepararFoto } from "@/lib/imagen";
+import { crearClienteSubidas } from "@/lib/supabase/client";
 import { solicitarRegistro, type EstadoSolicitud } from "@/acciones/negocios";
 import { clasesBoton } from "@/components/ui/Boton";
 import { Captcha } from "@/components/ui/Captcha";
@@ -61,6 +64,53 @@ export function FormRegistro({ categorias, avisoWhatsApp, categoriaInicial }: { 
   const guia = (v.categoria ?? elegida) === "guias";
   const a11y = (campo: keyof typeof e) => ({ "aria-invalid": e[campo] ? true : undefined, "aria-describedby": `r-${campo}-aviso` });
 
+  // 2026-11-07 (pedido del usuario: "no hay nada para subir una foto para saber quién es la persona"): el guía elige su
+  // foto al registrarse. La ficha se crea primero y la foto se sube enseguida, con el mismo permiso de un solo uso que
+  // en «Mi negocio» (el servidor revisa que la ficha sea suya y que el archivo sea de verdad una foto).
+  const [foto, setFoto] = useState<File | null>(null);
+  const [vista, setVista] = useState<string | null>(null);
+  const [faltaFoto, setFaltaFoto] = useState(false);
+  const [subida, setSubida] = useState<"no" | "subiendo" | "lista" | "error">("no");
+  const [errorFoto, setErrorFoto] = useState("");
+  const subiendoPara = useRef<string | null>(null);
+
+  function elegirFoto(f: File | null) {
+    if (f && !["image/jpeg", "image/png", "image/webp"].includes(f.type)) {
+      setErrorFoto("Usa una foto JPG, PNG o WebP.");
+      f = null;
+    } else setErrorFoto("");
+    if (vista) URL.revokeObjectURL(vista);
+    setFoto(f);
+    setVista(f ? URL.createObjectURL(f) : null);
+    setFaltaFoto(false);
+  }
+
+  useEffect(() => {
+    const ficha = estado.estado === "ok" ? estado.ficha : undefined;
+    if (!ficha || !guia || !foto || subiendoPara.current === ficha) return;
+    subiendoPara.current = ficha;
+    (async () => {
+      setSubida("subiendo");
+      try {
+        const { foto: lista, formato } = await prepararFoto(foto);
+        const permiso = await pedirSubidaFoto(ficha, formato);
+        if ("error" in permiso) throw new Error(permiso.error);
+        const { error } = await crearClienteSubidas().storage.from("fotos-lugares").uploadToSignedUrl(permiso.camino, permiso.token, lista, { contentType: lista.type });
+        if (error) throw new Error("No se pudo subir la foto. Revisa tu conexión.");
+        const datos = new FormData();
+        datos.set("lugar", ficha);
+        datos.set("camino", permiso.camino);
+        datos.set("alt", `Foto de ${estado.negocio ?? "la guía"}`.slice(0, 160));
+        const r = await registrarFotoDueno({ estado: "inicio" }, datos);
+        if (r.estado !== "ok") throw new Error(r.mensaje ?? "No se pudo guardar la foto.");
+        setSubida("lista");
+      } catch (err) {
+        setErrorFoto(err instanceof Error ? err.message : "No se pudo subir la foto.");
+        setSubida("error");
+      }
+    })();
+  }, [estado, guia, foto]);
+
   if (estado.estado === "ok" && estado.ficha) {
     return (
       <div role="status" className="grid gap-4 rounded-xl border border-linea bg-papel-alto p-6">
@@ -68,8 +118,8 @@ export function FormRegistro({ categorias, avisoWhatsApp, categoriaInicial }: { 
         <p className="m-0 text-rio-suave">
           {guia ? (
             <>
-              Creamos la ficha de <b className="text-rio">{estado.negocio}</b>. Complétala con tu foto, tus idiomas, tu credencial y tus recorridos, y
-              publícala cuando quieras.
+              Creamos la ficha de <b className="text-rio">{estado.negocio}</b>. En «Mi negocio» revisas tu perfil, armas tus recorridos y lo
+              publicas cuando quieras.
             </>
           ) : (
             <>
@@ -78,7 +128,14 @@ export function FormRegistro({ categorias, avisoWhatsApp, categoriaInicial }: { 
             </>
           )}
         </p>
-        <Link href={`/mi-negocio/${estado.ficha}`} className={clasesBoton("principal", "normal", "justify-self-start")}>
+        {guia && subida === "subiendo" && <p className="m-0 font-semibold">Subiendo tu foto…</p>}
+        {guia && subida === "lista" && <p className="m-0 font-semibold text-exito">✓ Tu foto ya está en tu perfil.</p>}
+        {guia && subida === "error" && (
+          <p role="alert" className="m-0 text-error">
+            Tu perfil se creó, pero la foto no se pudo subir ({errorFoto}). Súbela desde «Mi negocio».
+          </p>
+        )}
+        <Link href={`/mi-negocio/${estado.ficha}`} className={clasesBoton("principal", "normal", "justify-self-start")} aria-disabled={subida === "subiendo"}>
           {guia ? "Completar mi perfil de guía" : "Completar mi ficha"}
         </Link>
       </div>
@@ -108,7 +165,18 @@ export function FormRegistro({ categorias, avisoWhatsApp, categoriaInicial }: { 
   }
 
   return (
-    <form key={estado.intento ?? 0} action={accion} noValidate aria-labelledby="t-form" className="grid gap-5 rounded-xl border border-linea bg-papel-alto p-6">
+    <form
+      key={estado.intento ?? 0}
+      action={accion}
+      onSubmit={(ev) => {
+        // El guía tiene que poner su foto (así los turistas saben con quién van)
+        if (guia && !foto) {
+          ev.preventDefault();
+          setFaltaFoto(true);
+          document.getElementById("r-foto")?.focus();
+        }
+      }}
+      noValidate aria-labelledby="t-form" className="grid gap-5 rounded-xl border border-linea bg-papel-alto p-6">
       <h2 id="t-form" className="m-0 text-xl leading-[26px] font-semibold">
         {guia ? "Tus datos de guía" : "Datos del negocio"}
       </h2>
@@ -184,6 +252,37 @@ export function FormRegistro({ categorias, avisoWhatsApp, categoriaInicial }: { 
       {guia && (
         <div className="grid gap-5 border-t border-linea pt-5">
           <h3 className="m-0 text-lg leading-6 font-semibold">Tu perfil de guía</h3>
+          <div className="grid gap-2">
+            <label htmlFor="r-foto" className={claseEtiqueta}>
+              Tu foto
+            </label>
+            <p id="r-foto-ayuda" className={`m-0 ${claseAyuda}`}>
+              Una foto tuya, de frente y que se vea bien tu cara: así los turistas saben con quién van. Sale en tu perfil.
+            </p>
+            <div className="flex items-center gap-4">
+              {vista ? (
+                // eslint-disable-next-line @next/next/no-img-element -- vista previa local (blob:), no pasa por el optimizador
+                <img src={vista} alt="Vista previa de tu foto" className="size-24 flex-none rounded-full border border-linea object-cover" />
+              ) : (
+                <span aria-hidden="true" className="grid size-24 flex-none place-items-center rounded-full border border-dashed border-linea-fuerte text-3xl text-rio-suave">
+                  ?
+                </span>
+              )}
+              {/* Sin "name": el archivo no viaja con el formulario; se sube aparte, después de crear la ficha */}
+              <input
+                id="r-foto"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                aria-describedby="r-foto-ayuda r-foto-aviso"
+                aria-invalid={faltaFoto || undefined}
+                onChange={(ev) => elegirFoto(ev.target.files?.[0] ?? null)}
+                className="min-w-0 text-[15px] file:mr-3 file:min-h-11 file:cursor-pointer file:rounded-md file:border file:border-linea-fuerte file:bg-papel file:px-4 file:font-semibold file:text-rio"
+              />
+            </div>
+            <p id="r-foto-aviso" role={faltaFoto ? "alert" : undefined} className="m-0 text-sm leading-5 text-error">
+              {faltaFoto ? "Pon tu foto para crear tu perfil de guía." : subida === "no" ? errorFoto : ""}
+            </p>
+          </div>
           <Casillas
             nombre="idiomas"
             leyenda="Idiomas"
