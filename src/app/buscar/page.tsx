@@ -7,7 +7,7 @@ import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
 import { FilaSitio } from "@/components/guia/ListaSitios";
 import { TarjetaResumen } from "@/components/lugares/TarjetaResumen";
-import { buscarLugares, getCategoriasBarra, tonoDeCategoria } from "@/lib/datos/lugares";
+import { buscarConSugerencia, getCategoriasBarra, tonoDeCategoria } from "@/lib/datos/lugares";
 import { getSitios, type Sitio } from "@/lib/datos/sitios";
 import { buscarEnSitios } from "@/lib/osm";
 import { leerBusqueda } from "@/lib/validacion/busqueda";
@@ -22,7 +22,10 @@ export default async function PaginaBuscar({ searchParams }: PageProps<"/buscar"
   const q = leerBusqueda(parametros);
   // Versión 8 (34.2): "?cerca=1" viene del enlace "Cerca de mí" de la portada (la persona ya lo pidió con ese toque)
   const cerca = parametros.cerca === "1";
-  const [lugares, categorias] = await Promise.all([q ? buscarLugares(CIUDAD, q) : Promise.resolve([]), getCategoriasBarra(CIUDAD)]);
+  const [{ lugares, sugerida }, categorias] = await Promise.all([
+    q ? buscarConSugerencia(CIUDAD, q) : Promise.resolve({ lugares: [], sugerida: null }),
+    getCategoriasBarra(CIUDAD),
+  ]);
   // Versión 5, fase 24: si la guía trae poco, también los lugares de referencia de la Guía útil
   const sitios = q && lugares.length < 4 ? buscarEnSitios(await getSitios().catch(() => [] as Sitio[]), q) : [];
 
@@ -54,7 +57,9 @@ export default async function PaginaBuscar({ searchParams }: PageProps<"/buscar"
           <p aria-live="polite" className="mt-6 mb-4 text-sm leading-5 text-rio-suave">
             {lugares.length === 0
               ? `No encontramos negocios con «${q}».`
-              : `${lugares.length === 1 ? "1 lugar" : `${lugares.length} lugares`} con «${q}»`}
+              : sugerida
+                ? `No hay nada con «${q}» en el nombre, pero esto es lo que hay en ${sugerida.nombre}:`
+                : `${lugares.length === 1 ? "1 lugar" : `${lugares.length} lugares`} con «${q}»`}
           </p>
         )}
 

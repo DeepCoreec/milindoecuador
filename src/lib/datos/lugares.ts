@@ -2,8 +2,9 @@ import { cache } from "react";
 import type { CategoriaBarra } from "@/components/categorias/BarraCategorias";
 import { configSupabase } from "@/lib/supabase/config";
 import { crearClientePublico } from "@/lib/supabase/publico";
-import type { Filtros } from "@/lib/validacion/filtros";
+import { leerFiltros, type Filtros } from "@/lib/validacion/filtros";
 import { buscarEnBase, leerCategorias, leerCiudades, leerLugar, leerLugaresDeCiudad } from "./base";
+import { sugerirCategoria, type Sugerencia } from "@/lib/busqueda-dicha";
 import { buscarEn } from "./buscar";
 import { filtrarLugares, sectoresDe } from "./filtrar";
 import * as muestra from "./muestra";
@@ -77,6 +78,20 @@ export async function buscarLugares(ciudad: string, q: string) {
     lugares.map((l) => ({ ...l, textoCategoria: nombres.get(l.categoria) ?? "" })),
     q,
   );
+}
+
+/**
+ * Búsqueda con diccionario (versión 14, fase 44.1): si la búsqueda normal no encuentra nada, se mira qué categoría
+ * quiso decir la persona («almuerzo» → Restaurantes) y se devuelven los lugares de esa categoría, con los destacados
+ * primero. `sugerida` dice qué categoría se usó, para avisárselo a la persona.
+ */
+export async function buscarConSugerencia(ciudad: string, q: string): Promise<{ lugares: LugarResumen[]; sugerida: Sugerencia | null }> {
+  const lugares = await buscarLugares(ciudad, q);
+  if (lugares.length > 0) return { lugares, sugerida: null };
+  const sugerida = sugerirCategoria(q);
+  if (!sugerida) return { lugares: [], sugerida: null };
+  const { lugares: deCategoria } = await getLugaresDeCategoria(ciudad, sugerida.categoria, leerFiltros({}));
+  return deCategoria.length > 0 ? { lugares: deCategoria, sugerida } : { lugares: [], sugerida: null };
 }
 
 /**
