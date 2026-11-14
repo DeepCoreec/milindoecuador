@@ -82,6 +82,9 @@ function moverPagina(m: Movimiento, suave: boolean, intento = 0) {
 const sigueVigente = (hasta: number) => hasta > Date.now();
 /** Cómo prefiere hablar con Paumi esta persona (2026-11-01): se pregunta al presentarse y se recuerda. */
 const CLAVE_MODO = "mle-paumi-modo";
+const TOPE_TURNOS = 12;
+/** Solo rutas internas de la guía (defensa extra: el servidor ya las revisa). Sin "//" ni "/\\" que lleven a otro sitio. */
+const RUTA_INTERNA = /^\/(?![/\\])[a-z0-9\-/?=&%.+]*$/;
 
 /**
  * Paumi, la guacamaya guía (versión 3, fases 14 y 15): botón flotante y ventana con dos vistas.
@@ -162,6 +165,9 @@ export function Paumi() {
   const [visible, setVisible] = useState(true);
   const [vuelta, setVuelta] = useState(0);
   const silencios = useRef(0); // vueltas seguidas sin que digas nada (la conversación se apaga a la cuarta)
+  // Turnos seguidos en «Conversar»: a los 12 se apaga y hay que tocar el botón otra vez. Así el ruido de fondo (la TV,
+  // otra persona) no gasta mensajes sin que te des cuenta (revisión independiente 2026-11-14, hallazgo M2).
+  const turnos = useRef(0);
   const lista = useRef<HTMLDivElement>(null);
   const escena = useRef<HTMLDivElement>(null);
   const pregunta = useRef<HTMLParagraphElement>(null);
@@ -287,6 +293,7 @@ export function Paumi() {
     prepararVoz(); // en iPhone la voz se "despierta" con este toque
     if (m === "conversa") {
       silencios.current = 0;
+      turnos.current = 0;
       setManosLibres(true);
     }
   }
@@ -429,7 +436,7 @@ export function Paumi() {
         });
         // 2026-11-01 (pedido del usuario): la página se mueve con la conversación. Paumi sigue abierta y hablando.
         // La ruta ya viene revisada por el servidor (solo páginas de la guía que devolvieron sus herramientas).
-        if (datos.navegar && datos.navegar.startsWith("/") && !datos.navegar.startsWith("//") && datos.navegar !== window.location.pathname + window.location.search)
+        if (datos.navegar && RUTA_INTERNA.test(datos.navegar) && datos.navegar !== window.location.pathname + window.location.search)
         {
           router.push(datos.navegar, { scroll: true });
           setMitad(true);
@@ -511,8 +518,16 @@ export function Paumi() {
     pararMicrofono.current = escuchar({
       alParcial: (t) => setTexto(t.slice(0, MAX_MENSAJE)),
       alFinal: (dicho) => {
+        // Un ruido suelto (menos de 3 letras) no se envía: cuenta como un silencio
+        if (dicho.replace(/[^\p{L}\p{N}]/gu, "").length < 3) return;
         dijo = true;
         silencios.current = 0;
+        turnos.current += 1;
+        if (turnos.current >= TOPE_TURNOS) {
+          setManosLibres(false);
+          setModo("voz");
+          setAvisoMicrofono("Ya conversamos un buen rato, así que apagué el micrófono. Toca «Conversar» para seguir.");
+        }
         enviarDicho(dicho);
       },
       alError: (e) => {

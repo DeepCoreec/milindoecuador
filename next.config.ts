@@ -82,7 +82,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: hostSupabase(), pathname: "/storage/v1/object/public/fotos-lugares/**" },
       // Versión 5: afiches de eventos
       { protocol: "https", hostname: hostSupabase(), pathname: "/storage/v1/object/public/afiches-eventos/**" },
-      ...FOTOS_UNSPLASH.map((pathname) => ({ protocol: "https" as const, hostname: "images.unsplash.com", pathname })),
+      ...FOTOS_UNSPLASH.map((pathname) => ({ protocol: "https" as const, hostname: "images.unsplash.com", pathname, search: "" })),
       // Solo en desarrollo: el Supabase de prueba local
       ...(desarrollo
         ? (["fotos-lugares", "afiches-eventos"] as const).map((b) => ({ protocol: "http" as const, hostname: "127.0.0.1", port: "54321", pathname: `/storage/v1/object/public/${b}/**` }))

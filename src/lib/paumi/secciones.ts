@@ -74,8 +74,12 @@ export function describirPagina(ruta: string): string {
   if (/^\/guayaquil\/visitar\/[^/]+$/.test(ruta)) return "la página de un lugar para visitar (con galería de fotos, 'Antes de ir' y qué hay cerca)";
   if (/^\/guayaquil\/eventos\/[^/]+$/.test(ruta)) return "la página de un evento";
   if (/^\/guayaquil\/guias\/[^/]+\/recorridos\/[^/]+$/.test(ruta)) return "la página de un recorrido de un guía";
+  // El slug no va tal cual a las instrucciones de la IA: solo si es una categoría conocida (revisión 2026-11-14, B3)
   const cat = /^\/guayaquil\/([a-z0-9-]+)$/.exec(ruta);
-  if (cat) return `la categoría «${cat[1]}» (con filtros de sector, precio y orden)`;
+  if (cat) {
+    const conocida = CATEGORIAS_DICHAS.find(([slug]) => slug === cat[1]);
+    return conocida ? `la categoría «${conocida[1]}» (con filtros de sector, precio y orden)` : "otra página";
+  }
   if (/^\/guayaquil\/[a-z0-9-]+\/[a-z0-9-]+$/.test(ruta)) return "la ficha de un lugar (fotos, información, historia y reseñas)";
   return "otra página";
 }

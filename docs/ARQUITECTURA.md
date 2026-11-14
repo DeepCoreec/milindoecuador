@@ -262,7 +262,7 @@ lanzamiento se repasa entera** (además de la skill `shipping-and-launch`) y se 
 | 17 | Devolver solo lo necesario | Lectura por columnas: el público no ve correos, dueños, roles ni tamaños de archivo | ✅ |
 | 18 | Security headers | CSP, HSTS, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy, COOP | ✅ |
 | 19 | Forzar HTTPS | Vercel lo obliga y HSTS lo fija | ✅ |
-| 20 | Escanear dependencias | Dependabot semanal y `npm audit` (0 problemas el 2026-10-09); falta que el usuario active las alertas en GitHub (paso 1.2) | 🟡 usuario |
+| 20 | Escanear dependencias | Dependabot semanal y `npm audit` (0 problemas el 2026-11-14, después de subir Next.js a 16.4.6 y Zod a 4.6.7 por avisos críticos); falta que el usuario active las alertas en GitHub (paso 1.2) | 🟡 usuario |
 
 Regla para migraciones futuras: Supabase da todos los permisos a `anon` y `authenticated` en cada tabla nueva.
 Cada migración que cree una tabla debe hacer `revoke all` y dar solo lo necesario, además de RLS.
