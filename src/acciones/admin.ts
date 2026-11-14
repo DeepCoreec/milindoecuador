@@ -446,6 +446,22 @@ export async function acreditarGuia(_previo: EstadoAdmin, datos: FormData): Prom
   if (r.data.acreditar === "si" && !l.guide_license) return { estado: "error", mensaje: "El guía todavía no escribió su número de credencial" };
   if (r.data.acreditar === "si" && l.guide_license !== r.data.credencial)
     return { estado: "error", mensaje: "El guía cambió su número mientras lo revisabas. Recarga la página y vuelve a buscarlo." };
+  if (r.data.acreditar === "si") {
+    // Una credencial es de UNA persona: si otra ficha ya está acreditada con ese número, puede ser un impostor
+    // (revisión independiente 2026-11-14, hallazgo M1). El admin debe aclararlo antes, por ejemplo por WhatsApp.
+    const { data: otras } = await db
+      .from("places")
+      .select("name")
+      .eq("guide_license", l.guide_license!)
+      .not("accredited_at", "is", null)
+      .neq("id", r.data.lugar)
+      .limit(1);
+    if (otras && otras.length > 0)
+      return {
+        estado: "error",
+        mensaje: `Otra ficha («${otras[0].name}») ya está acreditada con este mismo número. Aclara quién es el guía real antes de dar la insignia.`,
+      };
+  }
   let cambio = db.from("places").update({ accredited_at: r.data.acreditar === "si" ? new Date().toISOString() : null }).eq("id", r.data.lugar);
   // Solo se acredita el número que el admin vio (si cambió entre la lectura y el guardado, no se toca ninguna fila)
   if (r.data.acreditar === "si") cambio = cambio.eq("guide_license", r.data.credencial);
