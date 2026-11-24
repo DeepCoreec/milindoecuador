@@ -9,6 +9,7 @@ import { clasesBoton } from "@/components/ui/Boton";
 import { Captcha } from "@/components/ui/Captcha";
 import { claseEntrada } from "@/components/ui/clasesFormulario";
 import { IconoCerrar, IconoMicrofono, IconoSilencio, IconoSonido, IconoUbicacion } from "@/components/ui/iconos";
+import { EVENTO_PREGUNTAR_PAUMI, type PreguntarPaumi } from "@/lib/paumi/evento";
 import { tiempoDeLectura } from "@/lib/paumi/pantallas";
 import { AVISO, AVISO_VOZ, MAX_HISTORIAL, MAX_MENSAJE, NOMBRE, SALUDO } from "@/lib/paumi/personaje";
 import { atajo, leerMovimiento, SECCIONES, type Movimiento } from "@/lib/paumi/secciones";
@@ -555,6 +556,17 @@ export function Paumi() {
     const id = setTimeout(() => escucharTurno(), 400);
     return () => clearTimeout(id);
   }, [conversa, vuelta]);
+  // Otra parte de la página puede pedirle a Paumi que abra y deje una pregunta escrita (fase 44.2). No la envía.
+  useEffect(() => {
+    const alPreguntar = (e: Event) => {
+      const t = (e as CustomEvent<PreguntarPaumi>).detail?.texto;
+      if (typeof t !== "string" || !t.trim()) return;
+      abrir();
+      setTexto(t.trim().slice(0, MAX_MENSAJE));
+    };
+    window.addEventListener(EVENTO_PREGUNTAR_PAUMI, alPreguntar);
+    return () => window.removeEventListener(EVENTO_PREGUNTAR_PAUMI, alPreguntar);
+  });
   // Al cerrar la ventana o esconder la pestaña, el micrófono se apaga
   useEffect(() => {
     if (!abierto || !visible) pararMicrofono.current();
