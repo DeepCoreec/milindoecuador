@@ -5,11 +5,13 @@ import { CercaDeMi } from "@/components/busqueda/CercaDeMi";
 import { BarraCategorias } from "@/components/categorias/BarraCategorias";
 import { Cabecera } from "@/components/layout/Cabecera";
 import { Pie } from "@/components/layout/Pie";
+import { PreguntarAPaumi } from "@/components/paumi/PreguntarAPaumi";
 import { FilaSitio } from "@/components/guia/ListaSitios";
 import { TarjetaResumen } from "@/components/lugares/TarjetaResumen";
 import { buscarConSugerencia, getCategoriasBarra, tonoDeCategoria } from "@/lib/datos/lugares";
 import { getSitios, type Sitio } from "@/lib/datos/sitios";
 import { buscarEnSitios } from "@/lib/osm";
+import { paumiActivo } from "@/lib/paumi/config";
 import { leerBusqueda } from "@/lib/validacion/busqueda";
 
 // Las páginas de resultados no se indexan: Google debe llegar a las fichas, no a búsquedas sueltas
@@ -74,6 +76,15 @@ export default async function PaginaBuscar({ searchParams }: PageProps<"/buscar"
           </>
         ) : (
           <>
+          {q && paumiActivo() && (
+            <section aria-labelledby="t-paumi" className="mb-2 grid justify-items-start gap-3 rounded-xl bg-celeste-suave p-5">
+              <h2 id="t-paumi" className="m-0 text-lg leading-6 font-semibold">
+                ¿No lo encuentras? Pregúntale a Paumi
+              </h2>
+              <p className="m-0 text-[15px] leading-[22px] text-rio-suave">Ella conoce la ciudad y te puede ayudar con «{q}».</p>
+              <PreguntarAPaumi pregunta={q} />
+            </section>
+          )}
           {guiaUtil}
           <section aria-labelledby="t-explora" className={q ? "mt-2" : "mt-10"}>
             <h2 id="t-explora" className="m-0 mb-4 font-rotulo text-xl leading-[26px] font-normal">

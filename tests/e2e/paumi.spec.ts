@@ -71,6 +71,17 @@ test("Paumi recomienda lugares de la guía con tarjetas, y no se deja engañar",
   await expect(page).toHaveURL(/\/guayaquil\/restaurantes$/);
 });
 
+test("si la búsqueda no encuentra nada, «Pregúntale a Paumi» abre la ventana con la pregunta escrita (sin enviarla)", async ({ page }, info) => {
+  test.skip(info.project.name !== "celular", "Paumi se usa sobre todo en el celular");
+  await page.goto("/buscar?q=zzzzzz");
+  await page.getByRole("button", { name: "Pregúntale a Paumi" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.getByRole("dialog").locator("input, textarea").last()).toHaveValue("zzzzzz");
+  // Con resultados (aunque sean sugeridos por el diccionario) el botón no sale
+  await page.goto("/buscar?q=almuerzo");
+  await expect(page.getByRole("button", { name: "Pregúntale a Paumi" })).toHaveCount(0);
+});
+
 test("hablarle con el micrófono y que responda hablando (micrófono y voz simulados)", async ({ page }, info) => {
   test.skip(info.project.name !== "celular", "Paumi se usa sobre todo en el celular");
   // El navegador de pruebas no tiene micrófono: se simulan el reconocimiento de voz y la voz del teléfono
